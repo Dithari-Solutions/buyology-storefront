@@ -19,7 +19,7 @@ export default function AuthForm() {
         <div className="flex flex-col items-center justify-center bg-white rounded-[40px] py-10 px-5 sm:px-[20px] md:px-[30px] lg:px-[40px] w-full min-w-[100%]">
 
             {/* Dynamic Heading */}
-            <h2 className="text-black-500 font-bold text-[26px] sm:text-[28px] md:text-[30px] lg:text-[32px] mb-2 sm:mb-3 text-center">
+            <h2 className="text-black font-bold text-[26px] sm:text-[28px] md:text-[30px] lg:text-[32px] mb-2 sm:mb-3 text-center">
                 {mode === "signIn" ? "Welcome back!" : "Welcome! Create an account"}
             </h2>
 
