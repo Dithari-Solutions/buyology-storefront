@@ -15,17 +15,20 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             className="relative min-h-screen flex flex-col px-5 sm:px-10 md:px-16 lg:px-24 xl:px-32 py-8"
             style={{ backgroundColor: COLORS.primary }}
         >
-
             {/* Logo */}
-            <div className="mb-[15px] sm:mb-[20px] flex justify-start">
-                <Image src={Logo} alt="Buyology" className="w-[80px] sm:w-[120px] md:w-[150px] lg:w-[180px]" />
+            <div className="mb-[30px] sm:mb-[20px] flex justify-center lg:justify-start">
+                <Image 
+                    src={Logo} 
+                    alt="Buyology" 
+                    className="w-[160px] sm:w-[180px] md:w-[190px] lg:w-[200px]" 
+                />
             </div>
 
-            {/* Main Content: AuthText + Form */}
+            {/* Main Content: AuthText (desktop only) + Form */}
             <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 w-full items-start justify-center z-[10]">
 
-                {/* Left side: AuthText */}
-                <div className="w-full flex justify-center lg:justify-start my-15 lg:mb-0">
+                {/* Left side: AuthText (hidden on mobile) */}
+                <div className="hidden lg:flex w-full justify-start">
                     <AuthText />
                 </div>
 
@@ -34,6 +37,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                     {children}
                 </div>
             </div>
+
+            {/* Background vector */}
             <div className="absolute right-0 bottom-0 z-[0]">
                 <Image src={AuthVector} alt="vector" />
             </div>
