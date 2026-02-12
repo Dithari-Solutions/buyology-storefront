@@ -32,7 +32,8 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /var/www/frontend/buyology-storefront
+            git reset --hard
             git pull origin main
             npm install
             npm run build
-            pm2 restart buyology-storefront
+            pm2 restart buyology-storefront --update-env
