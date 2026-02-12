@@ -31,8 +31,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /var/www/frontend/buyology_storefront
+            cd /var/www/frontend/buyology-storefront
             git pull origin main
             npm install
             npm run build
-            pm2 restart buyology_storefront
+            pm2 restart buyology-storefront
