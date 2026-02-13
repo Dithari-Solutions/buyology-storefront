@@ -1,8 +1,8 @@
-import Link from "next/link"
-import Logo from "@/../public/logo.png"
-import SearchIcon from "@/assets/icons/searchicon.svg"
-import ArrowDown from "@/assets/icons/arrow-down.svg"
-import Image from "next/image"
+import Link from "next/link";
+import Image from "next/image";
+import Logo from "@/../public/logo.png";
+import ArrowDown from "@/assets/icons/arrow-down.svg";
+import SearchIcon from "@/assets/icons/searchicon.svg";
 
 
 export default function Header() {
