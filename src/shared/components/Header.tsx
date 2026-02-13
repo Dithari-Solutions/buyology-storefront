@@ -19,6 +19,9 @@ export default function Header() {
                         <li className="cursor-pointer">Home</li>
                         <li className="cursor-pointer">Shop</li>
                         <li className="cursor-pointer">Catalog</li>
+                        {/* <li className="cursor-pointer">B2B</li>
+                        <li className="cursor-pointer">Premium products</li>
+                        <li className="cursor-pointer">Accessories</li> */}
                         <li className="cursor-pointer">Contact Us</li>
                     </ul>
                 </div>
