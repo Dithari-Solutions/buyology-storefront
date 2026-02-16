@@ -11,11 +11,7 @@ export default function FeatureCard({ title, bg }: FeatureCardProps) {
 
     return (
         <div
-            className="relative overflow-hidden rounded-2xl flex flex-col cursor-pointer group transition-transform duration-300 hover:scale-[1.03]"
-            style={{
-                width: 'calc(100% / 4 - 20px)',
-                height: '400px',
-            }}
+            className="relative overflow-hidden rounded-2xl flex flex-col cursor-pointer group transition-transform duration-300 hover:scale-[1.03] w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]"
         >
             {/* SVG clip definition for rounded cutout */}
             <svg width="0" height="0" className="absolute">
@@ -57,15 +53,15 @@ export default function FeatureCard({ title, bg }: FeatureCardProps) {
 
             {/* Arrow icon inside the cutout */}
             <div
-                className="absolute top-[5px] right-[5px] flex items-center justify-center w-[45px] h-[45px] rounded-full transition-all duration-300 group-hover:bg-[#d4ccff] group-hover:rotate-45"
+                className="absolute top-[5px] right-[5px] flex items-center justify-center w-[35px] h-[35px] md:w-[45px] md:h-[45px] rounded-full transition-all duration-300 group-hover:bg-[#d4ccff] group-hover:rotate-45"
                 style={{ backgroundColor: '#EDE9FF' }}
             >
-                <Image src={ArrowUpward} alt="arrow" width={20} height={20} />
+                <Image src={ArrowUpward} alt="arrow" width={20} height={20} className="w-[14px] md:w-[20px]" />
             </div>
 
             {/* Bottom gradient shadow with text */}
             <div
-                className="absolute bottom-0 left-0 w-full px-4 py-5 text-center font-semibold text-[16px]"
+                className="absolute bottom-0 left-0 w-full px-4 py-4 md:py-5 text-center font-semibold text-[14px] md:text-[16px]"
                 style={{
                     background: 'linear-gradient(to top, #EDE9FF, transparent)',
                 }}
@@ -73,5 +69,5 @@ export default function FeatureCard({ title, bg }: FeatureCardProps) {
                 {title}
             </div>
         </div>
-    )
+    );
 }

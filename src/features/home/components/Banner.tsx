@@ -5,13 +5,16 @@ import ArrowUpward from "@/assets/icons/arrow-upward.png";
 
 export default function HeroSection() {
     return (
-        <section className="relative w-[90%] mt-12 overflow-hidden rounded-2xl">
+        <section className="relative w-[95%] md:w-[90%] mt-6 md:mt-12 overflow-hidden rounded-2xl">
             <div
                 className="
                     relative
                     w-full
-                    p-[50px]
-                    min-h-[400px]
+                    p-5
+                    sm:p-[30px]
+                    md:p-[50px]
+                    min-h-[250px]
+                    sm:min-h-[350px]
                     md:min-h-[500px]
                     lg:min-h-[700px]
                 "
@@ -23,8 +26,8 @@ export default function HeroSection() {
                 }}
             >
                 {/* Desktop Computer — top-left */}
-                <div className="hidden md:block absolute top-[8%] left-[5%] lg:top-[10%] lg:left-[6%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-5 lg:p-6">
-                    <p className="text-lg lg:text-xl font-semibold">
+                <div className="hidden md:block absolute top-[8%] left-[5%] lg:top-[10%] lg:left-[6%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-6">
+                    <p className="text-base lg:text-xl font-semibold">
                         Desktop Computer
                     </p>
                     <p className="text-sm text-black mt-1">
@@ -33,8 +36,8 @@ export default function HeroSection() {
                 </div>
 
                 {/* Tablet — top-right */}
-                <div className="hidden md:block absolute top-[10%] right-[6%] lg:top-[8%] lg:right-[8%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-5 lg:p-6">
-                    <p className="text-lg lg:text-xl font-semibold">
+                <div className="hidden md:block absolute top-[10%] right-[6%] lg:top-[8%] lg:right-[8%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-6">
+                    <p className="text-base lg:text-xl font-semibold">
                         Tablet
                     </p>
                     <p className="text-sm text-black mt-1">
@@ -43,8 +46,8 @@ export default function HeroSection() {
                 </div>
 
                 {/* Laptop — bottom-left */}
-                <div className="hidden md:block absolute bottom-[25%] left-[4%] lg:bottom-[22%] lg:left-[5%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-5 lg:p-6">
-                    <p className="text-lg lg:text-xl font-semibold">
+                <div className="hidden md:block absolute bottom-[25%] left-[4%] lg:bottom-[22%] lg:left-[5%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-6">
+                    <p className="text-base lg:text-xl font-semibold">
                         Laptop
                     </p>
                     <p className="text-sm text-black mt-1">
@@ -52,9 +55,9 @@ export default function HeroSection() {
                     </p>
                 </div>
 
-                {/* Shop Now Button — bottom center */}
-                <div className="flex items-center justify-between absolute bottom-[20px] left-[120px] -translate-x-1/2 md:bottom-[20px] bg-white text-black font-semibold py-[5px] pl-[5px] pr-[20px] rounded-full shadow-lg hover:bg-gray-100 transition-colors cursor-pointer text-sm md:text-base cursor-pointer">
-                    <div className="flex items-center mr-[10px] justify-center rounded-full p-[10px] w-[50px] h-[50px]" style={{
+                {/* Shop Now Button — bottom */}
+                <div className="flex items-center justify-between absolute bottom-[15px] left-[15px] sm:bottom-[20px] sm:left-[120px] md:-translate-x-1/2 bg-white text-black font-semibold py-[5px] pl-[5px] pr-[15px] sm:pr-[20px] rounded-full shadow-lg hover:bg-gray-100 transition-colors cursor-pointer text-xs sm:text-sm md:text-base">
+                    <div className="flex items-center mr-[8px] sm:mr-[10px] justify-center rounded-full p-[8px] sm:p-[10px] w-[36px] h-[36px] sm:w-[50px] sm:h-[50px]" style={{
                         backgroundColor: COLORS.primary
                     }}>
                         <Image src={ArrowUpward} alt="arrow-upward" />
@@ -66,30 +69,30 @@ export default function HeroSection() {
             </div>
 
             {/* White overlay with rounded top-left corner for the cutout */}
-            <div className="absolute bottom-0 right-0 w-[155px] h-[110px] md:w-[170px] md:h-[120px] bg-white rounded-tl-[40px]" />
+            <div className="absolute bottom-0 right-0 w-[120px] h-[80px] sm:w-[140px] sm:h-[100px] md:w-[170px] md:h-[120px] bg-[#F7F7F7] rounded-tl-[30px] md:rounded-tl-[40px]" />
 
-            {/* Inverted rounded corner — top edge (right side of banner meets cutout) */}
+            {/* Inverted rounded corner — top edge */}
             <div
-                className="absolute bottom-[110px] right-0 w-[20px] h-[20px] md:bottom-[120px]"
+                className="absolute bottom-[80px] sm:bottom-[100px] md:bottom-[120px] right-0 w-[20px] h-[20px]"
                 style={{
                     background: "transparent",
                     borderBottomRightRadius: "20px",
-                    boxShadow: "10px 10px 0 10px white",
+                    boxShadow: "10px 10px 0 10px #F7F7F7",
                 }}
             />
 
-            {/* Inverted rounded corner — left edge (bottom of banner meets cutout) */}
+            {/* Inverted rounded corner — left edge */}
             <div
-                className="absolute bottom-0 right-[155px] w-[20px] h-[20px] md:right-[170px]"
+                className="absolute bottom-0 right-[120px] sm:right-[140px] md:right-[170px] w-[20px] h-[20px]"
                 style={{
                     background: "transparent",
                     borderBottomRightRadius: "20px",
-                    boxShadow: "10px 10px 0 10px white",
+                    boxShadow: "10px 10px 0 10px #F7F7F7",
                 }}
             />
 
             {/* App Store Badges */}
-            <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 flex flex-col items-center gap-1">
+            <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 md:bottom-3 md:right-3 flex flex-col items-center gap-1">
                 <a
                     href="#"
                     aria-label="Download on the App Store"
@@ -99,8 +102,7 @@ export default function HeroSection() {
                     <img
                         src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
                         alt="Download on the App Store"
-                        width={135}
-                        height={40}
+                        className="w-[100px] sm:w-[120px] md:w-[135px]"
                     />
                 </a>
                 <a
@@ -112,8 +114,7 @@ export default function HeroSection() {
                     <img
                         src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
                         alt="Get it on Google Play"
-                        width={135}
-                        height={40}
+                        className="w-[100px] sm:w-[120px] md:w-[135px]"
                     />
                 </a>
             </div>

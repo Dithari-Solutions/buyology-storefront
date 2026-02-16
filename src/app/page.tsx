@@ -1,11 +1,11 @@
 import Header from "@/shared/components/Header";
+import Footer from "@/shared/components/Footer";
+import macPro13 from "@/assets/devices/macPro13.png";
 import Banner from "@/features/home/components/Banner";
 import Stories from "@/features/home/components/Stories";
-import LimitedStockCard from "@/features/home/components/limitedStock/LimitedStockCard";
-import LimitedStock from "@/features/home/components/limitedStock/LimitedStock";
 import Features from "@/features/home/components/features/Features";
 import SuperDeals from "@/features/home/components/superDeals/SuperDeals";
-import macPro13 from "@/assets/devices/macPro13.png";
+import LimitedStock from "@/features/home/components/limitedStock/LimitedStock";
 
 const superDeals = [
   {
@@ -53,6 +53,7 @@ export default function Home() {
         <Features />
         <SuperDeals deals={superDeals} />
       </main>
+      <Footer />
     </>
   );
 }
