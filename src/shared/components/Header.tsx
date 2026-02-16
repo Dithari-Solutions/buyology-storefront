@@ -4,11 +4,10 @@ import Logo from "@/../public/logo.png";
 import ArrowDown from "@/assets/icons/arrow-down.svg";
 import SearchIcon from "@/assets/icons/searchicon.svg";
 
-
 export default function Header() {
     return (
-        <header className="py-[30px] px-[35px]">
-            <nav className="flex bg-[#402F75] py-[15px] px-[35px] rounded-[40px] items-center justify-between">
+        <header className="py-[40px] flex items-center justify-center">
+            <nav className="flex bg-[#402F75] w-[90%] py-[15px] px-[35px] rounded-[40px] items-center justify-between">
                 <div className=" w-[20%] cursor-pointer" >
                     <Link href={"/"}>
                         <Image src={Logo} alt="Buyology" width={100} />

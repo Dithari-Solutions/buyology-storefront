@@ -1,5 +1,4 @@
-import OtpForm from '@/features/auth/components/otp/OtpForm'
-import React from 'react'
+import OtpForm from '@/features/auth/components/otp/OtpForm';
 
 export default function page() {
     return (

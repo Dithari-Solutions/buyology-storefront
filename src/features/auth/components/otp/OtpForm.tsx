@@ -10,12 +10,11 @@ export default function OtpForm() {
     const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
     const handleChange = (value: string, index: number) => {
-        if (!/^\d*$/.test(value)) return; // allow only digits
+        if (!/^\d*$/.test(value)) return;
         const newOtp = [...otp];
         newOtp[index] = value.slice(-1);
         setOtp(newOtp);
 
-        // Move to next input
         if (value && index < OTP_LENGTH - 1) {
             inputsRef.current[index + 1]?.focus();
         }
