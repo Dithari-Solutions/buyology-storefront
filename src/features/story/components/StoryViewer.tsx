@@ -144,7 +144,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                     </div>
                 )}
                 <Image
-                    src={`http://5.189.132.250:8080${story.thumbnailUrl}`}
+                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${story.thumbnailUrl}`}
                     alt={story.title}
                     fill
                     className={`object-contain transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
