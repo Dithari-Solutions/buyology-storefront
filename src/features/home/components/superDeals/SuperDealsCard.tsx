@@ -1,3 +1,5 @@
+"use client";
+
 import cartIcon from "@/assets/icons/cart.png";
 import { COLORS } from "@/shared/styles/variables";
 import Image, { StaticImageData } from "next/image";
@@ -24,33 +26,11 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
                 <defs>
                     {/* Outer white container clip (larger) */}
                     <clipPath id={outerClipId} clipPathUnits="objectBoundingBox">
-                        <path d="
-                            M 0,0
-                            L 0.80,0
-                            Q 0.86,0 0.86,0.08
-                            L 0.86,0.14
-                            Q 0.86,0.22 0.92,0.22
-                            L 0.94,0.22
-                            Q 1,0.22 1,0.34
-                            L 1,1
-                            L 0,1
-                            Z
-                        " />
+                        <path d="M 0,0 L 0.80,0 Q 0.86,0 0.86,0.08 L 0.86,0.14 Q 0.86,0.22 0.92,0.22 L 0.94,0.22 Q 1,0.22 1,0.34 L 1,1 L 0,1 Z" />
                     </clipPath>
                     {/* Inner colored container clip (slightly inset) */}
                     <clipPath id={innerClipId} clipPathUnits="objectBoundingBox">
-                        <path d="
-                            M 0,0
-                            L 0.78,0
-                            Q 0.84,0 0.84,0.09
-                            L 0.84,0.16
-                            Q 0.84,0.24 0.90,0.24
-                            L 0.93,0.24
-                            Q 1,0.24 1,0.38
-                            L 1,1
-                            L 0,1
-                            Z
-                        " />
+                        <path d="M 0,0 L 0.78,0 Q 0.84,0 0.84,0.09 L 0.84,0.16 Q 0.84,0.24 0.90,0.24 L 0.93,0.24 Q 1,0.24 1,0.38 L 1,1 L 0,1 Z" />
                     </clipPath>
                 </defs>
             </svg>
