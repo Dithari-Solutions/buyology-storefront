@@ -5,7 +5,7 @@ import ArrowUpward from "@/assets/icons/arrow-upward.png";
 
 export default function HeroSection() {
     return (
-        <section className="relative w-[95%] md:w-[90%] mt-6 md:mt-12 overflow-hidden rounded-2xl">
+        <section className="relative w-[95%] md:w-[90%] mt-3 md:mt-6 overflow-hidden rounded-2xl">
             <div
                 className="
                     relative

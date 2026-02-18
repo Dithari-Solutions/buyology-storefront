@@ -11,7 +11,7 @@ export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
-        <header className="py-5 md:py-[40px] flex items-center justify-center">
+        <header className="pt-5 md:pt-[40px] flex items-center justify-center">
             <nav className="flex flex-wrap bg-[#402F75] w-[95%] md:w-[90%] py-[10px] md:py-[15px] px-[15px] md:px-[35px] rounded-[40px] items-center justify-between relative">
                 {/* Logo */}
                 <div className="cursor-pointer">
