@@ -17,7 +17,7 @@ function StoryItem({ story, onClick }: { story: { thumbnailUrl: string; title: s
                         <div className="absolute inset-1 rounded-full bg-gray-200 animate-pulse" />
                     )}
                     <Image
-                        src={`http://127.0.0.1:8080${story.thumbnailUrl}`}
+                        src={`http://5.189.132.250:8080${story.thumbnailUrl}`}
                         alt={story.title}
                         width={90}
                         height={90}
@@ -33,7 +33,7 @@ function StoryItem({ story, onClick }: { story: { thumbnailUrl: string; title: s
 }
 
 export default function Stories() {
-    const { stories, loading, error } = useStories("AR");
+    const { stories, loading, error } = useStories("EN");
     const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
     if (loading) {
