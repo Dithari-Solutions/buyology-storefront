@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import Story from "@/assets/story/story.svg";
+// import Image from "next/image";
+// import Story from "@/assets/story/story.svg";
 import { useStories } from "../hooks/useStories";
 import StoryViewer from "./StoryViewer";
 
@@ -16,13 +16,13 @@ function StoryItem({ story, onClick }: { story: { thumbnailUrl: string; title: s
                     {!imageLoaded && (
                         <div className="absolute inset-1 rounded-full bg-gray-200 animate-pulse" />
                     )}
-                    <Image
+                    <img
                         src={`http://5.189.132.250:8080${story.thumbnailUrl}`}
                         alt={story.title}
                         width={90}
                         height={90}
                         className={`w-[55px] h-[55px] md:w-[82px] md:h-[82px] rounded-full object-cover transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
-                        unoptimized
+                        // unoptimized
                         onLoad={() => setImageLoaded(true)}
                     />
                 </div>

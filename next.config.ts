@@ -26,9 +26,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "http",
-        hostname: "5.189.132.250", // backend IP
+        hostname: "5.189.132.250",
         port: "8080",
-        pathname: "/story/**", // only allow story images
+        pathname: "/story/**",
       },
     ],
   },
