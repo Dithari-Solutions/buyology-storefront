@@ -111,7 +111,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white">
                         <Image
-                            src={`http://127.0.0.1:8080${story.thumbnailUrl}`}
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${story.thumbnailUrl}`}
                             alt={story.title}
                             width={40}
                             height={40}
@@ -144,7 +144,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                     </div>
                 )}
                 <Image
-                    src={`http://127.0.0.1:8080${story.thumbnailUrl}`}
+                    src={`http://5.189.132.250:8080${story.thumbnailUrl}`}
                     alt={story.title}
                     fill
                     className={`object-contain transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
