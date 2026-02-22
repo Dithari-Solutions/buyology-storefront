@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter, usePathname } from "next/navigation";
-
-type Lang = "en" | "az" | "ar";
+import { SLUG_TO_CANONICAL, PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 const LANGUAGES: { code: Lang; label: string }[] = [
     { code: "en", label: "EN" },
@@ -34,6 +33,15 @@ export default function LanguageSwitcher() {
 
     function select(code: Lang) {
         const segments = pathname.split("/");
+        const currentLang = segments[1] as Lang;
+        const currentSlug = segments[2];
+
+        // Translate the path segment to the new language
+        if (currentSlug) {
+            const canonical = SLUG_TO_CANONICAL[currentLang]?.[currentSlug] ?? currentSlug;
+            segments[2] = PATH_SLUGS[canonical]?.[code] ?? canonical;
+        }
+
         segments[1] = code;
         router.push(segments.join("/"));
         setOpen(false);

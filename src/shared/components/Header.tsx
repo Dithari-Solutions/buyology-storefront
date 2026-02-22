@@ -7,20 +7,42 @@ import Logo from "@/../public/logo.png";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@/assets/icons/searchicon.svg";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { useSelector } from "react-redux";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+
+// Maps nav key → canonical route segment (used as fallback when no localized slug exists)
+const NAV_CANONICAL: Record<string, string> = {
+    home: "",
+    shop: "shop",
+    catalog: "catalog",
+    contactUs: "contact",
+    buyobot: "buyobot",
+    b2b: "b2b",
+};
 
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     const { t } = useTranslation("header");
+    const lang = useSelector((state: { language: { lang: Lang } }) => state.language.lang);
 
     const navItems = t("nav", { returnObjects: true }) as Record<string, string>;
+
+    function navHref(key: string): string {
+        const canonical = NAV_CANONICAL[key];
+        if (!canonical) return `/${lang}`;
+        const slug = PATH_SLUGS[canonical]?.[lang] ?? canonical;
+        return `/${lang}/${slug}`;
+    }
+
+    const authSlug = PATH_SLUGS["auth"]?.[lang] ?? "auth";
 
     return (
         <header className="pt-5 md:pt-[40px] flex items-center justify-center">
             <nav className="flex flex-wrap bg-[#402F75] w-[95%] md:w-[90%] py-[10px] md:py-[15px] px-[15px] md:px-[35px] rounded-[40px] items-center justify-between relative">
                 {/* Logo */}
                 <div className="cursor-pointer">
-                    <Link href={"/"}>
+                    <Link href={`/${lang}`}>
                         <Image src={Logo} alt={t("logoAlt")} width={80} className="md:w-[100px]" />
                     </Link>
                 </div>
@@ -28,8 +50,10 @@ export default function Header() {
                 {/* Desktop Nav Links */}
                 <div className="hidden lg:block">
                     <ul className="flex text-white gap-6 items-center">
-                        {Object.values(navItems).map((label, index) => (
-                            <li key={index} className="cursor-pointer font-bold">{label}</li>
+                        {Object.entries(navItems).map(([key, label]) => (
+                            <li key={key} className="cursor-pointer font-bold">
+                                <Link href={navHref(key)}>{label}</Link>
+                            </li>
                         ))}
                     </ul>
                 </div>
@@ -43,14 +67,14 @@ export default function Header() {
                     <div className="mr-[10px] xl:mr-[20px]">
                         <LanguageSwitcher />
                     </div>
-                    <Link href={"/auth"}>
+                    <Link href={`/${lang}/${authSlug}`}>
                         <button className="bg-[#FEBF12] rounded-[40px] px-[20px] xl:px-[30px] h-[35px] text-[15px] cursor-pointer font-bold text-white">{t("loginButton")}</button>
                     </Link>
                 </div>
 
                 {/* Mobile Right: Search + Hamburger */}
                 <div className="flex lg:hidden items-center gap-3">
-                    <Link href={"/auth"}>
+                    <Link href={`/${lang}/${authSlug}`}>
                         <button className="bg-[#FEBF12] rounded-[40px] px-[20px] h-[32px] text-[12px] cursor-pointer">{t("loginButton")}</button>
                     </Link>
                     <button
@@ -72,8 +96,10 @@ export default function Header() {
                 {menuOpen && (
                     <div className="lg:hidden w-full mt-3 pb-3">
                         <ul className="flex flex-col text-white gap-3 mb-4">
-                            {Object.values(navItems).map((label, index) => (
-                                <li key={index} className="cursor-pointer">{label}</li>
+                            {Object.entries(navItems).map(([key, label]) => (
+                                <li key={key} className="cursor-pointer">
+                                    <Link href={navHref(key)}>{label}</Link>
+                                </li>
                             ))}
                         </ul>
                         <div className="flex items-center bg-white rounded-[40px] h-[35px] px-[10px] w-full mb-3">
