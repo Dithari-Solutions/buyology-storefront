@@ -1,0 +1,13 @@
+{
+    "logoAlt": "شعار Buyology للتجارة الإلكترونية",
+    "nav": {
+        "home": "الرئيسية",
+        "shop": "المتجر",
+        "catalog": "كتالوج",
+        "contactUs": "تواصل معنا",
+        "buyobot": "بايوبوت",
+        "b2b": "B2B"
+    },
+    "searchPlaceholder": "ابحث...",
+    "loginButton": "تسجيل الدخول"
+}

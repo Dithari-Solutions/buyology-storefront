@@ -1,0 +1,13 @@
+{
+    "logoAlt": "Buyology E-commerce Logo",
+    "nav": {
+        "home": "Home",
+        "shop": "Shop",
+        "catalog": "Catalog",
+        "contactUs": "Contact Us",
+        "buyobot": "Buyobot",
+        "b2b": "B2B"
+    },
+    "searchPlaceholder": "Search...",
+    "loginButton": "Login"
+}

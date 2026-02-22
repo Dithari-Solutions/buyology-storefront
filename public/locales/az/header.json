@@ -1,0 +1,13 @@
+{
+    "logoAlt": "Buyology E-ticarət Loqosu",
+    "nav": {
+        "home": "Ana Səhifə",
+        "shop": "Mağaza",
+        "catalog": "Kataloq",
+        "contactUs": "Əlaqə",
+        "buyobot": "Buyobot",
+        "b2b": "B2B"
+    },
+    "searchPlaceholder": "Axtar...",
+    "loginButton": "Giriş"
+}
