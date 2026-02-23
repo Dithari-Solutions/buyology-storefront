@@ -186,7 +186,7 @@ function PriceRange({
 }
 
 const FILTER_DATA = {
-  condition: ['New', 'Used'],
+  condition: ['New', 'Refurbished'],
   category: ['Desktops', 'Laptops'],
   subcategory: ['Budget', 'Business', 'Compact', 'Gaming', 'Home', 'Professional', 'Ultrabooks'],
   brand: ['ASUS', 'Acer', 'Apple', 'Dell', 'HP', 'Lenovo', 'Microsoft'],

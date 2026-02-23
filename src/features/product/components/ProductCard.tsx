@@ -51,24 +51,24 @@ export default function ProductCard({ view = 'grid' }: { view?: 'grid' | 'list' 
       <div className={isList ? 'flex-1 flex flex-col justify-between py-[5px] min-w-0' : ''}>
         <div className={`flex items-center justify-between${isList ? ' mb-[12px]' : ' mb-[20px]'}`}>
           <h2 className="font-bold text-[20px] truncate">MacBook Pro 14</h2>
-          <div className="flex items-center flex-shrink-0 ml-[8px]">
-            <p className="mr-[10px]">(4.6)</p>
+          <div className="flex items-center flex-shrink-0 ms-[8px]">
+            <p className="me-[10px]">(4.6)</p>
             <Image src={StarIcon} alt="star" />
           </div>
         </div>
 
         <div className={isList ? 'mb-[12px]' : 'mb-[30px]'}>
           <div className="flex items-center">
-            <Image src={ProccessorIcon} alt="RAM" className="mr-[10px]" />
+            <Image src={ProccessorIcon} alt="RAM" className="me-[10px]" />
             <p>M3 Chip</p>
           </div>
           <div>
             <div className="flex items-center">
-              <Image src={StorageIcon} alt="RAM" className="mr-[10px]" />
+              <Image src={StorageIcon} alt="RAM" className="me-[10px]" />
               <p>1024GB</p>
             </div>
             <div className="flex items-center">
-              <Image src={RamIcon} alt="RAM" className="mr-[10px]" />
+              <Image src={RamIcon} alt="RAM" className="me-[10px]" />
               <p>32GB</p>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function ProductCard({ view = 'grid' }: { view?: 'grid' | 'list' 
                 </button>
               )}
               <button className="flex items-center w-fit bg-[#FBBB14] py-[10px] px-[20px] rounded-[30px] cursor-pointer">
-                <Image src={CartIcon} alt="cart" className="mr-[10px]" />
+                <Image src={CartIcon} alt="cart" className="me-[10px]" />
                 Add to Cart
               </button>
             </div>

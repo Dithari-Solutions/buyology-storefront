@@ -60,11 +60,11 @@ export default function Header() {
 
                 {/* Desktop Right Section */}
                 <div className="hidden lg:flex items-center">
-                    <div className="flex items-center bg-white rounded-[40px] h-[35px] px-[10px] mr-[10px] xl:mr-[20px]">
-                        <Image src={SearchIcon} alt="search" width={20} className="mr-[10px]" />
+                    <div className="flex items-center bg-white rounded-[40px] h-[35px] px-[10px] me-[10px] xl:me-[20px]">
+                        <Image src={SearchIcon} alt="search" width={20} className="me-[10px]" />
                         <input className="outline-none w-[120px] xl:w-auto" placeholder={t("searchPlaceholder")} type="search" />
                     </div>
-                    <div className="mr-[10px] xl:mr-[20px]">
+                    <div className="me-[10px] xl:me-[20px]">
                         <LanguageSwitcher />
                     </div>
                     <Link href={`/${lang}/${authSlug}`}>
@@ -103,7 +103,7 @@ export default function Header() {
                             ))}
                         </ul>
                         <div className="flex items-center bg-white rounded-[40px] h-[35px] px-[10px] w-full mb-3">
-                            <Image src={SearchIcon} alt="search" width={20} className="mr-[10px]" />
+                            <Image src={SearchIcon} alt="search" width={20} className="me-[10px]" />
                             <input className="outline-none w-full" placeholder="Search..." type="search" />
                         </div>
                         <div className="flex items-center gap-3">
