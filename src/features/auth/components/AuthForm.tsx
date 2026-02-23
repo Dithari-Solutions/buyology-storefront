@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import LockIcon from "@/assets/icons/lock.png";
 import EmailIcon from "@/assets/icons/email.png";
-import { COLORS } from "@/shared/styles/variables";
 import EyeIcon from "@/assets/icons/eye-visible.png";
 import ClosedEye from "@/assets/icons/eye-close.png";
 import AuthToggler from "@/features/auth/components/AuthToggler";
@@ -14,131 +15,120 @@ export default function AuthForm() {
     const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
     const [passwordIsVisible, setPasswordIsVisible] = useState(false);
     const [repeatedPasswordIsVisible, setRepeatedPasswordIsVisible] = useState(false);
+    const { t } = useTranslation("auth");
 
     return (
-        <div className="flex flex-col items-center justify-center bg-white rounded-[40px] py-10 px-5 sm:px-[20px] md:px-[30px] lg:px-[40px] w-full min-w-[100%]">
+        <div className="flex flex-col items-center bg-white rounded-[30px] py-8 px-6 sm:px-8 w-full shadow-xl">
 
-            {/* Dynamic Heading */}
-            <h2 className="text-black font-bold text-[26px] sm:text-[28px] md:text-[30px] lg:text-[32px] mb-2 sm:mb-3 text-center">
-                {mode === "signIn" ? "Welcome back!" : "Welcome! Create an account"}
+            {/* Heading */}
+            <h2 className="text-gray-900 font-bold text-[24px] sm:text-[26px] mb-1 text-center">
+                {mode === "signIn" ? t("authForm.welcomeBack") : t("authForm.createYourAccount")}
             </h2>
-
-            <p className="mb-2 sm:mb-3 text-[#A0A0A0] text-[14px] sm:text-[15px] text-center">
-                {mode === "signIn"
-                    ? "Don't have an account?"
-                    : "Already have an account?"}{" "}
+            <p className="mb-5 text-gray-400 text-[13px] text-center">
+                {mode === "signIn" ? t("authForm.noAccount") : t("authForm.haveAccount")}{" "}
                 <span
-                    className={`text-[${COLORS.secondary}] underline cursor-pointer`}
+                    className="text-[#FBBB14] font-semibold cursor-pointer hover:underline"
                     onClick={() => setMode(mode === "signIn" ? "signUp" : "signIn")}
                 >
-                    {mode === "signIn" ? "Sign up" : "Sign in"}
+                    {mode === "signIn" ? t("authForm.signUp") : t("authForm.signIn")}
                 </span>
             </p>
 
             {/* Auth Toggler */}
-            <div className="mb-5 sm:mb-6 w-full flex items-center justify-center">
+            <div className="mb-6 w-full flex items-center justify-center">
                 <AuthToggler mode={mode} setMode={setMode} />
             </div>
 
             {/* Form */}
-            <form className="w-full">
+            <form className="w-full flex flex-col gap-[14px]">
 
                 {/* Email */}
-                <div className="mb-3 sm:mb-4">
-                    <label htmlFor="email" className="text-[14px] sm:text-[15px]">Email address</label>
-                    <div className={`
-            group flex items-center p-[8px] sm:p-[12px] rounded-[10px] mt-2
-            border border-[#F1F1F1]
-            transition-all duration-300
-            focus-within:border-[${COLORS.secondary}]
-            focus-within:shadow-[0_0_0_3px_rgba(251,187,20,0.25)]
-            focus-within:animate-breathe
-          `}>
-                        <Image src={EmailIcon} alt="email" width={20} className="mr-3" />
-                        <input type="email" placeholder="Email address" className="border-none outline-none w-full text-[14px] sm:text-[15px]" />
+                <div className="flex flex-col gap-[6px]">
+                    <label htmlFor="email" className="text-[13px] font-semibold text-gray-700">
+                        {t("authForm.emailLabel")}
+                    </label>
+                    <div className="flex items-center gap-[10px] px-[12px] py-[11px] rounded-[12px] bg-gray-50 border border-gray-200 transition-all duration-200 focus-within:border-[#FBBB14] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(251,187,20,0.15)]">
+                        <Image src={EmailIcon} alt="email" width={17} height={17} className="flex-shrink-0 opacity-40" />
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder={t("authForm.emailPlaceholder")}
+                            className="border-none outline-none w-full text-[14px] bg-transparent text-gray-800 placeholder:text-gray-400"
+                        />
                     </div>
                 </div>
 
                 {/* Password */}
-                <div className="mb-3 sm:mb-4">
-                    <label htmlFor="password" className="text-[14px] sm:text-[15px]">Password</label>
-                    <div className={`
-            group flex items-center p-[8px] sm:p-[12px] rounded-[10px] mt-2
-            border border-[#F1F1F1]
-            transition-all duration-300
-            focus-within:border-[${COLORS.secondary}]
-            focus-within:shadow-[0_0_0_3px_rgba(251,187,20,0.25)]
-            focus-within:animate-breathe
-          `}>
-                        <Image src={LockIcon} alt="password" width={20} className="mr-3" />
+                <div className="flex flex-col gap-[6px]">
+                    <div className="flex items-center justify-between">
+                        <label htmlFor="password" className="text-[13px] font-semibold text-gray-700">
+                            {t("authForm.passwordLabel")}
+                        </label>
+                        {mode === "signIn" && (
+                            <Link href="forgot-password" className="text-[12px] text-[#402F75] font-medium hover:underline">
+                                {t("authForm.forgotPassword")}
+                            </Link>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-[10px] px-[12px] py-[11px] rounded-[12px] bg-gray-50 border border-gray-200 transition-all duration-200 focus-within:border-[#FBBB14] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(251,187,20,0.15)]">
+                        <Image src={LockIcon} alt="password" width={17} height={17} className="flex-shrink-0 opacity-40" />
                         <input
+                            id="password"
                             type={passwordIsVisible ? "text" : "password"}
-                            placeholder="Password"
-                            className="border-none outline-none w-full text-[14px] sm:text-[15px]"
+                            placeholder={t("authForm.passwordPlaceholder")}
+                            className="border-none outline-none w-full text-[14px] bg-transparent text-gray-800 placeholder:text-gray-400"
                         />
-                        <Image
+                        <button
+                            type="button"
                             onClick={() => setPasswordIsVisible(!passwordIsVisible)}
-                            src={passwordIsVisible ? EyeIcon : ClosedEye}
-                            alt="toggle password"
-                            width={20}
-                            className="mr-3 cursor-pointer"
-                        />
+                            className="flex-shrink-0 opacity-40 hover:opacity-70 transition-opacity"
+                        >
+                            <Image src={passwordIsVisible ? EyeIcon : ClosedEye} alt="toggle password" width={17} height={17} />
+                        </button>
                     </div>
                 </div>
 
-                {/* Confirm Password ONLY in Sign Up */}
+                {/* Confirm Password — Sign Up only */}
                 {mode === "signUp" && (
-                    <div className="mb-3 sm:mb-4">
-                        <label htmlFor="confirm-password" className="text-[14px] sm:text-[15px]">Confirm password</label>
-                        <div className={`
-              group flex items-center p-[8px] sm:p-[12px] rounded-[10px] mt-2
-              border border-[#F1F1F1]
-              transition-all duration-300
-              focus-within:border-[${COLORS.secondary}]
-              focus-within:shadow-[0_0_0_3px_rgba(251,187,20,0.25)]
-              focus-within:animate-breathe
-            `}>
-                            <Image src={LockIcon} alt="repeat-password" width={20} className="mr-3" />
+                    <div className="flex flex-col gap-[6px]">
+                        <label htmlFor="confirm-password" className="text-[13px] font-semibold text-gray-700">
+                            {t("authForm.confirmPasswordLabel")}
+                        </label>
+                        <div className="flex items-center gap-[10px] px-[12px] py-[11px] rounded-[12px] bg-gray-50 border border-gray-200 transition-all duration-200 focus-within:border-[#FBBB14] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(251,187,20,0.15)]">
+                            <Image src={LockIcon} alt="password" width={17} height={17} className="flex-shrink-0 opacity-40" />
                             <input
+                                id="confirm-password"
                                 type={repeatedPasswordIsVisible ? "text" : "password"}
-                                placeholder="Confirm Password"
-                                className="border-none outline-none w-full text-[14px] sm:text-[15px]"
+                                placeholder={t("authForm.confirmPasswordPlaceholder")}
+                                className="border-none outline-none w-full text-[14px] bg-transparent text-gray-800 placeholder:text-gray-400"
                             />
-                            <Image
+                            <button
+                                type="button"
                                 onClick={() => setRepeatedPasswordIsVisible(!repeatedPasswordIsVisible)}
-                                src={repeatedPasswordIsVisible ? EyeIcon : ClosedEye}
-                                alt="toggle confirm password"
-                                width={20}
-                                className="mr-3 cursor-pointer"
-                            />
+                                className="flex-shrink-0 opacity-40 hover:opacity-70 transition-opacity"
+                            >
+                                <Image src={repeatedPasswordIsVisible ? EyeIcon : ClosedEye} alt="toggle confirm password" width={17} height={17} />
+                            </button>
                         </div>
                     </div>
                 )}
-                {/* Submit Button */}
-                <button className={`mt-[15px] sm:mt-[15px] mb-[20px] w-full py-[10px] rounded-[20px] text-white cursor-pointer bg-[${COLORS.secondary}] text-[15px] sm:text-[16px]`}>
-                    {mode === "signIn" ? "Sign in" : "Sign up"}
+
+                {/* Submit */}
+                <button
+                    type="submit"
+                    className="mt-2 w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200"
+                >
+                    {mode === "signIn" ? t("authForm.signIn") : t("authForm.createAccountBtn")}
                 </button>
             </form>
 
-            <div className={`flex items-center w-full my-[15px]`}>
-                {/* Left Line */}
-                <div
-                    className="flex-1 h-[1px]"
-                    style={{ backgroundColor: "black" }}
-                ></div>
-
-                {/* Text */}
-                <span
-                    className="px-4 text-[14px] sm:text-[15px] font-medium text-black"
-                >
-                    {mode === "signIn" ? "Or sign in with" : "Or sign up with"}
+            {/* Divider */}
+            <div className="flex items-center w-full my-5 gap-3">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-[12px] font-medium text-gray-400 whitespace-nowrap">
+                    {mode === "signIn" ? t("authForm.orSignInWith") : t("authForm.orSignUpWith")}
                 </span>
-
-                {/* Right Line */}
-                <div
-                    className="flex-1 h-[1px]"
-                    style={{ backgroundColor: "black" }}
-                ></div>
+                <div className="flex-1 h-px bg-gray-200" />
             </div>
 
             {/* Social Buttons */}

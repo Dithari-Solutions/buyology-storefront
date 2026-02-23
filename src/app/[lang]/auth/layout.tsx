@@ -33,13 +33,13 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                 </div>
 
                 {/* Right side: Form */}
-                <div className="w-full flex justify-center items-center">
+                <div className="w-full lg:min-w-[520px] lg:max-w-[560px] flex justify-center items-center">
                     {children}
                 </div>
             </div>
 
-            {/* Background vector */}
-            <div className="absolute right-0 bottom-0 z-[0]">
+            {/* Background vector — fixed so it never moves when form expands */}
+            <div className="fixed right-0 bottom-0 z-[0] pointer-events-none">
                 <Image src={AuthVector} alt="vector" />
             </div>
         </div>

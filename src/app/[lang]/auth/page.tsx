@@ -5,7 +5,7 @@ import AuthForm from "@/features/auth/components/AuthForm";
 
 export default function page() {
     return (
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
             <AuthForm />
         </div>
     );

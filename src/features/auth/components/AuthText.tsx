@@ -1,51 +1,63 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import CartIcon from "@/assets/icons/cart.png";
+import { useTranslation } from "react-i18next";
+import BuyIcon from "@/assets/icons/buy.png";
 import ToolIcon from "@/assets/icons/tool.png";
 import HeartIcon from "@/assets/icons/heart.png";
 import CalendarIcon from "@/assets/icons/calendar.png";
 import ArrowLeftIcon from "@/assets/icons/Arrow-left.png";
 
 export default function AuthText() {
+    const { t } = useTranslation("auth");
+
+    const features = [
+        { icon: BuyIcon,      alt: "Cart",     label: t("buyNewHead"),     desc: t("buyNewDesc") },
+        { icon: HeartIcon,    alt: "Heart",    label: t("secondHandHead"), desc: t("secondHandDesc") },
+        { icon: CalendarIcon, alt: "Calendar", label: t("rentHead"),       desc: t("rentDesc") },
+        { icon: ToolIcon,     alt: "Tool",     label: t("repairHead"),     desc: t("repairDesc") },
+    ];
+
+    const [headStart, headHighlight] = t("authHead").split(",");
+
     return (
-        <div className="h-full flex flex-col justify-center pr-[10px] sm:pr-10 md:pr-[20px] lg:pr-[25px] xl:pr-[30px]">
+        <div className="h-full flex flex-col justify-center pe-0 lg:pe-8 xl:pe-12">
+
             {/* Heading */}
-            <h1 className="leading-[1.1] text-white text-[30px] sm:text-[35px] md:text-[40px] lg:text-[50px] font-bold mb-[12px] sm:mb-[20px] leading-snug">
-                Your Tech Journey, <br />
-                All in One Place
+            <h1 className="text-white text-[30px] sm:text-[36px] lg:text-[42px] xl:text-[48px] font-bold leading-[1.15] mb-4">
+                {headStart},{" "}
+                <span className="text-[#FBBB14]">{headHighlight?.trim()}</span>
             </h1>
 
-            {/* Description */}
-            <p className="text-white mb-[12px] sm:mb-[25px] text-[14px] sm:text-[15px] md:text-[20px] leading-relaxed">
-                From the latest flagships to certified pre-owned <br className="hidden sm:inline" />
-                devices, we’ve got you covered.
+            {/* Subtitle */}
+            <p className="text-white/70 mb-8 text-[14px] sm:text-[15px] leading-relaxed max-w-[400px]">
+                {t("desc")}
             </p>
 
-            {/* Feature List */}
-            <div className="flex flex-col gap-4 sm:gap-5 mb-[50px]">
-                <div className="flex items-center gap-3 sm:gap-4">
-                    <Image src={CartIcon} alt="Cart" className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <p className="text-white text-[13px] sm:text-[14px] md:text-[15px]">Buy New (Latest arrivals)</p>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-4">
-                    <Image src={HeartIcon} alt="Heart" className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <p className="text-white text-[13px] sm:text-[14px] md:text-[15px]">Second Hand (Certified & Tested)</p>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-4">
-                    <Image src={CalendarIcon} alt="Calendar" className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <p className="text-white text-[13px] sm:text-[14px] md:text-[15px]">Rent (Flexible plans)</p>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-4">
-                    <Image src={ToolIcon} alt="Tool" className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <p className="text-white text-[13px] sm:text-[14px] md:text-[15px]">Repair (Fast & Professional)</p>
-                </div>
+            {/* Feature grid */}
+            <div className="grid grid-cols-2 gap-3 mb-10">
+                {features.map(({ icon, alt, label, desc }) => (
+                    <div
+                        key={alt}
+                        className="flex items-start gap-3 bg-white/10 rounded-[16px] p-4 border border-white/10"
+                    >
+                        <div className="flex-shrink-0 w-9 h-9 rounded-[10px] bg-[#FBBB14]/20 flex items-center justify-center">
+                            <Image src={icon} alt={alt} className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="text-white font-semibold text-[13px] leading-tight">{label}</p>
+                            <p className="text-white/55 text-[11px] mt-[2px] leading-snug">{desc}</p>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Back Button */}
-            <Link href={"/"}>
-                <div className="flex items-center justify-center border border-[#FBBB14] w-full sm:w-[220px] py-3 px-5 bg-[#FBBB14] rounded-full cursor-pointer transition hover:opacity-90">
-                    <Image src={ArrowLeftIcon} alt="Arrow Left" className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="ml-3 text-[14px] sm:text-[15px] font-medium text-black">Back to Website</span>
+            <Link href="/">
+                <div className="inline-flex items-center gap-3 bg-white/15 hover:bg-white/20 border border-white/20 py-[10px] px-5 rounded-full cursor-pointer transition-all duration-200 w-fit">
+                    <Image src={ArrowLeftIcon} alt="Arrow Left" className="w-4 h-4" />
+                    <span className="text-[13px] font-medium text-white">{t("backToWebsite")}</span>
                 </div>
             </Link>
         </div>
