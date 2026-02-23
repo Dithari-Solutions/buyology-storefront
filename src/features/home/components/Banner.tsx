@@ -26,33 +26,57 @@ export default function HeroSection() {
                 }}
             >
                 {/* Desktop Computer — top-left */}
-                <div className="hidden md:block absolute top-[8%] left-[5%] lg:top-[10%] lg:left-[6%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-6">
-                    <p className="text-base lg:text-xl font-semibold">
+                <div className="hidden md:block absolute top-[8%] left-[5%] lg:top-[10%] lg:left-[6%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-6 lg:p-10">
+                    <p className="text-base lg:text-[25px] font-semibold">
                         Desktop Computer
                     </p>
-                    <p className="text-sm text-black mt-1">
+                    <p className="text-[16px] text-black font-light mt-1">
                         High performance for home and office
                     </p>
+                    <div className="absolute bottom-[15px] left-[15px]">
+                        <div className="flex items-center justify-center bg-[#D9D9D9]/41 w-[30px] h-[30px] rounded-full">
+                            <div className="flex items-center justify-center bg-[#D9D9D9]/31 w-[20px] h-[20px] rounded-full">
+                                <div className="flex items-center justify-center bg-[#D9D9D9] w-[10px] h-[10px] rounded-full">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Tablet — top-right */}
-                <div className="hidden md:block absolute top-[10%] right-[6%] lg:top-[8%] lg:right-[8%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-6">
+                <div className="hidden md:block absolute top-[10%] right-[6%] lg:top-[30%] lg:right-[8%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-12">
                     <p className="text-base lg:text-xl font-semibold">
                         Tablet
                     </p>
-                    <p className="text-sm text-black mt-1">
+                    <p className="text-sm text-black font-light mt-1">
                         For reading, drawing, and entertainment
                     </p>
+                    <div className="absolute bottom-[15px] left-[15px]">
+                        <div className="flex items-center justify-center bg-[#D9D9D9]/41 w-[30px] h-[30px] rounded-full">
+                            <div className="flex items-center justify-center bg-[#D9D9D9]/31 w-[20px] h-[20px] rounded-full">
+                                <div className="flex items-center justify-center bg-[#D9D9D9] w-[10px] h-[10px] rounded-full">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Laptop — bottom-left */}
-                <div className="hidden md:block absolute bottom-[25%] left-[4%] lg:bottom-[22%] lg:left-[5%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-6">
+                <div className="hidden md:block absolute bottom-[25%] left-[50%] lg:bottom-[22%] lg:left-[40%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-12">
                     <p className="text-base lg:text-xl font-semibold">
                         Laptop
                     </p>
-                    <p className="text-sm text-black mt-1">
+                    <p className="text-[18px] text-black font-light mt-1">
                         Perfect for work, study, and travel
                     </p>
+                    <div className="absolute bottom-[15px] left-[15px]">
+                        <div className="flex items-center justify-center bg-[#D9D9D9]/41 w-[30px] h-[30px] rounded-full">
+                            <div className="flex items-center justify-center bg-[#D9D9D9]/31 w-[20px] h-[20px] rounded-full">
+                                <div className="flex items-center justify-center bg-[#D9D9D9] w-[10px] h-[10px] rounded-full">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Shop Now Button — bottom */}
