@@ -91,12 +91,12 @@ export default function Products({ onFilterToggle, filterOpen }: {
               </button>
 
               {sortOpen && (
-                <div className="absolute right-0 top-[calc(100%+6px)] z-20 bg-white border border-gray-100 rounded-[12px] shadow-lg py-[6px] min-w-[180px]">
+                <div className="absolute end-0 top-[calc(100%+6px)] z-20 bg-white border border-gray-100 rounded-[12px] shadow-lg py-[6px] min-w-[180px]">
                   {SORT_OPTIONS.map((option) => (
                     <button
                       key={option}
                       onClick={() => { setSort(option); setSortOpen(false); }}
-                      className={`w-full text-left px-[14px] py-[8px] text-[13px] hover:bg-gray-50 transition-colors ${sort === option ? 'font-semibold text-[#402F75]' : 'text-gray-700'
+                      className={`w-full text-start px-[14px] py-[8px] text-[13px] hover:bg-gray-50 transition-colors ${sort === option ? 'font-semibold text-[#402F75]' : 'text-gray-700'
                         }`}
                     >
                       {option}

@@ -73,7 +73,7 @@ export default function LanguageSwitcher() {
             </button>
 
             {/* pt-1.5 bridges the gap so onMouseLeave doesn't fire between button and list */}
-            <div className="absolute right-0 top-full pt-1.5 z-50">
+            <div className="absolute end-0 top-full pt-1.5 z-50">
                 <div
                     className={`w-20 bg-white border border-gray-200 rounded-[20px] shadow-md overflow-hidden origin-top transition-all duration-200 ${open
                         ? "opacity-100 scale-y-100 translate-y-0 pointer-events-auto"
