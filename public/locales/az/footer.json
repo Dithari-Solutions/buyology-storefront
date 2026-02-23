@@ -1,0 +1,24 @@
+{
+  "description": "Gəlin birlikdə ağıllı bir şey quraq — istər növbəti cihazınızı axtarırsınız, istər robototexnikanı araşdırırsınız, istərsə də bizimlə tərəfdaşlıq etmək istəyirsinizsə, siz hazır olanda biz də hazırıq.",
+  "shop": {
+    "heading": "Mağaza",
+    "new_arrivals": "Yeni Gələnlər",
+    "refurbished": "Yenilənmiş",
+    "special_offer": "Xüsusi Təkliflər",
+    "reviews": "Rəylər"
+  },
+  "services": {
+    "heading": "Xidmətlər",
+    "fixing": "Təmir",
+    "rental": "İcarə Planları",
+    "sell": "Cihazınızı Satın",
+    "maintenance": "Texniki Baxım"
+  },
+  "company": {
+    "heading": "Şirkət",
+    "aboutUs": "Haqqımızda",
+    "contactSupport": "Dəstək ilə Əlaqə",
+    "privacyPolicy": "Məxfilik Siyasəti"
+  },
+  "copyright": "2026 Buyology MMC. Bütün hüquqlar qorunur."
+}

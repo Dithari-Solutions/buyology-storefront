@@ -3,6 +3,22 @@
     "shop": {
         "heading": "Shop",
         "new_arrivals": "New Arrivals",
-        "refurbished": "Refurbished"
-    }
+        "refurbished": "Refurbished",
+        "special_offer": "Special Offers",
+        "reviews": "Reviews"
+    },
+    "services": {
+        "heading": "Service",
+        "fixing": "Fixing & Repair",
+        "rental": "Rental Plans",
+        "sell": "Sell Your Device",
+        "maintenance": "Maintenance"
+    },
+    "company": {
+        "heading": "Company",
+        "aboutUs": "About Us",
+        "contactSupport": "Contact Support",
+        "privacyPolicy": "Privacy Policy"
+    },
+    "copyright": "2026 Buyology LLD. All rights reserved."
 }

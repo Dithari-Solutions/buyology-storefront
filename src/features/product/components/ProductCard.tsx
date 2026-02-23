@@ -1,3 +1,5 @@
+"use client";
+
 import { useId } from "react";
 import Image from "next/image";
 import RamIcon from "@/assets/icons/ram.png";
@@ -25,18 +27,7 @@ export default function ProductCard({ view = 'grid' }: { view?: 'grid' | 'list' 
             <svg width="0" height="0" className="absolute">
               <defs>
                 <clipPath id={clipId} clipPathUnits="objectBoundingBox">
-                  <path d="
-                    M 0,0
-                    L 0.74,0
-                    C 0.82,0 0.82,0.10 0.82,0.10
-                    L 0.82,0.16
-                    C 0.82,0.28 0.91,0.28 0.91,0.28
-                    L 0.95,0.28
-                    C 1,0.28 1,0.40 1,0.40
-                    L 1,1
-                    L 0,1
-                    Z
-                  " />
+                  <path d="M 0,0 L 0.74,0 C 0.82,0 0.82,0.10 0.82,0.10 L 0.82,0.16 C 0.82,0.28 0.91,0.28 0.91,0.28 L 0.95,0.28 C 1,0.28 1,0.40 1,0.40 L 1,1 L 0,1 Z" />
                 </clipPath>
               </defs>
             </svg>
