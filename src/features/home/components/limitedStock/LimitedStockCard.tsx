@@ -10,12 +10,12 @@ export default function LimitedStockCard() {
             <div className="flex items-center justify-center">
                 <Image src={MacPro13} alt="Macbook pro 13" className="w-[180px] sm:w-[220px] md:w-auto" />
             </div>
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-start">
                 <h2 className="text-[24px] sm:text-[30px] md:text-[40px] font-bold mb-[10px] md:mb-[15px]">Limited stock available!</h2>
                 <p className="text-[18px] sm:text-[20px] md:text-[25px] mb-[10px] md:mb-[15px]">MacBook Pro 13 A1708 (2017)</p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center md:justify-between gap-4">
-                    <ul className="flex items-center flex-wrap justify-center md:justify-start gap-x-[15px] gap-y-1 sm:mr-[40px] text-[14px] md:text-[16px]">
+                    <ul className="flex items-center flex-wrap justify-center md:justify-start gap-x-[15px] gap-y-1 sm:me-[40px] text-[14px] md:text-[16px]">
                         <li>Intel core i5</li>
                         <li>8 GB RAM</li>
                         <li>128 GB SSD</li>
