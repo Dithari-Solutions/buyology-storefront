@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import Providers from "@/shared/components/Providers";
 import "./globals.css";
+import AiBotButton from "@/shared/components/AiBotButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,6 +66,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F7F7F7]`}
       >
         <Providers>{children}</Providers>
+        <AiBotButton />
       </body>
     </html>
   );
