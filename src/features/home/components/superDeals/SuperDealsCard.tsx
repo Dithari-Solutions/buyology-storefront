@@ -48,7 +48,7 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
                     className="rounded-xl h-full p-3 md:p-4"
                     style={{
                         clipPath: `url(#${innerClipId})`,
-                        backgroundColor: '#F5F3FA',
+                        backgroundColor: '#FAFAFA',
                     }}
                 >
                     {/* Card content */}
@@ -75,18 +75,18 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
                             {/* Right - Details */}
                             <div className="flex flex-col justify-between flex-1 gap-2 md:gap-3">
                                 {/* Specs */}
-                                <div className="flex flex-wrap gap-x-3 md:gap-x-4 gap-y-1 text-xs md:text-sm text-gray-700">
+                                <div className="flex flex-wrap gap-x-3 md:gap-x-4 gap-y-1 text-xs md:text-sm text-gray-600">
                                     {device.specs.map((spec, i) => (
-                                        <span key={i}>{spec}</span>
+                                        <span key={i} className="flex items-center gap-1">
+                                            <span className="w-[4px] h-[4px] rounded-full bg-gray-400 flex-shrink-0" />
+                                            {spec}
+                                        </span>
                                     ))}
                                 </div>
 
                                 {/* Savings Badge */}
-                                <span
-                                    className="text-white text-xs font-semibold px-3 py-1 rounded-full w-fit"
-                                    style={{ backgroundColor: COLORS.primary }}
-                                >
-                                    -${savings}
+                                <span className="text-[#402F75] text-xs font-semibold px-3 py-1 rounded-full w-fit bg-[#EDE9FF]">
+                                    Save ${savings}
                                 </span>
 
                                 {/* Pricing */}

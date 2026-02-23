@@ -7,9 +7,19 @@ import FeatureCard from "./FeatureCard";
 export default function Features() {
     return (
         <section className="flex flex-col items-center justify-center w-full mt-[30px] md:mt-[50px]">
-            <div className="w-[95%] md:w-[90%] flex flex-col items-start justify-start mb-[15px] md:mb-[20px]">
-                <h2 className="text-[22px] sm:text-[26px] md:text-[30px] font-bold">More Than Just a Store</h2>
-                <p className="text-gray-600 text-[14px] md:text-[16px]">We support your tech at every stage - from buying new to expert repairs and easy trade-ins.</p>
+            <div className="w-[95%] md:w-[90%] flex items-end justify-between mb-[15px] md:mb-[20px]">
+                <div>
+                    <span className="inline-flex items-center text-[11px] font-semibold text-[#402F75] bg-[#EDE9FF] px-3 py-[5px] rounded-full mb-2">
+                        Our Services
+                    </span>
+                    <h2 className="text-[22px] sm:text-[26px] md:text-[30px] font-bold leading-tight">More Than Just a Store</h2>
+                    <p className="text-gray-500 text-[13px] md:text-[15px] mt-1 max-w-md">
+                        We support your tech at every stage — from buying new to expert repairs and easy trade-ins.
+                    </p>
+                </div>
+                <a href="#" className="hidden sm:flex items-center gap-1 text-[13px] font-semibold text-[#402F75] hover:underline whitespace-nowrap mb-1 flex-shrink-0 ms-4">
+                    See all <span>→</span>
+                </a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 w-[95%] md:w-[90%]">
                 <FeatureCard title="Rent" bg={RentBg} />

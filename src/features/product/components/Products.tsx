@@ -3,6 +3,75 @@
 import { useState } from 'react';
 import ProductCard from './ProductCard';
 
+const TOTAL_PRODUCTS = 236;
+const PER_PAGE = 12;
+const TOTAL_PAGES = Math.ceil(TOTAL_PRODUCTS / PER_PAGE);
+
+function getPageNumbers(current: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | '...')[] = [1];
+  if (current > 3) pages.push('...');
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (current < total - 2) pages.push('...');
+  pages.push(total);
+  return pages;
+}
+
+function Pagination({ page, setPage }: { page: number; setPage: (p: number) => void }) {
+  const pages = getPageNumbers(page, TOTAL_PAGES);
+
+  return (
+    <div className="flex items-center justify-center gap-[6px] flex-wrap">
+      {/* Prev */}
+      <button
+        onClick={() => setPage(page - 1)}
+        disabled={page === 1}
+        className="flex items-center justify-center w-[36px] h-[36px] rounded-[10px] border border-gray-200 bg-white text-gray-500 hover:border-[#402F75] hover:text-[#402F75] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        aria-label="Previous page"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {/* Pages */}
+      {pages.map((p, i) =>
+        p === '...' ? (
+          <span key={`dots-${i}`} className="flex items-center justify-center w-[36px] h-[36px] text-[13px] text-gray-400 select-none">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => setPage(p)}
+            className={`flex items-center justify-center w-[36px] h-[36px] rounded-[10px] text-[13px] font-semibold border transition-colors ${
+              p === page
+                ? 'bg-[#402F75] text-white border-[#402F75]'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-[#402F75] hover:text-[#402F75]'
+            }`}
+          >
+            {p}
+          </button>
+        )
+      )}
+
+      {/* Next */}
+      <button
+        onClick={() => setPage(page + 1)}
+        disabled={page === TOTAL_PAGES}
+        className="flex items-center justify-center w-[36px] h-[36px] rounded-[10px] border border-gray-200 bg-white text-gray-500 hover:border-[#402F75] hover:text-[#402F75] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        aria-label="Next page"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 const GridIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
     <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" />
@@ -42,6 +111,10 @@ export default function Products({ onFilterToggle, filterOpen }: {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sort, setSort] = useState('Most Popular');
   const [sortOpen, setSortOpen] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const startItem = (page - 1) * PER_PAGE + 1;
+  const endItem = Math.min(page * PER_PAGE, TOTAL_PRODUCTS);
 
   return (
     <div className="flex-1 flex flex-col gap-[16px] min-w-0">
@@ -49,8 +122,8 @@ export default function Products({ onFilterToggle, filterOpen }: {
       <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px] flex flex-wrap items-center justify-between gap-[10px]">
         {/* Count */}
         <p className="text-[13px] text-gray-500">
-          Showing <span className="font-medium text-gray-800">12</span> of{' '}
-          <span className="font-medium text-gray-800">236</span> products
+          Showing <span className="font-medium text-gray-800">{startItem}–{endItem}</span> of{' '}
+          <span className="font-medium text-gray-800">{TOTAL_PRODUCTS}</span> products
         </p>
 
         {/* Right controls */}
@@ -150,6 +223,11 @@ export default function Products({ onFilterToggle, filterOpen }: {
         <ProductCard view={view} />
         <ProductCard view={view} />
       </section>
+
+      {/* Pagination */}
+      <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px]">
+        <Pagination page={page} setPage={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+      </div>
     </div>
   );
 }

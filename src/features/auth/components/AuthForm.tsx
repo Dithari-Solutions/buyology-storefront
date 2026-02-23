@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import LockIcon from "@/assets/icons/lock.png";
 import EmailIcon from "@/assets/icons/email.png";
@@ -16,6 +17,7 @@ export default function AuthForm() {
     const [passwordIsVisible, setPasswordIsVisible] = useState(false);
     const [repeatedPasswordIsVisible, setRepeatedPasswordIsVisible] = useState(false);
     const { t } = useTranslation("auth");
+    const lang = usePathname().split("/")[1] || "en";
 
     return (
         <div className="flex flex-col items-center bg-white rounded-[30px] py-8 px-6 sm:px-8 w-full shadow-xl">
@@ -65,7 +67,7 @@ export default function AuthForm() {
                             {t("authForm.passwordLabel")}
                         </label>
                         {mode === "signIn" && (
-                            <Link href="forgot-password" className="text-[12px] text-[#402F75] font-medium hover:underline">
+                            <Link href={`/${lang}/auth/forgot-password`} className="text-[12px] text-[#402F75] font-medium hover:underline">
                                 {t("authForm.forgotPassword")}
                             </Link>
                         )}

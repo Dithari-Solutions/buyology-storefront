@@ -16,7 +16,7 @@ export default function ProductCard({ view = 'grid' }: { view?: 'grid' | 'list' 
   const isList = view === 'list';
 
   return (
-    <div className={`p-[10px] bg-white rounded-[20px] w-full border border-gray-300${isList ? ' flex flex-row gap-[16px]' : ''}`}>
+    <div className={`p-[10px] bg-white rounded-[20px] w-full border border-[#FBBB14] ${isList ? ' flex flex-row gap-[16px]' : ''}`}>
 
       {/* ── Image container ── */}
       <div className={`relative overflow-hidden rounded-[20px] flex items-center justify-center${isList ? ' w-[180px] sm:w-[220px] flex-shrink-0 min-h-[180px]' : ' h-[200px] mb-[12px]'}`}>

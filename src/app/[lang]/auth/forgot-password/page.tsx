@@ -3,12 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import EmailIcon from "@/assets/icons/email.png";
 
 export default function ForgotPasswordPage() {
     const [sent, setSent] = useState(false);
     const { t } = useTranslation("auth");
+    const lang = usePathname().split("/")[1] || "en";
 
     return (
         <div className="w-full max-w-md">
@@ -61,7 +63,7 @@ export default function ForgotPasswordPage() {
                         <p className="text-gray-400 text-[13px] text-center mb-6 max-w-[260px]">
                             {t("forgotPassword.emailSentDesc")}
                         </p>
-                        <Link href="otp" className="w-full">
+                        <Link href={`/${lang}/auth/forgot-password/otp`} className="w-full">
                             <button
                                 type="button"
                                 className="w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] transition-all duration-150 shadow-md shadow-yellow-200"
@@ -72,7 +74,7 @@ export default function ForgotPasswordPage() {
                     </>
                 )}
 
-                <Link href="/auth" className="mt-4 text-[13px] text-gray-400 hover:text-gray-600 transition-colors">
+                <Link href={`/${lang}/auth`} className="mt-4 text-[13px] text-gray-400 hover:text-gray-600 transition-colors">
                     {t("backToSignIn")}
                 </Link>
             </div>

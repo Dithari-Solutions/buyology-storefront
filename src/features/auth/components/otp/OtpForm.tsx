@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 export default function OtpForm() {
@@ -9,6 +10,7 @@ export default function OtpForm() {
     const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
     const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const { t } = useTranslation("auth");
+    const lang = usePathname().split("/")[1] || "en";
 
     const handleChange = (value: string, index: number) => {
         if (!/^\d*$/.test(value)) return;
@@ -76,7 +78,7 @@ export default function OtpForm() {
             {/* Resend */}
             <p className="mb-5 text-gray-400 text-[13px] text-center">
                 {t("otp.didntReceive")}{" "}
-                <Link href="/auth/forgot-password/otp">
+                <Link href={`/${lang}/auth/forgot-password/otp`}>
                     <span className="text-[#402F75] font-semibold cursor-pointer hover:underline">
                         {t("otp.resend")}
                     </span>
@@ -92,7 +94,7 @@ export default function OtpForm() {
             </button>
 
             {/* Back */}
-            <Link href="/auth" className="mt-4 text-[13px] text-gray-400 hover:text-gray-600 transition-colors">
+            <Link href={`/${lang}/auth`} className="mt-4 text-[13px] text-gray-400 hover:text-gray-600 transition-colors">
                 {t("backToSignIn")}
             </Link>
         </div>

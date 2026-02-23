@@ -61,9 +61,9 @@ export default function FeatureCard({ title, bg }: FeatureCardProps) {
 
             {/* Bottom gradient shadow with text */}
             <div
-                className="absolute bottom-0 left-0 w-full px-4 py-4 md:py-5 text-center font-semibold text-[14px] md:text-[16px]"
+                className="absolute bottom-0 left-0 w-full px-4 py-4 md:py-5 text-start font-semibold text-[14px] md:text-[16px] text-white"
                 style={{
-                    background: 'linear-gradient(to top, #EDE9FF, transparent)',
+                    background: 'linear-gradient(to top, rgba(64,47,117,0.82) 0%, rgba(64,47,117,0.3) 60%, transparent 100%)',
                 }}
             >
                 {title}
