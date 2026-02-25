@@ -2,6 +2,8 @@
 
 import { useId } from "react";
 import Image from "next/image";
+import { useRouter, useParams } from "next/navigation";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import RamIcon from "@/assets/icons/ram.png";
 import CartIcon from "@/assets/icons/cart.png";
 import StarIcon from "@/assets/icons/star.png";
@@ -10,13 +12,26 @@ import ProccessorIcon from "@/assets/icons/proccessor.png";
 import FavouriteIcon from "@/assets/icons/favourite.png";
 import MacPro13 from "@/assets/devices/macPro13.png";
 
-export default function ProductCard({ view = 'grid' }: { view?: 'grid' | 'list' }) {
+interface ProductCardProps {
+  view?: 'grid' | 'list';
+  slugs: Record<Lang, string>;
+}
+
+export default function ProductCard({ view = 'grid', slugs }: ProductCardProps) {
   const id = useId();
   const clipId = `productImageClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
   const isList = view === 'list';
 
+  const router = useRouter();
+  const params = useParams();
+  const lang = (params?.lang as Lang) ?? "en";
+  const href = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${slugs[lang] ?? slugs.en}`;
+
   return (
-    <div className={`p-[10px] bg-white rounded-[20px] w-full border border-[#FBBB14] ${isList ? ' flex flex-row gap-[16px]' : ''}`}>
+    <div
+      onClick={() => router.push(href)}
+      className={`p-[10px] bg-white rounded-[20px] w-full border border-[#FBBB14] cursor-pointer hover:shadow-md transition-shadow${isList ? ' flex flex-row gap-[16px]' : ''}`}
+    >
 
       {/* ── Image container ── */}
       <div className={`relative overflow-hidden rounded-[20px] flex items-center justify-center${isList ? ' w-[180px] sm:w-[220px] flex-shrink-0 min-h-[180px]' : ' h-[200px] mb-[12px]'}`}>
@@ -42,7 +57,10 @@ export default function ProductCard({ view = 'grid' }: { view?: 'grid' | 'list' 
               because the SVG clip path is in physical coordinates and
               always cuts the top-RIGHT corner regardless of text direction.
             */}
-            <button className="absolute top-[10px] right-[10px] cursor-pointer border border-gray-200 rounded-full p-[8px] bg-white shadow-sm z-10 hover:scale-110 transition-transform">
+            <button
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-[10px] right-[10px] cursor-pointer border border-gray-200 rounded-full p-[8px] bg-white shadow-sm z-10 hover:scale-110 transition-transform"
+            >
               <Image src={FavouriteIcon} alt="favourite" width={20} height={20} />
             </button>
           </>
@@ -100,11 +118,17 @@ export default function ProductCard({ view = 'grid' }: { view?: 'grid' | 'list' 
             </span>
             <div className="flex items-center gap-[6px]">
               {isList && (
-                <button className="cursor-pointer border border-gray-200 rounded-full p-[7px] bg-white hover:bg-gray-50 transition-colors">
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className="cursor-pointer border border-gray-200 rounded-full p-[7px] bg-white hover:bg-gray-50 transition-colors"
+                >
                   <Image src={FavouriteIcon} alt="favourite" width={18} height={18} />
                 </button>
               )}
-              <button className="flex items-center gap-[5px] bg-[#FBBB14] py-[8px] px-[12px] rounded-[30px] cursor-pointer text-[12px] font-bold whitespace-nowrap hover:bg-[#f0b000] transition-colors">
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-[5px] bg-[#FBBB14] py-[8px] px-[12px] rounded-[30px] cursor-pointer text-[12px] font-bold whitespace-nowrap hover:bg-[#f0b000] transition-colors"
+              >
                 <Image src={CartIcon} alt="cart" width={14} height={14} />
                 Add to Cart
               </button>

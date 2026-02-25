@@ -1,16 +1,35 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { verifyOtp, signup } from "@/features/auth/services/auth.api";
+import type { SignUpRequest } from "@/features/auth/types";
 
 export default function OtpForm() {
     const OTP_LENGTH = 6;
     const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isResending, setIsResending] = useState(false);
+    const [resendMessage, setResendMessage] = useState<string | null>(null);
     const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const { t } = useTranslation("auth");
     const lang = usePathname().split("/")[1] || "en";
+    const router = useRouter();
+
+    const [email, setEmail] = useState("");
+
+    useEffect(() => {
+        const raw = sessionStorage.getItem("signup_payload");
+        if (!raw) {
+            router.replace(`/${lang}/auth`);
+            return;
+        }
+        const parsed: SignUpRequest = JSON.parse(raw);
+        setEmail(parsed.email);
+    }, [lang, router]);
 
     const handleChange = (value: string, index: number) => {
         if (!/^\d*$/.test(value)) return;
@@ -42,6 +61,58 @@ export default function OtpForm() {
         inputsRef.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
     };
 
+    const handleVerify = async () => {
+        const otpCode = otp.join("");
+        if (otpCode.length < OTP_LENGTH) {
+            setError("Please enter the full 6-digit code.");
+            return;
+        }
+
+        setError(null);
+        setIsLoading(true);
+        const res = await verifyOtp({ email, otpCode });
+        setIsLoading(false);
+
+        if (!res.success) {
+            setError(res.message);
+            // Clear inputs on expired / max attempts so user can request a new code
+            if (res.message.toLowerCase().includes("expired") || res.message.toLowerCase().includes("sign up again")) {
+                setOtp(Array(OTP_LENGTH).fill(""));
+                inputsRef.current[0]?.focus();
+            }
+            return;
+        }
+
+        localStorage.setItem("accessToken", res.data!.accessToken);
+        localStorage.setItem("refreshToken", res.data!.refreshToken);
+        sessionStorage.removeItem("signup_payload");
+        router.push(`/${lang}`);
+    };
+
+    const handleResend = async () => {
+        const raw = sessionStorage.getItem("signup_payload");
+        if (!raw) {
+            router.replace(`/${lang}/auth`);
+            return;
+        }
+
+        setResendMessage(null);
+        setError(null);
+        setIsResending(true);
+        const payload: SignUpRequest = JSON.parse(raw);
+        const res = await signup(payload);
+        setIsResending(false);
+
+        if (!res.success) {
+            setError(res.message);
+            return;
+        }
+
+        setOtp(Array(OTP_LENGTH).fill(""));
+        inputsRef.current[0]?.focus();
+        setResendMessage(res.message);
+    };
+
     return (
         <div className="flex flex-col items-center bg-white rounded-[30px] py-8 px-6 sm:px-8 w-full shadow-xl">
 
@@ -54,9 +125,12 @@ export default function OtpForm() {
             </div>
 
             <h2 className="font-bold text-[22px] text-gray-900 mb-1">{t("otp.title")}</h2>
-            <p className="text-gray-400 text-[13px] text-center mb-6 max-w-[260px]">
+            <p className="text-gray-400 text-[13px] text-center mb-1 max-w-[260px]">
                 {t("otp.desc")}
             </p>
+            {email && (
+                <p className="text-[#402F75] text-[13px] font-semibold mb-6">{email}</p>
+            )}
 
             {/* OTP Inputs */}
             <div className="flex justify-center gap-[8px] sm:gap-[10px] mb-6" onPaste={handlePaste}>
@@ -75,22 +149,37 @@ export default function OtpForm() {
                 ))}
             </div>
 
+            {/* Error */}
+            {error && (
+                <p className="mb-4 text-red-500 text-[13px] text-center">{error}</p>
+            )}
+
+            {/* Resend success */}
+            {resendMessage && !error && (
+                <p className="mb-4 text-green-600 text-[13px] text-center">{resendMessage}</p>
+            )}
+
             {/* Resend */}
             <p className="mb-5 text-gray-400 text-[13px] text-center">
                 {t("otp.didntReceive")}{" "}
-                <Link href={`/${lang}/auth/forgot-password/otp`}>
-                    <span className="text-[#402F75] font-semibold cursor-pointer hover:underline">
-                        {t("otp.resend")}
-                    </span>
-                </Link>
+                <button
+                    type="button"
+                    disabled={isResending}
+                    onClick={handleResend}
+                    className="text-[#402F75] font-semibold cursor-pointer hover:underline disabled:opacity-50"
+                >
+                    {isResending ? "..." : t("otp.resend")}
+                </button>
             </p>
 
             {/* Verify Button */}
             <button
                 type="button"
-                className="w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200"
+                disabled={isLoading}
+                onClick={handleVerify}
+                className="w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-                {t("otp.verify")}
+                {isLoading ? "..." : t("otp.verify")}
             </button>
 
             {/* Back */}

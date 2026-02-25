@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ProductCard from './ProductCard';
+import { MOCK_PRODUCT } from '@/features/product/constant';
 
 const TOTAL_PRODUCTS = 236;
 const PER_PAGE = 12;
@@ -210,18 +211,9 @@ export default function Products({ onFilterToggle, filterOpen }: {
 
       {/* Product grid / list */}
       <section className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[16px]' : 'flex flex-col gap-[12px]'}>
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
-        <ProductCard view={view} />
+        {Array.from({ length: PER_PAGE }).map((_, i) => (
+          <ProductCard key={i} view={view} slugs={MOCK_PRODUCT.slugs} />
+        ))}
       </section>
 
       {/* Pagination */}

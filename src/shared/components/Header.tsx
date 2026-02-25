@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Logo from "@/../public/logo.png";
-import { useTranslation } from "react-i18next";
-import SearchIcon from "@/assets/icons/searchicon.svg";
-import LanguageSwitcher from "./LanguageSwitcher";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import CartIcon from "@/assets/icons/cart.png";
+import LanguageSwitcher from "./LanguageSwitcher";
+import FavIcon from "@/assets/icons/favourite.png";
+import SearchIcon from "@/assets/icons/searchicon.svg";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 // Maps nav key → canonical route segment (used as fallback when no localized slug exists)
@@ -22,9 +24,14 @@ const NAV_CANONICAL: Record<string, string> = {
 
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const { t } = useTranslation("header");
     const lang = useSelector((state: { language: { lang: Lang } }) => state.language.lang);
+
+    useEffect(() => {
+        setIsLoggedIn(!!localStorage.getItem("accessToken"));
+    }, []);
 
     const navItems = t("nav", { returnObjects: true }) as Record<string, string>;
 
@@ -39,7 +46,7 @@ export default function Header() {
 
     return (
         <header className="pt-5 md:pt-[40px] flex items-center justify-center">
-            <nav className="flex flex-wrap bg-[#402F75] w-[95%] md:w-[90%] py-[10px] md:py-[15px] px-[15px] md:px-[35px] rounded-[40px] items-center justify-between relative">
+            <nav className="flex flex-wrap bg-gradient-to-b from-[#402F75] to-[#5A4589] w-[95%] md:w-[90%] py-[10px] md:py-[15px] px-[15px] md:px-[35px] rounded-[40px] items-center justify-between relative">
                 {/* Logo */}
                 <div className="cursor-pointer">
                     <Link href={`/${lang}`}>
@@ -59,24 +66,56 @@ export default function Header() {
                 </div>
 
                 {/* Desktop Right Section */}
-                <div className="hidden lg:flex items-center">
-                    <div className="flex items-center bg-white rounded-[40px] h-[35px] px-[10px] me-[10px] xl:me-[20px]">
+                <div className="hidden lg:flex items-center gap-[10px] xl:gap-[20px]">
+                    <div className="flex items-center bg-white rounded-[40px] h-[35px] px-[10px]">
                         <Image src={SearchIcon} alt="search" width={20} className="me-[10px]" />
                         <input className="outline-none w-[120px] xl:w-auto" placeholder={t("searchPlaceholder")} type="search" />
                     </div>
-                    <div className="me-[10px] xl:me-[20px]">
-                        <LanguageSwitcher />
-                    </div>
-                    <Link href={`/${lang}/${authSlug}`}>
-                        <button className="bg-[#FEBF12] rounded-[40px] px-[20px] xl:px-[30px] h-[35px] text-[15px] cursor-pointer font-bold text-white">{t("loginButton")}</button>
-                    </Link>
+                    <LanguageSwitcher />
+                    {isLoggedIn ? (
+                        <>
+                            <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
+                                <Image src={FavIcon} alt="favourite" />
+                            </div>
+                            <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
+                                <Image src={CartIcon} alt="cart" />
+                            </div>
+                            <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="8" r="4" />
+                                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                                </svg>
+                            </div>
+                        </>
+                    ) : (
+                        <Link href={`/${lang}/${authSlug}`}>
+                            <button className="bg-[#FEBF12] rounded-[40px] px-[20px] xl:px-[30px] h-[35px] text-[15px] cursor-pointer font-bold text-white">{t("loginButton")}</button>
+                        </Link>
+                    )}
                 </div>
 
                 {/* Mobile Right: Search + Hamburger */}
                 <div className="flex lg:hidden items-center gap-3">
-                    <Link href={`/${lang}/${authSlug}`}>
-                        <button className="bg-[#FEBF12] rounded-[40px] px-[20px] h-[32px] text-[12px] cursor-pointer">{t("loginButton")}</button>
-                    </Link>
+                    {isLoggedIn ? (
+                        <>
+                            <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
+                                <Image src={FavIcon} alt="favourite" width={18} />
+                            </div>
+                            <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
+                                <Image src={CartIcon} alt="cart" width={18} />
+                            </div>
+                            <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="8" r="4" />
+                                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                                </svg>
+                            </div>
+                        </>
+                    ) : (
+                        <Link href={`/${lang}/${authSlug}`}>
+                            <button className="bg-[#FEBF12] rounded-[40px] px-[20px] h-[32px] text-[12px] cursor-pointer">{t("loginButton")}</button>
+                        </Link>
+                    )}
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
                         className="text-white p-1 cursor-pointer"

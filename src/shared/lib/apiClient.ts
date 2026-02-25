@@ -22,14 +22,19 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Get token from localStorage (or cookies)
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("accessToken")
-        : null;
+    const isAuthEndpoint = config.url?.startsWith("/auth");
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (isAuthEndpoint) {
+      config.withCredentials = false;
+    } else {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
 
     return config;
@@ -47,8 +52,9 @@ apiClient.interceptors.response.use(
   async (error: AxiosError<any>) => {
     const status = error.response?.status;
 
-    // Global 401 handler
-    if (status === 401) {
+    // Global 401 handler — skip auth endpoints (wrong credentials / wrong OTP are handled locally)
+    const isAuthEndpoint = error.config?.url?.startsWith("/auth");
+    if (status === 401 && !isAuthEndpoint) {
       console.warn("Unauthorized. Redirecting to login...");
 
       if (typeof window !== "undefined") {
@@ -63,6 +69,8 @@ apiClient.interceptors.response.use(
       error.message ||
       "Something went wrong";
 
-    return Promise.reject(new Error(message));
+    const err = new Error(message) as Error & { status?: number };
+    err.status = status;
+    return Promise.reject(err);
   }
 );
