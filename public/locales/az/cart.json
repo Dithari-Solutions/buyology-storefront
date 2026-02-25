@@ -1,0 +1,59 @@
+{
+    "title": "Səbət",
+    "cartItems": {
+        "heading": "Səbəttəki Məhsullar",
+        "clearCart": "Səbəti Təmizlə",
+        "remove": "Sil",
+        "qty": "Miqdar",
+        "subtotal": "Cəmi",
+        "color": "Rəng",
+        "storage": "Yaddaş",
+        "saveForLater": "Sonraya Saxla",
+        "moveToCart": "Səbətə Köçür"
+    },
+    "savedForLater": {
+        "heading": "Sonraya Saxlanılanlar"
+    },
+    "orderSummary": {
+        "heading": "Sifariş Xülasəsi",
+        "subtotal": "Aralıq Cəm",
+        "items_one": "{{count}} məhsul",
+        "items_other": "{{count}} məhsul",
+        "shipping": "Çatdırılma",
+        "free": "PULSUZ",
+        "estimatedTax": "Təxmini Vergi",
+        "total": "Ümumi",
+        "includingVat": "ƏDV daxil",
+        "proceedToCheckout": "Ödənişə Keç",
+        "secureCheckout": "Təhlükəsiz Ödəniş"
+    },
+    "promoCode": {
+        "heading": "Promo Kod",
+        "placeholder": "Kodu daxil edin",
+        "apply": "Tətbiq Et",
+        "remove": "Sil",
+        "hint": "Yoxlayın: SAVE10, SAVE20 və ya WELCOME15",
+        "applied": "Promo tətbiq edildi! ${{amount}} qənaət etdiniz",
+        "error": "Yanlış promo kod. Yenidən cəhd edin."
+    },
+    "benefits": {
+        "heading": "Üstünlüklər",
+        "fastDelivery": {
+            "title": "Sürətli Çatdırılma",
+            "desc": "2-3 iş günü ərzində çatdırılır"
+        },
+        "warranty": {
+            "title": "2 İllik Zəmanət",
+            "desc": "Tam əhatəli sığorta daxildir"
+        },
+        "securePayment": {
+            "title": "Təhlükəsiz Ödəniş",
+            "desc": "100% təhlükəsiz əməliyyatlar"
+        }
+    },
+    "empty": {
+        "title": "Səbətiniz boşdur",
+        "description": "Hələ heç bir məhsul əlavə etməmisiniz.",
+        "continueShopping": "Alış-verişə Davam Et"
+    }
+}

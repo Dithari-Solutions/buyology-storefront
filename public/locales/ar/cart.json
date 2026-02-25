@@ -1,0 +1,59 @@
+{
+    "title": "سلة التسوق",
+    "cartItems": {
+        "heading": "عناصر السلة",
+        "clearCart": "إفراغ السلة",
+        "remove": "حذف",
+        "qty": "الكمية",
+        "subtotal": "المجموع الفرعي",
+        "color": "اللون",
+        "storage": "التخزين",
+        "saveForLater": "احفظ لوقت لاحق",
+        "moveToCart": "نقل إلى السلة"
+    },
+    "savedForLater": {
+        "heading": "محفوظ للاحقاً"
+    },
+    "orderSummary": {
+        "heading": "ملخص الطلب",
+        "subtotal": "المجموع الفرعي",
+        "items_one": "{{count}} عنصر",
+        "items_other": "{{count}} عناصر",
+        "shipping": "الشحن",
+        "free": "مجاني",
+        "estimatedTax": "الضريبة المقدرة",
+        "total": "الإجمالي",
+        "includingVat": "شامل ضريبة القيمة المضافة",
+        "proceedToCheckout": "متابعة الدفع",
+        "secureCheckout": "دفع آمن"
+    },
+    "promoCode": {
+        "heading": "رمز الترويج",
+        "placeholder": "أدخل الرمز",
+        "apply": "تطبيق",
+        "remove": "إزالة",
+        "hint": "جرب: SAVE10، SAVE20 أو WELCOME15",
+        "applied": "تم تطبيق الرمز! وفرت ${{amount}}",
+        "error": "رمز الترويج غير صالح. يرجى المحاولة مرة أخرى."
+    },
+    "benefits": {
+        "heading": "المزايا",
+        "fastDelivery": {
+            "title": "توصيل سريع",
+            "desc": "يُشحن خلال 2-3 أيام عمل"
+        },
+        "warranty": {
+            "title": "ضمان سنتين",
+            "desc": "تغطية كاملة مشمولة"
+        },
+        "securePayment": {
+            "title": "دفع آمن",
+            "desc": "معاملات آمنة 100%"
+        }
+    },
+    "empty": {
+        "title": "سلة التسوق فارغة",
+        "description": "يبدو أنك لم تضف أي شيء إلى سلتك بعد.",
+        "continueShopping": "مواصلة التسوق"
+    }
+}

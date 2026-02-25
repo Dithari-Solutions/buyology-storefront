@@ -1,0 +1,59 @@
+{
+    "title": "Cart",
+    "cartItems": {
+        "heading": "Cart Items",
+        "clearCart": "Clear Cart",
+        "remove": "Remove",
+        "qty": "Qty",
+        "subtotal": "Subtotal",
+        "color": "Color",
+        "storage": "Storage",
+        "saveForLater": "Save for Later",
+        "moveToCart": "Move to Cart"
+    },
+    "savedForLater": {
+        "heading": "Saved for Later"
+    },
+    "orderSummary": {
+        "heading": "Order Summary",
+        "subtotal": "Subtotal",
+        "items_one": "{{count}} item",
+        "items_other": "{{count}} items",
+        "shipping": "Shipping",
+        "free": "FREE",
+        "estimatedTax": "Estimated Tax",
+        "total": "Total",
+        "includingVat": "Including VAT",
+        "proceedToCheckout": "Proceed to Checkout",
+        "secureCheckout": "Secure Checkout"
+    },
+    "promoCode": {
+        "heading": "Promo Code",
+        "placeholder": "Enter code",
+        "apply": "Apply",
+        "remove": "Remove",
+        "hint": "Try: SAVE10, SAVE20, or WELCOME15",
+        "applied": "Promo applied! You saved ${{amount}}",
+        "error": "Invalid promo code. Please try again."
+    },
+    "benefits": {
+        "heading": "Benefits",
+        "fastDelivery": {
+            "title": "Fast Delivery",
+            "desc": "Ships in 2-3 business days"
+        },
+        "warranty": {
+            "title": "2-Year Warranty",
+            "desc": "Full coverage included"
+        },
+        "securePayment": {
+            "title": "Secure Payment",
+            "desc": "100% secure transactions"
+        }
+    },
+    "empty": {
+        "title": "Your cart is empty",
+        "description": "Looks like you haven't added anything to your cart yet.",
+        "continueShopping": "Continue Shopping"
+    }
+}

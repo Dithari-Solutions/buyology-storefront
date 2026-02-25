@@ -7,6 +7,7 @@ export type Lang = "en" | "az" | "ar";
 export const PATH_SLUGS: Record<string, Record<Lang, string>> = {
     shop: { en: "shop", az: "magaza", ar: "matjar" },
     auth: { en: "auth", az: "giris", ar: "duhul" },
+    cart: { en: "cart", az: "sebet", ar: "salla" },
 };
 
 /**

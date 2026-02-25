@@ -27,11 +27,10 @@ export default function ProductVariants({ colors, storageOptions }: ProductVaria
                         <button
                             key={color.value}
                             onClick={() => setSelectedColor(color.value)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-colors ${
-                                selectedColor === color.value
+                            className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-colors ${selectedColor === color.value
                                     ? "border-[#402F75] text-[#402F75] bg-purple-50"
                                     : "border-gray-200 text-gray-600 bg-white hover:border-gray-400"
-                            }`}
+                                }`}
                         >
                             {color.label}
                         </button>
@@ -49,11 +48,10 @@ export default function ProductVariants({ colors, storageOptions }: ProductVaria
                         <button
                             key={option.value}
                             onClick={() => setSelectedStorage(option.value)}
-                            className={`px-5 py-2.5 rounded-xl text-sm font-semibold border transition-colors ${
-                                selectedStorage === option.value
+                            className={`px-5 py-2.5 rounded-xl text-sm font-semibold border transition-colors ${selectedStorage === option.value
                                     ? "bg-purple-100 text-[#402F75] border-purple-100"
                                     : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
-                            }`}
+                                }`}
                         >
                             {option.label}
                         </button>
