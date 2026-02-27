@@ -50,17 +50,6 @@ export default function CartPage() {
         <>
             <Header />
             <main className="w-[90%] mx-auto py-8 md:py-12">
-
-                {/* ── Page title ── */}
-                <h1 className="text-[22px] md:text-[26px] font-bold text-gray-900 mb-6">
-                    {t("title")}
-                    {hasContent && (
-                        <span className="text-gray-400 font-normal text-[16px] ms-2">
-                            ({cartItems.length + savedItems.length})
-                        </span>
-                    )}
-                </h1>
-
                 {!hasContent ? (
                     <EmptyCartState lang={lang} />
                 ) : (

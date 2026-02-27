@@ -43,6 +43,7 @@ export default function Header() {
     }
 
     const authSlug = PATH_SLUGS["auth"]?.[lang] ?? "auth";
+    const cartSlug = PATH_SLUGS["cart"]?.[lang] ?? "cart";
 
     return (
         <header className="pt-5 md:pt-[40px] flex items-center justify-center">
@@ -77,9 +78,11 @@ export default function Header() {
                             <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
                                 <Image src={FavIcon} alt="favourite" />
                             </div>
-                            <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
-                                <Image src={CartIcon} alt="cart" />
-                            </div>
+                            <Link href={`/${lang}/${cartSlug}`}>
+                                <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
+                                    <Image src={CartIcon} alt="cart" />
+                                </div>
+                            </Link>
                             <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="12" cy="8" r="4" />
@@ -101,9 +104,11 @@ export default function Header() {
                             <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
                                 <Image src={FavIcon} alt="favourite" width={18} />
                             </div>
-                            <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
-                                <Image src={CartIcon} alt="cart" width={18} />
-                            </div>
+                            <Link href={`/${lang}/${cartSlug}`}>
+                                <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
+                                    <Image src={CartIcon} alt="cart" width={18} />
+                                </div>
+                            </Link>
                             <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="12" cy="8" r="4" />
