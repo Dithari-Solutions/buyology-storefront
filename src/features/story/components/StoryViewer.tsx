@@ -11,32 +11,47 @@ interface StoryViewerProps {
 }
 
 export default function StoryViewer({ stories, initialIndex, onClose }: StoryViewerProps) {
-    const [currentIndex, setCurrentIndex] = useState(initialIndex);
+    const [currentStoryIndex, setCurrentStoryIndex] = useState(initialIndex);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [liked, setLiked] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    const story = stories[currentIndex];
+    const story = stories[currentStoryIndex];
+    const mediaItems = [...story.media].sort((a, b) => a.orderIndex - b.orderIndex);
+    const currentMedia = mediaItems[currentMediaIndex];
 
     const goNext = useCallback(() => {
-        if (currentIndex < stories.length - 1) {
-            setCurrentIndex((prev) => prev + 1);
+        if (currentMediaIndex < mediaItems.length - 1) {
+            setCurrentMediaIndex((prev) => prev + 1);
+            setImageLoaded(false);
+            setProgress(0);
+        } else if (currentStoryIndex < stories.length - 1) {
+            setCurrentStoryIndex((prev) => prev + 1);
+            setCurrentMediaIndex(0);
             setLiked(false);
             setImageLoaded(false);
             setProgress(0);
         } else {
             onClose();
         }
-    }, [currentIndex, stories.length, onClose]);
+    }, [currentMediaIndex, mediaItems.length, currentStoryIndex, stories.length, onClose]);
 
     const goPrev = useCallback(() => {
-        if (currentIndex > 0) {
-            setCurrentIndex((prev) => prev - 1);
+        if (currentMediaIndex > 0) {
+            setCurrentMediaIndex((prev) => prev - 1);
+            setImageLoaded(false);
+            setProgress(0);
+        } else if (currentStoryIndex > 0) {
+            const prevStory = stories[currentStoryIndex - 1];
+            const prevMediaLength = prevStory.media.length;
+            setCurrentStoryIndex((prev) => prev - 1);
+            setCurrentMediaIndex(prevMediaLength - 1);
             setLiked(false);
             setImageLoaded(false);
             setProgress(0);
         }
-    }, [currentIndex]);
+    }, [currentMediaIndex, currentStoryIndex, stories]);
 
     useEffect(() => {
         if (!imageLoaded) return;
@@ -55,7 +70,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
         }, interval);
 
         return () => clearInterval(timer);
-    }, [imageLoaded, currentIndex, goNext]);
+    }, [imageLoaded, currentStoryIndex, currentMediaIndex, goNext]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -74,11 +89,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
     }, [onClose, goNext, goPrev]);
 
     const handleShare = async () => {
-        const shareData = {
-            title: story.title,
-            url: window.location.href,
-        };
-
+        const shareData = { title: story.title, url: window.location.href };
         if (navigator.share) {
             try {
                 await navigator.share(shareData);
@@ -92,14 +103,14 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
 
     return (
         <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-            {/* Progress bars */}
+            {/* Progress bars — one per media item in the current story */}
             <div className="absolute top-4 left-4 right-4 flex gap-1 z-10">
-                {stories.map((_, i) => (
+                {mediaItems.map((_, i) => (
                     <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
                         <div
                             className="h-full bg-white rounded-full transition-all duration-75 ease-linear"
                             style={{
-                                width: i < currentIndex ? "100%" : i === currentIndex ? `${progress}%` : "0%",
+                                width: i < currentMediaIndex ? "100%" : i === currentMediaIndex ? `${progress}%` : "0%",
                             }}
                         />
                     </div>
@@ -144,7 +155,8 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                     </div>
                 )}
                 <Image
-                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${story.thumbnailUrl}`}
+                    key={`${currentStoryIndex}-${currentMediaIndex}`}
+                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${currentMedia.url}`}
                     alt={story.title}
                     fill
                     className={`object-contain transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}

@@ -53,7 +53,7 @@ export default function Stories() {
         <>
             <section className="w-[95%] md:w-[80%] flex items-center gap-4 md:justify-between overflow-x-auto py-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
                 {stories.map((story, i) => (
-                    <StoryItem key={i} story={story} onClick={() => setViewerIndex(i)} />
+                    <StoryItem key={story.id} story={story} onClick={() => setViewerIndex(i)} />
                 ))}
             </section>
 

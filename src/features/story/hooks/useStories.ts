@@ -13,7 +13,6 @@ export const useStories = (language: AppLanguage) => {
                 const data = await getStories(language);
                 setStories(data);
 
-                console.log(data);
             } catch (err) {
                 setError("Failed to load stories");
             } finally {
