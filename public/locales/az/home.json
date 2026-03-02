@@ -1,0 +1,74 @@
+{
+    "marquee": {
+        "items": [
+            "$100-dən yuxarı sifarişlərə pulsuz çatdırılma",
+            "Yenilənmiş cihazlarda 30%-ə qədər endirim",
+            "MacBook Pro $299-dan",
+            "24 saatdan az zamanda ekspert təmiri",
+            "Bütün məhsullara 1 il zəmanət",
+            "Bu gün köhnə cihazınızı dəyişin",
+            "Peşəkarlar tərəfindən sertifikatlaşdırılmış",
+            "Hər həftə yeni gəlişlər"
+        ]
+    },
+    "categories": {
+        "label": "Axtar",
+        "title": "Məşhur Kateqoriyalar",
+        "subtitle": "Axtardığınızı tam olaraq tapın — sizin üçün seçilmişdir.",
+        "seeAll": "Bütün kateqoriyalar",
+        "laptops":     { "name": "Noutbuklar",   "count": "120+ məhsul" },
+        "smartphones": { "name": "Smartfonlar",  "count": "80+ məhsul"  },
+        "tablets":     { "name": "Planşetlər",   "count": "45+ məhsul"  },
+        "accessories": { "name": "Aksesuarlar",  "count": "200+ məhsul" },
+        "refurbished": { "name": "Yenilənmiş",   "count": "500+ məhsul" },
+        "gaming":      { "name": "Oyun",         "count": "30+ məhsul"  }
+    },
+    "trustStats": {
+        "label": "Niyə Buyology",
+        "title": "Regionda minlərlə insan tərəfindən güvənilir",
+        "customers": { "value": "10K+",   "label": "Məmnun Müştəri"      },
+        "devices":   { "value": "500+",   "label": "Stokdakı Cihaz"      },
+        "delivery":  { "value": "24saat", "label": "Sürətli Çatdırılma"  },
+        "rating":    { "value": "4.9★",  "label": "Orta Reytinq"        }
+    },
+    "newsletter": {
+        "label":          "Xəbərdar ol",
+        "titlePre":       "Ən yaxşı endirimləri",
+        "titleMid":       "poçt qutunuza",
+        "titlePost":      "alın",
+        "subtitle":       "Bülletenimizə abunə olun və flash endirimləri, yeni gəlişləri və eksklüziv təklifləri qaçırmayın.",
+        "placeholder":    "E-poçt ünvanınızı daxil edin",
+        "subscribe":      "Abunə ol",
+        "successMessage": "Abunə oldunuz! Xoş gəldiniz.",
+        "privacyNote":    "Spam yoxdur, istənilən vaxt abunəliyi ləğv edə bilərsiniz."
+    },
+    "features": {
+        "label":       "Xidmətlərimiz",
+        "title":       "Sadəcə Mağazadan Çox",
+        "subtitle":    "Texnologiyanızı hər mərhələdə dəstəkləyirik — yenisini almaqdan ekspert təmirinə qədər.",
+        "seeAll":      "Hamısına bax",
+        "rent":        "İcarə",
+        "repair":      "Təmir",
+        "brandNew":    "Sıfır Məhsul",
+        "refurbished": "Yenilənmiş"
+    },
+    "limitedStock": {
+        "badge":         "🔥 Məhdud Stok",
+        "onlyLeft":      "Cəmi 5 ədəd qaldı",
+        "productName":   "MacBook Pro 13 A1708 (2017)",
+        "headlineLine1": "Məhdud stok",
+        "headlineLine2": "mövcuddur!",
+        "buyNow":        "İndi al",
+        "specs": ["Intel Core i5", "8 GB RAM", "128 GB SSD", "13.3\" Ekran", "macOS"]
+    },
+    "superDeals": {
+        "flashSale": "⚡ Flash Sale",
+        "title":     "Super Endirimlər",
+        "seeAll":    "Hamısına bax",
+        "prev":      "Əvvəlki",
+        "next":      "Növbəti",
+        "addToCart": "Səbətə əlavə et",
+        "save":      "Qənaət",
+        "wishlist":  "İstək siyahısı"
+    }
+}

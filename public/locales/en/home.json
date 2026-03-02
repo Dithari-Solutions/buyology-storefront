@@ -1,0 +1,74 @@
+{
+    "marquee": {
+        "items": [
+            "Free Shipping on orders over $100",
+            "Up to 30% off Refurbished devices",
+            "MacBook Pro from $299",
+            "Expert Repair in under 24 hours",
+            "1-Year Warranty on all products",
+            "Trade-in your old device today",
+            "Certified & tested by professionals",
+            "New arrivals every week"
+        ]
+    },
+    "categories": {
+        "label": "Browse",
+        "title": "Popular Categories",
+        "subtitle": "Find exactly what you're looking for — curated just for you.",
+        "seeAll": "All categories",
+        "laptops":      { "name": "Laptops",      "count": "120+ items" },
+        "smartphones":  { "name": "Smartphones",  "count": "80+ items"  },
+        "tablets":      { "name": "Tablets",      "count": "45+ items"  },
+        "accessories":  { "name": "Accessories",  "count": "200+ items" },
+        "refurbished":  { "name": "Refurbished",  "count": "500+ items" },
+        "gaming":       { "name": "Gaming",       "count": "30+ items"  }
+    },
+    "trustStats": {
+        "label": "Why Buyology",
+        "title": "Trusted by thousands across the region",
+        "customers": { "value": "10K+",  "label": "Happy Customers"   },
+        "devices":   { "value": "500+",  "label": "Devices In Stock"  },
+        "delivery":  { "value": "24hr",  "label": "Fast Delivery"     },
+        "rating":    { "value": "4.9★", "label": "Average Rating"    }
+    },
+    "newsletter": {
+        "label":          "Stay in the loop",
+        "titlePre":       "Get the best deals",
+        "titleMid":       "delivered to",
+        "titlePost":      "your inbox",
+        "subtitle":       "Subscribe to our newsletter and never miss a flash sale, new arrival, or exclusive offer.",
+        "placeholder":    "Enter your email address",
+        "subscribe":      "Subscribe",
+        "successMessage": "You're subscribed! Welcome aboard.",
+        "privacyNote":    "No spam, unsubscribe anytime. We respect your privacy."
+    },
+    "features": {
+        "label":       "Our Services",
+        "title":       "More Than Just a Store",
+        "subtitle":    "We support your tech at every stage — from buying new to expert repairs and easy trade-ins.",
+        "seeAll":      "See all",
+        "rent":        "Rent",
+        "repair":      "Repair",
+        "brandNew":    "Brand New",
+        "refurbished": "Refurbished"
+    },
+    "limitedStock": {
+        "badge":         "🔥 Limited Stock",
+        "onlyLeft":      "Only 5 left",
+        "productName":   "MacBook Pro 13 A1708 (2017)",
+        "headlineLine1": "Limited stock",
+        "headlineLine2": "available!",
+        "buyNow":        "Buy now",
+        "specs": ["Intel Core i5", "8 GB RAM", "128 GB SSD", "13.3\" Display", "macOS"]
+    },
+    "superDeals": {
+        "flashSale": "⚡ Flash Sale",
+        "title":     "Super Deals",
+        "seeAll":    "See all",
+        "prev":      "Previous",
+        "next":      "Next",
+        "addToCart": "Add to Cart",
+        "save":      "Save",
+        "wishlist":  "Wishlist"
+    }
+}

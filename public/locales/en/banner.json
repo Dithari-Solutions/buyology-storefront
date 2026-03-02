@@ -1,0 +1,26 @@
+{
+    "flashSaleBadge": "⚡ Flash Sale — Up to 30% off",
+    "categories": {
+        "laptops": "Laptops",
+        "smartphones": "Smartphones",
+        "tablets": "Tablets",
+        "gaming": "Gaming",
+        "accessories": "Accessories"
+    },
+    "eyebrow": "The Ultimate Tech Store",
+    "headlineLine1": "Premium Tech.",
+    "headlineLine2": "Best Prices.",
+    "subtitle": "Brand new, certified refurbished, and rental devices — all in one place.",
+    "shopNow": "Shop Now",
+    "browseDeals": "Browse Deals",
+    "stats": {
+        "devicesValue": "500+",
+        "devicesLabel": "Devices",
+        "customersValue": "10K+",
+        "customersLabel": "Customers",
+        "shippingValue": "Free",
+        "shippingLabel": "Shipping"
+    },
+    "appStore": "Download on the App Store",
+    "googlePlay": "Get it on Google Play"
+}

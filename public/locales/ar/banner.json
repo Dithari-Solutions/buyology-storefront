@@ -1,0 +1,26 @@
+{
+    "flashSaleBadge": "⚡ تخفيضات — حتى 30% خصم",
+    "categories": {
+        "laptops": "لابتوبات",
+        "smartphones": "هواتف ذكية",
+        "tablets": "أجهزة لوحية",
+        "gaming": "الألعاب",
+        "accessories": "إكسسوارات"
+    },
+    "eyebrow": "المتجر التقني الأمثل",
+    "headlineLine1": "تقنية فاخرة.",
+    "headlineLine2": "أفضل الأسعار.",
+    "subtitle": "أجهزة جديدة ومجدّدة معتمدة وللإيجار — كلها في مكان واحد.",
+    "shopNow": "تسوق الآن",
+    "browseDeals": "تصفح العروض",
+    "stats": {
+        "devicesValue": "500+",
+        "devicesLabel": "جهاز",
+        "customersValue": "10K+",
+        "customersLabel": "عميل",
+        "shippingValue": "مجاني",
+        "shippingLabel": "شحن"
+    },
+    "appStore": "تنزيل على App Store",
+    "googlePlay": "احصل عليه من Google Play"
+}

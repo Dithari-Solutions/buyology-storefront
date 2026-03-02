@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import LockIcon from "@/assets/icons/lock.png";
@@ -148,32 +149,42 @@ export default function AuthForm() {
                 </div>
 
                 {/* Confirm Password — Sign Up only */}
-                {mode === "signUp" && (
-                    <div className="flex flex-col gap-[6px]">
-                        <label htmlFor="confirm-password" className="text-[13px] font-semibold text-gray-700">
-                            {t("authForm.confirmPasswordLabel")}
-                        </label>
-                        <div className="flex items-center gap-[10px] px-[12px] py-[11px] rounded-[12px] bg-gray-50 border border-gray-200 transition-all duration-200 focus-within:border-[#FBBB14] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(251,187,20,0.15)]">
-                            <Image src={LockIcon} alt="password" width={17} height={17} className="flex-shrink-0 opacity-40" />
-                            <input
-                                id="confirm-password"
-                                type={repeatedPasswordIsVisible ? "text" : "password"}
-                                value={repeatedPassword}
-                                onChange={(e) => setRepeatedPassword(e.target.value)}
-                                placeholder={t("authForm.confirmPasswordPlaceholder")}
-                                className="border-none outline-none w-full text-[14px] bg-transparent text-gray-800 placeholder:text-gray-400"
-                                required
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setRepeatedPasswordIsVisible(!repeatedPasswordIsVisible)}
-                                className="flex-shrink-0 opacity-40 hover:opacity-70 transition-opacity"
-                            >
-                                <Image src={repeatedPasswordIsVisible ? EyeIcon : ClosedEye} alt="toggle confirm password" width={17} height={17} />
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <AnimatePresence initial={false}>
+                    {mode === "signUp" && (
+                        <motion.div
+                            key="confirm-password"
+                            initial={{ opacity: 0, height: 0, marginTop: -8 }}
+                            animate={{ opacity: 1, height: "auto", marginTop: 0 }}
+                            exit={{ opacity: 0, height: 0, marginTop: -8 }}
+                            transition={{ duration: 0.28, ease: "easeInOut" }}
+                            style={{ overflow: "hidden" }}
+                            className="flex flex-col gap-[6px]"
+                        >
+                            <label htmlFor="confirm-password" className="text-[13px] font-semibold text-gray-700">
+                                {t("authForm.confirmPasswordLabel")}
+                            </label>
+                            <div className="flex items-center gap-[10px] px-[12px] py-[11px] rounded-[12px] bg-gray-50 border border-gray-200 transition-all duration-200 focus-within:border-[#FBBB14] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(251,187,20,0.15)]">
+                                <Image src={LockIcon} alt="password" width={17} height={17} className="flex-shrink-0 opacity-40" />
+                                <input
+                                    id="confirm-password"
+                                    type={repeatedPasswordIsVisible ? "text" : "password"}
+                                    value={repeatedPassword}
+                                    onChange={(e) => setRepeatedPassword(e.target.value)}
+                                    placeholder={t("authForm.confirmPasswordPlaceholder")}
+                                    className="border-none outline-none w-full text-[14px] bg-transparent text-gray-800 placeholder:text-gray-400"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setRepeatedPasswordIsVisible(!repeatedPasswordIsVisible)}
+                                    className="flex-shrink-0 opacity-40 hover:opacity-70 transition-opacity"
+                                >
+                                    <Image src={repeatedPasswordIsVisible ? EyeIcon : ClosedEye} alt="toggle confirm password" width={17} height={17} />
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Error message */}
                 {error && (

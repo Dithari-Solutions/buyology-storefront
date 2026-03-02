@@ -6,6 +6,10 @@ import Stories from "@/features/story/components/Stories";
 import Features from "@/features/home/components/features/Features";
 import SuperDeals from "@/features/home/components/superDeals/SuperDeals";
 import LimitedStock from "@/features/home/components/limitedStock/LimitedStock";
+import MarqueeStrip from "@/features/home/components/MarqueeStrip";
+import PopularCategories from "@/features/home/components/PopularCategories";
+import TrustStats from "@/features/home/components/TrustStats";
+import Newsletter from "@/features/home/components/Newsletter";
 
 const superDeals = [
   {
@@ -46,12 +50,16 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main className="flex flex-col items-center justify-center bg-[#F7F7F7] pb-10 md:pb-16">
+      <main className="flex flex-col items-center justify-center pb-10 md:pb-16">
         <Stories />
         <Banner />
+        <MarqueeStrip />
+        <PopularCategories />
         <LimitedStock />
+        <TrustStats />
         <Features />
         <SuperDeals deals={superDeals} />
+        <Newsletter />
       </main>
       <Footer />
     </>

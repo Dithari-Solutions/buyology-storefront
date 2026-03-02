@@ -1,146 +1,159 @@
-import Image from "next/image";
-import Banner from "@/assets/banner/banner.png";
-import { COLORS } from "@/shared/styles/variables";
-import ArrowUpward from "@/assets/icons/arrow-upward.png";
+"use client";
 
-export default function HeroSection() {
+import { useTranslation } from "react-i18next";
+import BannerBg from "@/assets/banner/banner.png";
+
+const CATEGORY_KEYS = ["laptops", "smartphones", "tablets", "gaming", "accessories"] as const;
+
+export default function Banner() {
+    const { t } = useTranslation("banner");
+
+    const stats = [
+        { value: t("stats.devicesValue"),   label: t("stats.devicesLabel") },
+        { value: t("stats.customersValue"), label: t("stats.customersLabel") },
+        { value: t("stats.shippingValue"),  label: t("stats.shippingLabel") },
+    ];
+
     return (
-        <section className="relative w-[95%] md:w-[90%] mt-3 md:mt-6 overflow-hidden rounded-2xl">
+        <section className="relative w-[95%] md:w-[90%] mt-3 md:mt-6 overflow-hidden rounded-3xl">
+            {/* Background image */}
             <div
-                className="
-                    relative
-                    w-full
-                    p-5
-                    sm:p-[30px]
-                    md:p-[50px]
-                    min-h-[250px]
-                    sm:min-h-[350px]
-                    md:min-h-[500px]
-                    lg:min-h-[700px]
-                "
+                className="absolute inset-0"
                 style={{
-                    backgroundImage: `url(${Banner.src})`,
+                    backgroundImage: `url(${BannerBg.src})`,
                     backgroundPosition: "center",
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                 }}
-            >
-                {/* Desktop Computer — top-left */}
-                <div className="hidden md:block absolute top-[8%] left-[5%] lg:top-[10%] lg:left-[6%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-6 lg:p-10">
-                    <p className="text-base lg:text-[25px] font-semibold">
-                        Desktop Computer
-                    </p>
-                    <p className="text-[16px] text-black font-light mt-1">
-                        High performance for home and office
-                    </p>
-                    <div className="absolute bottom-[15px] left-[15px]">
-                        <div className="flex items-center justify-center bg-[#D9D9D9]/41 w-[30px] h-[30px] rounded-full">
-                            <div className="flex items-center justify-center bg-[#D9D9D9]/31 w-[20px] h-[20px] rounded-full">
-                                <div className="flex items-center justify-center bg-[#D9D9D9] w-[10px] h-[10px] rounded-full">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            />
 
-                {/* Tablet — top-right */}
-                <div className="hidden md:block absolute top-[10%] right-[6%] lg:top-[30%] lg:right-[8%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-12">
-                    <p className="text-base lg:text-xl font-semibold">
-                        Tablet
-                    </p>
-                    <p className="text-sm text-black font-light mt-1">
-                        For reading, drawing, and entertainment
-                    </p>
-                    <div className="absolute bottom-[15px] left-[15px]">
-                        <div className="flex items-center justify-center bg-[#D9D9D9]/41 w-[30px] h-[30px] rounded-full">
-                            <div className="flex items-center justify-center bg-[#D9D9D9]/31 w-[20px] h-[20px] rounded-full">
-                                <div className="flex items-center justify-center bg-[#D9D9D9] w-[10px] h-[10px] rounded-full">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Laptop — bottom-left */}
-                <div className="hidden md:block absolute bottom-[25%] left-[50%] lg:bottom-[22%] lg:left-[40%] max-w-xs backdrop-blur-md bg-white/20 rounded-xl p-4 lg:p-12">
-                    <p className="text-base lg:text-xl font-semibold">
-                        Laptop
-                    </p>
-                    <p className="text-[18px] text-black font-light mt-1">
-                        Perfect for work, study, and travel
-                    </p>
-                    <div className="absolute bottom-[15px] left-[15px]">
-                        <div className="flex items-center justify-center bg-[#D9D9D9]/41 w-[30px] h-[30px] rounded-full">
-                            <div className="flex items-center justify-center bg-[#D9D9D9]/31 w-[20px] h-[20px] rounded-full">
-                                <div className="flex items-center justify-center bg-[#D9D9D9] w-[10px] h-[10px] rounded-full">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Shop Now Button — bottom */}
-                <div className="flex items-center justify-between absolute bottom-[15px] start-[15px] sm:bottom-[20px] sm:start-[120px] md:-translate-x-1/2 bg-white text-black font-semibold py-[5px] ps-[5px] pe-[15px] sm:pe-[20px] rounded-full shadow-lg hover:bg-gray-100 transition-colors cursor-pointer text-xs sm:text-sm md:text-base">
-                    <div className="flex items-center me-[8px] sm:me-[10px] justify-center rounded-full p-[8px] sm:p-[10px] w-[36px] h-[36px] sm:w-[50px] sm:h-[50px]" style={{
-                        backgroundColor: COLORS.primary
-                    }}>
-                        <Image src={ArrowUpward} alt="arrow-upward" />
-                    </div>
-                    <button>
-                        Shop Now
-                    </button>
-                </div>
-            </div>
-
-            {/* White overlay with rounded top-left corner for the cutout */}
-            <div className="absolute bottom-0 right-0 w-[120px] h-[80px] sm:w-[140px] sm:h-[100px] md:w-[170px] md:h-[120px] bg-[#F7F7F7] rounded-tl-[30px] md:rounded-tl-[40px]" />
-
-            {/* Inverted rounded corner — top edge */}
+            {/* Left-to-right dark gradient for text legibility */}
             <div
-                className="absolute bottom-[80px] sm:bottom-[100px] md:bottom-[120px] right-0 w-[20px] h-[20px]"
+                className="absolute inset-0"
                 style={{
-                    background: "transparent",
-                    borderBottomRightRadius: "20px",
-                    boxShadow: "10px 10px 0 10px #F7F7F7",
+                    background:
+                        "linear-gradient(100deg, rgba(25,16,60,0.95) 0%, rgba(40,28,90,0.85) 35%, rgba(40,28,90,0.50) 60%, transparent 100%)",
                 }}
             />
 
-            {/* Inverted rounded corner — left edge */}
+            {/* Subtle bottom vignette */}
             <div
-                className="absolute bottom-0 right-[120px] sm:right-[140px] md:right-[170px] w-[20px] h-[20px]"
+                className="absolute inset-0"
                 style={{
-                    background: "transparent",
-                    borderBottomRightRadius: "20px",
-                    boxShadow: "10px 10px 0 10px #F7F7F7",
+                    background: "linear-gradient(to top, rgba(15,10,40,0.55) 0%, transparent 40%)",
                 }}
             />
 
-            {/* App Store Badges */}
-            <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 md:bottom-3 md:right-3 flex flex-col items-center gap-1">
-                <a
-                    href="#"
-                    aria-label="Download on the App Store"
-                    className="transition-transform hover:scale-105"
-                >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
-                        alt="Download on the App Store"
-                        className="w-[100px] sm:w-[120px] md:w-[135px]"
-                    />
-                </a>
-                <a
-                    href="#"
-                    aria-label="Get it on Google Play"
-                    className="transition-transform hover:scale-105"
-                >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                        alt="Get it on Google Play"
-                        className="w-[100px] sm:w-[120px] md:w-[135px]"
-                    />
-                </a>
+            {/* Content */}
+            <div className="relative z-10 flex flex-col justify-between min-h-[280px] sm:min-h-[400px] md:min-h-[530px] lg:min-h-[660px] px-6 sm:px-10 md:px-14 lg:px-20 py-7 sm:py-10 md:py-14">
+
+                {/* ── Top row: badge + category pills ── */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-[#402F75] bg-[#FBBB14] px-3 py-1.5 rounded-full w-fit tracking-wide">
+                        {t("flashSaleBadge")}
+                    </span>
+                    <div className="hidden sm:flex items-center gap-2 flex-wrap">
+                        {CATEGORY_KEYS.map((key) => (
+                            <a
+                                key={key}
+                                href="#"
+                                className="text-white/70 hover:text-white text-[12px] font-medium transition-all px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 hover:border-white/35 backdrop-blur-sm"
+                            >
+                                {t(`categories.${key}`)}
+                            </a>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ── Middle: headline + subtitle + CTAs ── */}
+                <div className="flex flex-col max-w-[500px] mt-6 md:mt-0 md:my-auto">
+                    <p className="text-white/50 text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] uppercase mb-2 sm:mb-3">
+                        {t("eyebrow")}
+                    </p>
+                    <h1 className="text-[28px] sm:text-[38px] md:text-[50px] lg:text-[60px] font-extrabold text-white leading-[1.05] mb-3 sm:mb-5">
+                        {t("headlineLine1")}
+                        <br />
+                        <span style={{ color: "#FBBB14" }}>{t("headlineLine2")}</span>
+                    </h1>
+                    <p className="text-white/60 text-[13px] sm:text-[15px] leading-relaxed mb-6 sm:mb-8 max-w-[340px]">
+                        {t("subtitle")}
+                    </p>
+
+                    {/* CTA buttons */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <a
+                            href="#"
+                            className="flex items-center gap-2 text-[13px] sm:text-[15px] font-bold text-[#402F75] px-5 sm:px-7 py-2.5 sm:py-3 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-2xl active:scale-95"
+                            style={{ backgroundColor: "#FBBB14" }}
+                        >
+                            {t("shopNow")}
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-4 h-4"
+                            >
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                            </svg>
+                        </a>
+                        <a
+                            href="#"
+                            className="text-[13px] sm:text-[15px] font-semibold text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur-sm transition-all duration-200 hover:bg-white/20 hover:border-white/50"
+                        >
+                            {t("browseDeals")}
+                        </a>
+                    </div>
+                </div>
+
+                {/* ── Bottom row: stats + app store badges ── */}
+                <div className="flex items-end justify-between mt-6 sm:mt-8">
+                    {/* Stats */}
+                    <div className="flex items-center gap-5 sm:gap-8">
+                        {stats.map((stat, i) => (
+                            <div key={i} className="flex flex-col">
+                                <span className="text-white font-extrabold text-[18px] sm:text-[22px] leading-none">
+                                    {stat.value}
+                                </span>
+                                <span className="text-white/45 text-[11px] sm:text-[12px] mt-0.5">
+                                    {stat.label}
+                                </span>
+                            </div>
+                        ))}
+
+                    </div>
+
+                    {/* App store badges */}
+                    <div className="flex flex-col items-end gap-1.5">
+                        <a
+                            href="#"
+                            aria-label={t("appStore")}
+                            className="transition-transform hover:scale-105"
+                        >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                                alt={t("appStore")}
+                                className="w-[88px] sm:w-[108px] md:w-[128px]"
+                            />
+                        </a>
+                        <a
+                            href="#"
+                            aria-label={t("googlePlay")}
+                            className="transition-transform hover:scale-105"
+                        >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+                                alt={t("googlePlay")}
+                                className="w-[88px] sm:w-[108px] md:w-[128px]"
+                            />
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
     );

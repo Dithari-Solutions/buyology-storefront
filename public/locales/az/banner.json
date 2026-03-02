@@ -1,0 +1,26 @@
+{
+    "flashSaleBadge": "⚡ Flash Sale — 30%-ə qədər endirim",
+    "categories": {
+        "laptops": "Noutbuklar",
+        "smartphones": "Smartfonlar",
+        "tablets": "Planşetlər",
+        "gaming": "Oyun",
+        "accessories": "Aksesuarlar"
+    },
+    "eyebrow": "Ən Yaxşı Texnologiya Mağazası",
+    "headlineLine1": "Premium Texnika.",
+    "headlineLine2": "Ən Yaxşı Qiymətlər.",
+    "subtitle": "Yeni, sertifikatlı yenilənmiş və icarəlik cihazlar — hamısı bir yerdə.",
+    "shopNow": "İndi Al",
+    "browseDeals": "Endirimləri Gör",
+    "stats": {
+        "devicesValue": "500+",
+        "devicesLabel": "Cihaz",
+        "customersValue": "10K+",
+        "customersLabel": "Müştəri",
+        "shippingValue": "Pulsuz",
+        "shippingLabel": "Çatdırılma"
+    },
+    "appStore": "App Store-dan yüklə",
+    "googlePlay": "Google Play-dən al"
+}

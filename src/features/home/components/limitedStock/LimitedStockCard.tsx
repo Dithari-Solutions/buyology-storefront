@@ -1,9 +1,13 @@
+"use client";
+
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import MacPro13 from "@/assets/devices/macPro13.png";
 import Button from "@/shared/components/Button";
 
 export default function LimitedStockCard() {
-    const specs = ["Intel Core i5", "8 GB RAM", "128 GB SSD", "13.3″ Display", "macOS"];
+    const { t } = useTranslation("home");
+    const specs = t("limitedStock.specs", { returnObjects: true }) as string[];
 
     return (
         <div
@@ -13,10 +17,10 @@ export default function LimitedStockCard() {
             {/* Top badges */}
             <div className="absolute top-4 start-4 sm:top-5 sm:start-6 flex gap-2 z-10">
                 <span className="flex items-center gap-1 bg-[#FBBB14] text-white text-[11px] font-bold px-3 py-[5px] rounded-full shadow-md">
-                    🔥 Limited Stock
+                    {t("limitedStock.badge")}
                 </span>
                 <span className="bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold px-3 py-[5px] rounded-full border border-white/30">
-                    Only 5 left
+                    {t("limitedStock.onlyLeft")}
                 </span>
             </div>
 
@@ -26,7 +30,7 @@ export default function LimitedStockCard() {
                 <div className="flex items-center justify-center flex-shrink-0">
                     <Image
                         src={MacPro13}
-                        alt="MacBook Pro 13"
+                        alt={t("limitedStock.productName")}
                         className="w-[180px] sm:w-[230px] md:w-[280px] drop-shadow-2xl"
                     />
                 </div>
@@ -34,10 +38,12 @@ export default function LimitedStockCard() {
                 {/* Content */}
                 <div className="flex flex-col items-center md:items-start text-center md:text-start">
                     <p className="text-white/60 text-[13px] font-medium tracking-wide uppercase mb-2">
-                        MacBook Pro 13 A1708 (2017)
+                        {t("limitedStock.productName")}
                     </p>
                     <h2 className="text-[26px] sm:text-[32px] md:text-[40px] font-bold text-white leading-tight mb-4">
-                        Limited stock <br className="hidden sm:block" />available!
+                        {t("limitedStock.headlineLine1")}{" "}
+                        <br className="hidden sm:block" />
+                        {t("limitedStock.headlineLine2")}
                     </h2>
 
                     {/* Specs */}
@@ -56,7 +62,7 @@ export default function LimitedStockCard() {
                             <span className="text-[32px] sm:text-[36px] font-extrabold text-white leading-none">$299</span>
                             <span className="text-white/40 line-through text-[16px] font-medium">$450</span>
                         </div>
-                        <Button title="Buy now" />
+                        <Button title={t("limitedStock.buyNow")} />
                     </div>
                 </div>
             </div>

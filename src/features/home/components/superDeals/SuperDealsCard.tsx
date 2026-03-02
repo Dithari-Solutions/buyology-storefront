@@ -4,6 +4,7 @@ import cartIcon from "@/assets/icons/cart.png";
 import { COLORS } from "@/shared/styles/variables";
 import Image, { StaticImageData } from "next/image";
 import FavoriteIcon from "@/assets/icons/favourite.png";
+import { useTranslation } from "react-i18next";
 
 export interface DeviceDetails {
     name: string;
@@ -15,6 +16,7 @@ export interface DeviceDetails {
 }
 
 export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
+    const { t } = useTranslation("home");
     const savings = device.originalPrice - device.price;
     const outerClipId = `superDealOuter-${device.name.replace(/\s+/g, '-').toLowerCase()}`;
     const innerClipId = `superDealInner-${device.name.replace(/\s+/g, '-').toLowerCase()}`;
@@ -86,7 +88,7 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
 
                                 {/* Savings Badge */}
                                 <span className="text-[#402F75] text-xs font-semibold px-3 py-1 rounded-full w-fit bg-[#EDE9FF]">
-                                    Save ${savings}
+                                    {t("superDeals.save")} ${savings}
                                 </span>
 
                                 {/* Pricing */}
@@ -98,14 +100,14 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
                                 {/* Actions */}
                                 <div className="flex items-center gap-2 md:gap-3">
                                     <button className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-300 flex items-center justify-center bg-white">
-                                        <Image src={FavoriteIcon} alt="Wishlist" width={20} height={20} className="w-[16px] md:w-[20px]" />
+                                        <Image src={FavoriteIcon} alt={t("superDeals.wishlist")} width={20} height={20} className="w-[16px] md:w-[20px]" />
                                     </button>
                                     <button
                                         className="flex items-center gap-1 md:gap-2 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold cursor-pointer"
                                         style={{ backgroundColor: COLORS.secondary }}
                                     >
                                         <Image src={cartIcon} alt="Cart" width={18} height={18} className="w-[14px] md:w-[18px]" />
-                                        Add to Cart
+                                        {t("superDeals.addToCart")}
                                     </button>
                                 </div>
                             </div>
