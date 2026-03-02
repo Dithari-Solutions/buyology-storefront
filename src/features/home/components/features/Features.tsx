@@ -37,7 +37,7 @@ export default function Features() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 w-[95%] md:w-[90%]">
                 {cards.map(({ key, bg }) => (
-                    <FeatureCard key={key} title={t(`features.${key}`)} bg={bg} />
+                    <FeatureCard key={key} id={key} title={t(`features.${key}`)} bg={bg} />
                 ))}
             </div>
         </section>

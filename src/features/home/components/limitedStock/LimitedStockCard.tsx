@@ -7,7 +7,8 @@ import Button from "@/shared/components/Button";
 
 export default function LimitedStockCard() {
     const { t } = useTranslation("home");
-    const specs = t("limitedStock.specs", { returnObjects: true }) as string[];
+    const specsRaw = t("limitedStock.specs", { returnObjects: true });
+    const specs: string[] = Array.isArray(specsRaw) ? specsRaw : [];
 
     return (
         <div

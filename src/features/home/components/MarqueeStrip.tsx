@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 
 export default function MarqueeStrip() {
     const { t } = useTranslation("home");
-    const items = t("marquee.items", { returnObjects: true }) as string[];
+    const itemsRaw = t("marquee.items", { returnObjects: true });
+    const items: string[] = Array.isArray(itemsRaw) ? itemsRaw : [];
 
     return (
         <div className="w-full overflow-hidden py-3 mt-4" style={{ backgroundColor: "#402F75" }}>

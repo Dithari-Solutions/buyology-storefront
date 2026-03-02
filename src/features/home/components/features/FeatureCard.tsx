@@ -2,33 +2,23 @@ import Image, { StaticImageData } from "next/image";
 import ArrowUpward from "@/assets/icons/arrow-upward-black.png";
 
 interface FeatureCardProps {
+    id: string;
     title: string;
     bg: StaticImageData;
 }
 
-export default function FeatureCard({ title, bg }: FeatureCardProps) {
-    const clipId = `featureClip-${title.replace(/\s+/g, '-').toLowerCase()}`;
+export default function FeatureCard({ id, title, bg }: FeatureCardProps) {
+    const clipId = `featureClip-${id}`;
 
     return (
         <div
             className="relative overflow-hidden rounded-2xl flex flex-col cursor-pointer group transition-transform duration-300 hover:scale-[1.03] w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]"
         >
-            {/* SVG clip definition for rounded cutout */}
+            {/* SVG clip definition — single-line path avoids SSR/client whitespace hydration mismatch */}
             <svg width="0" height="0" className="absolute">
                 <defs>
                     <clipPath id={clipId} clipPathUnits="objectBoundingBox">
-                        <path d="
-                            M 0,0
-                            L 0.72,0
-                            C 0.78,0 0.78,0.06 0.78,0.06
-                            L 0.78,0.09
-                            C 0.78,0.16 0.85,0.16 0.85,0.16
-                            L 0.93,0.16
-                            C 1,0.16 1,0.23 1,0.23
-                            L 1,1
-                            L 0,1
-                            Z
-                        " />
+                        <path d="M 0,0 L 0.72,0 C 0.78,0 0.78,0.06 0.78,0.06 L 0.78,0.09 C 0.78,0.16 0.85,0.16 0.85,0.16 L 0.93,0.16 C 1,0.16 1,0.23 1,0.23 L 1,1 L 0,1 Z" />
                     </clipPath>
                 </defs>
             </svg>
@@ -36,9 +26,7 @@ export default function FeatureCard({ title, bg }: FeatureCardProps) {
             {/* Background image with rounded cutout */}
             <div
                 className="absolute inset-0 overflow-hidden"
-                style={{
-                    clipPath: `url(#${clipId})`,
-                }}
+                style={{ clipPath: `url(#${clipId})` }}
             >
                 <div
                     className="absolute -inset-[5px] transition-transform duration-300 group-hover:scale-110"
