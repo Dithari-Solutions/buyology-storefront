@@ -25,39 +25,50 @@ export default function SuperDeals({ deals }: SuperDealsProps) {
     };
 
     return (
-        <section className="w-[95%] md:w-[90%] mt-[30px] md:mt-[50px] mb-[30px] md:mb-[50px]">
-            <div className="flex items-end justify-between mb-4 md:mb-6">
+        <section className="w-[95%] md:w-[90%] mt-8 md:mt-14 mb-8 md:mb-14">
+            {/* Header */}
+            <div className="flex items-end justify-between mb-5 md:mb-8">
                 <div>
-                    <span className="inline-flex items-center text-[11px] font-semibold text-[#c08a00] bg-[#FFF8E6] px-3 py-[5px] rounded-full mb-2">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#A86C00] bg-[#FFF7DC] border border-[#FBBB14]/50 px-3 py-[5px] rounded-full mb-2.5">
                         ⚡ {t("superDeals.flashSale")}
                     </span>
-                    <h2 className="text-[22px] sm:text-[26px] md:text-[30px] font-bold leading-tight">{t("superDeals.title")}</h2>
+                    <h2 className="text-[22px] sm:text-[26px] md:text-[32px] font-extrabold leading-tight text-gray-900">
+                        {t("superDeals.title")}
+                    </h2>
                 </div>
+
                 <div className="flex items-center gap-2 md:gap-3">
-                    <a href="#" className="hidden sm:flex items-center gap-1 text-[13px] font-semibold text-[#402F75] hover:underline whitespace-nowrap me-1">
-                        {t("superDeals.seeAll")} <span>→</span>
+                    <a
+                        href="#"
+                        className="hidden sm:flex items-center gap-1.5 text-[13px] font-semibold text-[#402F75] hover:text-[#2f2258] transition-colors whitespace-nowrap me-1"
+                    >
+                        {t("superDeals.seeAll")} <span className="text-[15px]">→</span>
                     </a>
                     <button
                         onClick={() => scroll("left")}
-                        className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-300 flex items-center justify-center bg-white hover:bg-[#402F75] hover:border-[#402F75] [&:hover_img]:invert transition-all duration-200"
+                        aria-label={t("superDeals.prev")}
+                        className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-200 flex items-center justify-center bg-white hover:bg-[#402F75] hover:border-[#402F75] [&:hover_img]:invert transition-all duration-200 shadow-sm"
                     >
-                        <Image src={arrowLeft} alt={t("superDeals.prev")} width={18} height={18} className="w-[14px] md:w-[18px]" />
+                        <Image src={arrowLeft} alt="" width={16} height={16} className="w-[13px] md:w-[16px]" />
                     </button>
                     <button
                         onClick={() => scroll("right")}
-                        className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-300 flex items-center justify-center bg-white hover:bg-[#402F75] hover:border-[#402F75] [&:hover_img]:invert transition-all duration-200 rotate-180"
+                        aria-label={t("superDeals.next")}
+                        className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-200 flex items-center justify-center bg-white hover:bg-[#402F75] hover:border-[#402F75] [&:hover_img]:invert transition-all duration-200 rotate-180 shadow-sm"
                     >
-                        <Image src={arrowLeft} alt={t("superDeals.next")} width={18} height={18} className="w-[14px] md:w-[18px]" />
+                        <Image src={arrowLeft} alt="" width={16} height={16} className="w-[13px] md:w-[16px]" />
                     </button>
                 </div>
             </div>
+
+            {/* Slider */}
             <div
                 ref={sliderRef}
-                className="flex gap-3 md:gap-5 overflow-x-auto scroll-smooth items-stretch"
+                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-5"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
                 {deals.map((device, i) => (
-                    <div key={i} className="flex-shrink-0 h-auto">
+                    <div key={i} className="flex-shrink-0 snap-start">
                         <SuperDealsCard device={device} />
                     </div>
                 ))}
