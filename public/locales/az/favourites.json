@@ -1,0 +1,38 @@
+{
+    "guest": {
+        "title": "Sevimlilərini Saxla",
+        "subtitle": "Bütün cihazlarda istək siyahını sinxronlaşdırmaq üçün daxil ol. Sevdiyin məhsulları heç vaxt itirmə.",
+        "feature1": "Limitsiz sevimlilər saxla",
+        "feature2": "Cihazlarda sinxronlaşdır",
+        "feature3": "Qiymət enişi bildirişləri al",
+        "signIn": "Daxil ol",
+        "createAccount": "Hesab yarat"
+    },
+    "empty": {
+        "title": "İstək Siyahın Boşdur",
+        "subtitle": "Sevdiyin məhsulları sevimlilərə əlavə etməyə başla. Onlar burada asan giriş üçün görünəcək.",
+        "browse": "Məhsullara Bax"
+    },
+    "stats": {
+        "savedItems": "Saxlanmış Məhsul",
+        "inStock": "Stokda Var",
+        "potentialSavings": "Potensial Qənaət"
+    },
+    "filters": {
+        "all": "Hamısı",
+        "laptops": "Noutbuklar",
+        "smartphones": "Smartfonlar",
+        "refurbished": "Yenilənmiş",
+        "gaming": "Oyun",
+        "tablets": "Planşetlər"
+    },
+    "actions": {
+        "addAllToCart": "Hamısını Səbətə əlavə et",
+        "clearAll": "Hamısını Sil",
+        "removeFromFavourites": "Sil"
+    },
+    "card": {
+        "addToCart": "Səbətə əlavə et",
+        "added": "Əlavə edildi!"
+    }
+}

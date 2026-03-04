@@ -1,0 +1,38 @@
+{
+    "guest": {
+        "title": "Save Your Favourites",
+        "subtitle": "Sign in to keep your wishlist synced across all your devices. Never lose track of products you love again.",
+        "feature1": "Save unlimited favourites",
+        "feature2": "Sync across devices",
+        "feature3": "Get price drop alerts",
+        "signIn": "Sign In",
+        "createAccount": "Create Account"
+    },
+    "empty": {
+        "title": "Your Wishlist is Empty",
+        "subtitle": "Start adding products you love to your favourites. They'll appear here for easy access.",
+        "browse": "Browse Products"
+    },
+    "stats": {
+        "savedItems": "Saved Items",
+        "inStock": "In Stock",
+        "potentialSavings": "Potential Savings"
+    },
+    "filters": {
+        "all": "All",
+        "laptops": "Laptops",
+        "smartphones": "Smartphones",
+        "refurbished": "Refurbished",
+        "gaming": "Gaming",
+        "tablets": "Tablets"
+    },
+    "actions": {
+        "addAllToCart": "Add All to Cart",
+        "clearAll": "Clear All",
+        "removeFromFavourites": "Remove"
+    },
+    "card": {
+        "addToCart": "Add to Cart",
+        "added": "Added!"
+    }
+}

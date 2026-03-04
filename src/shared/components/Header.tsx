@@ -6,11 +6,14 @@ import { useState, useEffect, useRef } from "react";
 import Logo from "@/../public/logo.png";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
 import CartIcon from "@/assets/icons/cart.png";
 import LanguageSwitcher from "./LanguageSwitcher";
 import FavIcon from "@/assets/icons/favourite.png";
 import SearchIcon from "@/assets/icons/searchicon.svg";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import { selectFavouriteItems } from "@/features/favourites/store/favouritesSlice";
+import { selectCartCount } from "@/features/cart/store/cartSlice";
 
 const NAV_CANONICAL: Record<string, string> = {
     home: "",
@@ -30,13 +33,14 @@ export default function Header() {
 
     const { t } = useTranslation("header");
     const lang = useSelector((state: { language: { lang: Lang } }) => state.language.lang);
+    const favItems = useSelector(selectFavouriteItems);
+    const favCount = favItems.length;
+    const cartCount = useSelector(selectCartCount);
 
     useEffect(() => {
         setIsLoggedIn(!!localStorage.getItem("accessToken"));
     }, []);
 
-    // Detect when the sentinel (placed above the header) leaves the viewport.
-    // That's the moment the header "becomes sticky" — trigger the slide animation.
     useEffect(() => {
         const sentinel = sentinelRef.current;
         if (!sentinel) return;
@@ -62,10 +66,41 @@ export default function Header() {
 
     const authSlug = PATH_SLUGS["auth"]?.[lang] ?? "auth";
     const cartSlug = PATH_SLUGS["cart"]?.[lang] ?? "cart";
+    const favSlug = PATH_SLUGS["favourites"]?.[lang] ?? "favourites";
+
+    const FavIconWithBadge = ({ size }: { size: 'sm' | 'md' }) => {
+        const isSmall = size === 'sm';
+        return (
+            <Link href={`/${lang}/${favSlug}`}>
+                <div
+                    data-fav-icon
+                    className={`relative flex items-center justify-center bg-white rounded-full cursor-pointer hover:shadow-md transition-shadow ${
+                        isSmall ? "h-[32px] w-[32px]" : "h-[35px] w-[35px]"
+                    }`}
+                >
+                    <Image src={FavIcon} alt="favourite" width={isSmall ? 18 : 20} />
+
+                    <AnimatePresence>
+                        {favCount > 0 && (
+                            <motion.span
+                                key={favCount}
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0, opacity: 0 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                                className="absolute -top-[6px] -right-[6px] min-w-[18px] h-[18px] bg-[#FBBB14] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-[4px] shadow-sm"
+                            >
+                                {favCount > 99 ? "99+" : favCount}
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </Link>
+        );
+    };
 
     return (
         <>
-            {/* Sentinel — sits above the header; when it scrolls off-screen the sticky animation fires */}
             <div ref={sentinelRef} className="h-px" aria-hidden="true" />
 
             <header
@@ -120,12 +155,24 @@ export default function Header() {
                         <LanguageSwitcher />
                         {isLoggedIn ? (
                             <>
-                                <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
-                                    <Image src={FavIcon} alt="favourite" />
-                                </div>
+                                <FavIconWithBadge size="md" />
                                 <Link href={`/${lang}/${cartSlug}`}>
-                                    <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
+                                    <div data-cart-icon className="relative flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer hover:shadow-md transition-shadow">
                                         <Image src={CartIcon} alt="cart" />
+                                        <AnimatePresence>
+                                            {cartCount > 0 && (
+                                                <motion.span
+                                                    key={cartCount}
+                                                    initial={{ scale: 0, opacity: 0 }}
+                                                    animate={{ scale: 1, opacity: 1 }}
+                                                    exit={{ scale: 0, opacity: 0 }}
+                                                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                                                    className="absolute -top-[6px] -right-[6px] min-w-[18px] h-[18px] bg-[#FEBF12] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-[4px] shadow-sm"
+                                                >
+                                                    {cartCount > 99 ? "99+" : cartCount}
+                                                </motion.span>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                 </Link>
                                 <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
@@ -148,12 +195,24 @@ export default function Header() {
                     <div className="flex lg:hidden items-center gap-3">
                         {isLoggedIn ? (
                             <>
-                                <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
-                                    <Image src={FavIcon} alt="favourite" width={18} />
-                                </div>
+                                <FavIconWithBadge size="sm" />
                                 <Link href={`/${lang}/${cartSlug}`}>
-                                    <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
+                                    <div data-cart-icon className="relative flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer hover:shadow-md transition-shadow">
                                         <Image src={CartIcon} alt="cart" width={18} />
+                                        <AnimatePresence>
+                                            {cartCount > 0 && (
+                                                <motion.span
+                                                    key={cartCount}
+                                                    initial={{ scale: 0, opacity: 0 }}
+                                                    animate={{ scale: 1, opacity: 1 }}
+                                                    exit={{ scale: 0, opacity: 0 }}
+                                                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                                                    className="absolute -top-[6px] -right-[6px] min-w-[18px] h-[18px] bg-[#402F75] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-[4px] shadow-sm"
+                                                >
+                                                    {cartCount > 99 ? "99+" : cartCount}
+                                                </motion.span>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                 </Link>
                                 <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
@@ -212,7 +271,6 @@ export default function Header() {
                     </div>
                 </nav>
 
-                {/* Keyframe for slide-in animation when sticky kicks in */}
                 <style>{`
                     @keyframes slideDown {
                         from { transform: translateY(-100%); opacity: 0; }

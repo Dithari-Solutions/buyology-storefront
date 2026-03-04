@@ -114,6 +114,9 @@ export const {
 export const selectCartItems = (state: RootState) =>
     state.cart.items.filter((i) => !i.savedForLater);
 
+export const selectCartCount = (state: RootState) =>
+    state.cart.items.filter((i) => !i.savedForLater).length;
+
 export const selectSavedItems = (state: RootState) =>
     state.cart.items.filter((i) => i.savedForLater);
 

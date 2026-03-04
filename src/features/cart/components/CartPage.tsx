@@ -16,7 +16,7 @@ function EmptyCartState({ lang }: { lang: Lang }) {
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
 
     return (
-        <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
+        <div className="flex flex-col items-center justify-center py-24 gap-5 text-center bg-whtie rounded-[20px]">
             {/* Cart illustration */}
             <div className="w-20 h-20 rounded-full bg-[#EDE9FF] flex items-center justify-center">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
