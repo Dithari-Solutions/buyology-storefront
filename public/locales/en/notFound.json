@@ -1,0 +1,32 @@
+{
+    "badge": "ERROR 404 — PAGE NOT FOUND",
+    "title": "This page has gone missing",
+    "description": "The page you're looking for may have been moved, deleted, or never existed. But your shopping adventure doesn't have to end here.",
+    "searchPlaceholder": "Search for products...",
+    "search": "Search",
+    "goHome": "Go to Home page",
+    "goBack": "Go Back",
+    "whereToGo": "WHERE WOULD YOU LIKE TO GO?",
+    "cards": {
+        "home": {
+            "title": "Continue Shopping",
+            "desc": "Browse our full product catalogue"
+        },
+        "cart": {
+            "title": "Continue Shopping",
+            "desc": "Browse our full product catalogue"
+        },
+        "favourites": {
+            "title": "My Favourites",
+            "desc": "Items you've saved for later"
+        },
+        "account": {
+            "title": "My Account",
+            "desc": "Orders, profile & settings"
+        }
+    },
+    "stillLost": "Still lost? We're here to help.",
+    "supportDesc": "Our support team can help you find what you're looking for — or resolve any issue you've encountered.",
+    "emailSupport": "Email Support",
+    "liveChat": "Live Chat"
+}

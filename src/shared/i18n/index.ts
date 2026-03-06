@@ -11,6 +11,7 @@ import enFooter from "../../../public/locales/en/footer.json";
 import enHeader from "../../../public/locales/en/header.json";
 import enHome        from "../../../public/locales/en/home.json";
 import enFavourites  from "../../../public/locales/en/favourites.json";
+import enNotFound    from "../../../public/locales/en/notFound.json";
 
 import azAuth   from "../../../public/locales/az/auth.json";
 import azBanner from "../../../public/locales/az/banner.json";
@@ -19,6 +20,7 @@ import azFooter from "../../../public/locales/az/footer.json";
 import azHeader from "../../../public/locales/az/header.json";
 import azHome        from "../../../public/locales/az/home.json";
 import azFavourites  from "../../../public/locales/az/favourites.json";
+import azNotFound    from "../../../public/locales/az/notFound.json";
 
 import arAuth   from "../../../public/locales/ar/auth.json";
 import arBanner from "../../../public/locales/ar/banner.json";
@@ -27,6 +29,7 @@ import arFooter from "../../../public/locales/ar/footer.json";
 import arHeader from "../../../public/locales/ar/header.json";
 import arHome        from "../../../public/locales/ar/home.json";
 import arFavourites  from "../../../public/locales/ar/favourites.json";
+import arNotFound    from "../../../public/locales/ar/notFound.json";
 
 if (!i18n.isInitialized) {
     i18n
@@ -36,7 +39,7 @@ if (!i18n.isInitialized) {
             fallbackLng: "en",
             debug: false,
             supportedLngs: ["en", "az", "ar"],
-            ns: ["auth", "banner", "cart", "favourites", "footer", "header", "home"],
+            ns: ["auth", "banner", "cart", "favourites", "footer", "header", "home", "notFound"],
             defaultNS: "home",
             interpolation: {
                 escapeValue: false,
@@ -50,6 +53,7 @@ if (!i18n.isInitialized) {
                     footer:      enFooter,
                     header:      enHeader,
                     home:        enHome,
+                    notFound:    enNotFound,
                 },
                 az: {
                     auth:        azAuth,
@@ -59,6 +63,7 @@ if (!i18n.isInitialized) {
                     footer:      azFooter,
                     header:      azHeader,
                     home:        azHome,
+                    notFound:    azNotFound,
                 },
                 ar: {
                     auth:        arAuth,
@@ -68,6 +73,7 @@ if (!i18n.isInitialized) {
                     footer:      arFooter,
                     header:      arHeader,
                     home:        arHome,
+                    notFound:    arNotFound,
                 },
             },
             react: {

@@ -1,0 +1,32 @@
+{
+    "badge": "XETA 404 — SEHIFE TAPILMADI",
+    "title": "Bu sehife yoxa cixdi",
+    "description": "Axtardiginiz sehife kocurulmus, silinmis ve ya hec movcud olmamis ola biler. Amma alis-veris maceraniz burada bitmir.",
+    "searchPlaceholder": "Mehsul axtar...",
+    "search": "Axtar",
+    "goHome": "Ana Sehifeye Get",
+    "goBack": "Geri Qayt",
+    "whereToGo": "HARA GETMEK ISTEYIRSINIZ?",
+    "cards": {
+        "home": {
+            "title": "Alis-verise Davam Et",
+            "desc": "Tam mehsul kataloqqumuza baxin"
+        },
+        "cart": {
+            "title": "Alis-verise Davam Et",
+            "desc": "Tam mehsul kataloqqumuza baxin"
+        },
+        "favourites": {
+            "title": "Sevimliler",
+            "desc": "Sonraya saxladiginiz mehsullar"
+        },
+        "account": {
+            "title": "Hesabim",
+            "desc": "Sifarisler, profil ve parametrler"
+        }
+    },
+    "stillLost": "Hele itisiniz? Biz buradayiq.",
+    "supportDesc": "Destk komandamiz axtardiginizi tapmaga komek ede biler — ya da qarsılasdiginiz herhansi problemi hell ede biler.",
+    "emailSupport": "E-pocт Desteyi",
+    "liveChat": "Canli Sohbet"
+}
