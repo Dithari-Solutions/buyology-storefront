@@ -1,0 +1,57 @@
+{
+  "title": "ملفي الشخصي",
+  "subtitle": "إدارة معلوماتك الشخصية",
+  "sidebar": {
+    "orders": "الطلبات",
+    "reviews": "التقييمات",
+    "wishlist": "قائمة الأمنيات",
+    "points": "النقاط",
+    "quickLinks": "روابط سريعة",
+    "shoppingCart": "عربة التسوق",
+    "favourites": "المفضلة",
+    "nav": {
+      "myProfile": "ملفي الشخصي",
+      "deliveryAddress": "عنوان التوصيل",
+      "orderHistory": "سجل الطلبات",
+      "settings": "الإعدادات"
+    }
+  },
+  "personalInfo": {
+    "heading": "المعلومات الشخصية",
+    "editButton": "تعديل الملف الشخصي",
+    "cancelButton": "إلغاء",
+    "saveButton": "حفظ",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "dob": "تاريخ الميلاد",
+    "placeholder": "أدخل النص",
+    "privacyNote": "معلوماتك الشخصية محمية بتشفير من طرف إلى طرف. لن نشارك بياناتك مع أطراف ثالثة."
+  },
+  "deliveryAddress": {
+    "title": "عنوان التوصيل",
+    "subtitle": "إدارة عناوينك",
+    "heading": "عنوان التوصيل",
+    "editButton": "تعديل العنوان",
+    "cancelButton": "إلغاء",
+    "saveButton": "حفظ",
+    "country": "الدولة",
+    "streetAddress": "عنوان الشارع",
+    "stateRegion": "الولاية / المنطقة",
+    "city": "المدينة",
+    "postalCode": "الرمز البريدي",
+    "placeholderText": "أدخل النص",
+    "privacyNote": "معلوماتك الشخصية محمية بتشفير من طرف إلى طرف. لن نشارك بياناتك مع أطراف ثالثة."
+  },
+  "orderHistory": {
+    "title": "سجل الطلبات",
+    "subtitle": "عرض طلباتك السابقة",
+    "comingSoon": "سجل الطلبات قادم قريباً"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة إعدادات حسابك",
+    "comingSoon": "الإعدادات قادمة قريباً"
+  }
+}

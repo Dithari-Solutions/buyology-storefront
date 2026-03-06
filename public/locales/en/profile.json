@@ -1,0 +1,57 @@
+{
+  "title": "My Profile",
+  "subtitle": "Manage your personal information",
+  "sidebar": {
+    "orders": "Orders",
+    "reviews": "Reviews",
+    "wishlist": "Wishlist",
+    "points": "Points",
+    "quickLinks": "QUICK LINKS",
+    "shoppingCart": "Shopping Cart",
+    "favourites": "Favourites",
+    "nav": {
+      "myProfile": "My Profile",
+      "deliveryAddress": "Delivery Address",
+      "orderHistory": "Order History",
+      "settings": "Settings"
+    }
+  },
+  "personalInfo": {
+    "heading": "Personal Information",
+    "editButton": "Edit Profile",
+    "cancelButton": "Cancel",
+    "saveButton": "Save",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "dob": "Date of Birth",
+    "placeholder": "Placeholder text",
+    "privacyNote": "Your personal information is protected with end-to-end encryption. We never share your data with third parties."
+  },
+  "deliveryAddress": {
+    "title": "Delivery Address",
+    "subtitle": "Manage your addresses",
+    "heading": "Delivery Address",
+    "editButton": "Edit Address",
+    "cancelButton": "Cancel",
+    "saveButton": "Save",
+    "country": "Country",
+    "streetAddress": "Street Address",
+    "stateRegion": "State / Region",
+    "city": "City",
+    "postalCode": "Postal Code",
+    "placeholderText": "Placeholder text",
+    "privacyNote": "Your personal information is protected with end-to-end encryption. We never share your data with third parties."
+  },
+  "orderHistory": {
+    "title": "Order History",
+    "subtitle": "View your past orders",
+    "comingSoon": "Order history coming soon"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings",
+    "comingSoon": "Settings coming soon"
+  }
+}

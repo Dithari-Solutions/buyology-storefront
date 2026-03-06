@@ -67,6 +67,7 @@ export default function Header() {
     const authSlug = PATH_SLUGS["auth"]?.[lang] ?? "auth";
     const cartSlug = PATH_SLUGS["cart"]?.[lang] ?? "cart";
     const favSlug = PATH_SLUGS["favourites"]?.[lang] ?? "favourites";
+    const profileSlug = PATH_SLUGS["profile"]?.[lang] ?? "profile";
 
     const FavIconWithBadge = ({ size }: { size: 'sm' | 'md' }) => {
         const isSmall = size === 'sm';
@@ -175,12 +176,14 @@ export default function Header() {
                                         </AnimatePresence>
                                     </div>
                                 </Link>
-                                <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="8" r="4" />
-                                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                                    </svg>
-                                </div>
+                                <Link href={`/${lang}/${profileSlug}`}>
+                                    <div className="flex items-center justify-center bg-white h-[35px] w-[35px] rounded-full cursor-pointer hover:shadow-md transition-shadow">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="8" r="4" />
+                                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                                        </svg>
+                                    </div>
+                                </Link>
                             </>
                         ) : (
                             <Link href={`/${lang}/${authSlug}`}>
@@ -215,12 +218,14 @@ export default function Header() {
                                         </AnimatePresence>
                                     </div>
                                 </Link>
-                                <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="8" r="4" />
-                                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                                    </svg>
-                                </div>
+                                <Link href={`/${lang}/${profileSlug}`}>
+                                    <div className="flex items-center justify-center bg-white h-[32px] w-[32px] rounded-full cursor-pointer hover:shadow-md transition-shadow">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="8" r="4" />
+                                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                                        </svg>
+                                    </div>
+                                </Link>
                             </>
                         ) : (
                             <Link href={`/${lang}/${authSlug}`}>

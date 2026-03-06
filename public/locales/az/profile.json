@@ -1,0 +1,57 @@
+{
+  "title": "Mənim Profilim",
+  "subtitle": "Şəxsi məlumatlarınızı idarə edin",
+  "sidebar": {
+    "orders": "Sifarişlər",
+    "reviews": "Rəylər",
+    "wishlist": "İstək siyahısı",
+    "points": "Xallar",
+    "quickLinks": "SÜRƏTLI KEÇIDLƏR",
+    "shoppingCart": "Alış-veriş səbəti",
+    "favourites": "Sevimlilər",
+    "nav": {
+      "myProfile": "Mənim Profilim",
+      "deliveryAddress": "Çatdırılma ünvanı",
+      "orderHistory": "Sifariş tarixi",
+      "settings": "Parametrlər"
+    }
+  },
+  "personalInfo": {
+    "heading": "Şəxsi məlumatlar",
+    "editButton": "Profili redaktə et",
+    "cancelButton": "Ləğv et",
+    "saveButton": "Yadda saxla",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "email": "E-poçt ünvanı",
+    "phone": "Telefon nömrəsi",
+    "dob": "Doğum tarixi",
+    "placeholder": "Mətn daxil edin",
+    "privacyNote": "Şəxsi məlumatlarınız end-to-end şifrələmə ilə qorunur. Məlumatlarınızı heç vaxt üçüncü şəxslərlə paylaşmırıq."
+  },
+  "deliveryAddress": {
+    "title": "Çatdırılma ünvanı",
+    "subtitle": "Ünvanlarınızı idarə edin",
+    "heading": "Çatdırılma ünvanı",
+    "editButton": "Ünvanı redaktə et",
+    "cancelButton": "Ləğv et",
+    "saveButton": "Yadda saxla",
+    "country": "Ölkə",
+    "streetAddress": "Küçə ünvanı",
+    "stateRegion": "Ştat / Region",
+    "city": "Şəhər",
+    "postalCode": "Poçt indeksi",
+    "placeholderText": "Mətn daxil edin",
+    "privacyNote": "Şəxsi məlumatlarınız end-to-end şifrələmə ilə qorunur. Məlumatlarınızı heç vaxt üçüncü şəxslərlə paylaşmırıq."
+  },
+  "orderHistory": {
+    "title": "Sifariş tarixi",
+    "subtitle": "Keçmiş sifarişlərinizə baxın",
+    "comingSoon": "Sifariş tarixi tezliklə əlçatan olacaq"
+  },
+  "settings": {
+    "title": "Parametrlər",
+    "subtitle": "Hesab parametrlərinizi idarə edin",
+    "comingSoon": "Parametrlər tezliklə əlçatan olacaq"
+  }
+}

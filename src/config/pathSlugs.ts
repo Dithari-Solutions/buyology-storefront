@@ -9,6 +9,7 @@ export const PATH_SLUGS: Record<string, Record<Lang, string>> = {
     auth: { en: "auth", az: "giris", ar: "duhul" },
     cart: { en: "cart", az: "sebet", ar: "salla" },
     favourites: { en: "favourites", az: "sevimliler", ar: "mufaddalat" },
+    profile: { en: "profile", az: "profil", ar: "profil" },
 };
 
 /**
