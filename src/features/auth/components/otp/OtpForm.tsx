@@ -6,14 +6,25 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { verifyOtp, signup } from "@/features/auth/services/auth.api";
 import type { SignUpRequest } from "@/features/auth/types";
+import StatusPopup from "@/features/auth/components/StatusPopup";
+
+type PopupState = {
+    type: "success" | "error";
+    title: string;
+    message: string;
+    subMessage?: string;
+    buttonText: string;
+    onButtonClick: () => void;
+} | null;
 
 export default function OtpForm() {
     const OTP_LENGTH = 6;
     const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
-    const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isResending, setIsResending] = useState(false);
-    const [resendMessage, setResendMessage] = useState<string | null>(null);
+    const [isLimitReached, setIsLimitReached] = useState(false);
+    const [popup, setPopup] = useState<PopupState>(null);
+    const [shakingInputs, setShakingInputs] = useState<boolean[]>(Array(OTP_LENGTH).fill(false));
     const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const { t } = useTranslation("auth");
     const lang = usePathname().split("/")[1] || "en";
@@ -63,22 +74,53 @@ export default function OtpForm() {
 
     const handleVerify = async () => {
         const otpCode = otp.join("");
-        if (otpCode.length < OTP_LENGTH) {
-            setError("Please enter the full 6-digit code.");
+
+        if (otpCode.length < OTP_LENGTH || otp.some((d) => !d)) {
+            const emptyFlags = otp.map((d) => !d);
+            setShakingInputs(emptyFlags);
+            setTimeout(() => setShakingInputs(Array(OTP_LENGTH).fill(false)), 400);
+            inputsRef.current[otp.findIndex((d) => !d)]?.focus();
             return;
         }
 
-        setError(null);
         setIsLoading(true);
         const res = await verifyOtp({ email, otpCode });
         setIsLoading(false);
 
         if (!res.success) {
-            setError(res.message);
-            // Clear inputs on expired / max attempts so user can request a new code
-            if (res.message.toLowerCase().includes("expired") || res.message.toLowerCase().includes("sign up again")) {
+            const isBlocked =
+                res.message.toLowerCase().includes("expired") ||
+                res.message.toLowerCase().includes("sign up again") ||
+                res.message.toLowerCase().includes("too many") ||
+                res.message.toLowerCase().includes("attempt");
+
+            if (isBlocked) {
+                setIsLimitReached(true);
                 setOtp(Array(OTP_LENGTH).fill(""));
-                inputsRef.current[0]?.focus();
+                setPopup({
+                    type: "error",
+                    title: t("otp.limitTitle"),
+                    message: res.message,
+                    subMessage: t("otp.limitSub"),
+                    buttonText: t("otp.resend"),
+                    onButtonClick: () => {
+                        setPopup(null);
+                        setIsLimitReached(false);
+                        handleResend();
+                    },
+                });
+            } else {
+                setPopup({
+                    type: "error",
+                    title: t("otp.errorTitle"),
+                    message: res.message,
+                    buttonText: t("otp.tryAgain"),
+                    onButtonClick: () => {
+                        setPopup(null);
+                        setOtp(Array(OTP_LENGTH).fill(""));
+                        inputsRef.current[0]?.focus();
+                    },
+                });
             }
             return;
         }
@@ -86,7 +128,15 @@ export default function OtpForm() {
         localStorage.setItem("accessToken", res.data!.accessToken);
         localStorage.setItem("refreshToken", res.data!.refreshToken);
         sessionStorage.removeItem("signup_payload");
-        router.push(`/${lang}`);
+
+        setPopup({
+            type: "success",
+            title: t("otp.successTitle"),
+            message: t("otp.successMsg"),
+            subMessage: t("otp.successSub"),
+            buttonText: t("authForm.signIn"),
+            onButtonClick: () => router.push(`/${lang}`),
+        });
     };
 
     const handleResend = async () => {
@@ -96,96 +146,116 @@ export default function OtpForm() {
             return;
         }
 
-        setResendMessage(null);
-        setError(null);
         setIsResending(true);
         const payload: SignUpRequest = JSON.parse(raw);
         const res = await signup(payload);
         setIsResending(false);
 
         if (!res.success) {
-            setError(res.message);
+            setPopup({
+                type: "error",
+                title: t("otp.errorTitle"),
+                message: res.message,
+                buttonText: t("otp.tryAgain"),
+                onButtonClick: () => setPopup(null),
+            });
             return;
         }
 
         setOtp(Array(OTP_LENGTH).fill(""));
         inputsRef.current[0]?.focus();
-        setResendMessage(res.message);
+        setPopup({
+            type: "success",
+            title: t("otp.resentTitle"),
+            message: res.message || t("otp.resentMsg"),
+            buttonText: t("otp.verify"),
+            onButtonClick: () => setPopup(null),
+        });
     };
 
     return (
-        <div className="flex flex-col items-center bg-white rounded-[30px] py-8 px-6 sm:px-8 w-full shadow-xl">
+        <>
+            {popup && <StatusPopup {...popup} />}
 
-            {/* Icon */}
-            <div className="w-14 h-14 rounded-full bg-[#F6F4FF] flex items-center justify-center mb-4">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z" stroke="#402F75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M22 6L12 13L2 6" stroke="#402F75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+            <div className="flex flex-col items-center bg-white rounded-[30px] py-8 px-6 sm:px-8 w-full shadow-xl">
+
+                {/* Icon */}
+                <div className="w-14 h-14 rounded-full bg-[#F6F4FF] flex items-center justify-center mb-4">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z" stroke="#402F75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M22 6L12 13L2 6" stroke="#402F75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </div>
+
+                <h2 className="font-bold text-[22px] text-gray-900 mb-1">{t("otp.title")}</h2>
+                <p className="text-gray-400 text-[13px] text-center mb-1 max-w-[260px]">
+                    {t("otp.desc")}
+                </p>
+                {email && (
+                    <p className="text-[#402F75] text-[13px] font-semibold mb-6">{email}</p>
+                )}
+
+                {/* OTP Inputs — hidden when limit reached */}
+                {!isLimitReached && (
+                    <div className="flex justify-center gap-[8px] sm:gap-[10px] mb-6" onPaste={handlePaste}>
+                        {otp.map((digit, index) => (
+                            <input
+                                key={index}
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={1}
+                                value={digit}
+                                ref={(el) => { inputsRef.current[index] = el; }}
+                                onChange={(e) => handleChange(e.target.value, index)}
+                                onKeyDown={(e) => handleKeyDown(e, index)}
+                                className={[
+                                    "w-[42px] h-[48px] sm:w-[46px] sm:h-[52px] text-center text-[20px] font-bold rounded-[12px] bg-gray-50 border-2 text-gray-900 transition-all duration-150 focus:outline-none focus:bg-white",
+                                    shakingInputs[index]
+                                        ? "border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)] otp-shake"
+                                        : "border-gray-200 focus:border-[#FBBB14] focus:shadow-[0_0_0_3px_rgba(251,187,20,0.15)]",
+                                ].join(" ")}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* Limit reached notice */}
+                {isLimitReached && (
+                    <p className="mb-6 text-red-500 text-[13px] text-center max-w-[260px]">
+                        {t("otp.limitNotice")}
+                    </p>
+                )}
+
+                {/* Resend */}
+                <p className="mb-5 text-gray-400 text-[13px] text-center">
+                    {t("otp.didntReceive")}{" "}
+                    <button
+                        type="button"
+                        disabled={isResending}
+                        onClick={handleResend}
+                        className="text-[#402F75] font-semibold cursor-pointer hover:underline disabled:opacity-50"
+                    >
+                        {isResending ? "..." : t("otp.resend")}
+                    </button>
+                </p>
+
+                {/* Verify Button — hidden when limit reached */}
+                {!isLimitReached && (
+                    <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={handleVerify}
+                        className="w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? "..." : t("otp.verify")}
+                    </button>
+                )}
+
+                {/* Back */}
+                <Link href={`/${lang}/auth`} className="mt-4 text-[13px] text-gray-400 hover:text-gray-600 transition-colors">
+                    {t("backToSignIn")}
+                </Link>
             </div>
-
-            <h2 className="font-bold text-[22px] text-gray-900 mb-1">{t("otp.title")}</h2>
-            <p className="text-gray-400 text-[13px] text-center mb-1 max-w-[260px]">
-                {t("otp.desc")}
-            </p>
-            {email && (
-                <p className="text-[#402F75] text-[13px] font-semibold mb-6">{email}</p>
-            )}
-
-            {/* OTP Inputs */}
-            <div className="flex justify-center gap-[8px] sm:gap-[10px] mb-6" onPaste={handlePaste}>
-                {otp.map((digit, index) => (
-                    <input
-                        key={index}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={digit}
-                        ref={(el) => { inputsRef.current[index] = el; }}
-                        onChange={(e) => handleChange(e.target.value, index)}
-                        onKeyDown={(e) => handleKeyDown(e, index)}
-                        className="w-[42px] h-[48px] sm:w-[46px] sm:h-[52px] text-center text-[20px] font-bold rounded-[12px] bg-gray-50 border-2 border-gray-200 text-gray-900 transition-all duration-150 focus:outline-none focus:border-[#FBBB14] focus:bg-white focus:shadow-[0_0_0_3px_rgba(251,187,20,0.15)]"
-                    />
-                ))}
-            </div>
-
-            {/* Error */}
-            {error && (
-                <p className="mb-4 text-red-500 text-[13px] text-center">{error}</p>
-            )}
-
-            {/* Resend success */}
-            {resendMessage && !error && (
-                <p className="mb-4 text-green-600 text-[13px] text-center">{resendMessage}</p>
-            )}
-
-            {/* Resend */}
-            <p className="mb-5 text-gray-400 text-[13px] text-center">
-                {t("otp.didntReceive")}{" "}
-                <button
-                    type="button"
-                    disabled={isResending}
-                    onClick={handleResend}
-                    className="text-[#402F75] font-semibold cursor-pointer hover:underline disabled:opacity-50"
-                >
-                    {isResending ? "..." : t("otp.resend")}
-                </button>
-            </p>
-
-            {/* Verify Button */}
-            <button
-                type="button"
-                disabled={isLoading}
-                onClick={handleVerify}
-                className="w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-                {isLoading ? "..." : t("otp.verify")}
-            </button>
-
-            {/* Back */}
-            <Link href={`/${lang}/auth`} className="mt-4 text-[13px] text-gray-400 hover:text-gray-600 transition-colors">
-                {t("backToSignIn")}
-            </Link>
-        </div>
+        </>
     );
 }
