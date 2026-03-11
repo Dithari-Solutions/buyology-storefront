@@ -12,5 +12,9 @@ const MapView = dynamic(() => import("./MapView"), {
 });
 
 export default function MapLoader() {
-  return <MapView />;
+  return (
+    <div className="w-full h-full">
+      <MapView />
+    </div>
+  );
 }
