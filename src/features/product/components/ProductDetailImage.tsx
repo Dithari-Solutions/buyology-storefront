@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 
 interface ProductDetailImageProps {
-    images: StaticImageData[];
+    images: string[];
 }
 
 export default function ProductDetailImage({ images }: ProductDetailImageProps) {
@@ -24,6 +24,9 @@ export default function ProductDetailImage({ images }: ProductDetailImageProps) 
                     src={images[activeIndex]}
                     alt={`Product image ${activeIndex + 1}`}
                     className="object-contain p-6 w-full h-full"
+                    width={600}
+                    height={450}
+                    unoptimized
                 />
             </div>
 
@@ -55,6 +58,9 @@ export default function ProductDetailImage({ images }: ProductDetailImageProps) 
                                 src={img}
                                 alt={`Thumbnail ${index + 1}`}
                                 className="object-contain w-full h-full p-2"
+                                width={120}
+                                height={80}
+                                unoptimized
                             />
                         </button>
                     ))}

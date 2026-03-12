@@ -31,6 +31,7 @@ interface ProductCardProps {
   processor?: string;
   ram?: string;
   storage?: string;
+  imageUrl?: string;
 }
 
 interface FlyCard {
@@ -57,6 +58,7 @@ export default function ProductCard({
   processor = "M3 Chip",
   ram = "32GB RAM",
   storage = "1024GB SSD",
+  imageUrl,
 }: ProductCardProps) {
   const id = useId();
   const clipId = `productImageClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
@@ -212,8 +214,11 @@ export default function ProductCard({
                 <div className="w-full h-full bg-white border border-[#FBBB14] p-[10px] flex flex-col gap-[10px]">
                   <div className="flex-1 bg-[#F6F4FF] rounded-[14px] flex items-center justify-center min-h-0 overflow-hidden">
                     <Image
-                      src={MacPro13}
+                      src={imageUrl ?? MacPro13}
                       alt={title}
+                      width={200}
+                      height={160}
+                      unoptimized={!!imageUrl}
                       className="object-contain max-h-full w-auto"
                     />
                   </div>
@@ -264,7 +269,14 @@ export default function ProductCard({
               </div>
             </>
           )}
-          <Image src={MacPro13} alt="MacBook Pro 13" className="object-contain min-h-[160px] w-auto relative z-10" />
+          <Image
+            src={imageUrl ?? MacPro13}
+            alt={title}
+            width={160}
+            height={140}
+            unoptimized={!!imageUrl}
+            className="object-contain min-h-[160px] w-auto relative z-10"
+          />
         </div>
 
         {/* ── Details ── */}
@@ -272,27 +284,35 @@ export default function ProductCard({
 
           {/* Title + Rating */}
           <div className="flex items-start justify-between gap-[8px]">
-            <h2 className="font-bold text-[17px] leading-snug text-gray-900">MacBook Pro 14</h2>
-            <div className="flex items-center gap-[3px] flex-shrink-0 bg-[#F6F4FF] rounded-full px-[7px] py-[3px]">
-              <Image src={StarIcon} alt="star" width={12} height={12} />
-              <span className="text-[12px] font-bold text-[#402F75]">4.6</span>
-            </div>
+            <h2 className="font-bold text-[17px] leading-snug text-gray-900">{title}</h2>
+            {rating > 0 && (
+              <div className="flex items-center gap-[3px] flex-shrink-0 bg-[#F6F4FF] rounded-full px-[7px] py-[3px]">
+                <Image src={StarIcon} alt="star" width={12} height={12} />
+                <span className="text-[12px] font-bold text-[#402F75]">{rating}</span>
+              </div>
+            )}
           </div>
 
           {/* Specs */}
           <div className={`grid gap-[6px]${isList ? ' grid-cols-3' : ' grid-cols-2'}`}>
-            <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]">
-              <Image src={ProccessorIcon} alt="Processor" width={13} height={13} className="flex-shrink-0 opacity-60" />
-              <span className="text-[11px] text-gray-600 font-medium truncate">M3 Chip</span>
-            </div>
-            <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]">
-              <Image src={RamIcon} alt="RAM" width={13} height={13} className="flex-shrink-0 opacity-60" />
-              <span className="text-[11px] text-gray-600 font-medium truncate">32GB RAM</span>
-            </div>
-            <div className={`flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]${isList ? '' : ' col-span-2'}`}>
-              <Image src={StorageIcon} alt="Storage" width={13} height={13} className="flex-shrink-0 opacity-60" />
-              <span className="text-[11px] text-gray-600 font-medium truncate">1024GB SSD</span>
-            </div>
+            {processor && (
+              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]">
+                <Image src={ProccessorIcon} alt="Processor" width={13} height={13} className="flex-shrink-0 opacity-60" />
+                <span className="text-[11px] text-gray-600 font-medium truncate">{processor}</span>
+              </div>
+            )}
+            {ram && (
+              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]">
+                <Image src={RamIcon} alt="RAM" width={13} height={13} className="flex-shrink-0 opacity-60" />
+                <span className="text-[11px] text-gray-600 font-medium truncate">{ram}</span>
+              </div>
+            )}
+            {storage && (
+              <div className={`flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]${isList ? '' : ' col-span-2'}`}>
+                <Image src={StorageIcon} alt="Storage" width={13} height={13} className="flex-shrink-0 opacity-60" />
+                <span className="text-[11px] text-gray-600 font-medium truncate">{storage}</span>
+              </div>
+            )}
           </div>
 
           {/* Divider */}
@@ -303,17 +323,19 @@ export default function ProductCard({
 
             {/* Price block */}
             <div className="flex flex-col gap-[2px]">
-              <div className="flex items-center gap-[5px]">
-                <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">-$300</span>
-                <span className="text-gray-400 line-through text-[12px]">$900</span>
-              </div>
-              <span className="text-[21px] text-[#402F75] font-bold leading-none">$600</span>
+              {discount > 0 && (
+                <div className="flex items-center gap-[5px]">
+                  <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">-${discount}</span>
+                  <span className="text-gray-400 line-through text-[12px]">${originalPrice}</span>
+                </div>
+              )}
+              <span className="text-[21px] text-[#402F75] font-bold leading-none">${price}</span>
             </div>
 
             {/* Stock + Buttons */}
             <div className="flex flex-col items-end gap-[5px]">
-              <span className="bg-green-50 text-green-600 border border-green-200 text-[10px] font-semibold rounded-[6px] py-[2px] px-[7px] leading-tight">
-                In Stock
+              <span className={`text-[10px] font-semibold rounded-[6px] py-[2px] px-[7px] leading-tight border ${inStock ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-500 border-red-200'}`}>
+                {inStock ? 'In Stock' : 'Out of Stock'}
               </span>
               <div className="flex items-center gap-[6px]">
                 {/* List-view fav button */}

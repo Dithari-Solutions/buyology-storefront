@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import ProductCard from './ProductCard';
-import { MOCK_PRODUCT } from '@/features/product/constant';
-
-const TOTAL_PRODUCTS = 236;
-const PER_PAGE = 12;
-const TOTAL_PAGES = Math.ceil(TOTAL_PRODUCTS / PER_PAGE);
+import { getProducts, getPrimaryImage, type ApiProduct } from '../services/productService';
+import type { Lang } from '@/config/pathSlugs';
 
 function getPageNumbers(current: number, total: number): (number | '...')[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -20,12 +18,11 @@ function getPageNumbers(current: number, total: number): (number | '...')[] {
   return pages;
 }
 
-function Pagination({ page, setPage }: { page: number; setPage: (p: number) => void }) {
-  const pages = getPageNumbers(page, TOTAL_PAGES);
+function Pagination({ page, total, setPage }: { page: number; total: number; setPage: (p: number) => void }) {
+  const pages = getPageNumbers(page, total);
 
   return (
     <div className="flex items-center justify-center gap-[6px] flex-wrap">
-      {/* Prev */}
       <button
         onClick={() => setPage(page - 1)}
         disabled={page === 1}
@@ -37,7 +34,6 @@ function Pagination({ page, setPage }: { page: number; setPage: (p: number) => v
         </svg>
       </button>
 
-      {/* Pages */}
       {pages.map((p, i) =>
         p === '...' ? (
           <span key={`dots-${i}`} className="flex items-center justify-center w-[36px] h-[36px] text-[13px] text-gray-400 select-none">
@@ -58,10 +54,9 @@ function Pagination({ page, setPage }: { page: number; setPage: (p: number) => v
         )
       )}
 
-      {/* Next */}
       <button
         onClick={() => setPage(page + 1)}
-        disabled={page === TOTAL_PAGES}
+        disabled={page === total}
         className="flex items-center justify-center w-[36px] h-[36px] rounded-[10px] border border-gray-200 bg-white text-gray-500 hover:border-[#402F75] hover:text-[#402F75] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         aria-label="Next page"
       >
@@ -104,30 +99,57 @@ const FilterIcon = () => (
 );
 
 const SORT_OPTIONS = ['Most Popular', 'Newest', 'Price: Low to High', 'Price: High to Low', 'Top Rated'];
+const PER_PAGE = 12;
+
+function getSpecValue(product: ApiProduct, code: string): string {
+  const spec = product.specs.find((s) => s.code === code);
+  if (!spec || spec.options.length === 0) return '';
+  const opt = spec.options[0];
+  return `${opt.value}${opt.unit}`;
+}
 
 export default function Products({ onFilterToggle, filterOpen }: {
   onFilterToggle?: () => void;
   filterOpen?: boolean;
 }) {
+  const params = useParams();
+  const lang = (params?.lang as Lang) ?? 'en';
+
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sort, setSort] = useState('Most Popular');
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(1);
 
-  const startItem = (page - 1) * PER_PAGE + 1;
-  const endItem = Math.min(page * PER_PAGE, TOTAL_PRODUCTS);
+  useEffect(() => {
+    setLoading(true);
+    getProducts(lang)
+      .then(setProducts)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [lang]);
+
+  const totalPages = Math.max(1, Math.ceil(products.length / PER_PAGE));
+  const startItem = products.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
+  const endItem = Math.min(page * PER_PAGE, products.length);
+  const pageProducts = products.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <div className="flex-1 flex flex-col gap-[16px] min-w-0">
       {/* Toolbar */}
       <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px] flex flex-wrap items-center justify-between gap-[10px]">
-        {/* Count */}
         <p className="text-[13px] text-gray-500">
-          Showing <span className="font-medium text-gray-800">{startItem}–{endItem}</span> of{' '}
-          <span className="font-medium text-gray-800">{TOTAL_PRODUCTS}</span> products
+          {loading ? (
+            'Loading products…'
+          ) : (
+            <>
+              Showing <span className="font-medium text-gray-800">{startItem}–{endItem}</span> of{' '}
+              <span className="font-medium text-gray-800">{products.length}</span> products
+            </>
+          )}
         </p>
 
-        {/* Right controls */}
         <div className="flex items-center gap-[12px] flex-wrap">
           {/* Filter toggle - mobile only */}
           <button
@@ -170,8 +192,7 @@ export default function Products({ onFilterToggle, filterOpen }: {
                     <button
                       key={option}
                       onClick={() => { setSort(option); setSortOpen(false); }}
-                      className={`w-full text-start px-[14px] py-[8px] text-[13px] hover:bg-gray-50 transition-colors ${sort === option ? 'font-semibold text-[#402F75]' : 'text-gray-700'
-                        }`}
+                      className={`w-full text-start px-[14px] py-[8px] text-[13px] hover:bg-gray-50 transition-colors ${sort === option ? 'font-semibold text-[#402F75]' : 'text-gray-700'}`}
                     >
                       {option}
                     </button>
@@ -210,16 +231,45 @@ export default function Products({ onFilterToggle, filterOpen }: {
       </div>
 
       {/* Product grid / list */}
-      <section className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[16px]' : 'flex flex-col gap-[12px]'}>
-        {Array.from({ length: PER_PAGE }).map((_, i) => (
-          <ProductCard key={i} view={view} slugs={MOCK_PRODUCT.slugs} />
-        ))}
-      </section>
+      {loading ? (
+        <div className="flex items-center justify-center py-[60px] text-gray-400 text-[14px]">
+          Loading…
+        </div>
+      ) : (
+        <section className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[16px]' : 'flex flex-col gap-[12px]'}>
+          {pageProducts.map((product) => {
+            const slugs = { en: product.id, az: product.id, ar: product.id };
+            const ram = getSpecValue(product, 'ram');
+            const storage = getSpecValue(product, 'storage');
+            return (
+              <ProductCard
+                key={product.id}
+                view={view}
+                slugs={slugs}
+                productId={product.id}
+                title={product.title}
+                price={product.effectivePrice}
+                originalPrice={product.basePrice}
+                discount={product.discountValue ?? 0}
+                ram={ram ? `${ram} RAM` : undefined}
+                storage={storage ? `${storage} SSD` : undefined}
+                imageUrl={getPrimaryImage(product.media)}
+              />
+            );
+          })}
+        </section>
+      )}
 
       {/* Pagination */}
-      <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px]">
-        <Pagination page={page} setPage={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
-      </div>
+      {!loading && products.length > PER_PAGE && (
+        <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px]">
+          <Pagination
+            page={page}
+            total={totalPages}
+            setPage={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          />
+        </div>
+      )}
     </div>
   );
 }
