@@ -1,5 +1,6 @@
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
+import ScrollReveal from "@/shared/components/ScrollReveal";
 import macPro13 from "@/assets/devices/macPro13.png";
 import Banner from "@/features/home/components/Banner";
 import Stories from "@/features/story/components/Stories";
@@ -52,14 +53,30 @@ export default function Home() {
       <Header />
       <main className="flex flex-col items-center justify-center pb-10 md:pb-16">
         <Stories />
-        <Banner />
-        <MarqueeStrip />
-        <PopularCategories />
-        <LimitedStock />
-        <TrustStats />
-        <Features />
-        <SuperDeals deals={superDeals} />
-        <Newsletter />
+        <ScrollReveal className="w-full flex justify-center">
+          <Banner />
+        </ScrollReveal>
+        <ScrollReveal className="w-full" delay={0.05}>
+          <MarqueeStrip />
+        </ScrollReveal>
+        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
+          <PopularCategories />
+        </ScrollReveal>
+        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
+          <LimitedStock />
+        </ScrollReveal>
+        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
+          <TrustStats />
+        </ScrollReveal>
+        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
+          <Features />
+        </ScrollReveal>
+        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
+          <SuperDeals deals={superDeals} />
+        </ScrollReveal>
+        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
+          <Newsletter />
+        </ScrollReveal>
       </main>
       <Footer />
     </>

@@ -120,7 +120,7 @@ export default function MapView() {
   const ctnRef     = useRef<HTMLDivElement>(null);
   const mapRef     = useRef<maplibregl.Map | null>(null);
   const markerRef  = useRef<maplibregl.Marker | null>(null);
-  const simTimer   = useRef<ReturnType<typeof setInterval> | null>(null);
+  const simTimer   = useRef<number | null>(null);
   const coordsRef  = useRef<[number, number][]>([]);
   const wsRef      = useRef<WebSocket | null>(null);
   const watchRef   = useRef<number | null>(null);
@@ -274,48 +274,89 @@ export default function MapView() {
   // ── Sync tilt & bearing to map ──────────────────────────────────────────────
   useEffect(() => { mapRef.current?.setPitch(tilt); }, [tilt]);
 
-  // ── ETA recalc ──────────────────────────────────────────────────────────────
-  const recalcETA = useCallback((pos: [number, number]) => {
+  // ── ETA recalc (throttled — called at most once per second) ──────────────────
+  const lastEtaTs = useRef(0);
+  const recalcETA = useCallback((pos: [number, number], now: number) => {
+    if (now - lastEtaTs.current < 1000) return;
+    lastEtaTs.current = now;
     const coords = coordsRef.current;
     if (!coords.length) return;
-    const idx      = closestIdx(pos, coords);
+    const idx       = closestIdx(pos, coords);
     const remaining = coords.slice(idx);
     const dist      = remaining.reduce(
       (acc, c, i) => (i === 0 ? acc : acc + haversine(remaining[i - 1], c)),
       0
     );
-    setEta(fmtTime(dist / (30 / 3.6))); // 30 km/h avg speed
+    setEta(fmtTime(dist / (30 / 3.6)));
   }, []);
 
+  // moveCourier: update marker directly (no React state) + throttled ETA
   const moveCourier = useCallback(
-    (pos: [number, number], hdg: number) => {
+    (pos: [number, number], hdg: number, now = performance.now()) => {
       markerRef.current?.setLngLat(pos).setRotation(hdg);
       headingRef.current = hdg;
-      recalcETA(pos);
+      recalcETA(pos, now);
     },
     [recalcETA]
   );
 
-  // ── Simulation fallback ─────────────────────────────────────────────────────
+  // ── Simulation (rAF — 60fps, no React renders per frame) ─────────────────────
   const stopSim = useCallback(() => {
-    if (simTimer.current) { clearInterval(simTimer.current); simTimer.current = null; }
+    if (simTimer.current) { cancelAnimationFrame(simTimer.current); simTimer.current = null; }
     setSimMode(false);
   }, []);
 
   const startSim = useCallback(() => {
     if (simTimer.current) return;
     setSimMode(true);
-    let idx = 0;
-    simTimer.current = setInterval(() => {
+
+    const SPEED_MPS = 25; // ~90 km/h — fast enough to feel live
+    let segIdx = 0;
+    let segT   = 0;
+    let lastTs = performance.now();
+
+    const tick = (now: number) => {
       const coords = coordsRef.current;
-      if (!coords.length) return;
-      if (idx >= coords.length - 1) idx = 0;
-      const curr = coords[idx];
-      const next = coords[Math.min(idx + 1, coords.length - 1)];
-      moveCourier(curr, computeBearing(curr, next));
-      idx += 2;
-    }, 250);
-  }, [moveCourier]);
+      if (!coords.length) { simTimer.current = requestAnimationFrame(tick); return; }
+
+      const dt = Math.min((now - lastTs) / 1000, 0.1); // cap at 100ms to avoid jumps on tab-blur
+      lastTs = now;
+
+      let budget = SPEED_MPS * dt;
+      while (budget > 0) {
+        const a   = coords[segIdx];
+        const b   = coords[(segIdx + 1) % coords.length];
+        const len = haversine(a, b);
+
+        if (len < 0.001) { segIdx = (segIdx + 1) % (coords.length - 1); continue; } // skip zero-len
+
+        const rem = len * (1 - segT);
+        if (budget >= rem) {
+          budget -= rem;
+          segIdx  = (segIdx + 1) % (coords.length - 1);
+          segT    = 0;
+        } else {
+          segT   += budget / len;
+          budget  = 0;
+        }
+      }
+
+      const a   = coords[segIdx];
+      const b   = coords[(segIdx + 1) % coords.length];
+      const pos: [number, number] = [
+        a[0] + (b[0] - a[0]) * segT,
+        a[1] + (b[1] - a[1]) * segT,
+      ];
+
+      // Direct DOM update — no React setState, no re-render
+      markerRef.current?.setLngLat(pos).setRotation(computeBearing(a, b));
+      recalcETA(pos, now); // only fires setEta once per second
+
+      simTimer.current = requestAnimationFrame(tick);
+    };
+
+    simTimer.current = requestAnimationFrame(tick);
+  }, [recalcETA]);
 
   // ── Live GPS + device orientation + WebSocket ───────────────────────────────
   useEffect(() => {
