@@ -2,7 +2,7 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ProductDetailClient from "@/features/product/components/ProductDetailClient";
 import { MOCK_REVIEWS } from "@/features/product/constant";
-import { getProductById, getImageUrl } from "@/features/product/services/productService";
+import { getProductBySlug, getImageUrl } from "@/features/product/services/productService";
 import type { Lang } from "@/config/pathSlugs";
 
 type PageProps = {
@@ -13,8 +13,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
     const { lang, slug } = await params;
 
     try {
-        const product = await getProductById(slug, lang as Lang);
-        const images = product.media
+        const product = await getProductBySlug(slug, lang as Lang);
+        const images = [...product.media]
             .sort((a, b) => a.orderIndex - b.orderIndex)
             .map((m) => getImageUrl(m.url));
 

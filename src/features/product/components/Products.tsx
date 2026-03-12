@@ -6,6 +6,43 @@ import ProductCard from './ProductCard';
 import { getProducts, getPrimaryImage, type ApiProduct } from '../services/productService';
 import type { Lang } from '@/config/pathSlugs';
 
+function ProductCardSkeleton() {
+  return (
+    <div className="p-[10px] bg-white rounded-[20px] w-full border border-[#FBBB14] animate-pulse">
+      {/* Image area */}
+      <div className="h-[200px] mb-[12px] rounded-[20px] bg-[#F6F4FF]" />
+
+      {/* Title + rating */}
+      <div className="flex items-start justify-between gap-[8px] mb-[10px]">
+        <div className="h-[18px] w-[55%] bg-gray-200 rounded-full" />
+        <div className="h-[22px] w-[44px] bg-gray-100 rounded-full flex-shrink-0" />
+      </div>
+
+      {/* Specs */}
+      <div className="grid grid-cols-2 gap-[6px] mb-[10px]">
+        <div className="h-[28px] bg-gray-100 rounded-[8px]" />
+        <div className="h-[28px] bg-gray-100 rounded-[8px]" />
+        <div className="h-[28px] bg-gray-100 rounded-[8px] col-span-2" />
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-gray-100 mb-[10px]" />
+
+      {/* Price + button */}
+      <div className="flex items-end justify-between gap-[8px]">
+        <div className="flex flex-col gap-[5px]">
+          <div className="h-[12px] w-[60px] bg-gray-100 rounded-full" />
+          <div className="h-[22px] w-[70px] bg-gray-200 rounded-full" />
+        </div>
+        <div className="flex flex-col items-end gap-[5px]">
+          <div className="h-[18px] w-[52px] bg-gray-100 rounded-[6px]" />
+          <div className="h-[34px] w-[110px] bg-[#FBBB14]/30 rounded-[30px]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function getPageNumbers(current: number, total: number): (number | '...')[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const pages: (number | '...')[] = [1];
@@ -232,13 +269,15 @@ export default function Products({ onFilterToggle, filterOpen }: {
 
       {/* Product grid / list */}
       {loading ? (
-        <div className="flex items-center justify-center py-[60px] text-gray-400 text-[14px]">
-          Loading…
-        </div>
+        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[16px]">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </section>
       ) : (
         <section className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[16px]' : 'flex flex-col gap-[12px]'}>
           {pageProducts.map((product) => {
-            const slugs = { en: product.id, az: product.id, ar: product.id };
+            const slugs = { en: product.slug, az: product.slug, ar: product.slug };
             const ram = getSpecValue(product, 'ram');
             const storage = getSpecValue(product, 'storage');
             return (

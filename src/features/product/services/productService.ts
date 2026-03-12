@@ -67,6 +67,13 @@ export async function getProductById(id: string, lang: Lang = "en"): Promise<Api
   return data.data;
 }
 
+export async function getProductBySlug(slug: string, lang: Lang = "en"): Promise<ApiProduct> {
+  const products = await getProducts(lang);
+  const match = products.find((p) => p.slug === slug);
+  if (!match) throw new Error(`Product with slug "${slug}" not found`);
+  return getProductById(match.id, lang);
+}
+
 export function getImageUrl(path: string): string {
   const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
   return `${base}${path}`;
