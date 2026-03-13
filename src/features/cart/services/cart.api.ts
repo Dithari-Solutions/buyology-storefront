@@ -26,13 +26,12 @@ export async function updateCartItemQuantity(
     userId: string,
     cartItemId: string,
     quantity: number
-): Promise<ApiCartResponse> {
+): Promise<ApiCartResponse | null> {
     const { data } = await apiClient.patch<ApiEnvelope<ApiCartResponse>>(
         `/api/cart/${userId}/items/${cartItemId}`,
         { quantity }
     );
-    if (!data.data) throw new Error(data.message);
-    return data.data;
+    return data?.data ?? null;
 }
 
 export async function removeCartItem(userId: string, cartItemId: string): Promise<ApiCartResponse> {

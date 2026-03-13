@@ -1,60 +1,61 @@
-import Image, { StaticImageData } from "next/image";
-import ArrowUpward from "@/assets/icons/arrow-upward-black.png";
+import { StaticImageData } from "next/image";
 
 interface FeatureCardProps {
     id: string;
     title: string;
+    description: string;
     bg: StaticImageData;
+    variant?: "tall" | "wide" | "normal";
 }
 
-export default function FeatureCard({ id, title, bg }: FeatureCardProps) {
-    const clipId = `featureClip-${id}`;
-
+export default function FeatureCard({ title, description, bg, variant = "normal" }: FeatureCardProps) {
     return (
-        <div
-            className="relative overflow-hidden rounded-2xl flex flex-col cursor-pointer group transition-transform duration-300 hover:scale-[1.03] w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]"
-        >
-            {/* SVG clip definition — single-line path avoids SSR/client whitespace hydration mismatch */}
-            <svg width="0" height="0" className="absolute">
-                <defs>
-                    <clipPath id={clipId} clipPathUnits="objectBoundingBox">
-                        <path d="M 0,0 L 0.72,0 C 0.78,0 0.78,0.06 0.78,0.06 L 0.78,0.09 C 0.78,0.16 0.85,0.16 0.85,0.16 L 0.93,0.16 C 1,0.16 1,0.23 1,0.23 L 1,1 L 0,1 Z" />
-                    </clipPath>
-                </defs>
-            </svg>
-
-            {/* Background image with rounded cutout */}
-            <div
-                className="absolute inset-0 overflow-hidden"
-                style={{ clipPath: `url(#${clipId})` }}
-            >
+        <div className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full">
+            {/* Background image */}
+            <div className="absolute inset-0">
                 <div
-                    className="absolute -inset-[5px] transition-transform duration-300 group-hover:scale-110"
+                    className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
                     style={{
                         backgroundImage: `url(${bg.src})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
                     }}
                 />
+                {/* Gradient overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f40]/95 via-[#2a1860]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#402F75]/20 to-transparent" />
             </div>
 
-            {/* Arrow icon inside the cutout */}
-            <div
-                className="absolute top-[5px] right-[5px] flex items-center justify-center w-[35px] h-[35px] md:w-[45px] md:h-[45px] rounded-full transition-all duration-300 group-hover:bg-[#d4ccff] group-hover:rotate-45"
-                style={{ backgroundColor: '#EDE9FF' }}
-            >
-                <Image src={ArrowUpward} alt="arrow" width={20} height={20} className="w-[14px] md:w-[20px]" />
+            {/* Arrow button */}
+            <div className="absolute top-4 end-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 group-hover:bg-[#FBBB14] group-hover:border-[#FBBB14] group-hover:rotate-45 group-hover:scale-110">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M7 17L17 7M17 7H7M17 7v10" />
+                </svg>
             </div>
 
-            {/* Bottom gradient shadow with text */}
-            <div
-                className="absolute bottom-0 left-0 w-full px-4 py-4 md:py-5 text-start font-semibold text-[14px] md:text-[16px] text-white"
-                style={{
-                    background: 'linear-gradient(to top, rgba(64,47,117,0.82) 0%, rgba(64,47,117,0.3) 60%, transparent 100%)',
-                }}
-            >
-                {title}
+            {/* Content */}
+            <div className="absolute bottom-0 start-0 end-0 p-5 md:p-6">
+                {/* Service badge */}
+                <div className="inline-flex items-center gap-[5px] bg-[#FBBB14]/20 border border-[#FBBB14]/40 backdrop-blur-sm rounded-full px-3 py-[5px] mb-3">
+                    <span className="w-[5px] h-[5px] rounded-full bg-[#FBBB14] flex-shrink-0" />
+                    <span className="text-[10px] font-semibold text-[#FBBB14] uppercase tracking-wider">Service</span>
+                </div>
+
+                <h3 className={`text-white font-bold leading-tight mb-2 ${variant === "tall" ? "text-[22px] md:text-[26px]" : "text-[18px] md:text-[20px]"}`}>
+                    {title}
+                </h3>
+                <p className={`text-white/65 leading-relaxed ${variant === "tall" ? "text-[13px] md:text-[14px]" : "text-[12px] md:text-[13px]"} line-clamp-2`}>
+                    {description}
+                </p>
+
+                {/* CTA link */}
+                <div className="flex items-center gap-[6px] mt-3 group-hover:gap-[10px] transition-all duration-300">
+                    <span className="text-[12px] font-semibold text-white/80 group-hover:text-white transition-colors">Learn more</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/60 group-hover:text-[#FBBB14] transition-colors">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </div>
             </div>
         </div>
     );

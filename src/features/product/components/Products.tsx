@@ -269,13 +269,13 @@ export default function Products({ onFilterToggle, filterOpen }: {
 
       {/* Product grid / list */}
       {loading ? (
-        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[16px]">
+        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-[16px]">
           {Array.from({ length: 6 }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
         </section>
       ) : (
-        <section className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[16px]' : 'flex flex-col gap-[12px]'}>
+        <section className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-[16px]' : 'flex flex-col gap-[12px]'}>
           {pageProducts.map((product) => {
             const slugs = { en: product.slug, az: product.slug, ar: product.slug };
             const ram = getSpecValue(product, 'ram');

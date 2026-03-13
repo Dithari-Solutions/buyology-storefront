@@ -98,7 +98,8 @@ export const updateQuantityThunk = createAsyncThunk(
     "cart/updateQuantityAsync",
     async (arg: UpdateQuantityThunkArg, { rejectWithValue }) => {
         try {
-            await updateCartItemQuantity(arg.userId, arg.cartItemId, arg.quantity);
+            const result = await updateCartItemQuantity(arg.userId, arg.cartItemId, arg.quantity);
+            return { result, localId: arg.localId, quantity: arg.quantity };
         } catch {
             return rejectWithValue({ localId: arg.localId, previousQuantity: arg.previousQuantity });
         }
@@ -300,7 +301,24 @@ const cartSlice = createSlice({
             state.selectedIds = state.selectedIds.filter((id) => id !== tempId);
         });
 
-        // ── updateQuantity: revert on failure ──────────────────────────────────
+        // ── updateQuantity: sync from server on success, revert on failure ────
+        builder.addCase(updateQuantityThunk.fulfilled, (state, action) => {
+            const { result, localId, quantity } = action.payload as {
+                result: ApiCartResponse | null;
+                localId: string;
+                quantity: number;
+            };
+            const stateItem = state.items.find((i) => i.id === localId);
+            if (!stateItem) return;
+            if (result) {
+                const apiItem = result.items.find((i) => i.id === localId);
+                if (apiItem) stateItem.quantity = apiItem.quantity;
+            } else {
+                // 200 but no body — keep the optimistic quantity
+                stateItem.quantity = quantity;
+            }
+        });
+
         builder.addCase(updateQuantityThunk.rejected, (state, action) => {
             const payload = action.payload as { localId: string; previousQuantity: number } | undefined;
             if (payload) {

@@ -47,10 +47,14 @@
         "title":       "Sadəcə Mağazadan Çox",
         "subtitle":    "Texnologiyanızı hər mərhələdə dəstəkləyirik — yenisini almaqdan ekspert təmirinə qədər.",
         "seeAll":      "Hamısına bax",
-        "rent":        "İcarə",
-        "repair":      "Təmir",
-        "brandNew":    "Sıfır Məhsul",
-        "refurbished": "Yenilənmiş"
+        "rent":             "İcarə",
+        "repair":           "Təmir",
+        "brandNew":         "Sıfır Məhsul",
+        "refurbished":      "Yenilənmiş",
+        "rentDesc":         "Almadan əvvəl sınayın — uzunmüddətli öhdəliksiz çevik planlar.",
+        "repairDesc":       "Ekspert texniklər cihazınızı sürətlə təmir edir, hər təmirə zəmanət.",
+        "brandNewDesc":     "Ən son modellər, qutusunda möhürlənmiş, tam istehsalçı zəmanəti.",
+        "refurbishedDesc":  "Sertifikatlı işlənmiş — yoxlanılmış, təmizlənmiş və istifadəyə hazır."
     },
     "limitedStock": {
         "badge":         "🔥 Məhdud Stok",

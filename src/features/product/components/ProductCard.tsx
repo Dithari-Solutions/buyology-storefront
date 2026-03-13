@@ -16,6 +16,7 @@ import { useId, useState, useEffect, useRef } from "react";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import ProccessorIcon from "@/assets/icons/proccessor.png";
 import { toggleFavourite, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
+import LoginPromptModal from "@/features/auth/components/LoginPromptModal";
 
 interface ProductCardProps {
   view?: 'grid' | 'list';
@@ -78,11 +79,16 @@ export default function ProductCard({
   const [particles, setParticles] = useState<number[]>([]);
   const [flyCards, setFlyCards] = useState<FlyCard[]>([]);
   const [favBounce, setFavBounce] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
   function handleToggleFavourite(e: React.MouseEvent) {
     e.stopPropagation();
+    if (!userId) {
+      setShowLoginPrompt(true);
+      return;
+    }
     dispatch(toggleFavourite({ id: productId, title, price, originalPrice, discount, rating, inStock, category, slugs, processor, ram, storage }));
 
     setFavBounce(true);
@@ -111,6 +117,10 @@ export default function ProductCard({
 
   function handleAddToCart(e: React.MouseEvent) {
     e.stopPropagation();
+    if (!userId) {
+      setShowLoginPrompt(true);
+      return;
+    }
 
     const tempId = `cart-${productId}-${Date.now()}`;
     const displayMeta = {
@@ -125,17 +135,12 @@ export default function ProductCard({
       savedForLater: false,
     };
 
-    if (userId) {
-      dispatch(addToCartThunk({
-        userId,
-        payload: { productId, quantity: 1 },
-        displayMeta,
-        tempId,
-      }));
-    } else {
-      // Not authenticated — update Redux only
-      dispatch({ type: "cart/addItem", payload: { ...displayMeta, id: tempId } });
-    }
+    dispatch(addToCartThunk({
+      userId,
+      payload: { productId, quantity: 1 },
+      displayMeta,
+      tempId,
+    }));
 
     if (!added) {
       setAdded(true);
@@ -190,8 +195,20 @@ export default function ProductCard({
     </motion.button>
   );
 
+  function handleGoToAuth(mode: "signin" | "register") {
+    setShowLoginPrompt(false);
+    router.push(`/${lang}/${PATH_SLUGS.auth[lang]}?mode=${mode}`);
+  }
+
   return (
     <>
+      {mounted && showLoginPrompt && (
+        <LoginPromptModal
+          onSignIn={() => handleGoToAuth("signin")}
+          onCreateAccount={() => handleGoToAuth("register")}
+          onClose={() => setShowLoginPrompt(false)}
+        />
+      )}
       {/* Portal: full card clone flies to the header fav icon */}
       {mounted && createPortal(
         <AnimatePresence>
@@ -256,11 +273,11 @@ export default function ProductCard({
       <div
         ref={cardRef}
         onClick={() => router.push(href)}
-        className={`p-[10px] bg-white rounded-[20px] w-full border border-[#FBBB14] cursor-pointer hover:shadow-md transition-shadow${isList ? ' flex flex-row gap-[16px]' : ''}`}
+        className={`p-[10px] xl:p-[14px] bg-white rounded-[20px] w-full border border-[#FBBB14] cursor-pointer hover:shadow-md transition-shadow${isList ? ' flex flex-row gap-[16px] xl:gap-[24px]' : ''}`}
       >
 
         {/* ── Image container ── */}
-        <div className={`relative overflow-hidden rounded-[20px] flex items-center justify-center${isList ? ' w-[180px] sm:w-[220px] flex-shrink-0 min-h-[180px]' : ' h-[200px] mb-[12px]'}`}>
+        <div className={`relative overflow-hidden rounded-[20px] flex items-center justify-center${isList ? ' w-[180px] sm:w-[220px] xl:w-[260px] flex-shrink-0 min-h-[180px] xl:min-h-[200px]' : ' h-[200px] xl:h-[220px] 2xl:h-[240px] mb-[12px] xl:mb-[16px]'}`}>
           {isList ? (
             <div className="absolute inset-0 bg-[#F6F4FF]" />
           ) : (
@@ -285,19 +302,19 @@ export default function ProductCard({
           <Image
             src={imageUrl ?? MacPro13}
             alt={title}
-            width={160}
-            height={140}
+            width={200}
+            height={180}
             unoptimized={!!imageUrl}
-            className="object-contain min-h-[160px] w-auto relative z-10"
+            className="object-contain min-h-[160px] xl:min-h-[180px] 2xl:min-h-[200px] w-auto relative z-10"
           />
         </div>
 
         {/* ── Details ── */}
-        <div className={`flex flex-col${isList ? ' flex-1 justify-between py-[4px] min-w-0' : ' gap-[10px]'}`}>
+        <div className={`flex flex-col${isList ? ' flex-1 justify-between py-[4px] min-w-0' : ' gap-[10px] xl:gap-[14px]'}`}>
 
           {/* Title + Rating */}
           <div className="flex items-start justify-between gap-[8px]">
-            <h2 className="font-bold text-[17px] leading-snug text-gray-900">{title}</h2>
+            <h2 className="font-bold text-[17px] xl:text-[19px] leading-snug text-gray-900">{title}</h2>
             {rating > 0 && (
               <div className="flex items-center gap-[3px] flex-shrink-0 bg-[#F6F4FF] rounded-full px-[7px] py-[3px]">
                 <Image src={StarIcon} alt="star" width={12} height={12} />
@@ -309,21 +326,21 @@ export default function ProductCard({
           {/* Specs */}
           <div className={`grid gap-[6px]${isList ? ' grid-cols-3' : ' grid-cols-2'}`}>
             {processor && (
-              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]">
+              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px] xl:px-[10px] xl:py-[6px]">
                 <Image src={ProccessorIcon} alt="Processor" width={13} height={13} className="flex-shrink-0 opacity-60" />
-                <span className="text-[11px] text-gray-600 font-medium truncate">{processor}</span>
+                <span className="text-[11px] xl:text-[12px] text-gray-600 font-medium truncate">{processor}</span>
               </div>
             )}
             {ram && (
-              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]">
+              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px] xl:px-[10px] xl:py-[6px]">
                 <Image src={RamIcon} alt="RAM" width={13} height={13} className="flex-shrink-0 opacity-60" />
-                <span className="text-[11px] text-gray-600 font-medium truncate">{ram}</span>
+                <span className="text-[11px] xl:text-[12px] text-gray-600 font-medium truncate">{ram}</span>
               </div>
             )}
             {storage && (
-              <div className={`flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]${isList ? '' : ' col-span-2'}`}>
+              <div className={`flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px] xl:px-[10px] xl:py-[6px]${isList ? '' : ' col-span-2'}`}>
                 <Image src={StorageIcon} alt="Storage" width={13} height={13} className="flex-shrink-0 opacity-60" />
-                <span className="text-[11px] text-gray-600 font-medium truncate">{storage}</span>
+                <span className="text-[11px] xl:text-[12px] text-gray-600 font-medium truncate">{storage}</span>
               </div>
             )}
           </div>
@@ -342,7 +359,7 @@ export default function ProductCard({
                   <span className="text-gray-400 line-through text-[12px]">${originalPrice}</span>
                 </div>
               )}
-              <span className="text-[21px] text-[#402F75] font-bold leading-none">${price}</span>
+              <span className="text-[21px] xl:text-[24px] text-[#402F75] font-bold leading-none">${price}</span>
             </div>
 
             {/* Stock + Buttons */}

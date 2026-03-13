@@ -1,19 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import Providers from "@/shared/components/Providers";
 import "./globals.css";
 import AiBotButton from "@/shared/components/AiBotButton";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 type Lang = "en" | "az" | "ar";
 
@@ -63,7 +52,7 @@ export default async function RootLayout({
   return (
     <html lang={lang} dir={dir}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F7F7F7]`}
+        className="antialiased bg-[#F7F7F7]"
       >
         <Providers>{children}</Providers>
         <AiBotButton />

@@ -47,10 +47,14 @@
         "title":       "More Than Just a Store",
         "subtitle":    "We support your tech at every stage — from buying new to expert repairs and easy trade-ins.",
         "seeAll":      "See all",
-        "rent":        "Rent",
-        "repair":      "Repair",
-        "brandNew":    "Brand New",
-        "refurbished": "Refurbished"
+        "rent":             "Rent",
+        "repair":           "Repair",
+        "brandNew":         "Brand New",
+        "refurbished":      "Refurbished",
+        "rentDesc":         "Try before you buy — flexible plans with no long-term commitment.",
+        "repairDesc":       "Expert technicians fix your device fast, warranty on every repair.",
+        "brandNewDesc":     "Latest models, sealed in the box, full manufacturer warranty.",
+        "refurbishedDesc":  "Certified pre-owned — tested, cleaned, and ready to perform."
     },
     "limitedStock": {
         "badge":         "🔥 Limited Stock",
