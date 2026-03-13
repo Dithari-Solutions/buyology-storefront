@@ -9,6 +9,8 @@ import {
     removeCartItem,
     updateCartItemQuantity,
 } from "../services/cart.api";
+import { getProductById, getPrimaryImage } from "@/features/product/services/productService";
+import type { Lang } from "@/config/pathSlugs";
 
 // ── Initial State ─────────────────────────────────────────────────────────────
 
@@ -19,6 +21,7 @@ const initialState: CartState = {
     shippingFree: true,
     taxRate: TAX_RATE,
     cartId: null,
+    loading: { cart: false, products: false },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -109,6 +112,15 @@ export const clearCartThunk = createAsyncThunk(
     }
 );
 
+export const fetchCartProductsThunk = createAsyncThunk(
+    "cart/fetchCartProducts",
+    async ({ productIds, lang }: { productIds: string[]; lang: Lang }) => {
+        const unique = [...new Set(productIds)];
+        const products = await Promise.all(unique.map((id) => getProductById(id, lang)));
+        return products;
+    }
+);
+
 // ── Slice ─────────────────────────────────────────────────────────────────────
 
 const cartSlice = createSlice({
@@ -192,11 +204,47 @@ const cartSlice = createSlice({
 
     extraReducers: (builder) => {
         // ── fetchCart ──────────────────────────────────────────────────────────
+        builder.addCase(fetchCartThunk.pending, (state) => {
+            state.loading.cart = true;
+        });
+
         builder.addCase(fetchCartThunk.fulfilled, (state, action) => {
             const apiCart: ApiCartResponse = action.payload;
             state.cartId = apiCart.id;
             state.items = mergeApiItems(state.items, apiCart.items);
             state.selectedIds = state.items.map((i) => i.id);
+            state.loading.cart = false;
+        });
+
+        builder.addCase(fetchCartThunk.rejected, (state) => {
+            state.loading.cart = false;
+        });
+
+        // ── fetchCartProducts ──────────────────────────────────────────────────
+        builder.addCase(fetchCartProductsThunk.pending, (state) => {
+            state.loading.products = true;
+        });
+
+        builder.addCase(fetchCartProductsThunk.fulfilled, (state, action) => {
+            state.loading.products = false;
+            const products = action.payload;
+            state.items = state.items.map((item) => {
+                const product = products.find((p) => p.id === item.productId);
+                if (!product) return item;
+                return {
+                    ...item,
+                    title: product.title,
+                    imageUrl: getPrimaryImage(product.media),
+                    slug: product.slug,
+                    price: product.effectivePrice,
+                    originalPrice: product.basePrice,
+                    discountPercent: product.discountValue ?? 0,
+                };
+            });
+        });
+
+        builder.addCase(fetchCartProductsThunk.rejected, (state) => {
+            state.loading.products = false;
         });
 
         // ── addToCart: optimistic add on pending ───────────────────────────────
@@ -291,6 +339,8 @@ export const selectSavedItems = (state: RootState) =>
 export const selectSelectedIds = (state: RootState) => state.cart.selectedIds;
 
 export const selectPromo = (state: RootState) => state.cart.promo;
+
+export const selectCartLoading = (state: RootState) => state.cart.loading;
 
 export const selectCartTotals = createSelector(
     selectCartItems,

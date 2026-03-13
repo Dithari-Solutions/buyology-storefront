@@ -15,6 +15,8 @@ export interface CartItemMeta {
     variantId?: string;
     title: string;
     imageUrl: string;
+    /** Product slug for linking to the product detail page */
+    slug?: string;
     variant: CartItemVariant;
     price: number;
     originalPrice: number;
@@ -46,6 +48,7 @@ export interface CartState {
     taxRate: number;
     /** API cart UUID */
     cartId: string | null;
+    loading: { cart: boolean; products: boolean };
 }
 
 // ── Derived / View ────────────────────────────────────────────────────────────

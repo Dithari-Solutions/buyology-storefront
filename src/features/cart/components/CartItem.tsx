@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { AppDispatch, RootState } from "@/store";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import {
     removeItem,
     updateQuantity,
@@ -27,7 +29,11 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
     const { t } = useTranslation("cart");
     const selectedIds = useSelector(selectSelectedIds);
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const lang = useSelector((state: RootState) => state.language.lang) as Lang;
     const isSelected = selectedIds.includes(item.id);
+
+    const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
+    const productHref = item.slug ? `/${lang}/${shopSlug}/${item.slug}` : null;
 
     const subtotal = (item.price * item.quantity).toFixed(2);
 
@@ -83,13 +89,25 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
 
             {/* ── Image with discount badge ── */}
             <div className="relative w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] rounded-xl border border-[#FBBB14] flex-shrink-0 flex items-center justify-center overflow-hidden">
-                <Image
-                    src={MacPro14}
-                    alt={item.title}
-                    fill
-                    className="object-contain p-2"
-                    sizes="110px"
-                />
+                {productHref ? (
+                    <Link href={productHref} className="w-full h-full">
+                        <Image
+                            src={item.imageUrl || MacPro14}
+                            alt={item.title}
+                            fill
+                            className="object-contain p-2"
+                            sizes="110px"
+                        />
+                    </Link>
+                ) : (
+                    <Image
+                        src={item.imageUrl || MacPro14}
+                        alt={item.title}
+                        fill
+                        className="object-contain p-2"
+                        sizes="110px"
+                    />
+                )}
                 {item.discountPercent > 0 && (
                     <span className="absolute top-1.5 start-1.5 bg-[#402F75] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none z-10">
                         -{item.discountPercent}%
@@ -102,7 +120,13 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
 
                 {/* Title + Price */}
                 <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-[20px] text-gray-900 leading-snug">{item.title}</h3>
+                    {productHref ? (
+                        <Link href={productHref} className="font-bold text-[20px] text-gray-900 leading-snug hover:text-[#402F75] transition-colors">
+                            {item.title}
+                        </Link>
+                    ) : (
+                        <h3 className="font-bold text-[20px] text-gray-900 leading-snug">{item.title}</h3>
+                    )}
                     <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                         <span className="text-[#402F75] font-bold text-[20px]">
                             ${item.price.toLocaleString()}

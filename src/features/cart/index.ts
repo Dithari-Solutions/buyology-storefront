@@ -21,6 +21,7 @@ export {
     selectPromo,
     selectCartTotals,
     fetchCartThunk,
+    fetchCartProductsThunk,
     addToCartThunk,
     removeItemThunk,
     updateQuantityThunk,

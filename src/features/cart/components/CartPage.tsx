@@ -10,7 +10,8 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import CartItems from "./CartItems";
 import OrderSummary from "./OrderSummary";
-import { selectCartItems, selectSavedItems, fetchCartThunk } from "../store/cartSlice";
+import { selectCartItems, selectSavedItems, selectCartLoading, fetchCartThunk, fetchCartProductsThunk } from "../store/cartSlice";
+import type { ApiCartResponse } from "../types";
 
 function EmptyCartState({ lang }: { lang: Lang }) {
     const { t } = useTranslation("cart");
@@ -47,20 +48,30 @@ export default function CartPage() {
 
     const cartItems = useSelector(selectCartItems);
     const savedItems = useSelector(selectSavedItems);
+    const loading = useSelector(selectCartLoading);
+    const isLoading = loading?.cart || loading?.products;
     const hasContent = cartItems.length > 0 || savedItems.length > 0;
 
     // Sync cart from API on mount when authenticated
     useEffect(() => {
         if (userId) {
-            dispatch(fetchCartThunk(userId));
+            dispatch(fetchCartThunk(userId)).then((action) => {
+                if (fetchCartThunk.fulfilled.match(action)) {
+                    const cart = action.payload as ApiCartResponse;
+                    const productIds = cart.items.map((i) => i.productId);
+                    if (productIds.length > 0) {
+                        dispatch(fetchCartProductsThunk({ productIds, lang }));
+                    }
+                }
+            });
         }
-    }, [userId, dispatch]);
+    }, [userId, lang, dispatch]);
 
     return (
         <>
             <Header />
             <main className="w-[90%] mx-auto py-8 md:py-12">
-                {!hasContent ? (
+                {!isLoading && !hasContent ? (
                     <EmptyCartState lang={lang} />
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 items-start">
@@ -68,7 +79,6 @@ export default function CartPage() {
                         <OrderSummary />
                     </div>
                 )}
-
             </main>
             <Footer />
         </>
