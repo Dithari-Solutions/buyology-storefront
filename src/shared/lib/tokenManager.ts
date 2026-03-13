@@ -19,6 +19,24 @@ export function getAccessToken(): string | null {
 }
 
 /**
+ * Called once on app startup. Attempts a silent token refresh using the
+ * HttpOnly refresh-token cookie. If the cookie is missing or expired,
+ * it silently does nothing (user stays logged out).
+ */
+export async function tryRestoreSession(): Promise<void> {
+  try {
+    const res = await axios.post(`${BASE_URL}/auth/refresh`, undefined, {
+      withCredentials: true,
+    });
+    const d: { accessToken: string; expiresIn: number } =
+      res.data?.data ?? res.data;
+    setTokens(d.accessToken, d.expiresIn);
+  } catch {
+    // No valid refresh token — stay logged out
+  }
+}
+
+/**
  * Store the new access token and schedule a proactive refresh
  * 30 seconds before it expires.
  */
