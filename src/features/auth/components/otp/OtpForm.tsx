@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { verifyOtp, signup } from "@/features/auth/services/auth.api";
 import type { SignUpRequest } from "@/features/auth/types";
+import { setTokens } from "@/shared/lib/tokenManager";
 import StatusPopup from "@/features/auth/components/StatusPopup";
 
 type PopupState = {
@@ -125,8 +126,7 @@ export default function OtpForm() {
             return;
         }
 
-        localStorage.setItem("accessToken", res.data!.accessToken);
-        localStorage.setItem("refreshToken", res.data!.refreshToken);
+        setTokens(res.data!.accessToken, res.data!.expiresIn);
         sessionStorage.removeItem("signup_payload");
 
         setPopup({
