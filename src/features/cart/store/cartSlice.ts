@@ -1,17 +1,113 @@
-import { createSlice, createSelector, type PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createSelector, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
-import type { CartItemMeta, CartState, CartTotals } from "../types";
-import { FLAT_SHIPPING_COST, MOCK_CART_ITEMS, TAX_RATE, VALID_PROMO_CODES } from "../constants";
+import type { AddToCartPayload, ApiCartItem, ApiCartResponse, CartItemMeta, CartState, CartTotals } from "../types";
+import { FLAT_SHIPPING_COST, TAX_RATE, VALID_PROMO_CODES } from "../constants";
+import {
+    addItemToCart,
+    clearCartApi,
+    getCart,
+    removeCartItem,
+    updateCartItemQuantity,
+} from "../services/cart.api";
 
 // ── Initial State ─────────────────────────────────────────────────────────────
 
 const initialState: CartState = {
-    items: MOCK_CART_ITEMS,
-    selectedIds: ["ci-1", "ci-2"],
+    items: [],
+    selectedIds: [],
     promo: { code: "", discount: 0, applied: false, error: null },
     shippingFree: true,
     taxRate: TAX_RATE,
+    cartId: null,
 };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function mergeApiItems(existing: CartItemMeta[], apiItems: ApiCartItem[]): CartItemMeta[] {
+    return apiItems.map((apiItem) => {
+        const match = existing.find(
+            (i) => i.productId === apiItem.productId && (i.variantId ?? null) === apiItem.variantId
+        );
+        return {
+            id: apiItem.id,
+            cartItemId: apiItem.id,
+            productId: apiItem.productId,
+            variantId: apiItem.variantId ?? undefined,
+            title: match?.title ?? apiItem.productSku,
+            imageUrl: match?.imageUrl ?? "",
+            variant: match?.variant ?? { color: "", storage: "" },
+            price: apiItem.unitPrice,
+            originalPrice: match?.originalPrice ?? apiItem.unitPrice,
+            discountPercent: match?.discountPercent ?? 0,
+            quantity: apiItem.quantity,
+            savedForLater: false,
+        };
+    });
+}
+
+// ── Async Thunks ──────────────────────────────────────────────────────────────
+
+export const fetchCartThunk = createAsyncThunk(
+    "cart/fetchCart",
+    async (userId: string) => getCart(userId)
+);
+
+export interface AddToCartThunkArg {
+    userId: string;
+    payload: AddToCartPayload;
+    displayMeta: Omit<CartItemMeta, "id" | "cartItemId" | "pending">;
+    tempId: string;
+}
+
+export const addToCartThunk = createAsyncThunk(
+    "cart/addToCart",
+    async (arg: AddToCartThunkArg, { rejectWithValue }) => {
+        try {
+            const result = await addItemToCart(arg.userId, arg.payload);
+            return { result, tempId: arg.tempId };
+        } catch {
+            return rejectWithValue({ tempId: arg.tempId });
+        }
+    }
+);
+
+export interface RemoveItemThunkArg {
+    userId: string;
+    cartItemId: string;
+}
+
+export const removeItemThunk = createAsyncThunk(
+    "cart/removeItemAsync",
+    async (arg: RemoveItemThunkArg) => {
+        await removeCartItem(arg.userId, arg.cartItemId);
+    }
+);
+
+export interface UpdateQuantityThunkArg {
+    userId: string;
+    cartItemId: string;
+    localId: string;
+    quantity: number;
+    previousQuantity: number;
+}
+
+export const updateQuantityThunk = createAsyncThunk(
+    "cart/updateQuantityAsync",
+    async (arg: UpdateQuantityThunkArg, { rejectWithValue }) => {
+        try {
+            await updateCartItemQuantity(arg.userId, arg.cartItemId, arg.quantity);
+        } catch {
+            return rejectWithValue({ localId: arg.localId, previousQuantity: arg.previousQuantity });
+        }
+    }
+);
+
+export const clearCartThunk = createAsyncThunk(
+    "cart/clearCartAsync",
+    async (userId: string) => {
+        await clearCartApi(userId);
+    }
+);
 
 // ── Slice ─────────────────────────────────────────────────────────────────────
 
@@ -92,6 +188,78 @@ const cartSlice = createSlice({
         removePromo(state) {
             state.promo = { code: "", discount: 0, applied: false, error: null };
         },
+    },
+
+    extraReducers: (builder) => {
+        // ── fetchCart ──────────────────────────────────────────────────────────
+        builder.addCase(fetchCartThunk.fulfilled, (state, action) => {
+            const apiCart: ApiCartResponse = action.payload;
+            state.cartId = apiCart.id;
+            state.items = mergeApiItems(state.items, apiCart.items);
+            state.selectedIds = state.items.map((i) => i.id);
+        });
+
+        // ── addToCart: optimistic add on pending ───────────────────────────────
+        builder.addCase(addToCartThunk.pending, (state, action) => {
+            const { displayMeta, tempId } = action.meta.arg;
+            // If product already in cart, just bump quantity optimistically
+            const existing = state.items.find(
+                (i) => i.productId === displayMeta.productId && !i.savedForLater
+            );
+            if (existing) {
+                existing.quantity += displayMeta.quantity;
+            } else {
+                state.items.push({ ...displayMeta, id: tempId, pending: true });
+                state.selectedIds.push(tempId);
+            }
+        });
+
+        builder.addCase(addToCartThunk.fulfilled, (state, action) => {
+            const { result, tempId } = action.payload as { result: ApiCartResponse; tempId: string };
+            state.cartId = result.id;
+            const { payload: addPayload } = action.meta.arg as AddToCartThunkArg;
+            const apiItem = result.items.find((i) => i.productId === addPayload.productId);
+            if (!apiItem) return;
+            const idx = state.items.findIndex((i) => i.id === tempId);
+            if (idx !== -1) {
+                state.items[idx] = {
+                    ...state.items[idx],
+                    id: apiItem.id,
+                    cartItemId: apiItem.id,
+                    quantity: apiItem.quantity,
+                    price: apiItem.unitPrice,
+                    pending: false,
+                };
+                const selIdx = state.selectedIds.indexOf(tempId);
+                if (selIdx !== -1) state.selectedIds[selIdx] = apiItem.id;
+            } else {
+                // Item was merged into existing (quantity bump case) — update its cartItemId
+                const existingItem = state.items.find(
+                    (i) => i.productId === addPayload.productId && !i.savedForLater
+                );
+                if (existingItem) {
+                    existingItem.cartItemId = apiItem.id;
+                    existingItem.quantity = apiItem.quantity;
+                    existingItem.price = apiItem.unitPrice;
+                }
+            }
+        });
+
+        builder.addCase(addToCartThunk.rejected, (state, action) => {
+            // Revert the optimistic add for new items
+            const { tempId } = action.meta.arg as AddToCartThunkArg;
+            state.items = state.items.filter((i) => i.id !== tempId);
+            state.selectedIds = state.selectedIds.filter((id) => id !== tempId);
+        });
+
+        // ── updateQuantity: revert on failure ──────────────────────────────────
+        builder.addCase(updateQuantityThunk.rejected, (state, action) => {
+            const payload = action.payload as { localId: string; previousQuantity: number } | undefined;
+            if (payload) {
+                const item = state.items.find((i) => i.id === payload.localId);
+                if (item) item.quantity = payload.previousQuantity;
+            }
+        });
     },
 });
 

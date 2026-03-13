@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { createPortal } from "react-dom";
-import type { RootState } from "@/store";
+import type { AppDispatch, RootState } from "@/store";
 import RamIcon from "@/assets/icons/ram.png";
 import CartIcon from "@/assets/icons/cart.png";
 import StarIcon from "@/assets/icons/star.png";
@@ -11,7 +11,7 @@ import MacPro13 from "@/assets/devices/macPro13.png";
 import { useRouter, useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { addItem } from "@/features/cart/store/cartSlice";
+import { addToCartThunk } from "@/features/cart/store/cartSlice";
 import { useId, useState, useEffect, useRef } from "react";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import ProccessorIcon from "@/assets/icons/proccessor.png";
@@ -66,9 +66,10 @@ export default function ProductCard({
 
   const router = useRouter();
   const params = useParams();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const lang = (params?.lang as Lang) ?? "en";
   const isFav = useSelector((state: RootState) => selectIsFavourite(productId)(state));
+  const userId = useSelector((state: RootState) => state.auth.userId);
   const href = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${slugs[lang] ?? slugs.en}`;
 
   const cardRef = useRef<HTMLDivElement>(null);
@@ -111,8 +112,8 @@ export default function ProductCard({
   function handleAddToCart(e: React.MouseEvent) {
     e.stopPropagation();
 
-    dispatch(addItem({
-      id: `cart-${productId}-${Date.now()}`,
+    const tempId = `cart-${productId}-${Date.now()}`;
+    const displayMeta = {
       productId,
       title,
       imageUrl: MacPro13.src,
@@ -122,7 +123,19 @@ export default function ProductCard({
       discountPercent: originalPrice > 0 ? Math.round((discount / originalPrice) * 100) : 0,
       quantity: 1,
       savedForLater: false,
-    }));
+    };
+
+    if (userId) {
+      dispatch(addToCartThunk({
+        userId,
+        payload: { productId, quantity: 1 },
+        displayMeta,
+        tempId,
+      }));
+    } else {
+      // Not authenticated — update Redux only
+      dispatch({ type: "cart/addItem", payload: { ...displayMeta, id: tempId } });
+    }
 
     if (!added) {
       setAdded(true);

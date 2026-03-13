@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import type { RootState } from "@/store";
+import type { AppDispatch, RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import CartItems from "./CartItems";
 import OrderSummary from "./OrderSummary";
-import { selectCartItems, selectSavedItems } from "../store/cartSlice";
+import { selectCartItems, selectSavedItems, fetchCartThunk } from "../store/cartSlice";
 
 function EmptyCartState({ lang }: { lang: Lang }) {
     const { t } = useTranslation("cart");
@@ -40,11 +41,20 @@ function EmptyCartState({ lang }: { lang: Lang }) {
 
 export default function CartPage() {
     const { t } = useTranslation("cart");
+    const dispatch = useDispatch<AppDispatch>();
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
+    const userId = useSelector((state: RootState) => state.auth.userId);
 
     const cartItems = useSelector(selectCartItems);
     const savedItems = useSelector(selectSavedItems);
     const hasContent = cartItems.length > 0 || savedItems.length > 0;
+
+    // Sync cart from API on mount when authenticated
+    useEffect(() => {
+        if (userId) {
+            dispatch(fetchCartThunk(userId));
+        }
+    }, [userId, dispatch]);
 
     return (
         <>

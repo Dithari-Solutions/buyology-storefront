@@ -20,6 +20,11 @@ export {
     selectSelectedIds,
     selectPromo,
     selectCartTotals,
+    fetchCartThunk,
+    addToCartThunk,
+    removeItemThunk,
+    updateQuantityThunk,
+    clearCartThunk,
 } from "./store/cartSlice";
 
-export type { CartItemMeta, CartItemVariant, CartState, CartTotals, PromoState } from "./types";
+export type { CartItemMeta, CartItemVariant, CartState, CartTotals, PromoState, AddToCartPayload, ApiCartResponse } from "./types";

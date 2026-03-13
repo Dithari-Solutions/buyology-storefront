@@ -1,11 +1,13 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
   isAuthenticated: boolean;
+  userId: string | null;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
+  userId: null,
 };
 
 const authSlice = createSlice({
@@ -15,11 +17,15 @@ const authSlice = createSlice({
     setAuthenticated(state) {
       state.isAuthenticated = true;
     },
+    setUserId(state, action: PayloadAction<string>) {
+      state.userId = action.payload;
+    },
     clearAuthenticated(state) {
       state.isAuthenticated = false;
+      state.userId = null;
     },
   },
 });
 
-export const { setAuthenticated, clearAuthenticated } = authSlice.actions;
+export const { setAuthenticated, setUserId, clearAuthenticated } = authSlice.actions;
 export default authSlice.reducer;

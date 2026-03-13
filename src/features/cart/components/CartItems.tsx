@@ -2,16 +2,24 @@
 
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { clearCart } from "../store/cartSlice";
-import { selectCartItems, selectSavedItems } from "../store/cartSlice";
+import type { AppDispatch, RootState } from "@/store";
+import { clearCart, clearCartThunk, selectCartItems, selectSavedItems } from "../store/cartSlice";
 import CartItem from "./CartItem";
 
 export default function CartItems() {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const { t } = useTranslation("cart");
+    const userId = useSelector((state: RootState) => state.auth.userId);
 
     const cartItems = useSelector(selectCartItems);
     const savedItems = useSelector(selectSavedItems);
+
+    function handleClearCart() {
+        dispatch(clearCart());
+        if (userId) {
+            dispatch(clearCartThunk(userId));
+        }
+    }
 
     return (
         <div className="flex flex-col gap-6">
@@ -25,7 +33,7 @@ export default function CartItems() {
                     </h2>
                     {cartItems.length > 0 && (
                         <button
-                            onClick={() => dispatch(clearCart())}
+                            onClick={handleClearCart}
                             className="text-[13px] text-gray-500 hover:text-red-500 transition-colors font-medium cursor-pointer"
                         >
                             {t("cartItems.clearCart")}

@@ -3,12 +3,15 @@
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import type { AppDispatch, RootState } from "@/store";
 import {
     removeItem,
     updateQuantity,
     toggleSelectItem,
     saveForLater,
     moveToCart,
+    removeItemThunk,
+    updateQuantityThunk,
 } from "../store/cartSlice";
 import { selectSelectedIds } from "../store/cartSlice";
 import type { CartItemMeta } from "../types";
@@ -20,21 +23,48 @@ interface CartItemProps {
 }
 
 export default function CartItem({ item, showSaveForLater = true }: CartItemProps) {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const { t } = useTranslation("cart");
     const selectedIds = useSelector(selectSelectedIds);
+    const userId = useSelector((state: RootState) => state.auth.userId);
     const isSelected = selectedIds.includes(item.id);
 
     const subtotal = (item.price * item.quantity).toFixed(2);
 
     function handleDecrement() {
-        if (item.quantity > 1) {
-            dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }));
+        if (item.quantity <= 1) return;
+        const newQty = item.quantity - 1;
+        dispatch(updateQuantity({ id: item.id, quantity: newQty }));
+        if (userId && item.cartItemId) {
+            dispatch(updateQuantityThunk({
+                userId,
+                cartItemId: item.cartItemId,
+                localId: item.id,
+                quantity: newQty,
+                previousQuantity: item.quantity,
+            }));
         }
     }
 
     function handleIncrement() {
-        dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }));
+        const newQty = item.quantity + 1;
+        dispatch(updateQuantity({ id: item.id, quantity: newQty }));
+        if (userId && item.cartItemId) {
+            dispatch(updateQuantityThunk({
+                userId,
+                cartItemId: item.cartItemId,
+                localId: item.id,
+                quantity: newQty,
+                previousQuantity: item.quantity,
+            }));
+        }
+    }
+
+    function handleRemove() {
+        dispatch(removeItem(item.id));
+        if (userId && item.cartItemId) {
+            dispatch(removeItemThunk({ userId, cartItemId: item.cartItemId }));
+        }
     }
 
     return (
@@ -133,7 +163,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                         </div>
                     </div>
 
-                    {/* Subtotal + Remove */}
+                    {/* Actions */}
                     <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-3">
                             {showSaveForLater && !item.savedForLater && (
@@ -153,7 +183,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                                 </button>
                             )}
                             <button
-                                onClick={() => dispatch(removeItem(item.id))}
+                                onClick={handleRemove}
                                 className="border border-[#FFC9C9] py-[5px] px-[10px] rounded-[10px] flex items-center gap-1.5 text-[15px] text-[#FB2C36] font-medium hover:text-red-600 transition-colors cursor-pointer"
                                 aria-label={`Remove ${item.title}`}
                             >

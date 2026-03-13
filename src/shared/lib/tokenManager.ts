@@ -40,16 +40,28 @@ export async function tryRestoreSession(): Promise<void> {
  * Store the new access token and schedule a proactive refresh
  * 30 seconds before it expires.
  */
+function _extractUserIdFromJwt(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.sub ?? payload.userId ?? payload.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function setTokens(accessToken: string, expiresIn: number): void {
   _accessToken = accessToken;
   _scheduleRefresh(expiresIn);
 
+  const userId = _extractUserIdFromJwt(accessToken);
+
   // Keep Redux auth state in sync (lazy import avoids circular deps)
   if (typeof window !== "undefined") {
     import("@/store").then(({ store }) =>
-      import("@/features/auth/store/authSlice").then(({ setAuthenticated }) =>
-        store.dispatch(setAuthenticated())
-      )
+      import("@/features/auth/store/authSlice").then(({ setAuthenticated, setUserId }) => {
+        store.dispatch(setAuthenticated());
+        if (userId) store.dispatch(setUserId(userId));
+      })
     );
   }
 }
