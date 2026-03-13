@@ -20,7 +20,6 @@ export interface SignInRequest {
 
 export interface SignInResponse {
   accessToken: string;
-  refreshToken: string;
   expiresIn: number;
 }
 

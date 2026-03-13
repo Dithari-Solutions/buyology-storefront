@@ -63,12 +63,44 @@ export async function verifyOtp(payload: OtpVerifyRequest): Promise<ApiResponse<
 
 // ── Sign In ───────────────────────────────────────────────────────────────────
 // 400 bad request | 401 invalid credentials
+// Must use withCredentials so the browser stores the HttpOnly refresh-token cookie.
 
 export async function signin(payload: SignInRequest): Promise<ApiResponse<SignInResponse>> {
   try {
-    const { data } = await apiClient.post<any>("/auth/signin", payload);
+    const { data } = await apiClient.post<any>("/auth/signin", payload, {
+      withCredentials: true,
+    });
     return normalizeResponse<SignInResponse>(data);
   } catch (error) {
     return errorResponse<SignInResponse>(error);
+  }
+}
+
+// ── Refresh access token ──────────────────────────────────────────────────────
+// The browser sends the HttpOnly refresh-token cookie automatically.
+// 401 means the refresh token is expired/revoked → redirect to login.
+
+export async function refreshAccessToken(): Promise<ApiResponse<SignInResponse>> {
+  try {
+    const { data } = await apiClient.post<any>("/auth/refresh", undefined, {
+      withCredentials: true,
+    });
+    return normalizeResponse<SignInResponse>(data);
+  } catch (error) {
+    return errorResponse<SignInResponse>(error);
+  }
+}
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+// Server revokes the refresh token and clears the cookie.
+
+export async function logout(): Promise<ApiResponse<null>> {
+  try {
+    const { data } = await apiClient.post<any>("/auth/logout", undefined, {
+      withCredentials: true,
+    });
+    return normalizeResponse<null>(data);
+  } catch (error) {
+    return errorResponse<null>(error);
   }
 }

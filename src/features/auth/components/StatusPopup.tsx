@@ -7,6 +7,8 @@ interface StatusPopupProps {
     subMessage?: string;
     buttonText: string;
     onButtonClick: () => void;
+    cancelText?: string;
+    onCancel?: () => void;
 }
 
 export default function StatusPopup({
@@ -16,6 +18,8 @@ export default function StatusPopup({
     subMessage,
     buttonText,
     onButtonClick,
+    cancelText,
+    onCancel,
 }: StatusPopupProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
@@ -57,13 +61,24 @@ export default function StatusPopup({
                 )}
                 <div className={subMessage ? "" : "mb-5"} />
 
-                <button
-                    type="button"
-                    onClick={onButtonClick}
-                    className="w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200"
-                >
-                    {buttonText}
-                </button>
+                <div className="w-full flex flex-col gap-2">
+                    <button
+                        type="button"
+                        onClick={onButtonClick}
+                        className="w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200"
+                    >
+                        {buttonText}
+                    </button>
+                    {cancelText && onCancel && (
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            className="w-full py-[12px] rounded-[14px] bg-gray-100 text-gray-600 font-semibold text-[15px] cursor-pointer hover:bg-gray-200 active:scale-[0.98] transition-all duration-150"
+                        >
+                            {cancelText}
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

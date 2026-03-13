@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import StatusPopup from "@/features/auth/components/StatusPopup";
+import { logout } from "@/features/auth/services/auth.api";
+import { clearTokens } from "@/shared/lib/tokenManager";
 
 export type Section = "profile" | "delivery" | "orders" | "settings";
 
@@ -27,9 +32,20 @@ const mockUser = {
 export default function ProfileSidebar({ activeSection, onSectionChange }: Props) {
     const { t } = useTranslation("profile");
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
+    const router = useRouter();
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const cartSlug = PATH_SLUGS["cart"]?.[lang] ?? "cart";
     const favSlug = PATH_SLUGS["favourites"]?.[lang] ?? "favourites";
+
+    const handleLogoutConfirm = async () => {
+        setIsLoggingOut(true);
+        await logout();
+        clearTokens();
+        setShowLogoutConfirm(false);
+        router.push(`/${lang}/auth`);
+    };
 
     const navItems: { key: Section; label: string; icon: React.ReactNode; badge?: number }[] = [
         {
@@ -175,6 +191,32 @@ export default function ProfileSidebar({ activeSection, onSectionChange }: Props
                     </li>
                 </ul>
             </div>
+
+            {/* Sign Out */}
+            <button
+                onClick={() => setShowLogoutConfirm(true)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-[14px] bg-white shadow-sm text-[14px] font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                {t("sidebar.signOut")}
+            </button>
+
+            {/* Logout confirmation popup */}
+            {showLogoutConfirm && (
+                <StatusPopup
+                    type="error"
+                    title={t("sidebar.logout.confirmTitle")}
+                    message={t("sidebar.logout.confirmMessage")}
+                    buttonText={isLoggingOut ? "..." : t("sidebar.logout.confirm")}
+                    onButtonClick={handleLogoutConfirm}
+                    cancelText={t("sidebar.logout.cancel")}
+                    onCancel={() => setShowLogoutConfirm(false)}
+                />
+            )}
         </aside>
     );
 }

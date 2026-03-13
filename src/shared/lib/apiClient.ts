@@ -1,6 +1,8 @@
 // src/shared/lib/apiClient.ts
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { getAccessToken, setTokens, clearTokens } from "@/shared/lib/tokenManager";
+
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 if (!baseURL) {
@@ -12,6 +14,8 @@ if (!baseURL) {
 export const apiClient = axios.create({
   baseURL,
   headers: { "Content-Type": "application/json" },
+  // withCredentials: true globally so the browser sends the HttpOnly
+  // refresh-token cookie to /auth/refresh and stores the Set-Cookie on signin.
   withCredentials: true,
 });
 
@@ -24,14 +28,10 @@ apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const isAuthEndpoint = config.url?.startsWith("/auth");
 
-    if (isAuthEndpoint) {
-      config.withCredentials = false;
-    } else {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("accessToken")
-          : null;
-
+    // Attach the in-memory access token for non-auth endpoints.
+    // Auth endpoints (/auth/signin, /auth/refresh, etc.) don't need it.
+    if (!isAuthEndpoint) {
+      const token = getAccessToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -47,19 +47,45 @@ apiClient.interceptors.request.use(
 // RESPONSE INTERCEPTOR
 // ==============================
 
+// Extend AxiosRequestConfig to carry a retry flag so we never loop.
+type RetryableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<any>) => {
     const status = error.response?.status;
+    const originalRequest = error.config as RetryableConfig | undefined;
+    const isAuthEndpoint = originalRequest?.url?.startsWith("/auth");
 
-    // Global 401 handler — skip auth endpoints (wrong credentials / wrong OTP are handled locally)
-    const isAuthEndpoint = error.config?.url?.startsWith("/auth");
-    if (status === 401 && !isAuthEndpoint) {
-      console.warn("Unauthorized. Redirecting to login...");
+    // ── 401 on a protected endpoint: try refreshing once ─────────────────────
+    if (status === 401 && !isAuthEndpoint && !originalRequest?._retry) {
+      if (originalRequest) originalRequest._retry = true;
 
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("accessToken");
-        window.location.href = "/auth/login";
+      try {
+        // Call refresh directly with axios (not apiClient) to avoid recursion.
+        const refreshRes = await axios.post(
+          `${baseURL}/auth/refresh`,
+          undefined,
+          { withCredentials: true }
+        );
+        const d: { accessToken: string; expiresIn: number } =
+          refreshRes.data?.data ?? refreshRes.data;
+
+        setTokens(d.accessToken, d.expiresIn);
+
+        // Retry the original request with the new token.
+        if (originalRequest) {
+          originalRequest.headers.Authorization = `Bearer ${d.accessToken}`;
+          return apiClient(originalRequest);
+        }
+      } catch {
+        // Refresh token is expired/revoked — log out and redirect to sign-in.
+        clearTokens();
+
+        if (typeof window !== "undefined") {
+          const lang = window.location.pathname.split("/")[1] || "en";
+          window.location.href = `/${lang}/auth`;
+        }
       }
     }
 

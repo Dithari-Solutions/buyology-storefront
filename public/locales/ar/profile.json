@@ -14,6 +14,13 @@
       "deliveryAddress": "عنوان التوصيل",
       "orderHistory": "سجل الطلبات",
       "settings": "الإعدادات"
+    },
+    "signOut": "تسجيل الخروج",
+    "logout": {
+      "confirmTitle": "تسجيل الخروج",
+      "confirmMessage": "هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟",
+      "confirm": "نعم، تسجيل الخروج",
+      "cancel": "إلغاء"
     }
   },
   "personalInfo": {

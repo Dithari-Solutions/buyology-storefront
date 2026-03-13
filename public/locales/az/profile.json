@@ -14,6 +14,13 @@
       "deliveryAddress": "Çatdırılma ünvanı",
       "orderHistory": "Sifariş tarixi",
       "settings": "Parametrlər"
+    },
+    "signOut": "Çıxış",
+    "logout": {
+      "confirmTitle": "Çıxış",
+      "confirmMessage": "Hesabınızdan çıxmaq istədiyinizə əminsiniz?",
+      "confirm": "Bəli, Çıxış",
+      "cancel": "Ləğv et"
     }
   },
   "personalInfo": {

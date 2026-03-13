@@ -14,6 +14,7 @@ import SearchIcon from "@/assets/icons/searchicon.svg";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { selectFavouriteItems } from "@/features/favourites/store/favouritesSlice";
 import { selectCartCount } from "@/features/cart/store/cartSlice";
+import type { RootState } from "@/store";
 
 const NAV_CANONICAL: Record<string, string> = {
     home: "",
@@ -26,20 +27,16 @@ const NAV_CANONICAL: Record<string, string> = {
 
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isSticky, setIsSticky] = useState(false);
 
     const sentinelRef = useRef<HTMLDivElement>(null);
 
     const { t } = useTranslation("header");
     const lang = useSelector((state: { language: { lang: Lang } }) => state.language.lang);
+    const isLoggedIn = useSelector((state: RootState) => state.auth.isAuthenticated);
     const favItems = useSelector(selectFavouriteItems);
     const favCount = favItems.length;
     const cartCount = useSelector(selectCartCount);
-
-    useEffect(() => {
-        setIsLoggedIn(!!localStorage.getItem("accessToken"));
-    }, []);
 
     useEffect(() => {
         const sentinel = sentinelRef.current;

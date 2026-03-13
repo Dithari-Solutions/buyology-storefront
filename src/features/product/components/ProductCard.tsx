@@ -1,21 +1,21 @@
 "use client";
 
-import { useId, useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { useRouter, useParams } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
-import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-import { toggleFavourite, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
-import { addItem } from "@/features/cart/store/cartSlice";
+import { createPortal } from "react-dom";
 import type { RootState } from "@/store";
 import RamIcon from "@/assets/icons/ram.png";
 import CartIcon from "@/assets/icons/cart.png";
 import StarIcon from "@/assets/icons/star.png";
 import StorageIcon from "@/assets/icons/storage.png";
-import ProccessorIcon from "@/assets/icons/proccessor.png";
 import MacPro13 from "@/assets/devices/macPro13.png";
+import { useRouter, useParams } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
+import { addItem } from "@/features/cart/store/cartSlice";
+import { useId, useState, useEffect, useRef } from "react";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import ProccessorIcon from "@/assets/icons/proccessor.png";
+import { toggleFavourite, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 
 interface ProductCardProps {
   view?: 'grid' | 'list';
