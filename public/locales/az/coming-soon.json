@@ -1,0 +1,35 @@
+{
+    "badge": "Tezliklə",
+    "expectedRelease": "Gözlənilən Tarix",
+    "whatToExpect": "Nə Gözləmək Olar",
+    "getNotified": "Başladığımızda Xəbər Alın",
+    "notifySubtitle": "Bu xidmət mövcud olduqda ilk bilən siz olun. Başladığımız kimi sizə e-poçt göndərəcəyik!",
+    "emailPlaceholder": "E-poçt ünvanınızı daxil edin",
+    "notifyBtn": "Xəbər Al",
+    "repair": {
+        "name": "Cihaz Təmir Xidməti",
+        "tagline": "Cihazlarınız üçün peşəkar təmir xidmətləri",
+        "description": "Sertifikatlı texniklər tərəfindən cihazlarınızı təmir etdirin. Təmir sorğularını onlayn göndərin, şəffaf qiymət təxminləri alın və təmir statusunuzu başlanğıcdan tamamlanmaya kimi izləyin. Həm mağaza, həm də kuryer çatdırılma seçimlərini təklif edirik.",
+        "releaseDate": "15 İyul 2026",
+        "steps": [
+            "Bütün əsas brendlər üçün sertifikatlı texniklər",
+            "Əvvəlcədən qiymət təxminləri ilə şəffaf qiymətlər",
+            "Real vaxtda təmir statusunun izlənməsi",
+            "Mağazaya gəlmə və ya kuryer çatdırılma seçimləri",
+            "Sürətli tamamlama vaxtı (2-5 iş günü)"
+        ]
+    },
+    "rent": {
+        "name": "Cihaz İcarə Xidməti",
+        "tagline": "Hər ehtiyac üçün çevik icarə planları",
+        "description": "Satın almaq öhdəliyi olmadan ən son cihazları sınayın. Smartfonlar, noutbuklar və planşetlərdən ibarət geniş kataloqumuzdan seçin. Aylıq icarə götürün, istənilən vaxt yeniləyin və rahatlıqla qaytarın — uzunmüddətli müqavilə tələb olunmur.",
+        "releaseDate": "30 Aprel 2026",
+        "steps": [
+            "Ən son cihazların kataloquna göz atın",
+            "Çevik aylıq plan seçin",
+            "Qapınıza çatdırılsın",
+            "İstənilən vaxt dəyişdirin və ya yeniləyin",
+            "Cərimə olmadan asan qaytarma"
+        ]
+    }
+}

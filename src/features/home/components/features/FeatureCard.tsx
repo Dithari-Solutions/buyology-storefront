@@ -1,4 +1,5 @@
 import { StaticImageData } from "next/image";
+import Link from "next/link";
 
 interface FeatureCardProps {
     id: string;
@@ -6,11 +7,16 @@ interface FeatureCardProps {
     description: string;
     bg: StaticImageData;
     variant?: "tall" | "wide" | "normal";
+    href?: string;
 }
 
-export default function FeatureCard({ title, description, bg, variant = "normal" }: FeatureCardProps) {
+export default function FeatureCard({ title, description, bg, variant = "normal", href }: FeatureCardProps) {
+    const Wrapper = href
+        ? ({ children }: { children: React.ReactNode }) => <Link href={href} className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full block">{children}</Link>
+        : ({ children }: { children: React.ReactNode }) => <div className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full">{children}</div>;
+
     return (
-        <div className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full">
+        <Wrapper>
             {/* Background image */}
             <div className="absolute inset-0">
                 <div
@@ -57,6 +63,6 @@ export default function FeatureCard({ title, description, bg, variant = "normal"
                     </svg>
                 </div>
             </div>
-        </div>
+        </Wrapper>
     );
 }

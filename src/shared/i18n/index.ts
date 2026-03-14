@@ -13,6 +13,7 @@ import enHome        from "../../../public/locales/en/home.json";
 import enFavourites  from "../../../public/locales/en/favourites.json";
 import enNotFound    from "../../../public/locales/en/notFound.json";
 import enProfile    from "../../../public/locales/en/profile.json";
+import enComingSoon  from "../../../public/locales/en/coming-soon.json";
 
 import azAuth   from "../../../public/locales/az/auth.json";
 import azBanner from "../../../public/locales/az/banner.json";
@@ -23,6 +24,7 @@ import azHome        from "../../../public/locales/az/home.json";
 import azFavourites  from "../../../public/locales/az/favourites.json";
 import azNotFound    from "../../../public/locales/az/notFound.json";
 import azProfile    from "../../../public/locales/az/profile.json";
+import azComingSoon  from "../../../public/locales/az/coming-soon.json";
 
 import arAuth   from "../../../public/locales/ar/auth.json";
 import arBanner from "../../../public/locales/ar/banner.json";
@@ -33,6 +35,7 @@ import arHome        from "../../../public/locales/ar/home.json";
 import arFavourites  from "../../../public/locales/ar/favourites.json";
 import arNotFound    from "../../../public/locales/ar/notFound.json";
 import arProfile    from "../../../public/locales/ar/profile.json";
+import arComingSoon  from "../../../public/locales/ar/coming-soon.json";
 
 if (!i18n.isInitialized) {
     i18n
@@ -42,7 +45,7 @@ if (!i18n.isInitialized) {
             fallbackLng: "en",
             debug: false,
             supportedLngs: ["en", "az", "ar"],
-            ns: ["auth", "banner", "cart", "favourites", "footer", "header", "home", "notFound", "profile"],
+            ns: ["auth", "banner", "cart", "coming-soon", "favourites", "footer", "header", "home", "notFound", "profile"],
             defaultNS: "home",
             interpolation: {
                 escapeValue: false,
@@ -52,6 +55,7 @@ if (!i18n.isInitialized) {
                     auth:        enAuth,
                     banner:      enBanner,
                     cart:        enCart,
+                    "coming-soon": enComingSoon,
                     favourites:  enFavourites,
                     footer:      enFooter,
                     header:      enHeader,
@@ -63,6 +67,7 @@ if (!i18n.isInitialized) {
                     auth:        azAuth,
                     banner:      azBanner,
                     cart:        azCart,
+                    "coming-soon": azComingSoon,
                     favourites:  azFavourites,
                     footer:      azFooter,
                     header:      azHeader,
@@ -74,6 +79,7 @@ if (!i18n.isInitialized) {
                     auth:        arAuth,
                     banner:      arBanner,
                     cart:        arCart,
+                    "coming-soon": arComingSoon,
                     favourites:  arFavourites,
                     footer:      arFooter,
                     header:      arHeader,

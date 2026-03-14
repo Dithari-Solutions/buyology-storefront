@@ -10,6 +10,8 @@ export const PATH_SLUGS: Record<string, Record<Lang, string>> = {
     cart: { en: "cart", az: "sebet", ar: "salla" },
     favourites: { en: "favourites", az: "sevimliler", ar: "mufaddalat" },
     profile: { en: "profile", az: "profil", ar: "profil" },
+    rent: { en: "rent", az: "icare", ar: "tajir" },
+    repair: { en: "repair", az: "temir", ar: "islah" },
 };
 
 /**

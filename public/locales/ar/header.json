@@ -8,6 +8,7 @@
         "buyobot": "بايوبوت",
         "b2b": "B2B"
     },
-    "searchPlaceholder": "ابحث...",
+    "searchPlaceholder": "ابحث عن منتجات، ماركات...",
+    "searchTrending": "عمليات البحث الشائعة",
     "loginButton": "تسجيل الدخول"
 }

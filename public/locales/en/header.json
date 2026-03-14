@@ -8,6 +8,7 @@
         "buyobot": "Buyobot",
         "b2b": "B2B"
     },
-    "searchPlaceholder": "Search...",
+    "searchPlaceholder": "Search products, brands...",
+    "searchTrending": "Popular searches",
     "loginButton": "Login"
 }

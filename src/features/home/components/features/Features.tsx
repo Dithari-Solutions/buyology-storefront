@@ -1,6 +1,9 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import RentBg from "@/assets/features/rent-feat.png";
 import RepairBg from "@/assets/features/repair-feat.png";
 import BrandNewBg from "@/assets/features/brand-new-feat.png";
@@ -9,6 +12,9 @@ import FeatureCard from "./FeatureCard";
 
 export default function Features() {
     const { t } = useTranslation("home");
+    const lang = useSelector((state: RootState) => state.language.lang) as Lang;
+    const rentSlug = PATH_SLUGS.rent?.[lang] ?? "rent";
+    const repairSlug = PATH_SLUGS.repair?.[lang] ?? "repair";
 
     return (
         <section className="flex flex-col items-center w-full mt-[30px] md:mt-[50px]">
@@ -53,6 +59,7 @@ export default function Features() {
                         description={t("features.rentDesc")}
                         bg={RentBg}
                         variant="tall"
+                        href={`/${lang}/${rentSlug}`}
                     />
                 </div>
 
@@ -64,6 +71,7 @@ export default function Features() {
                         description={t("features.repairDesc")}
                         bg={RepairBg}
                         variant="normal"
+                        href={`/${lang}/${repairSlug}`}
                     />
                 </div>
 

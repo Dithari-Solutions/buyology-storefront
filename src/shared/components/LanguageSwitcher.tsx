@@ -56,11 +56,11 @@ export default function LanguageSwitcher() {
         >
             <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="flex items-center justify-center gap-1.5 bg-white px-3 py-1.5 rounded-[30px] text-sm font-medium text-gray-700 shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors select-none cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-[30px] text-sm font-medium text-white transition-colors select-none cursor-pointer"
             >
                 <span>{current.label}</span>
                 <svg
-                    className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`}
+                    className={`w-3.5 h-3.5 text-white transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`}
                     viewBox="0 0 12 12"
                     fill="none"
                     stroke="currentColor"

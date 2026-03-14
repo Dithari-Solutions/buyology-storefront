@@ -1,0 +1,35 @@
+{
+    "badge": "Coming Soon",
+    "expectedRelease": "Expected Release",
+    "whatToExpect": "What to Expect",
+    "getNotified": "Get Notified When We Launch",
+    "notifySubtitle": "Be the first to know when this service becomes available. We'll send you an email as soon as we launch!",
+    "emailPlaceholder": "Enter your email address",
+    "notifyBtn": "Notify Me",
+    "repair": {
+        "name": "Device Repair Service",
+        "tagline": "Professional repair services for your devices",
+        "description": "Get your devices fixed by certified technicians. Submit repair requests online, receive transparent price estimates, and track your repair status from submission to completion. We offer both in-store and courier pickup options.",
+        "releaseDate": "July 15, 2026",
+        "steps": [
+            "Certified technicians for all major brands",
+            "Transparent pricing with upfront estimates",
+            "Real-time repair status tracking",
+            "Store drop-off or courier pickup options",
+            "Quick turnaround time (2-5 business days)"
+        ]
+    },
+    "rent": {
+        "name": "Device Rental Service",
+        "tagline": "Flexible rental plans for every need",
+        "description": "Try the latest devices without the commitment of buying. Choose from our wide catalog of smartphones, laptops, and tablets. Rent monthly, upgrade anytime, and return with ease — no long-term contracts required.",
+        "releaseDate": "April 30, 2026",
+        "steps": [
+            "Browse our catalog of latest devices",
+            "Choose a flexible monthly plan",
+            "Get delivered right to your door",
+            "Swap or upgrade anytime",
+            "Easy return with no penalties"
+        ]
+    }
+}

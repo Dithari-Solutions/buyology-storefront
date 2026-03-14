@@ -8,6 +8,7 @@
         "buyobot": "Buyobot",
         "b2b": "B2B"
     },
-    "searchPlaceholder": "Axtar...",
+    "searchPlaceholder": "Məhsul, brend axtar...",
+    "searchTrending": "Populyar axtarışlar",
     "loginButton": "Daxil Ol"
 }
