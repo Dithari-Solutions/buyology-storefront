@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
@@ -29,7 +29,7 @@ function RentIcon() {
     );
 }
 
-const SERVICE_ICONS: Record<ServiceId, () => JSX.Element> = {
+const SERVICE_ICONS: Record<ServiceId, () => React.ReactElement> = {
     repair: RepairIcon,
     rent: RentIcon,
 };
