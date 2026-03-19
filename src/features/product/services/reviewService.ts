@@ -25,7 +25,6 @@ export interface ReviewResponse {
   userFirstName: string;
   userLastName: string;
   rating: number;
-  title: string | null;
   body: string | null;
   isVerifiedPurchase: boolean;
   status: "PENDING" | "APPROVED" | "REJECTED";
@@ -54,7 +53,6 @@ export interface SubmitReviewPayload {
   /** JWT sub claim value (AuthCredentials ID) */
   authCredentialId: string;
   rating: number;
-  title?: string;
   body?: string;
   /** Up to 2 image files — sent as multipart/form-data */
   images?: File[];

@@ -15,6 +15,7 @@ import {
   type ReviewResponse,
   type ReviewStats,
 } from "../services/reviewService";
+import { validateReviewBody, type BodyValidationResult } from "../validation";
 
 const PAGE_SIZE = 10;
 
@@ -246,11 +247,6 @@ function ReviewItem({
         </div>
       </div>
 
-      {/* Title */}
-      {review.title && (
-        <p className="text-[14px] font-semibold text-gray-800">{review.title}</p>
-      )}
-
       {/* Body */}
       {review.body && (
         <p className="text-[14px] text-gray-600 leading-relaxed">{review.body}</p>
@@ -343,13 +339,13 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
   // Form state
   const [rating, setRating] = useState(0);
-  const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [bodyError, setBodyError] = useState<BodyValidationResult | null>(null);
 
   // Login gate
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -423,26 +419,39 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
     e.preventDefault();
     if (!isAuthenticated) { requireLogin(); return; }
     if (!authCredentialId || rating === 0) return;
+
+    // Client-side validation of the review body
+    const validation = validateReviewBody(body);
+    if (!validation.valid) {
+      setBodyError(validation);
+      return;
+    }
+
     setSubmitting(true);
     setSubmitError(null);
+    setBodyError(null);
     try {
       await submitReview({
         productId,
         authCredentialId,
         rating,
-        title: title.trim() || undefined,
         body: body.trim() || undefined,
         images: selectedFiles.length > 0 ? selectedFiles : undefined,
       });
       setSubmitSuccess(true);
       setRating(0);
-      setTitle("");
       setBody("");
       setSelectedFiles([]);
       previewUrls.forEach((u) => URL.revokeObjectURL(u));
       setPreviewUrls([]);
-    } catch {
-      setSubmitError(t("reviews.errorMsg"));
+    } catch (err: unknown) {
+      // Server-side 400 mirrors client validation — show the same inline error
+      const status = (err as { status?: number })?.status;
+      if (status === 400) {
+        setBodyError({ valid: false, type: "invalid" });
+      } else {
+        setSubmitError(t("reviews.errorMsg"));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -509,26 +518,44 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                 <StarInput value={rating} onChange={setRating} />
               </div>
 
-              {/* Title */}
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onFocus={() => { if (!isAuthenticated) requireLogin(); }}
-                placeholder={t("reviews.titlePlaceholder")}
-                maxLength={255}
-                className="w-full px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 border border-gray-200 rounded-xl outline-none focus:border-[#402F75]/40 focus:ring-2 focus:ring-[#402F75]/10 transition-all bg-transparent"
-              />
-
               {/* Body */}
-              <textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                onFocus={() => { if (!isAuthenticated) requireLogin(); }}
-                placeholder={t("reviews.bodyPlaceholder")}
-                rows={3}
-                className="w-full px-4 py-3 text-sm text-gray-700 placeholder-gray-400 border border-gray-200 rounded-xl outline-none focus:border-[#402F75]/40 focus:ring-2 focus:ring-[#402F75]/10 transition-all resize-none bg-transparent"
-              />
+              <div className="flex flex-col gap-1">
+                <textarea
+                  value={body}
+                  onChange={(e) => { setBody(e.target.value); if (bodyError) setBodyError(null); }}
+                  onFocus={() => { if (!isAuthenticated) requireLogin(); }}
+                  placeholder={t("reviews.bodyPlaceholder")}
+                  rows={3}
+                  className={`w-full px-4 py-3 text-sm text-gray-700 placeholder-gray-400 border rounded-xl outline-none focus:ring-2 transition-all resize-none bg-transparent ${
+                    bodyError && !bodyError.valid
+                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                      : "border-gray-200 focus:border-[#402F75]/40 focus:ring-[#402F75]/10"
+                  }`}
+                />
+
+                {/* Inline body validation error */}
+                {bodyError && !bodyError.valid && (
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-red-600 font-medium">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    {bodyError.type === "profanity" ? (
+                      <>
+                        <span>{t("reviews.errorProfanity")}</span>
+                        {bodyError.words.map((w) => (
+                          <span key={w} className="inline-block bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded">
+                            {w}
+                          </span>
+                        ))}
+                      </>
+                    ) : (
+                      <span>{t("reviews.errorInvalid")}</span>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Image previews */}
               {previewUrls.length > 0 && (
