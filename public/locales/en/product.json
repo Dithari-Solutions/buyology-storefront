@@ -1,0 +1,41 @@
+{
+  "reviews": {
+    "title": "Customer Reviews",
+    "writeReview": "Write a Review",
+    "ratingLabel": "Your Rating",
+    "titlePlaceholder": "Give your review a title (optional)",
+    "bodyPlaceholder": "Share your experience with this product...",
+    "addPhoto": "Add Photo",
+    "submitReview": "Post Review",
+    "submitting": "Posting...",
+    "noReviews": "No reviews yet. Be the first to review!",
+    "loadMore": "Load more reviews",
+    "verifiedPurchase": "Verified Purchase",
+    "helpful": "Helpful",
+    "notHelpful": "Not helpful",
+    "adminReply": "Seller Reply",
+    "successMsg": "Your review was submitted and is pending approval.",
+    "errorMsg": "Failed to submit. Please try again.",
+    "loginTitle": "Sign in to write a review",
+    "loginDesc": "Share your experience and help others make the right choice.",
+    "signIn": "Sign In",
+    "createAccount": "Create Account"
+  },
+  "qa": {
+    "title": "Questions & Answers",
+    "askQuestion": "Ask a Question",
+    "questionPlaceholder": "What would you like to know about this product?",
+    "submitQuestion": "Submit Question",
+    "submitting": "Submitting...",
+    "noQuestions": "No questions yet. Be the first to ask!",
+    "loadMore": "Load more questions",
+    "helpful": "Helpful",
+    "adminAnswer": "Answer from Seller",
+    "pendingAnswer": "Awaiting answer",
+    "loginTitle": "Sign in to ask a question",
+    "loginDesc": "Ask anything about this product and get an answer from our team.",
+    "signIn": "Sign In",
+    "createAccount": "Create Account",
+    "successMsg": "Your question was submitted and is pending approval."
+  }
+}

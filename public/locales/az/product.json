@@ -1,0 +1,41 @@
+{
+  "reviews": {
+    "title": "Müştəri Rəyləri",
+    "writeReview": "Rəy Yaz",
+    "ratingLabel": "Qiymətləndirməniz",
+    "titlePlaceholder": "Rəyinizə başlıq verin (isteğe bağlı)",
+    "bodyPlaceholder": "Bu məhsulla bağlı təcrübənizi paylaşın...",
+    "addPhoto": "Şəkil Əlavə Et",
+    "submitReview": "Rəy Göndər",
+    "submitting": "Göndərilir...",
+    "noReviews": "Hələ rəy yoxdur. İlk rəyi siz yazın!",
+    "loadMore": "Daha çox rəy yüklə",
+    "verifiedPurchase": "Təsdiqlənmiş Alış",
+    "helpful": "Faydalı",
+    "notHelpful": "Faydalı deyil",
+    "adminReply": "Satıcı Cavabı",
+    "successMsg": "Rəyiniz göndərildi və təsdiq gözləyir.",
+    "errorMsg": "Göndərmək alınmadı. Yenidən cəhd edin.",
+    "loginTitle": "Rəy yazmaq üçün daxil olun",
+    "loginDesc": "Təcrübənizi paylaşın və başqalarının düzgün seçim etməsinə kömək edin.",
+    "signIn": "Daxil ol",
+    "createAccount": "Hesab yarat"
+  },
+  "qa": {
+    "title": "Sual və Cavablar",
+    "askQuestion": "Sual Ver",
+    "questionPlaceholder": "Bu məhsul haqqında nə bilmək istəyirsiniz?",
+    "submitQuestion": "Sualı Göndər",
+    "submitting": "Göndərilir...",
+    "noQuestions": "Hələ sual yoxdur. İlk soruşan siz olun!",
+    "loadMore": "Daha çox sual yüklə",
+    "helpful": "Faydalı",
+    "adminAnswer": "Satıcıdan Cavab",
+    "pendingAnswer": "Cavab gözlənilir",
+    "loginTitle": "Sual vermək üçün daxil olun",
+    "loginDesc": "Bu məhsul haqqında istənilən şeyi soruşun, komandamız cavablayacaq.",
+    "signIn": "Daxil ol",
+    "createAccount": "Hesab yarat",
+    "successMsg": "Sualınız göndərildi və təsdiq gözləyir."
+  }
+}

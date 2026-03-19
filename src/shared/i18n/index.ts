@@ -14,6 +14,7 @@ import enFavourites  from "../../../public/locales/en/favourites.json";
 import enNotFound    from "../../../public/locales/en/notFound.json";
 import enProfile    from "../../../public/locales/en/profile.json";
 import enComingSoon  from "../../../public/locales/en/coming-soon.json";
+import enProduct    from "../../../public/locales/en/product.json";
 
 import azAuth   from "../../../public/locales/az/auth.json";
 import azBanner from "../../../public/locales/az/banner.json";
@@ -25,6 +26,7 @@ import azFavourites  from "../../../public/locales/az/favourites.json";
 import azNotFound    from "../../../public/locales/az/notFound.json";
 import azProfile    from "../../../public/locales/az/profile.json";
 import azComingSoon  from "../../../public/locales/az/coming-soon.json";
+import azProduct    from "../../../public/locales/az/product.json";
 
 import arAuth   from "../../../public/locales/ar/auth.json";
 import arBanner from "../../../public/locales/ar/banner.json";
@@ -36,6 +38,7 @@ import arFavourites  from "../../../public/locales/ar/favourites.json";
 import arNotFound    from "../../../public/locales/ar/notFound.json";
 import arProfile    from "../../../public/locales/ar/profile.json";
 import arComingSoon  from "../../../public/locales/ar/coming-soon.json";
+import arProduct    from "../../../public/locales/ar/product.json";
 
 if (!i18n.isInitialized) {
     i18n
@@ -45,7 +48,7 @@ if (!i18n.isInitialized) {
             fallbackLng: "en",
             debug: false,
             supportedLngs: ["en", "az", "ar"],
-            ns: ["auth", "banner", "cart", "coming-soon", "favourites", "footer", "header", "home", "notFound", "profile"],
+            ns: ["auth", "banner", "cart", "coming-soon", "favourites", "footer", "header", "home", "notFound", "product", "profile"],
             defaultNS: "home",
             interpolation: {
                 escapeValue: false,
@@ -61,6 +64,7 @@ if (!i18n.isInitialized) {
                     header:      enHeader,
                     home:        enHome,
                     notFound:    enNotFound,
+                    product:     enProduct,
                     profile:     enProfile,
                 },
                 az: {
@@ -73,6 +77,7 @@ if (!i18n.isInitialized) {
                     header:      azHeader,
                     home:        azHome,
                     notFound:    azNotFound,
+                    product:     azProduct,
                     profile:     azProfile,
                 },
                 ar: {
@@ -85,6 +90,7 @@ if (!i18n.isInitialized) {
                     header:      arHeader,
                     home:        arHome,
                     notFound:    arNotFound,
+                    product:     arProduct,
                     profile:     arProfile,
                 },
             },

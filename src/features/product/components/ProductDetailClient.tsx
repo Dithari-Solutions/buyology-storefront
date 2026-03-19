@@ -6,16 +6,15 @@ import { useDispatch, useSelector } from "react-redux";
 import ProductDetailImage from "./ProductDetailImage";
 import ProductFeaturesBadges from "./ProductFeaturesBadges";
 import ProductReviews from "./ProductReviews";
+import ProductQA from "./ProductQA";
 import { addItem } from "@/features/cart/store/cartSlice";
 import { toggleFavourite, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import type { RootState } from "@/store";
-import type { Review } from "../types";
 import type { ApiProduct, ApiSpec, ApiSpecOption } from "../services/productService";
 
 interface ProductDetailClientProps {
   product: ApiProduct;
   images: string[];
-  reviews: Review[];
 }
 
 function StarRating({ rating, count }: { rating: number; count?: number }) {
@@ -101,7 +100,7 @@ function SpecSelector({
   );
 }
 
-export default function ProductDetailClient({ product, images, reviews }: ProductDetailClientProps) {
+export default function ProductDetailClient({ product, images }: ProductDetailClientProps) {
   const dispatch = useDispatch();
   const isFav = useSelector((state: RootState) => selectIsFavourite(product.id)(state));
 
@@ -280,7 +279,7 @@ export default function ProductDetailClient({ product, images, reviews }: Produc
 
           {/* Rating + Stock row */}
           <div className="flex items-center gap-4 flex-wrap">
-            <StarRating rating={4.8} count={reviews.length} />
+            <StarRating rating={4.8} />
             <span className="w-px h-4 bg-gray-200" />
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
@@ -439,8 +438,13 @@ export default function ProductDetailClient({ product, images, reviews }: Produc
       )}
 
       {/* Customer reviews */}
+      <div className="mt-10">
+        <ProductReviews productId={product.id} />
+      </div>
+
+      {/* Questions & Answers */}
       <div className="mt-10 pb-12">
-        <ProductReviews reviews={reviews} />
+        <ProductQA productId={product.id} />
       </div>
     </div>
   );

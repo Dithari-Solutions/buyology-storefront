@@ -92,6 +92,7 @@ export default function ProfileInfo() {
     ];
 
     return (
+        <>
         <div className="bg-white rounded-[20px] p-6 shadow-sm">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
@@ -170,12 +171,13 @@ export default function ProfileInfo() {
             )}
 
             {/* Privacy note */}
+        </div>
             <div className="mt-6 bg-[#EDE9FF] rounded-[12px] px-4 py-3 flex items-start gap-3">
                 <svg className="flex-shrink-0 mt-0.5" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
                 <p className="text-[12px] text-[#402F75]">{t("personalInfo.privacyNote")}</p>
             </div>
-        </div>
+            </>
     );
 }
