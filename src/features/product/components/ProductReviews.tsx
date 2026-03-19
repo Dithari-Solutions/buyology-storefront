@@ -205,14 +205,14 @@ function RatingSummary({ stats }: { stats: ReviewStats }) {
 
 function ReviewItem({
   review,
-  userId,
+  authCredentialId,
   isAuthenticated,
   onVote,
   onLoginRequired,
   t,
 }: {
   review: ReviewResponse;
-  userId: string | null;
+  authCredentialId: string | null;
   isAuthenticated: boolean;
   onVote: (reviewId: string, isHelpful: boolean) => void;
   onLoginRequired: () => void;
@@ -642,7 +642,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
             <ReviewItem
               key={review.id}
               review={review}
-              userId={userId}
+              authCredentialId={authCredentialId}
               isAuthenticated={isAuthenticated}
               onVote={handleVote}
               onLoginRequired={requireLogin}
