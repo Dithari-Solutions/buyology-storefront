@@ -224,7 +224,8 @@ export default function ProductQA({ productId }: ProductQAProps) {
   const lang = (params?.lang as string) ?? "en";
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  const userId = useSelector((state: RootState) => state.auth.userId);
+  // state.auth.userId holds the JWT sub claim, which equals authCredentialId for the API
+  const authCredentialId = useSelector((state: RootState) => state.auth.userId);
 
   const [questions, setQuestions] = useState<QuestionResponse[]>([]);
   const [page, setPage] = useState(0);
@@ -288,10 +289,10 @@ export default function ProductQA({ productId }: ProductQAProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isAuthenticated) { requireLogin(); return; }
-    if (!userId || !questionText.trim()) return;
+    if (!authCredentialId || !questionText.trim()) return;
     setSubmitting(true);
     try {
-      await askQuestion({ productId, userId, body: questionText.trim() });
+      await askQuestion({ productId, authCredentialId, body: questionText.trim() });
       setSubmitSuccess(true);
       setQuestionText("");
     } catch {
@@ -302,9 +303,9 @@ export default function ProductQA({ productId }: ProductQAProps) {
   }
 
   async function handleVote(questionId: string) {
-    if (!userId || votedIds.has(questionId)) return;
+    if (!authCredentialId || votedIds.has(questionId)) return;
     try {
-      await voteQuestion(questionId, userId);
+      await voteQuestion(questionId, authCredentialId);
       setVotedIds((prev) => new Set([...prev, questionId]));
     } catch {
       // 409 = already voted; ignore

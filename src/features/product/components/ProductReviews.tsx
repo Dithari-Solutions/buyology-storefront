@@ -331,7 +331,8 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const lang = (params?.lang as string) ?? "en";
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  const userId = useSelector((state: RootState) => state.auth.userId);
+  // state.auth.userId holds the JWT sub claim, which equals authCredentialId for the API
+  const authCredentialId = useSelector((state: RootState) => state.auth.userId);
 
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
   const [stats, setStats] = useState<ReviewStats | null>(null);
@@ -421,13 +422,13 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isAuthenticated) { requireLogin(); return; }
-    if (!userId || rating === 0) return;
+    if (!authCredentialId || rating === 0) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
       await submitReview({
         productId,
-        userId,
+        authCredentialId,
         rating,
         title: title.trim() || undefined,
         body: body.trim() || undefined,
@@ -448,9 +449,9 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   }
 
   async function handleVote(reviewId: string, isHelpful: boolean) {
-    if (!userId) return;
+    if (!authCredentialId) return;
     try {
-      await voteReview(reviewId, userId, isHelpful);
+      await voteReview(reviewId, authCredentialId, isHelpful);
       setReviews((prev) =>
         prev.map((r) =>
           r.id === reviewId

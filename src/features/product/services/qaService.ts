@@ -41,17 +41,18 @@ export async function getProductQuestions(
 
 export async function askQuestion(payload: {
   productId: string;
-  userId: string;
+  /** JWT sub claim value (AuthCredentials ID) */
+  authCredentialId: string;
   body: string;
 }): Promise<QuestionResponse> {
   const { data } = await apiClient.post<{ data: QuestionResponse }>("/api/questions", payload);
   return data.data;
 }
 
-export async function voteQuestion(questionId: string, userId: string): Promise<void> {
-  await apiClient.post(`/api/questions/${questionId}/vote`, { userId });
+export async function voteQuestion(questionId: string, authCredentialId: string): Promise<void> {
+  await apiClient.post(`/api/questions/${questionId}/vote`, { authCredentialId });
 }
 
-export async function removeQuestionVote(questionId: string, userId: string): Promise<void> {
-  await apiClient.delete(`/api/questions/${questionId}/vote`, { params: { userId } });
+export async function removeQuestionVote(questionId: string, authCredentialId: string): Promise<void> {
+  await apiClient.delete(`/api/questions/${questionId}/vote`, { params: { authCredentialId } });
 }

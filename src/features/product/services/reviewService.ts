@@ -51,7 +51,8 @@ export interface ReviewStats {
 
 export interface SubmitReviewPayload {
   productId: string;
-  userId: string;
+  /** JWT sub claim value (AuthCredentials ID) */
+  authCredentialId: string;
   rating: number;
   title?: string;
   body?: string;
@@ -98,12 +99,12 @@ export async function submitReview(payload: SubmitReviewPayload): Promise<Review
 
 export async function voteReview(
   reviewId: string,
-  userId: string,
+  authCredentialId: string,
   isHelpful: boolean
 ): Promise<void> {
-  await apiClient.post(`/api/reviews/${reviewId}/vote`, { userId, isHelpful });
+  await apiClient.post(`/api/reviews/${reviewId}/vote`, { authCredentialId, isHelpful });
 }
 
-export async function removeReviewVote(reviewId: string, userId: string): Promise<void> {
-  await apiClient.delete(`/api/reviews/${reviewId}/vote`, { params: { userId } });
+export async function removeReviewVote(reviewId: string, authCredentialId: string): Promise<void> {
+  await apiClient.delete(`/api/reviews/${reviewId}/vote`, { params: { authCredentialId } });
 }
