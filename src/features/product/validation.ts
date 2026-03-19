@@ -77,6 +77,30 @@ function extractProfaneWords(text: string, filter: Filter): string[] {
   return [...found];
 }
 
+// ── Highlight segments ────────────────────────────────────────────────────────
+
+/** Split `text` into segments; each segment is marked as profane or not. */
+export function getHighlightedSegments(
+  text: string
+): Array<{ text: string; highlight: boolean }> {
+  if (!text) return [];
+  const filter = getFilter();
+  const segments: Array<{ text: string; highlight: boolean }> = [];
+  // Tokenise: alternate between word-like runs and separator runs
+  const TOKEN_RE = /([^\s\p{P}]+|[\s\p{P}]+)/gu;
+  let match: RegExpExecArray | null;
+  while ((match = TOKEN_RE.exec(text)) !== null) {
+    const token = match[1];
+    const isWordLike = /[^\s\p{P}]/u.test(token);
+    const highlight =
+      isWordLike &&
+      (filter.isProfane(token) ||
+        CUSTOM_PROFANITY.some((w) => token.toLowerCase() === w.toLowerCase()));
+    segments.push({ text: token, highlight });
+  }
+  return segments;
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export function validateReviewBody(text: string): BodyValidationResult {

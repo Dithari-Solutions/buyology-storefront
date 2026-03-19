@@ -15,7 +15,7 @@ import {
   type ReviewResponse,
   type ReviewStats,
 } from "../services/reviewService";
-import { validateReviewBody, type BodyValidationResult } from "../validation";
+import { validateReviewBody, getHighlightedSegments, type BodyValidationResult } from "../validation";
 
 const PAGE_SIZE = 10;
 
@@ -351,6 +351,8 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
 
   // Fetch initial data
   useEffect(() => {
@@ -518,20 +520,55 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                 <StarInput value={rating} onChange={setRating} />
               </div>
 
-              {/* Body */}
+              {/* Body with real-time bad-word highlight overlay */}
               <div className="flex flex-col gap-1">
-                <textarea
-                  value={body}
-                  onChange={(e) => { setBody(e.target.value); if (bodyError) setBodyError(null); }}
-                  onFocus={() => { if (!isAuthenticated) requireLogin(); }}
-                  placeholder={t("reviews.bodyPlaceholder")}
-                  rows={3}
-                  className={`w-full px-4 py-3 text-sm text-gray-700 placeholder-gray-400 border rounded-xl outline-none focus:ring-2 transition-all resize-none bg-transparent ${
-                    bodyError && !bodyError.valid
-                      ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                      : "border-gray-200 focus:border-[#402F75]/40 focus:ring-[#402F75]/10"
-                  }`}
-                />
+                <div className="relative">
+                  {/* Backdrop: same geometry as textarea; renders highlighted text behind it */}
+                  <div
+                    ref={backdropRef}
+                    aria-hidden="true"
+                    className="absolute inset-0 px-4 py-3 rounded-xl overflow-hidden pointer-events-none whitespace-pre-wrap break-words"
+                    style={{
+                      fontFamily: "inherit",
+                      fontSize: "0.875rem",
+                      lineHeight: "1.5",
+                      color: "transparent",
+                    }}
+                  >
+                    {getHighlightedSegments(body).map((seg, i) =>
+                      seg.highlight ? (
+                        <mark key={i} style={{ background: "#fecaca", color: "transparent", borderRadius: "2px" }}>
+                          {seg.text}
+                        </mark>
+                      ) : (
+                        <span key={i}>{seg.text}</span>
+                      )
+                    )}
+                    {/* trailing space keeps last-line height intact */}
+                    {" "}
+                  </div>
+
+                  {/* Actual textarea — bg-transparent so backdrop shows through */}
+                  <textarea
+                    ref={textareaRef}
+                    value={body}
+                    onChange={(e) => { setBody(e.target.value); if (bodyError) setBodyError(null); }}
+                    onFocus={() => { if (!isAuthenticated) requireLogin(); }}
+                    onScroll={() => {
+                      if (backdropRef.current && textareaRef.current) {
+                        backdropRef.current.scrollTop = textareaRef.current.scrollTop;
+                      }
+                    }}
+                    placeholder={t("reviews.bodyPlaceholder")}
+                    rows={3}
+                    style={{ lineHeight: "1.5" }}
+                    className={`relative w-full px-4 py-3 text-sm text-gray-700 placeholder-gray-400 border rounded-xl outline-none focus:ring-2 transition-all resize-none bg-transparent ${
+                      bodyError && !bodyError.valid
+                        ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                        : "border-gray-200 focus:border-[#402F75]/40 focus:ring-[#402F75]/10"
+                    }`}
+                  />
+                </div>
 
                 {/* Inline body validation error */}
                 {bodyError && !bodyError.valid && (
