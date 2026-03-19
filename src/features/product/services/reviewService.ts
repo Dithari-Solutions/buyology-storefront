@@ -55,7 +55,6 @@ export interface SubmitReviewPayload {
   rating: number;
   title?: string;
   body?: string;
-  orderItemId?: string;
   /** Up to 2 image files — sent as multipart/form-data */
   images?: File[];
 }
