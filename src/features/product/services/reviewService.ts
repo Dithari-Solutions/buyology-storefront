@@ -56,7 +56,8 @@ export interface SubmitReviewPayload {
   title?: string;
   body?: string;
   orderItemId?: string;
-  media?: { url: string; mediaType: "IMAGE" | "VIDEO"; sortOrder: number }[];
+  /** Up to 2 image files — sent as multipart/form-data */
+  images?: File[];
 }
 
 const PAGE_SIZE = 10;
@@ -81,7 +82,18 @@ export async function getReviewStats(productId: string): Promise<ReviewStats> {
 }
 
 export async function submitReview(payload: SubmitReviewPayload): Promise<ReviewResponse> {
-  const { data } = await apiClient.post<{ data: ReviewResponse }>("/api/reviews", payload);
+  const { images, ...requestFields } = payload;
+
+  const formData = new FormData();
+  formData.append("request", JSON.stringify(requestFields));
+
+  if (images) {
+    images.slice(0, 2).forEach((file) => formData.append("images", file));
+  }
+
+  const { data } = await apiClient.post<{ data: ReviewResponse }>("/api/reviews", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return data.data;
 }
 

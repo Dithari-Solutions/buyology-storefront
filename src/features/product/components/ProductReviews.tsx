@@ -400,7 +400,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    const combined = [...selectedFiles, ...files].slice(0, 5);
+    const combined = [...selectedFiles, ...files].slice(0, 2); // API max: 2 images
     setSelectedFiles(combined);
     const urls = combined.map((f) => URL.createObjectURL(f));
     previewUrls.forEach((u) => URL.revokeObjectURL(u));
@@ -431,7 +431,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
         rating,
         title: title.trim() || undefined,
         body: body.trim() || undefined,
-        // Note: media upload requires a CDN endpoint — skipping for now
+        images: selectedFiles.length > 0 ? selectedFiles : undefined,
       });
       setSubmitSuccess(true);
       setRating(0);
@@ -553,25 +553,26 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
                     multiple
                     className="hidden"
                     onChange={handleFileChange}
                   />
                   <button
                     type="button"
+                    disabled={selectedFiles.length >= 2}
                     onClick={() => {
                       if (!isAuthenticated) { requireLogin(); return; }
                       fileInputRef.current?.click();
                     }}
-                    className="flex items-center gap-1.5 text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" />
                       <circle cx="8.5" cy="8.5" r="1.5" />
                       <polyline points="21 15 16 10 5 21" />
                     </svg>
-                    {t("reviews.addPhoto")} {selectedFiles.length > 0 && `(${selectedFiles.length})`}
+                    {t("reviews.addPhoto")} ({selectedFiles.length}/2)
                   </button>
                 </div>
 
