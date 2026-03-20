@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { selectCartTotals } from "@/features/cart/store/cartSlice";
 import type { ShippingFormData, PaymentMethod } from "../types";
 
@@ -61,46 +62,6 @@ const COUNTRY_NAMES: Record<string, string> = {
     RU: "Russia",
 };
 
-// ── Payment option type ───────────────────────────────────────────────────────
-
-interface PaymentOption {
-    id: PaymentMethod;
-    label: string;
-    description: (params: { total: number }) => string;
-    badge: React.ReactNode;
-    detail?: (params: { total: number }) => string;
-}
-
-const PAYMENT_OPTIONS: PaymentOption[] = [
-    {
-        id: "card",
-        label: "Credit/Debit Card",
-        description: () => "Pay securely with your credit or debit card via Stripe",
-        badge: <StripeBadge />,
-        detail: () => "Go to payment powered by Stripe",
-    },
-    {
-        id: "tabby",
-        label: "Pay in 4 interest-free installments",
-        description: ({ total }) => `Split your purchase into 4 easy monthly ${total > 0 ? `payments of $${(total / 4).toFixed(2)}` : "payments"}`,
-        badge: <TabbyBadge />,
-        detail: ({ total }) => `No interest, No fees. Available for orders from $20–$4000. Pay $${(total / 4).toFixed(2)} today, rest over 3 months.`,
-    },
-    {
-        id: "tamara",
-        label: "Split in 3 or Pay Next Month",
-        description: ({ total }) => `Split into 3 payments of $${(total / 3).toFixed(2)} or pay the full amount next month`,
-        badge: <TamaraBadge />,
-        detail: ({ total }) => `Available for orders up to $3,000. Pay $${(total / 3).toFixed(2)} every month for 3 months.`,
-    },
-    {
-        id: "paymob",
-        label: "Secure Checkout",
-        description: () => "Your payment info is encrypted and secure. We never store your card details.",
-        badge: <PaymobBadge />,
-    },
-];
-
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface PaymentStepProps {
@@ -113,11 +74,42 @@ interface PaymentStepProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitting }: PaymentStepProps) {
+    const { t } = useTranslation("checkout");
     const [selected, setSelected] = useState<PaymentMethod>("card");
     const totals = useSelector(selectCartTotals);
     const total = totals.total;
 
     const countryName = COUNTRY_NAMES[shipping.country] ?? shipping.country;
+
+    const PAYMENT_OPTIONS: { id: PaymentMethod; label: string; description: string; badge: React.ReactNode; detail?: string }[] = [
+        {
+            id: "card",
+            label: t("payment.card.label"),
+            description: t("payment.card.description"),
+            badge: <StripeBadge />,
+            detail: t("payment.card.detail"),
+        },
+        {
+            id: "tabby",
+            label: t("payment.tabby.label"),
+            description: t("payment.tabby.description", { amount: (total / 4).toFixed(2) }),
+            badge: <TabbyBadge />,
+            detail: t("payment.tabby.detail", { amount: (total / 4).toFixed(2) }),
+        },
+        {
+            id: "tamara",
+            label: t("payment.tamara.label"),
+            description: t("payment.tamara.description", { amount: (total / 3).toFixed(2) }),
+            badge: <TamaraBadge />,
+            detail: t("payment.tamara.detail", { amount: (total / 3).toFixed(2) }),
+        },
+        {
+            id: "paymob",
+            label: t("payment.paymob.label"),
+            description: t("payment.paymob.description"),
+            badge: <PaymobBadge />,
+        },
+    ];
 
     return (
         <div className="flex flex-col gap-4">
@@ -131,18 +123,18 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
                             </svg>
                         </div>
                         <div>
-                            <p className="text-[12px] font-semibold text-gray-500 mb-1">Shipping to</p>
+                            <p className="text-[12px] font-semibold text-gray-500 mb-1">{t("shippingTo")}</p>
                             <p className="text-[13px] font-bold text-gray-800">
                                 {shipping.firstName} {shipping.lastName}
                             </p>
                             <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">
                                 {shipping.streetAddress}
                                 {shipping.apartment && `, ${shipping.apartment}`}
-                                {"\n"}
-                                {shipping.city}, {shipping.postalCode && `${shipping.postalCode} · `}{countryName}
+                                {" · "}
+                                {shipping.city}{shipping.postalCode && `, ${shipping.postalCode}`}{" · "}{countryName}
                             </p>
                             {shipping.email && (
-                                <p className="text-[12px] text-gray-400 mt-0.5">{shipping.email} · {shipping.phone || "—"}</p>
+                                <p className="text-[12px] text-gray-400 mt-0.5">{shipping.email}{shipping.phone && ` · ${shipping.phone}`}</p>
                             )}
                         </div>
                     </div>
@@ -150,7 +142,7 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
                         onClick={onEdit}
                         className="text-[12px] font-bold text-[#402F75] hover:text-[#2e2156] transition-colors flex-shrink-0 cursor-pointer"
                     >
-                        Edit
+                        {t("edit")}
                     </button>
                 </div>
             </div>
@@ -162,7 +154,7 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
                         <line x1="1" y1="10" x2="23" y2="10" />
                     </svg>
-                    Payment Method
+                    {t("payment.heading")}
                 </h2>
 
                 <div className="flex flex-col gap-3">
@@ -199,11 +191,11 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
                                         {option.badge}
                                     </div>
                                     <p className="text-[12px] text-gray-500 mt-1 leading-relaxed">
-                                        {option.description({ total })}
+                                        {option.description}
                                     </p>
                                     {isSelected && option.detail && (
                                         <p className="text-[11px] text-[#402F75]/80 mt-1.5 font-medium">
-                                            {option.detail({ total })}
+                                            {option.detail}
                                         </p>
                                     )}
                                 </div>
@@ -212,13 +204,13 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
                     })}
                 </div>
 
-                {/* Secure checkout note */}
+                {/* Secure note */}
                 <div className="mt-4 flex items-center gap-2 text-[11px] text-gray-400">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" />
                         <path d="M7 11V7a5 5 0 0110 0v4" />
                     </svg>
-                    Your payment information is encrypted and secure. We never store your card details.
+                    {t("payment.secureNote")}
                 </div>
             </div>
 
@@ -234,11 +226,11 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
                             <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity="0.3" />
                             <path d="M21 12a9 9 0 00-9-9" />
                         </svg>
-                        Processing...
+                        {t("cta.processing")}
                     </>
                 ) : (
                     <>
-                        Place Order · ${total.toFixed(2)}
+                        {t("cta.placeOrder", { total: total.toFixed(2) })}
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7" />
                         </svg>

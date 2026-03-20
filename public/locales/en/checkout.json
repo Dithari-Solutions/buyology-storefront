@@ -1,0 +1,75 @@
+{
+    "steps": {
+        "shipping": "Shipping",
+        "payment": "Payment"
+    },
+    "contact": {
+        "heading": "Contact Information",
+        "email": "Email Address",
+        "emailPlaceholder": "Enter your email",
+        "phone": "Phone Number",
+        "phonePlaceholder": "Enter your phone number"
+    },
+    "address": {
+        "heading": "Shipping Address",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "street": "Street Address",
+        "apartment": "Apartment, Suite, etc. (Optional)",
+        "country": "Country",
+        "city": "City",
+        "postalCode": "Postal Code",
+        "placeholder": "Placeholder text",
+        "saveInfo": "Save this information for next time"
+    },
+    "validation": {
+        "required": "Required",
+        "invalidEmail": "Invalid email address"
+    },
+    "cta": {
+        "continueToPayment": "Continue to Payment",
+        "placeOrder": "Place Order · ${{total}}",
+        "processing": "Processing..."
+    },
+    "shippingTo": "Shipping to",
+    "edit": "Edit",
+    "payment": {
+        "heading": "Payment Method",
+        "card": {
+            "label": "Credit/Debit Card",
+            "description": "Pay securely with your credit or debit card via Stripe",
+            "detail": "Go to payment powered by Stripe"
+        },
+        "tabby": {
+            "label": "Pay in 4 interest-free installments",
+            "description": "Split your purchase into 4 easy monthly payments of ${{amount}}",
+            "detail": "No interest, No fees. Available for orders from $20–$4000. Pay ${{amount}} today, rest over 3 months."
+        },
+        "tamara": {
+            "label": "Split in 3 or Pay Next Month",
+            "description": "Split into 3 payments of ${{amount}} or pay the full amount next month",
+            "detail": "Available for orders up to $3,000. Pay ${{amount}} every month for 3 months."
+        },
+        "paymob": {
+            "label": "Secure Checkout",
+            "description": "Your payment info is encrypted and secure. We never store your card details."
+        },
+        "secureNote": "Your payment information is encrypted and secure. We never store your card details."
+    },
+    "summary": {
+        "heading": "Order Summary",
+        "noItems": "No items selected",
+        "subtotal": "Subtotal",
+        "shipping": "Shipping",
+        "free": "Free",
+        "tax": "Tax (5%)",
+        "total": "Total",
+        "freeShipping": "Free shipping on orders over $199",
+        "estimatedDelivery": "Estimated delivery 3-5 business days"
+    },
+    "confirmed": {
+        "title": "Order Placed!",
+        "description": "Thank you for your order. We'll send you a confirmation email shortly.",
+        "continueShopping": "Continue Shopping"
+    }
+}

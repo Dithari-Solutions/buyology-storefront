@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ShippingFormData } from "../types";
 
 const COUNTRIES = [
@@ -34,43 +35,8 @@ interface ShippingStepProps {
     initialData?: ShippingFormData;
 }
 
-function InputField({
-    label,
-    id,
-    type = "text",
-    placeholder,
-    value,
-    onChange,
-    required,
-}: {
-    label: string;
-    id: string;
-    type?: string;
-    placeholder: string;
-    value: string;
-    onChange: (v: string) => void;
-    required?: boolean;
-}) {
-    return (
-        <div className="flex flex-col gap-1.5">
-            <label htmlFor={id} className="text-[13px] font-semibold text-gray-700">
-                {label}
-                {required && <span className="text-red-400 ml-0.5">*</span>}
-            </label>
-            <input
-                id={id}
-                type={type}
-                placeholder={placeholder}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                required={required}
-                className="border border-gray-200 rounded-xl px-3.5 py-2.5 text-[13px] text-gray-800 placeholder-gray-400 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
-            />
-        </div>
-    );
-}
-
 export default function ShippingStep({ onContinue, initialData }: ShippingStepProps) {
+    const { t } = useTranslation("checkout");
     const [form, setForm] = useState<ShippingFormData>(initialData ?? EMPTY_FORM);
     const [errors, setErrors] = useState<Partial<Record<keyof ShippingFormData, string>>>({});
 
@@ -81,13 +47,13 @@ export default function ShippingStep({ onContinue, initialData }: ShippingStepPr
 
     function validate(): boolean {
         const newErrors: Partial<Record<keyof ShippingFormData, string>> = {};
-        if (!form.email.trim()) newErrors.email = "Required";
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Invalid email";
-        if (!form.firstName.trim()) newErrors.firstName = "Required";
-        if (!form.lastName.trim()) newErrors.lastName = "Required";
-        if (!form.streetAddress.trim()) newErrors.streetAddress = "Required";
-        if (!form.city.trim()) newErrors.city = "Required";
-        if (!form.postalCode.trim()) newErrors.postalCode = "Required";
+        if (!form.email.trim()) newErrors.email = t("validation.required");
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = t("validation.invalidEmail");
+        if (!form.firstName.trim()) newErrors.firstName = t("validation.required");
+        if (!form.lastName.trim()) newErrors.lastName = t("validation.required");
+        if (!form.streetAddress.trim()) newErrors.streetAddress = t("validation.required");
+        if (!form.city.trim()) newErrors.city = t("validation.required");
+        if (!form.postalCode.trim()) newErrors.postalCode = t("validation.required");
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     }
@@ -97,66 +63,78 @@ export default function ShippingStep({ onContinue, initialData }: ShippingStepPr
         if (validate()) onContinue(form);
     }
 
+    const inputBase = "border rounded-xl px-3.5 py-2.5 text-[13px] text-gray-800 placeholder-gray-400 outline-none focus:ring-2 transition-all";
+    const inputNormal = `${inputBase} border-gray-200 focus:border-[#402F75] focus:ring-[#402F75]/10`;
+    const inputError = `${inputBase} border-red-400 focus:border-red-400 focus:ring-red-100`;
+
     return (
         <form onSubmit={handleSubmit} noValidate>
             {/* Contact Information */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
-                <h2 className="text-[16px] font-bold text-gray-900 mb-5">Contact Information</h2>
+                <h2 className="text-[16px] font-bold text-gray-900 mb-5">{t("contact.heading")}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Email */}
                     <div className="flex flex-col gap-1.5">
                         <label htmlFor="email" className="text-[13px] font-semibold text-gray-700">
-                            Email Address<span className="text-red-400 ml-0.5">*</span>
+                            {t("contact.email")}<span className="text-red-400 ml-0.5">*</span>
                         </label>
                         <input
                             id="email"
                             type="email"
-                            placeholder="Placeholder text"
+                            placeholder={t("contact.emailPlaceholder")}
                             value={form.email}
                             onChange={(e) => setField("email", e.target.value)}
-                            className={`border rounded-xl px-3.5 py-2.5 text-[13px] text-gray-800 placeholder-gray-400 outline-none focus:ring-2 transition-all ${errors.email ? "border-red-400 focus:border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#402F75] focus:ring-[#402F75]/10"}`}
+                            className={errors.email ? inputError : inputNormal}
                         />
                         {errors.email && <p className="text-[11px] text-red-500 mt-0.5">{errors.email}</p>}
                     </div>
-                    <InputField
-                        label="Phone Number"
-                        id="phone"
-                        type="tel"
-                        placeholder="Placeholder text"
-                        value={form.phone}
-                        onChange={(v) => setField("phone", v)}
-                    />
+
+                    {/* Phone */}
+                    <div className="flex flex-col gap-1.5">
+                        <label htmlFor="phone" className="text-[13px] font-semibold text-gray-700">
+                            {t("contact.phone")}
+                        </label>
+                        <input
+                            id="phone"
+                            type="tel"
+                            placeholder={t("contact.phonePlaceholder")}
+                            value={form.phone}
+                            onChange={(e) => setField("phone", e.target.value)}
+                            className={inputNormal}
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* Shipping Address */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
-                <h2 className="text-[16px] font-bold text-gray-900 mb-5">Shipping Address</h2>
+                <h2 className="text-[16px] font-bold text-gray-900 mb-5">{t("address.heading")}</h2>
                 <div className="flex flex-col gap-4">
                     {/* Name row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="firstName" className="text-[13px] font-semibold text-gray-700">
-                                First Name<span className="text-red-400 ml-0.5">*</span>
+                                {t("address.firstName")}<span className="text-red-400 ml-0.5">*</span>
                             </label>
                             <input
                                 id="firstName"
-                                placeholder="Placeholder text"
+                                placeholder={t("address.placeholder")}
                                 value={form.firstName}
                                 onChange={(e) => setField("firstName", e.target.value)}
-                                className={`border rounded-xl px-3.5 py-2.5 text-[13px] placeholder-gray-400 outline-none focus:ring-2 transition-all ${errors.firstName ? "border-red-400 focus:border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#402F75] focus:ring-[#402F75]/10"}`}
+                                className={errors.firstName ? inputError : inputNormal}
                             />
                             {errors.firstName && <p className="text-[11px] text-red-500 mt-0.5">{errors.firstName}</p>}
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="lastName" className="text-[13px] font-semibold text-gray-700">
-                                Last Name<span className="text-red-400 ml-0.5">*</span>
+                                {t("address.lastName")}<span className="text-red-400 ml-0.5">*</span>
                             </label>
                             <input
                                 id="lastName"
-                                placeholder="Placeholder text"
+                                placeholder={t("address.placeholder")}
                                 value={form.lastName}
                                 onChange={(e) => setField("lastName", e.target.value)}
-                                className={`border rounded-xl px-3.5 py-2.5 text-[13px] placeholder-gray-400 outline-none focus:ring-2 transition-all ${errors.lastName ? "border-red-400 focus:border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#402F75] focus:ring-[#402F75]/10"}`}
+                                className={errors.lastName ? inputError : inputNormal}
                             />
                             {errors.lastName && <p className="text-[11px] text-red-500 mt-0.5">{errors.lastName}</p>}
                         </div>
@@ -165,33 +143,38 @@ export default function ShippingStep({ onContinue, initialData }: ShippingStepPr
                     {/* Street address */}
                     <div className="flex flex-col gap-1.5">
                         <label htmlFor="streetAddress" className="text-[13px] font-semibold text-gray-700">
-                            Street Address<span className="text-red-400 ml-0.5">*</span>
+                            {t("address.street")}<span className="text-red-400 ml-0.5">*</span>
                         </label>
                         <input
                             id="streetAddress"
-                            placeholder="Placeholder text"
+                            placeholder={t("address.placeholder")}
                             value={form.streetAddress}
                             onChange={(e) => setField("streetAddress", e.target.value)}
-                            className={`border rounded-xl px-3.5 py-2.5 text-[13px] placeholder-gray-400 outline-none focus:ring-2 transition-all ${errors.streetAddress ? "border-red-400 focus:border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#402F75] focus:ring-[#402F75]/10"}`}
+                            className={errors.streetAddress ? inputError : inputNormal}
                         />
                         {errors.streetAddress && <p className="text-[11px] text-red-500 mt-0.5">{errors.streetAddress}</p>}
                     </div>
 
                     {/* Apartment */}
-                    <InputField
-                        label="Apartment, Suite, etc. (Optional)"
-                        id="apartment"
-                        placeholder="Placeholder text"
-                        value={form.apartment}
-                        onChange={(v) => setField("apartment", v)}
-                    />
+                    <div className="flex flex-col gap-1.5">
+                        <label htmlFor="apartment" className="text-[13px] font-semibold text-gray-700">
+                            {t("address.apartment")}
+                        </label>
+                        <input
+                            id="apartment"
+                            placeholder={t("address.placeholder")}
+                            value={form.apartment}
+                            onChange={(e) => setField("apartment", e.target.value)}
+                            className={inputNormal}
+                        />
+                    </div>
 
                     {/* Country / City / Postal */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* Country */}
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="country" className="text-[13px] font-semibold text-gray-700">
-                                Country<span className="text-red-400 ml-0.5">*</span>
+                                {t("address.country")}<span className="text-red-400 ml-0.5">*</span>
                             </label>
                             <div className="relative">
                                 <select
@@ -213,14 +196,14 @@ export default function ShippingStep({ onContinue, initialData }: ShippingStepPr
                         {/* City */}
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="city" className="text-[13px] font-semibold text-gray-700">
-                                City<span className="text-red-400 ml-0.5">*</span>
+                                {t("address.city")}<span className="text-red-400 ml-0.5">*</span>
                             </label>
                             <input
                                 id="city"
-                                placeholder="Placeholder text"
+                                placeholder={t("address.placeholder")}
                                 value={form.city}
                                 onChange={(e) => setField("city", e.target.value)}
-                                className={`border rounded-xl px-3.5 py-2.5 text-[13px] placeholder-gray-400 outline-none focus:ring-2 transition-all ${errors.city ? "border-red-400 focus:border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#402F75] focus:ring-[#402F75]/10"}`}
+                                className={errors.city ? inputError : inputNormal}
                             />
                             {errors.city && <p className="text-[11px] text-red-500 mt-0.5">{errors.city}</p>}
                         </div>
@@ -228,14 +211,14 @@ export default function ShippingStep({ onContinue, initialData }: ShippingStepPr
                         {/* Postal */}
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="postalCode" className="text-[13px] font-semibold text-gray-700">
-                                Postal Code<span className="text-red-400 ml-0.5">*</span>
+                                {t("address.postalCode")}<span className="text-red-400 ml-0.5">*</span>
                             </label>
                             <input
                                 id="postalCode"
-                                placeholder="Placeholder text"
+                                placeholder={t("address.placeholder")}
                                 value={form.postalCode}
                                 onChange={(e) => setField("postalCode", e.target.value)}
-                                className={`border rounded-xl px-3.5 py-2.5 text-[13px] placeholder-gray-400 outline-none focus:ring-2 transition-all ${errors.postalCode ? "border-red-400 focus:border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#402F75] focus:ring-[#402F75]/10"}`}
+                                className={errors.postalCode ? inputError : inputNormal}
                             />
                             {errors.postalCode && <p className="text-[11px] text-red-500 mt-0.5">{errors.postalCode}</p>}
                         </div>
@@ -249,7 +232,7 @@ export default function ShippingStep({ onContinue, initialData }: ShippingStepPr
                             onChange={(e) => setField("saveInfo", e.target.checked)}
                             className="w-4 h-4 rounded border-gray-300 accent-[#402F75] cursor-pointer"
                         />
-                        <span className="text-[13px] text-gray-600">Save this information for next time</span>
+                        <span className="text-[13px] text-gray-600">{t("address.saveInfo")}</span>
                     </label>
                 </div>
             </div>
@@ -259,7 +242,7 @@ export default function ShippingStep({ onContinue, initialData }: ShippingStepPr
                 type="submit"
                 className="w-full bg-[#FBBB14] hover:bg-[#f0b000] active:scale-[0.98] transition-all py-[14px] rounded-xl font-bold text-[15px] text-gray-900 flex items-center justify-center gap-2 cursor-pointer"
             >
-                Continue to Payment
+                {t("cta.continueToPayment")}
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>

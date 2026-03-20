@@ -7,6 +7,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import enAuth   from "../../../public/locales/en/auth.json";
 import enBanner from "../../../public/locales/en/banner.json";
 import enCart   from "../../../public/locales/en/cart.json";
+import enCheckout from "../../../public/locales/en/checkout.json";
 import enFooter from "../../../public/locales/en/footer.json";
 import enHeader from "../../../public/locales/en/header.json";
 import enHome        from "../../../public/locales/en/home.json";
@@ -19,6 +20,7 @@ import enProduct    from "../../../public/locales/en/product.json";
 import azAuth   from "../../../public/locales/az/auth.json";
 import azBanner from "../../../public/locales/az/banner.json";
 import azCart   from "../../../public/locales/az/cart.json";
+import azCheckout from "../../../public/locales/az/checkout.json";
 import azFooter from "../../../public/locales/az/footer.json";
 import azHeader from "../../../public/locales/az/header.json";
 import azHome        from "../../../public/locales/az/home.json";
@@ -31,6 +33,7 @@ import azProduct    from "../../../public/locales/az/product.json";
 import arAuth   from "../../../public/locales/ar/auth.json";
 import arBanner from "../../../public/locales/ar/banner.json";
 import arCart   from "../../../public/locales/ar/cart.json";
+import arCheckout from "../../../public/locales/ar/checkout.json";
 import arFooter from "../../../public/locales/ar/footer.json";
 import arHeader from "../../../public/locales/ar/header.json";
 import arHome        from "../../../public/locales/ar/home.json";
@@ -48,7 +51,7 @@ if (!i18n.isInitialized) {
             fallbackLng: "en",
             debug: false,
             supportedLngs: ["en", "az", "ar"],
-            ns: ["auth", "banner", "cart", "coming-soon", "favourites", "footer", "header", "home", "notFound", "product", "profile"],
+            ns: ["auth", "banner", "cart", "checkout", "coming-soon", "favourites", "footer", "header", "home", "notFound", "product", "profile"],
             defaultNS: "home",
             interpolation: {
                 escapeValue: false,
@@ -58,6 +61,7 @@ if (!i18n.isInitialized) {
                     auth:        enAuth,
                     banner:      enBanner,
                     cart:        enCart,
+                    checkout:    enCheckout,
                     "coming-soon": enComingSoon,
                     favourites:  enFavourites,
                     footer:      enFooter,
@@ -71,6 +75,7 @@ if (!i18n.isInitialized) {
                     auth:        azAuth,
                     banner:      azBanner,
                     cart:        azCart,
+                    checkout:    azCheckout,
                     "coming-soon": azComingSoon,
                     favourites:  azFavourites,
                     footer:      azFooter,
@@ -84,6 +89,7 @@ if (!i18n.isInitialized) {
                     auth:        arAuth,
                     banner:      arBanner,
                     cart:        arCart,
+                    checkout:    arCheckout,
                     "coming-soon": arComingSoon,
                     favourites:  arFavourites,
                     footer:      arFooter,

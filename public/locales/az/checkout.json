@@ -1,0 +1,75 @@
+{
+    "steps": {
+        "shipping": "Çatdırılma",
+        "payment": "Ödəniş"
+    },
+    "contact": {
+        "heading": "Əlaqə Məlumatları",
+        "email": "E-poçt ünvanı",
+        "emailPlaceholder": "E-poçtunuzu daxil edin",
+        "phone": "Telefon nömrəsi",
+        "phonePlaceholder": "Telefon nömrənizi daxil edin"
+    },
+    "address": {
+        "heading": "Çatdırılma ünvanı",
+        "firstName": "Ad",
+        "lastName": "Soyad",
+        "street": "Küçə ünvanı",
+        "apartment": "Mənzil, ofis, və s. (İstəyə bağlı)",
+        "country": "Ölkə",
+        "city": "Şəhər",
+        "postalCode": "Poçt indeksi",
+        "placeholder": "Mətn daxil edin",
+        "saveInfo": "Bu məlumatları növbəti dəfə üçün saxla"
+    },
+    "validation": {
+        "required": "Tələb olunur",
+        "invalidEmail": "Yanlış e-poçt ünvanı"
+    },
+    "cta": {
+        "continueToPayment": "Ödənişə Keç",
+        "placeOrder": "Sifarişi Tamamla · ${{total}}",
+        "processing": "Emal edilir..."
+    },
+    "shippingTo": "Çatdırılma ünvanı",
+    "edit": "Redaktə et",
+    "payment": {
+        "heading": "Ödəniş Üsulu",
+        "card": {
+            "label": "Kredit/Debet Kartı",
+            "description": "Stripe vasitəsilə kredit və ya debet kartınızla təhlükəsiz ödəyin",
+            "detail": "Stripe tərəfindən dəstəklənən ödənişə keçin"
+        },
+        "tabby": {
+            "label": "4 faizsiz taksitlə ödə",
+            "description": "Alışınızı aylıq ${{amount}} olmaqla 4 hissəyə bölün",
+            "detail": "Faiz yoxdur, komissiya yoxdur. $20–$4000 aralığındakı sifarişlər üçün mövcuddur. Bu gün ${{amount}} ödəyin, qalanını 3 ayda ödəyin."
+        },
+        "tamara": {
+            "label": "3 hissəyə böl və ya gələn ay ödə",
+            "description": "Aylıq ${{amount}} olmaqla 3 hissəyə bölün və ya tam məbləği gələn ay ödəyin",
+            "detail": "$3.000-a qədər sifarişlər üçün mövcuddur. Hər ay ${{amount}} ödəyin, cəmi 3 ay."
+        },
+        "paymob": {
+            "label": "Təhlükəsiz Ödəniş",
+            "description": "Ödəniş məlumatlarınız şifrələnib və təhlükəsizdir. Kartınızı heç vaxt saxlamırıq."
+        },
+        "secureNote": "Ödəniş məlumatlarınız şifrələnib və təhlükəsizdir. Kartınızı heç vaxt saxlamırıq."
+    },
+    "summary": {
+        "heading": "Sifariş Xülasəsi",
+        "noItems": "Heç bir məhsul seçilməyib",
+        "subtotal": "Aralıq Cəm",
+        "shipping": "Çatdırılma",
+        "free": "Pulsuz",
+        "tax": "Vergi (5%)",
+        "total": "Ümumi",
+        "freeShipping": "$199-dan yuxarı sifarişlərə pulsuz çatdırılma",
+        "estimatedDelivery": "Təxmini çatdırılma 3-5 iş günü"
+    },
+    "confirmed": {
+        "title": "Sifariş Verildi!",
+        "description": "Sifarişiniz üçün təşəkkür edirik. Tezliklə təsdiq e-poçtu göndərəcəyik.",
+        "continueShopping": "Alış-verişə Davam Et"
+    }
+}

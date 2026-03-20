@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { selectCartItems, selectSelectedIds, selectCartTotals } from "@/features/cart/store/cartSlice";
 
 export default function CheckoutSummary() {
+    const { t } = useTranslation("checkout");
     const allItems = useSelector(selectCartItems);
     const selectedIds = useSelector(selectSelectedIds);
     const totals = useSelector(selectCartTotals);
@@ -13,7 +15,7 @@ export default function CheckoutSummary() {
 
     return (
         <aside className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:sticky lg:top-6 self-start">
-            <h2 className="text-[17px] font-bold text-gray-900 mb-5">Order Summary</h2>
+            <h2 className="text-[17px] font-bold text-gray-900 mb-5">{t("summary.heading")}</h2>
 
             {/* Product list */}
             <div className="flex flex-col gap-4 mb-5">
@@ -61,7 +63,7 @@ export default function CheckoutSummary() {
                 ))}
 
                 {items.length === 0 && (
-                    <p className="text-[13px] text-gray-400 text-center py-3">No items selected</p>
+                    <p className="text-[13px] text-gray-400 text-center py-3">{t("summary.noItems")}</p>
                 )}
             </div>
 
@@ -70,19 +72,19 @@ export default function CheckoutSummary() {
             {/* Totals */}
             <div className="flex flex-col gap-2.5 text-[13px]">
                 <div className="flex justify-between">
-                    <span className="text-gray-500">Subtotal</span>
+                    <span className="text-gray-500">{t("summary.subtotal")}</span>
                     <span className="font-semibold text-gray-800">${totals.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                    <span className="text-gray-500">Shipping</span>
+                    <span className="text-gray-500">{t("summary.shipping")}</span>
                     {totals.shipping === 0 ? (
-                        <span className="text-green-500 font-bold">Free</span>
+                        <span className="text-green-500 font-bold">{t("summary.free")}</span>
                     ) : (
                         <span className="font-semibold text-gray-800">${totals.shipping.toFixed(2)}</span>
                     )}
                 </div>
                 <div className="flex justify-between">
-                    <span className="text-gray-500">Tax (5%)</span>
+                    <span className="text-gray-500">{t("summary.tax")}</span>
                     <span className="font-semibold text-gray-800">${totals.tax.toFixed(2)}</span>
                 </div>
             </div>
@@ -91,7 +93,7 @@ export default function CheckoutSummary() {
 
             {/* Total */}
             <div className="flex items-end justify-between mb-5">
-                <span className="text-[16px] font-bold text-gray-900">Total</span>
+                <span className="text-[16px] font-bold text-gray-900">{t("summary.total")}</span>
                 <span className="text-[26px] font-bold text-[#402F75] leading-none">${totals.total.toFixed(2)}</span>
             </div>
 
@@ -101,13 +103,13 @@ export default function CheckoutSummary() {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    Free shipping on orders over $199
+                    {t("summary.freeShipping")}
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-gray-500">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    Estimated delivery 3-5 business days
+                    {t("summary.estimatedDelivery")}
                 </div>
             </div>
         </aside>
