@@ -24,7 +24,7 @@ function StepIndicator({ current }: { current: CheckoutStep }) {
     const currentIdx = steps.findIndex((s) => s.key === current);
 
     return (
-        <div className="flex items-center justify-center mb-8 bg-white rounded-[]">
+        <div className="flex items-center justify-center mb-8 bg-white rounded-[20px] py-[10px]">
             {steps.map((step, idx) => {
                 const isCompleted = idx < currentIdx;
                 const isActive = idx === currentIdx;
