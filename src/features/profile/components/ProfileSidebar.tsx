@@ -10,17 +10,19 @@ import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import StatusPopup from "@/features/auth/components/StatusPopup";
 import { logout } from "@/features/auth/services/auth.api";
 import { clearTokens } from "@/shared/lib/tokenManager";
+import type { UserProfile } from "../types";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export type Section = "profile" | "delivery" | "orders" | "settings";
 
 interface Props {
     activeSection: Section;
     onSectionChange: (section: Section) => void;
+    profile?: UserProfile | null;
 }
 
 const mockUser = {
-    name: "Alexandra Mitchell",
-    email: "alex.mitchell@example.com",
     membership: "Gold Member",
     orders: 5,
     reviews: 12,
@@ -29,7 +31,7 @@ const mockUser = {
     orderBadge: 5,
 };
 
-export default function ProfileSidebar({ activeSection, onSectionChange }: Props) {
+export default function ProfileSidebar({ activeSection, onSectionChange, profile }: Props) {
     const { t } = useTranslation("profile");
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
     const router = useRouter();
@@ -97,15 +99,21 @@ export default function ProfileSidebar({ activeSection, onSectionChange }: Props
             {/* User card */}
             <div className="bg-white rounded-[20px] p-5 flex flex-col items-center text-center shadow-sm">
                 <div className="relative w-[80px] h-[80px] rounded-full overflow-hidden bg-[#E5E0F5] mb-3 flex items-center justify-center">
-                    <svg viewBox="0 0 80 80" className="w-full h-full" fill="none">
-                        <rect width="80" height="80" fill="#E5E0F5" />
-                        <circle cx="40" cy="32" r="16" fill="#402F75" opacity="0.4" />
-                        <ellipse cx="40" cy="72" rx="26" ry="18" fill="#402F75" opacity="0.25" />
-                    </svg>
+                    {profile?.avatarUrl ? (
+                        <img src={`${API_BASE}${profile.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                        <svg viewBox="0 0 80 80" className="w-full h-full" fill="none">
+                            <rect width="80" height="80" fill="#E5E0F5" />
+                            <circle cx="40" cy="32" r="16" fill="#402F75" opacity="0.4" />
+                            <ellipse cx="40" cy="72" rx="26" ry="18" fill="#402F75" opacity="0.25" />
+                        </svg>
+                    )}
                 </div>
 
-                <h3 className="font-bold text-[16px] text-gray-800">{mockUser.name}</h3>
-                <p className="text-gray-400 text-[13px] mb-3">{mockUser.email}</p>
+                <h3 className="font-bold text-[16px] text-gray-800">
+                    {[profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "—"}
+                </h3>
+                <p className="text-gray-400 text-[13px] mb-3">{profile?.phoneNumber ?? ""}</p>
 
                 <span className="inline-flex items-center gap-1.5 bg-[#FFF8E6] text-[#FBBB14] text-[12px] font-semibold px-3 py-1 rounded-full border border-[#FBBB14]/40">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="#FBBB14">

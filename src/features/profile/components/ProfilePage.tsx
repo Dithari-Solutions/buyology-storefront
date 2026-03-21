@@ -1,16 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import type { RootState } from "@/store";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ProfileSidebar, { type Section } from "./ProfileSidebar";
 import ProfileInfo from "./ProfileInfo";
 import DeliveryAddress from "./DeliveryAddress";
+import type { UserProfile } from "../types";
+import { getProfile } from "../services/profile.api";
 
 export default function ProfilePage() {
     const { t } = useTranslation("profile");
+    const userId = useSelector((state: RootState) => state.auth.userId);
     const [activeSection, setActiveSection] = useState<Section>("profile");
+
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [profileLoading, setProfileLoading] = useState(true);
+
+    useEffect(() => {
+        if (!userId) return;
+        setProfileLoading(true);
+        getProfile(userId)
+            .then(setProfile)
+            .catch(() => setProfile(null))
+            .finally(() => setProfileLoading(false));
+    }, [userId]);
 
     const sectionMeta: Record<Section, { title: string; subtitle: string }> = {
         profile: { title: t("title"), subtitle: t("subtitle") },
@@ -36,10 +53,17 @@ export default function ProfilePage() {
                     <ProfileSidebar
                         activeSection={activeSection}
                         onSectionChange={setActiveSection}
+                        profile={profile}
                     />
 
                     <div>
-                        {activeSection === "profile" && <ProfileInfo />}
+                        {activeSection === "profile" && (
+                            <ProfileInfo
+                                profile={profile}
+                                isLoading={profileLoading}
+                                onProfileUpdate={setProfile}
+                            />
+                        )}
                         {activeSection === "delivery" && <DeliveryAddress />}
                         {activeSection === "orders" && (
                             <div className="bg-white rounded-[20px] p-12 shadow-sm flex flex-col items-center justify-center gap-4 text-center">

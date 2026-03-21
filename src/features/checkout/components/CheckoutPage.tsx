@@ -13,6 +13,12 @@ import PaymentIframe from "./PaymentIframe";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment, getTransaction } from "../services/payment.api";
 import { selectCartTotals, clearCart } from "@/features/cart/store/cartSlice";
+import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
+import {
+    getProfile,
+    getAddresses,
+    createAddress,
+} from "@/features/profile/services/profile.api";
 
 const METHOD_MAP: Record<PaymentMethod, "CARD" | "TABBY" | "TAMARA"> = {
     card: "CARD",
@@ -177,12 +183,44 @@ export default function CheckoutPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
 
+    // Profile + addresses state
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+
     // Payment state
     const [appOrderId, setAppOrderId] = useState<string | null>(null);
     const [currentTransactionId, setCurrentTransactionId] = useState<string | null>(null);
     const [iframeUrl, setIframeUrl] = useState<string | null>(null);
     const [isPolling, setIsPolling] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
+
+    // ── Load profile + addresses on mount ─────────────────────────────────────
+
+    useEffect(() => {
+        if (!userId) return;
+        Promise.all([getProfile(userId), getAddresses(userId)])
+            .then(([prof, addrs]) => {
+                setProfile(prof);
+                setSavedAddresses(addrs);
+            })
+            .catch(() => {
+                // non-blocking — user can still fill form manually
+            });
+    }, [userId]);
+
+    // ── Save address from checkout ─────────────────────────────────────────────
+
+    async function handleSaveAddress(payload: CreateAddressPayload): Promise<Address> {
+        if (!userId) throw new Error("Not authenticated");
+        const created = await createAddress(userId, payload);
+        setSavedAddresses((prev) => {
+            const updated = payload.isDefault
+                ? prev.map((a) => ({ ...a, isDefault: false }))
+                : prev;
+            return [...updated, created];
+        });
+        return created;
+    }
 
     // ── Polling ────────────────────────────────────────────────────────────────
 
@@ -391,6 +429,9 @@ export default function CheckoutPage() {
                                     <ShippingStep
                                         onContinue={handleShippingContinue}
                                         initialData={shippingData ?? undefined}
+                                        savedAddresses={savedAddresses}
+                                        profilePhone={profile?.phoneNumber ?? undefined}
+                                        onSaveAddress={handleSaveAddress}
                                     />
                                 )}
                                 {step === "payment" && shippingData && (
