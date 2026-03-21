@@ -12,7 +12,6 @@ import CheckoutSummary from "./CheckoutSummary";
 import PaymentIframe from "./PaymentIframe";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment, getTransaction } from "../services/payment.api";
-import { checkoutCart } from "@/features/cart/services/cart.api";
 import { selectCartTotals, clearCart } from "@/features/cart/store/cartSlice";
 
 const METHOD_MAP: Record<PaymentMethod, "CARD" | "TABBY" | "TAMARA"> = {
@@ -170,6 +169,7 @@ export default function CheckoutPage() {
     const dispatch = useDispatch();
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const cartId = useSelector((state: RootState) => state.cart.cartId);
     const totals = useSelector(selectCartTotals);
 
     const [step, setStep] = useState<CheckoutStep>("shipping");
@@ -267,15 +267,12 @@ export default function CheckoutPage() {
         setPaymentError(null);
 
         try {
-            // Step 1: checkout the cart to get the appOrderId (only on first attempt)
-            let orderId = appOrderId;
-            if (!orderId) {
-                const checkedOutCart = await checkoutCart(userId);
-                orderId = checkedOutCart.id;
-                setAppOrderId(orderId);
-            }
+            // Use the cart ID as the appOrderId (reused across retries)
+            const orderId = appOrderId ?? cartId;
+            if (!orderId) throw new Error("No active cart found. Please add items and try again.");
+            if (!appOrderId) setAppOrderId(orderId);
 
-            // Step 2: initiate payment
+            // Initiate payment
             const result = await initiatePayment({
                 appOrderId: orderId,
                 methodType: METHOD_MAP[paymentMethod],
