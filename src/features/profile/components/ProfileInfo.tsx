@@ -244,6 +244,18 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                     <div className="flex-1">
                         {isEditing ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {/* Email — read-only */}
+                                <div className="sm:col-span-2">
+                                    <label className="block text-[13px] font-medium text-gray-400 mb-1.5">
+                                        {t("personalInfo.email")} <span className="text-[11px] text-gray-400">(read-only)</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={profile?.email ?? ""}
+                                        disabled
+                                        className="w-full border border-gray-100 rounded-[10px] px-4 py-2.5 text-[14px] text-gray-400 bg-gray-50 cursor-not-allowed"
+                                    />
+                                </div>
                                 <div>
                                     <label className="block text-[13px] font-medium text-gray-600 mb-1.5">{t("personalInfo.firstName")}</label>
                                     <input
@@ -288,6 +300,20 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-10">
+                                {/* Email — full-width read-only row */}
+                                <div className="sm:col-span-2">
+                                    <p className="text-[12px] text-gray-400 mb-1.5">{t("personalInfo.email")}</p>
+                                    <div className="flex items-center gap-2">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                            <polyline points="22,6 12,13 2,6" />
+                                        </svg>
+                                        <span className="text-[15px] font-medium text-gray-800">
+                                            {profile?.email ?? "—"}
+                                        </span>
+                                        <span className="text-[11px] text-gray-400 ml-1">(read-only)</span>
+                                    </div>
+                                </div>
                                 {[
                                     {
                                         label: t("personalInfo.firstName"),

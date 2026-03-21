@@ -317,7 +317,7 @@ export default function CheckoutPage() {
                 amount: totals.total,
                 currency: "AED",
                 customerId: userId,
-                customerEmail: shippingData.email,
+                customerEmail: profile?.email ?? shippingData.email,
                 customerPhone: shippingData.phone || undefined,
                 billingName: `${shippingData.firstName} ${shippingData.lastName}`.trim(),
                 billingApartment: shippingData.apartment || undefined,

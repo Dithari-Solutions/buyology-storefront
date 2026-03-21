@@ -2,6 +2,7 @@ export type AddressLabel = "HOME" | "WORK" | "OTHER";
 
 export interface UserProfile {
     userId: string;
+    email: string | null;
     firstName: string | null;
     lastName: string | null;
     phoneNumber: string | null;
