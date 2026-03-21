@@ -8,13 +8,14 @@ import type { ShippingFormData, PaymentMethod } from "../types";
 
 // ── Brand Badge Components ────────────────────────────────────────────────────
 
-function StripeBadge() {
+function PaymobCardBadge() {
     return (
-        <span className="inline-flex items-center gap-1 bg-[#635BFF] text-white text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wide">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13.479 9.883c-2.148-.574-2.838-.852-2.838-1.574 0-.646.602-1.054 1.568-1.054 1.699 0 3.395.646 4.561 1.254l.658-4.049c-.917-.498-2.785-1.129-5.047-1.129-2.066 0-3.787.542-5.024 1.574C6.177 5.836 5.5 7.138 5.5 8.76c0 3.154 1.933 4.227 5.051 5.076 2.016.542 2.621.917 2.621 1.636 0 .719-.625 1.128-1.75 1.128-1.783 0-3.899-.771-5.344-1.833l-.721 4.093c1.207.833 3.527 1.64 5.923 1.64 2.18 0 3.997-.541 5.24-1.574 1.304-1.074 1.98-2.627 1.98-4.561C18.5 11.386 16.683 10.667 13.479 9.883z" />
+        <span className="inline-flex items-center gap-1 bg-[#402F75] text-white text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wide">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                <line x1="1" y1="10" x2="23" y2="10" />
             </svg>
-            stripe
+            paymob
         </span>
     );
 }
@@ -31,18 +32,6 @@ function TamaraBadge() {
     return (
         <span className="inline-flex items-center bg-[#00B69B] text-white text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wide">
             tamara
-        </span>
-    );
-}
-
-function PaymobBadge() {
-    return (
-        <span className="inline-flex items-center gap-1 bg-[#402F75] text-white text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wide">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                <line x1="1" y1="10" x2="23" y2="10" />
-            </svg>
-            paymob
         </span>
     );
 }
@@ -86,7 +75,7 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
             id: "card",
             label: t("payment.card.label"),
             description: t("payment.card.description"),
-            badge: <StripeBadge />,
+            badge: <PaymobCardBadge />,
             detail: t("payment.card.detail"),
         },
         {
@@ -102,12 +91,6 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
             description: t("payment.tamara.description", { amount: (total / 3).toFixed(2) }),
             badge: <TamaraBadge />,
             detail: t("payment.tamara.detail", { amount: (total / 3).toFixed(2) }),
-        },
-        {
-            id: "paymob",
-            label: t("payment.paymob.label"),
-            description: t("payment.paymob.description"),
-            badge: <PaymobBadge />,
         },
     ];
 

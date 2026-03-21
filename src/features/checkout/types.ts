@@ -11,6 +11,40 @@ export interface ShippingFormData {
     saveInfo: boolean;
 }
 
-export type PaymentMethod = "card" | "tabby" | "tamara" | "paymob";
+export type PaymentMethod = "card" | "tabby" | "tamara";
 
 export type CheckoutStep = "shipping" | "payment";
+
+export type PaymentStatus =
+    | "PENDING"
+    | "PROCESSING"
+    | "SUCCESS"
+    | "FAILED"
+    | "CANCELLED"
+    | "REFUNDED"
+    | "PARTIALLY_REFUNDED";
+
+export interface InitiatePaymentResponse {
+    transactionId: string;
+    methodType: "CARD" | "TABBY" | "TAMARA";
+    amount: number;
+    currency: string;
+    paymentKeyToken: string;
+    redirectUrl: string | null;
+    iframeId: string | null;
+}
+
+export interface TransactionResponse {
+    id: string;
+    appOrderId: string;
+    methodType: "CARD" | "TABBY" | "TAMARA";
+    amount: number;
+    amountCents: number;
+    currency: string;
+    status: PaymentStatus;
+    providerTransactionId: string | null;
+    failureReason: string | null;
+    failureCode: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
