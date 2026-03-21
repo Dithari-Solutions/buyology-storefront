@@ -9,7 +9,6 @@ import Footer from "@/shared/components/Footer";
 import ShippingStep from "./ShippingStep";
 import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
-import PaymentIframe from "./PaymentIframe";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment, getTransaction } from "../services/payment.api";
 import { selectCartTotals, clearCart } from "@/features/cart/store/cartSlice";
@@ -189,8 +188,6 @@ export default function CheckoutPage() {
 
     // Payment state
     const [appOrderId, setAppOrderId] = useState<string | null>(null);
-    const [currentTransactionId, setCurrentTransactionId] = useState<string | null>(null);
-    const [iframeUrl, setIframeUrl] = useState<string | null>(null);
     const [isPolling, setIsPolling] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
 
@@ -282,7 +279,6 @@ export default function CheckoutPage() {
         const pendingTxId = sessionStorage.getItem(PENDING_TX_KEY);
         if (pendingTxId) {
             sessionStorage.removeItem(PENDING_TX_KEY);
-            setCurrentTransactionId(pendingTxId);
             setIsPolling(true);
             setStep("payment");
             pollTransactionStatus(pendingTxId);
@@ -327,19 +323,9 @@ export default function CheckoutPage() {
                 billingPostalCode: shippingData.postalCode || undefined,
             });
 
-            setCurrentTransactionId(result.transactionId);
-
-            if (paymentMethod === "card") {
-                // Render Paymob iframe
-                const url = `https://uae.paymob.com/api/acceptance/iframes/${result.iframeId}?payment_token=${result.paymentKeyToken}`;
-                setIframeUrl(url);
-            } else {
-                // BNPL: redirect — store transactionId so we can poll on return
-                if (result.redirectUrl) {
-                    sessionStorage.setItem(PENDING_TX_KEY, result.transactionId);
-                    window.location.href = result.redirectUrl;
-                }
-            }
+            // All methods use Unified Checkout — store transactionId and redirect
+            sessionStorage.setItem(PENDING_TX_KEY, result.transactionId);
+            window.location.href = result.checkoutUrl;
         } catch (err) {
             setPaymentError(
                 err instanceof Error
@@ -351,17 +337,8 @@ export default function CheckoutPage() {
         }
     }
 
-    function handleIframeClose() {
-        setIframeUrl(null);
-        if (currentTransactionId) {
-            setIsPolling(true);
-            pollTransactionStatus(currentTransactionId);
-        }
-    }
-
     function handleRetry() {
         setPaymentError(null);
-        setCurrentTransactionId(null);
         // Keep appOrderId so we reuse the same order on retry
     }
 
@@ -381,9 +358,6 @@ export default function CheckoutPage() {
 
     return (
         <>
-            {/* Paymob card iframe overlay */}
-            {iframeUrl && <PaymentIframe iframeUrl={iframeUrl} onClose={handleIframeClose} />}
-
             <Header />
             <main className="w-[90%] mx-auto py-8 md:py-12">
                 {isPolling ? (

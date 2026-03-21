@@ -29,9 +29,8 @@ export interface InitiatePaymentResponse {
     methodType: "CARD" | "TABBY" | "TAMARA";
     amount: number;
     currency: string;
-    paymentKeyToken: string;
-    redirectUrl: string | null;
-    iframeId: string | null;
+    clientSecret: string;
+    checkoutUrl: string;
 }
 
 export interface TransactionResponse {
