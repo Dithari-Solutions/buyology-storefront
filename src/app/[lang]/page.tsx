@@ -11,6 +11,7 @@ import MarqueeStrip from "@/features/home/components/MarqueeStrip";
 import PopularCategories from "@/features/home/components/PopularCategories";
 import TrustStats from "@/features/home/components/TrustStats";
 import Newsletter from "@/features/home/components/Newsletter";
+import QuickDeliveryBanner from "@/features/home/components/QuickDeliveryBanner";
 
 const superDeals = [
   {
@@ -64,6 +65,9 @@ export default function Home() {
         </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
           <LimitedStock />
+        </ScrollReveal>
+        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
+          <QuickDeliveryBanner />
         </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
           <TrustStats />

@@ -65,6 +65,12 @@
         "buyNow":        "İndi al",
         "specs": ["Intel Core i5", "8 GB RAM", "128 GB SSD", "13.3\" Ekran", "macOS"]
     },
+    "quickDelivery": {
+        "label": "⚡ Tez Çatdırılma",
+        "tagline": "30 dəqiqə ərzində alın",
+        "description": "İndi sifariş verin və məhsullarınız 30 dəqiqə ərzində qapınıza çatdırılsın.",
+        "cta": "İndi Al"
+    },
     "superDeals": {
         "flashSale": "⚡ Flash Sale",
         "title":     "Super Endirimlər",

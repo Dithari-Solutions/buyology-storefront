@@ -16,6 +16,7 @@ import enNotFound    from "../../../public/locales/en/notFound.json";
 import enProfile    from "../../../public/locales/en/profile.json";
 import enComingSoon  from "../../../public/locales/en/coming-soon.json";
 import enProduct    from "../../../public/locales/en/product.json";
+import enQuickDelivery from "../../../public/locales/en/quick-delivery.json";
 
 import azAuth   from "../../../public/locales/az/auth.json";
 import azBanner from "../../../public/locales/az/banner.json";
@@ -29,6 +30,7 @@ import azNotFound    from "../../../public/locales/az/notFound.json";
 import azProfile    from "../../../public/locales/az/profile.json";
 import azComingSoon  from "../../../public/locales/az/coming-soon.json";
 import azProduct    from "../../../public/locales/az/product.json";
+import azQuickDelivery from "../../../public/locales/az/quick-delivery.json";
 
 import arAuth   from "../../../public/locales/ar/auth.json";
 import arBanner from "../../../public/locales/ar/banner.json";
@@ -42,6 +44,7 @@ import arNotFound    from "../../../public/locales/ar/notFound.json";
 import arProfile    from "../../../public/locales/ar/profile.json";
 import arComingSoon  from "../../../public/locales/ar/coming-soon.json";
 import arProduct    from "../../../public/locales/ar/product.json";
+import arQuickDelivery from "../../../public/locales/ar/quick-delivery.json";
 
 if (!i18n.isInitialized) {
     i18n
@@ -51,7 +54,7 @@ if (!i18n.isInitialized) {
             fallbackLng: "en",
             debug: false,
             supportedLngs: ["en", "az", "ar"],
-            ns: ["auth", "banner", "cart", "checkout", "coming-soon", "favourites", "footer", "header", "home", "notFound", "product", "profile"],
+            ns: ["auth", "banner", "cart", "checkout", "coming-soon", "favourites", "footer", "header", "home", "notFound", "product", "profile", "quick-delivery"],
             defaultNS: "home",
             interpolation: {
                 escapeValue: false,
@@ -70,6 +73,7 @@ if (!i18n.isInitialized) {
                     notFound:    enNotFound,
                     product:     enProduct,
                     profile:     enProfile,
+                    "quick-delivery": enQuickDelivery,
                 },
                 az: {
                     auth:        azAuth,
@@ -84,6 +88,7 @@ if (!i18n.isInitialized) {
                     notFound:    azNotFound,
                     product:     azProduct,
                     profile:     azProfile,
+                    "quick-delivery": azQuickDelivery,
                 },
                 ar: {
                     auth:        arAuth,
@@ -98,6 +103,7 @@ if (!i18n.isInitialized) {
                     notFound:    arNotFound,
                     product:     arProduct,
                     profile:     arProfile,
+                    "quick-delivery": arQuickDelivery,
                 },
             },
             react: {

@@ -65,6 +65,12 @@
         "buyNow":        "اشترِ الآن",
         "specs": ["Intel Core i5", "8 جيجا RAM", "128 جيجا SSD", "شاشة 13.3\"", "macOS"]
     },
+    "quickDelivery": {
+        "label": "⚡ توصيل سريع",
+        "tagline": "احصل عليه في 30 دقيقة",
+        "description": "اطلب الآن واستلم منتجاتك على بابك في أقل من 30 دقيقة.",
+        "cta": "تسوق الآن"
+    },
     "superDeals": {
         "flashSale": "⚡ تخفيضات",
         "title":     "عروض رائعة",

@@ -65,6 +65,12 @@
         "buyNow":        "Buy now",
         "specs": ["Intel Core i5", "8 GB RAM", "128 GB SSD", "13.3\" Display", "macOS"]
     },
+    "quickDelivery": {
+        "label": "⚡ Quick Delivery",
+        "tagline": "Get it in 30 minutes",
+        "description": "Order now and receive your items delivered straight to your door in under 30 minutes.",
+        "cta": "Shop Now"
+    },
     "superDeals": {
         "flashSale": "⚡ Flash Sale",
         "title":     "Super Deals",

@@ -33,6 +33,7 @@ export interface ApiProduct {
   effectivePrice: number;
   discountType: string | null;
   discountValue: number | null;
+  availabilityStatus: string;
   isRefurbished: boolean;
   refurbGrade: string | null;
   productType: string;

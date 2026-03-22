@@ -1,0 +1,16 @@
+{
+    "title": "Quick Delivery",
+    "permissionHeading": "See what's available near you",
+    "permissionSubtext": "We'll find stores that can deliver to you in under 30 minutes",
+    "allowLocation": "Allow Location",
+    "loadingText": "Finding products near you…",
+    "emptyTitle": "No 30-minute delivery available in your area right now",
+    "browseAll": "Browse all products",
+    "errorTitle": "Something went wrong",
+    "errorSubtext": "We couldn't load products for your area.",
+    "retry": "Try again",
+    "locationDeniedTitle": "Location access denied",
+    "locationDeniedSubtext": "Please enable location access in your browser settings to use Quick Delivery.",
+    "productsTitle": "Available near you",
+    "badge": "⚡ Under 30 min"
+}

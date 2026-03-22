@@ -1,0 +1,16 @@
+{
+    "title": "Tez Çatdırılma",
+    "permissionHeading": "Yaxınlığınızdakı məhsullara baxın",
+    "permissionSubtext": "30 dəqiqə ərzində çatdırıla bilən mağazaları tapacağıq",
+    "allowLocation": "Yeri İzin Ver",
+    "loadingText": "Yaxınlığınızdakı məhsullar axtarılır…",
+    "emptyTitle": "Bu anda ərazinizdə 30 dəqiqəlik çatdırılma mövcud deyil",
+    "browseAll": "Bütün məhsullara bax",
+    "errorTitle": "Xəta baş verdi",
+    "errorSubtext": "Ərazinizdəki məhsulları yükləyə bilmədik.",
+    "retry": "Yenidən cəhd et",
+    "locationDeniedTitle": "Yer icazəsi rədd edildi",
+    "locationDeniedSubtext": "Tez Çatdırılma xidmətindən istifadə etmək üçün brauzerin parametrlərindən yer icazəsini aktiv edin.",
+    "productsTitle": "Yaxınlığınızda mövcuddur",
+    "badge": "⚡ 30 dəq ərzində"
+}
