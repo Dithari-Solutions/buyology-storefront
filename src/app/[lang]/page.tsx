@@ -64,10 +64,10 @@ export default function Home() {
           <PopularCategories />
         </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
-          <LimitedStock />
+          <QuickDeliveryBanner />
         </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
-          <QuickDeliveryBanner />
+          <LimitedStock />
         </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
           <TrustStats />

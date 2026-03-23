@@ -89,10 +89,10 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             {/* Pricing */}
             <div className="flex items-center gap-3 mt-1">
                 <span className="text-[32px] font-bold text-gray-900 leading-none">
-                    ${product.price.toLocaleString()}
+                    ${(product.price ?? 0).toLocaleString()}
                 </span>
                 <span className="text-lg text-gray-400 line-through">
-                    ${product.originalPrice.toLocaleString()}
+                    ${(product.originalPrice ?? 0).toLocaleString()}
                 </span>
                 <span className="bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded-full">
                     -{product.discountPercent}%

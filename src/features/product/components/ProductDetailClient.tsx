@@ -8,8 +8,8 @@ import ProductFeaturesBadges from "./ProductFeaturesBadges";
 import ProductReviews from "./ProductReviews";
 import ProductQA from "./ProductQA";
 import { addItem } from "@/features/cart/store/cartSlice";
-import { toggleFavourite, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
-import type { RootState } from "@/store";
+import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
+import type { AppDispatch, RootState } from "@/store";
 import type { ApiProduct, ApiSpec, ApiSpecOption } from "../services/productService";
 
 interface ProductDetailClientProps {
@@ -101,8 +101,9 @@ function SpecSelector({
 }
 
 export default function ProductDetailClient({ product, images }: ProductDetailClientProps) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const isFav = useSelector((state: RootState) => selectIsFavourite(product.id)(state));
+  const userId = useSelector((state: RootState) => state.auth.userId);
 
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
     () => Object.fromEntries(product.specs.map((s) => [s.id, s.options[0]?.id ?? ""]))
@@ -155,25 +156,35 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
   }
 
   function handleToggleFavourite() {
+    if (!userId) return;
     const slugs = { en: product.slug, az: product.slug, ar: product.slug };
     const ramSpec = product.specs.find((s) => s.code === "ram");
     const storageSpec = product.specs.find((s) => s.code === "storage");
     const ramOpt = ramSpec?.options.find((o) => o.id === selectedOptions[ramSpec.id]);
     const storOpt = storageSpec?.options.find((o) => o.id === (selectedOptions[storageSpec?.id ?? ""] ?? ""));
 
-    dispatch(toggleFavourite({
-      id: product.id,
-      title: product.title,
-      price: totalPrice,
-      originalPrice: product.basePrice,
-      discount: product.discountValue ?? 0,
-      rating: 0,
-      inStock: true,
-      category: product.categoryId,
-      slugs,
-      ram: ramOpt ? `${ramOpt.value}${ramOpt.unit}` : undefined,
-      storage: storOpt ? `${storOpt.value}${storOpt.unit}` : undefined,
-    }));
+    if (isFav) {
+      dispatch(removeFromFavouritesThunk({ userId, productId: product.id }));
+    } else {
+      dispatch(addToFavouritesThunk({
+        userId,
+        productId: product.id,
+        meta: {
+          id: product.id,
+          title: product.title,
+          price: totalPrice,
+          originalPrice: product.basePrice,
+          discount: product.discountValue ?? 0,
+          rating: 0,
+          inStock: true,
+          category: product.categoryId,
+          slugs,
+          imageUrl: images[0] ?? undefined,
+          ram: ramOpt ? `${ramOpt.value}${ramOpt.unit}` : undefined,
+          storage: storOpt ? `${storOpt.value}${storOpt.unit}` : undefined,
+        },
+      }));
+    }
     setFavBounce(true);
     setTimeout(() => setFavBounce(false), 400);
   }
@@ -290,12 +301,12 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
           {/* Pricing */}
           <div className="flex items-end gap-3 flex-wrap">
             <span className="text-[34px] font-extrabold text-gray-900 leading-none tracking-tight">
-              ${totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${(totalPrice ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             {hasDiscount && (
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-lg text-gray-400 line-through font-medium">
-                  ${product.basePrice.toLocaleString()}
+                  ${(product.basePrice ?? 0).toLocaleString()}
                 </span>
                 <span className="bg-red-50 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full border border-red-100">
                   Save ${savings.toFixed(0)}

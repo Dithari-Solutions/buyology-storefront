@@ -5,11 +5,12 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-import { removeFromFavourites } from "../store/favouritesSlice";
+import { removeFromFavouritesThunk } from "../store/favouritesSlice";
 import { addItem } from "@/features/cart/store/cartSlice";
+import type { AppDispatch, RootState } from "@/store";
 import type { FavouriteItemMeta } from "../types";
 import RamIcon from "@/assets/icons/ram.png";
 import CartIcon from "@/assets/icons/cart.png";
@@ -38,8 +39,9 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
 
     const router = useRouter();
     const params = useParams();
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const { t } = useTranslation("favourites");
+    const userId = useSelector((state: RootState) => state.auth.userId);
 
     const lang = (params?.lang as Lang) ?? "en";
     const href = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${item.slugs[lang] ?? item.slugs.en}`;
@@ -137,8 +139,11 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
                                 <div className="w-full h-full bg-white border border-[#FBBB14] p-[10px] flex flex-col gap-[10px]">
                                     <div className="flex-1 bg-[#F6F4FF] rounded-[14px] flex items-center justify-center min-h-0 overflow-hidden">
                                         <Image
-                                            src={MacPro13}
+                                            src={item.imageUrl ?? MacPro13}
                                             alt={item.title}
+                                            width={200}
+                                            height={160}
+                                            unoptimized={!!item.imageUrl}
                                             className="object-contain max-h-full w-auto"
                                         />
                                     </div>
@@ -182,7 +187,7 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            dispatch(removeFromFavourites(item.id));
+                            if (userId) dispatch(removeFromFavouritesThunk({ userId, productId: item.id }));
                         }}
                         className="absolute top-[10px] right-[10px] cursor-pointer border border-[#FBBB14] rounded-full p-[8px] bg-white shadow-sm z-10 hover:scale-110 transition-transform"
                         title="Remove from favourites"
@@ -192,8 +197,11 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
                         </svg>
                     </button>
                     <Image
-                        src={MacPro13}
+                        src={item.imageUrl ?? MacPro13}
                         alt={item.title}
+                        width={200}
+                        height={180}
+                        unoptimized={!!item.imageUrl}
                         className="object-contain min-h-[160px] w-auto relative z-10"
                     />
                 </div>

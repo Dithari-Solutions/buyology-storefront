@@ -129,10 +129,10 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                     )}
                     <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                         <span className="text-[#402F75] font-bold text-[20px]">
-                            ${item.price.toLocaleString()}
+                            ${(item.price ?? 0).toLocaleString()}
                         </span>
                         <span className="text-gray-400 line-through text-[15px]">
-                            ${item.originalPrice.toLocaleString()}
+                            ${(item.originalPrice ?? 0).toLocaleString()}
                         </span>
                     </div>
                 </div>

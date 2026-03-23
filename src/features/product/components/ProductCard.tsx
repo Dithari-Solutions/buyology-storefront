@@ -15,7 +15,7 @@ import { addToCartThunk } from "@/features/cart/store/cartSlice";
 import { useId, useState, useEffect, useRef } from "react";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import ProccessorIcon from "@/assets/icons/proccessor.png";
-import { toggleFavourite, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
+import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import LoginPromptModal from "@/features/auth/components/LoginPromptModal";
 
 interface ProductCardProps {
@@ -89,7 +89,16 @@ export default function ProductCard({
       setShowLoginPrompt(true);
       return;
     }
-    dispatch(toggleFavourite({ id: productId, title, price, originalPrice, discount, rating, inStock, category, slugs, processor, ram, storage }));
+
+    if (isFav) {
+      dispatch(removeFromFavouritesThunk({ userId, productId }));
+    } else {
+      dispatch(addToFavouritesThunk({
+        userId,
+        productId,
+        meta: { id: productId, title, price, originalPrice, discount, rating, inStock, category, slugs, processor, ram, storage },
+      }));
+    }
 
     setFavBounce(true);
     setTimeout(() => setFavBounce(false), 400);

@@ -237,8 +237,8 @@ const cartSlice = createSlice({
                     title: product.title,
                     imageUrl: getPrimaryImage(product.media),
                     slug: product.slug,
-                    price: product.effectivePrice,
-                    originalPrice: product.basePrice,
+                    price: product.effectivePrice ?? 0,
+                    originalPrice: product.basePrice ?? 0,
                     discountPercent: product.discountValue ?? 0,
                 };
             });

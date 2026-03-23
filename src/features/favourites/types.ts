@@ -10,6 +10,7 @@ export interface FavouriteItemMeta {
     inStock: boolean;
     category: string;
     slugs: Record<Lang, string>;
+    imageUrl?: string;
     processor?: string;
     ram?: string;
     storage?: string;
@@ -17,4 +18,5 @@ export interface FavouriteItemMeta {
 
 export interface FavouritesState {
     items: FavouriteItemMeta[];
+    loading: boolean;
 }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { selectFavouriteItems, clearFavourites } from "../store/favouritesSlice";
+import { selectFavouriteItems, selectFavouritesLoading, clearFavourites } from "../store/favouritesSlice";
 import { FAVOURITE_CATEGORIES, type FavouriteCategory } from "../constants";
 import FavouriteCard from "./FavouriteCard";
 import FavouritesEmptyItems from "./FavouritesEmptyItems";
@@ -13,6 +13,7 @@ export default function FavouritesGrid() {
     const { t } = useTranslation("favourites");
     const dispatch = useDispatch();
     const items = useSelector(selectFavouriteItems);
+    const loading = useSelector(selectFavouritesLoading);
     const [activeCategory, setActiveCategory] = useState<FavouriteCategory>("all");
 
     const filteredItems: FavouriteItemMeta[] =
@@ -25,6 +26,14 @@ export default function FavouritesGrid() {
         (acc, i) => acc + (i.originalPrice - i.price),
         0
     );
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-[80px]">
+                <div className="w-[40px] h-[40px] rounded-full border-4 border-[#402F75] border-t-transparent animate-spin" />
+            </div>
+        );
+    }
 
     if (items.length === 0) {
         return <FavouritesEmptyItems />;
