@@ -3,11 +3,12 @@ export { default as FavouritesEmptyItems } from "./components/FavouritesEmptyIte
 export { default as FavouritesGrid } from "./components/FavouritesGrid";
 export { default as FavouriteCard } from "./components/FavouriteCard";
 export {
-    addToFavourites,
-    removeFromFavourites,
-    toggleFavourite,
+    addToFavouritesThunk,
+    removeFromFavouritesThunk,
+    fetchFavouritesThunk,
     clearFavourites,
     selectFavouriteItems,
+    selectFavouritesLoading,
     selectFavouriteIds,
     selectIsFavourite,
 } from "./store/favouritesSlice";
