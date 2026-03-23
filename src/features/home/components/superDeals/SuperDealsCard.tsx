@@ -1,26 +1,38 @@
 "use client";
 
 import { useId, useState } from "react";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { COLORS } from "@/shared/styles/variables";
 import CartIcon from "@/assets/icons/cart.png";
 import { useTranslation } from "react-i18next";
+import type { ApiProduct } from "@/features/product/services/productService";
+import { getPrimaryImage } from "@/features/product/services/productService";
 
-export interface DeviceDetails {
-    name: string;
-    image: StaticImageData;
-    specs: string[];
-    price: number;
-    originalPrice: number;
-    discountPercent: number;
+function extractSpecs(product: ApiProduct): string[] {
+    return product.specs.slice(0, 4).map((group) => {
+        const base = group.options[0];
+        if (!base) return group.name;
+        return base.unit ? `${base.value} ${base.unit}` : base.value;
+    });
 }
 
-export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
+export default function SuperDealsCard({ product }: { product: ApiProduct }) {
     const { t } = useTranslation("home");
     const id = useId();
     const clipId = `superDealClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
-    const savings = device.originalPrice - device.price;
+
+    const imageUrl = getPrimaryImage(product.media);
+    const specs = extractSpecs(product);
+    const effectivePrice = product.effectivePrice ?? 0;
+    const basePrice = product.basePrice ?? effectivePrice;
+    const savings = basePrice - effectivePrice;
+    const discountPercent =
+        product.discountType === "PERCENTAGE" && product.discountValue
+            ? Math.round(product.discountValue)
+            : basePrice > 0
+            ? Math.round((1 - effectivePrice / basePrice) * 100)
+            : 0;
 
     const [added, setAdded] = useState(false);
     const [isFav, setIsFav] = useState(false);
@@ -36,7 +48,7 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
 
     function handleFav(e: React.MouseEvent) {
         e.stopPropagation();
-        setIsFav(prev => !prev);
+        setIsFav((prev) => !prev);
         setFavBounce(true);
         setTimeout(() => setFavBounce(false), 400);
     }
@@ -48,12 +60,6 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
             <div className="relative overflow-hidden rounded-[14px] flex items-center justify-center w-[120px] sm:w-[150px] md:w-[185px] flex-shrink-0 h-full">
                 <svg width="0" height="0" className="absolute">
                     <defs>
-                        {/*
-                            Recalculated for this card's portrait image section (~185×270 on md).
-                            Badge is 46px at top-[8px] right-[8px].
-                            Notch starts at x=0.62 (leaving ~67px from right vs badge's 54px edge).
-                            Notch bottom at y=0.27 (~73px from top vs badge bottom at 54px).
-                        */}
                         <clipPath id={clipId} clipPathUnits="objectBoundingBox">
                             <path d="M 0,0 L 0.55,0 C 0.64,0 0.64,0.08 0.64,0.08 L 0.64,0.16 C 0.64,0.23 0.75,0.23 0.75,0.23 L 0.86,0.23 C 1,0.23 1,0.31 1,0.31 L 1,1 L 0,1 Z" />
                         </clipPath>
@@ -63,20 +69,25 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
                     className="absolute inset-0 bg-[#F6F4FF]"
                     style={{ clipPath: `url(#${clipId})` }}
                 />
-                {/* Discount badge */}
-                <div
-                    className="absolute top-[6px] right-[6px] z-10 flex items-center justify-center w-[30px] h-[30px] sm:w-[38px] sm:h-[38px] md:w-[46px] md:h-[46px] rounded-full text-white text-[8px] sm:text-[10px] md:text-xs font-bold"
-                    style={{ backgroundColor: COLORS.primary }}
-                >
-                    -{device.discountPercent}%
-                </div>
-                <Image
-                    src={device.image}
-                    alt={device.name}
-                    width={150}
-                    height={130}
-                    className="object-contain w-[100px] sm:w-[120px] md:w-[145px] relative z-10"
-                />
+                {discountPercent > 0 && (
+                    <div
+                        className="absolute top-[6px] right-[6px] z-10 flex items-center justify-center w-[30px] h-[30px] sm:w-[38px] sm:h-[38px] md:w-[46px] md:h-[46px] rounded-full text-white text-[8px] sm:text-[10px] md:text-xs font-bold"
+                        style={{ backgroundColor: COLORS.primary }}
+                    >
+                        -{discountPercent}%
+                    </div>
+                )}
+                {imageUrl ? (
+                    <Image
+                        src={imageUrl}
+                        alt={product.title}
+                        width={150}
+                        height={130}
+                        className="object-contain w-[100px] sm:w-[120px] md:w-[145px] relative z-10"
+                    />
+                ) : (
+                    <div className="w-[100px] sm:w-[120px] md:w-[145px] h-[130px] bg-gray-200 rounded-lg relative z-10" />
+                )}
             </div>
 
             {/* Details section */}
@@ -84,12 +95,12 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
 
                 {/* Title */}
                 <h3 className="font-bold text-[15px] md:text-[17px] leading-snug text-gray-900 truncate pr-2">
-                    {device.name}
+                    {product.title}
                 </h3>
 
                 {/* Specs grid */}
                 <div className="grid grid-cols-2 gap-[5px]">
-                    {device.specs.slice(0, 4).map((spec, i) => (
+                    {specs.map((spec, i) => (
                         <div key={i} className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]">
                             <span className="w-[4px] h-[4px] rounded-full bg-gray-400 flex-shrink-0" />
                             <span className="text-[11px] text-gray-600 font-medium truncate">{spec}</span>
@@ -105,13 +116,17 @@ export default function SuperDealsCard({ device }: { device: DeviceDetails }) {
 
                     {/* Price block */}
                     <div className="flex flex-col gap-[2px]">
-                        <div className="flex items-center gap-[5px]">
-                            <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">
-                                -${savings}
-                            </span>
-                            <span className="text-gray-400 line-through text-[12px]">${device.originalPrice}</span>
-                        </div>
-                        <span className="text-[17px] sm:text-[19px] md:text-[21px] text-[#402F75] font-bold leading-none">${device.price}</span>
+                        {savings > 0 && (
+                            <div className="flex items-center gap-[5px]">
+                                <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">
+                                    -${savings.toFixed(0)}
+                                </span>
+                                <span className="text-gray-400 line-through text-[12px]">${basePrice.toFixed(0)}</span>
+                            </div>
+                        )}
+                        <span className="text-[17px] sm:text-[19px] md:text-[21px] text-[#402F75] font-bold leading-none">
+                            ${effectivePrice.toFixed(0)}
+                        </span>
                     </div>
 
                     {/* Buttons */}

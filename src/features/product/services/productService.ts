@@ -29,13 +29,17 @@ export interface ApiProduct {
   slug: string;
   title: string;
   description: string;
-  basePrice: number;
-  effectivePrice: number;
-  discountType: string | null;
-  discountValue: number | null;
+  basePrice?: number;
+  effectivePrice?: number;
+  discountType?: string | null;
+  discountValue?: number | null;
   availabilityStatus: string;
   isRefurbished: boolean;
   refurbGrade: string | null;
+  isSuperDeal?: boolean;
+  isLimitedStock?: boolean;
+  brandId?: string | null;
+  brandName?: string | null;
   productType: string;
   sku: string;
   categoryId: string;
@@ -73,6 +77,20 @@ export async function getProductBySlug(slug: string, lang: Lang = "en"): Promise
   const match = products.find((p) => p.slug === slug);
   if (!match) throw new Error(`Product with slug "${slug}" not found`);
   return getProductById(match.id, lang);
+}
+
+export async function getSuperDealProducts(lang: Lang = "en"): Promise<ApiProduct[]> {
+  const { data } = await apiClient.get<{ data: ApiProduct[] }>("/api/product/super-deals", {
+    params: { lang: LANG_PARAM[lang] },
+  });
+  return data.data;
+}
+
+export async function getLimitedStockProducts(lang: Lang = "en"): Promise<ApiProduct[]> {
+  const { data } = await apiClient.get<{ data: ApiProduct[] }>("/api/product/limited-stock", {
+    params: { lang: LANG_PARAM[lang] },
+  });
+  return data.data;
 }
 
 export function getImageUrl(path: string): string {
