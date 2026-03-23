@@ -205,8 +205,8 @@ export default function QuickDeliveryPage() {
                                     slugs={slugs}
                                     productId={product.id}
                                     title={product.title}
-                                    price={product.effectivePrice}
-                                    originalPrice={product.basePrice}
+                                    price={product.effectivePrice ?? 0}
+                                    originalPrice={product.basePrice ?? 0}
                                     discount={product.discountValue ?? 0}
                                     inStock={product.availabilityStatus !== "OUT_OF_STOCK"}
                                     ram={ram ? `${ram} RAM` : undefined}

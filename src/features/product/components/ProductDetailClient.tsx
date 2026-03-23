@@ -121,9 +121,9 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
     return sum + (option?.additionalPrice ?? 0);
   }, 0);
 
-  const totalPrice = product.effectivePrice + additionalPrice;
+  const totalPrice = (product.effectivePrice ?? 0) + additionalPrice;
   const hasDiscount = product.discountValue && product.discountValue > 0;
-  const savings = hasDiscount ? product.basePrice - product.effectivePrice : 0;
+  const savings = hasDiscount ? (product.basePrice ?? 0) - (product.effectivePrice ?? 0) : 0;
 
   function getVariantLabel() {
     return product.specs
@@ -143,10 +143,10 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
       imageUrl: images[0] ?? "",
       variant: { color: "", storage: getVariantLabel() },
       price: totalPrice,
-      originalPrice: product.basePrice,
+      originalPrice: product.basePrice ?? 0,
       discountPercent:
-        hasDiscount && product.basePrice > 0
-          ? Math.round(((product.basePrice - product.effectivePrice) / product.basePrice) * 100)
+        hasDiscount && (product.basePrice ?? 0) > 0
+          ? Math.round((((product.basePrice ?? 0) - (product.effectivePrice ?? 0)) / (product.basePrice ?? 0)) * 100)
           : 0,
       quantity: 1,
       savedForLater: false,
@@ -173,7 +173,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
           id: product.id,
           title: product.title,
           price: totalPrice,
-          originalPrice: product.basePrice,
+          originalPrice: product.basePrice ?? 0,
           discount: product.discountValue ?? 0,
           rating: 0,
           inStock: true,

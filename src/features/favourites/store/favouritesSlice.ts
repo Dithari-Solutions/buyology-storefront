@@ -36,8 +36,8 @@ export const fetchFavouritesThunk = createAsyncThunk(
             items.push({
                 id: p.id,
                 title: p.title,
-                price: p.effectivePrice,
-                originalPrice: p.basePrice,
+                price: p.effectivePrice ?? 0,
+                originalPrice: p.basePrice ?? 0,
                 discount: p.discountValue ?? 0,
                 rating: 0,
                 inStock: p.availabilityStatus === "IN_STOCK",

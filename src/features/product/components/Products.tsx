@@ -287,8 +287,8 @@ export default function Products({ onFilterToggle, filterOpen }: {
                 slugs={slugs}
                 productId={product.id}
                 title={product.title}
-                price={product.effectivePrice}
-                originalPrice={product.basePrice}
+                price={product.effectivePrice ?? 0}
+                originalPrice={product.basePrice ?? 0}
                 discount={product.discountValue ?? 0}
                 ram={ram ? `${ram} RAM` : undefined}
                 storage={storage ? `${storage} SSD` : undefined}
