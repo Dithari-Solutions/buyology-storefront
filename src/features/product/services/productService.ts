@@ -50,6 +50,10 @@ export interface ApiProduct {
   variants: unknown[];
   createdAt: string;
   updatedAt: string;
+  // Country-scoped pricing (present when countryCode param is passed)
+  storePrice?: number | null;
+  currency?: string | null;
+  availableInSelectedCountry?: boolean | null;
 }
 
 const LANG_PARAM: Record<Lang, string> = {
@@ -58,37 +62,50 @@ const LANG_PARAM: Record<Lang, string> = {
   ar: "AR",
 };
 
-export async function getProducts(lang: Lang = "en"): Promise<ApiProduct[]> {
+export interface ProductQueryParams {
+  lang?: Lang;
+  countryCode?: string;
+  currency?: string;
+}
+
+function buildParams({ lang = "en", countryCode, currency }: ProductQueryParams) {
+  const params: Record<string, string> = { lang: LANG_PARAM[lang] };
+  if (countryCode) params.countryCode = countryCode;
+  if (currency) params.currency = currency;
+  return params;
+}
+
+export async function getProducts(params: ProductQueryParams = {}): Promise<ApiProduct[]> {
   const { data } = await apiClient.get<{ data: ApiProduct[] }>("/api/product", {
-    params: { lang: LANG_PARAM[lang] },
+    params: buildParams(params),
   });
   return data.data;
 }
 
-export async function getProductById(id: string, lang: Lang = "en"): Promise<ApiProduct> {
+export async function getProductById(id: string, params: ProductQueryParams = {}): Promise<ApiProduct> {
   const { data } = await apiClient.get<{ data: ApiProduct }>(`/api/product/${id}`, {
-    params: { lang: LANG_PARAM[lang] },
+    params: buildParams(params),
   });
   return data.data;
 }
 
-export async function getProductBySlug(slug: string, lang: Lang = "en"): Promise<ApiProduct> {
-  const products = await getProducts(lang);
+export async function getProductBySlug(slug: string, params: ProductQueryParams = {}): Promise<ApiProduct> {
+  const products = await getProducts(params);
   const match = products.find((p) => p.slug === slug);
   if (!match) throw new Error(`Product with slug "${slug}" not found`);
-  return getProductById(match.id, lang);
+  return getProductById(match.id, params);
 }
 
-export async function getSuperDealProducts(lang: Lang = "en"): Promise<ApiProduct[]> {
+export async function getSuperDealProducts(params: ProductQueryParams = {}): Promise<ApiProduct[]> {
   const { data } = await apiClient.get<{ data: ApiProduct[] }>("/api/product/super-deals", {
-    params: { lang: LANG_PARAM[lang] },
+    params: buildParams(params),
   });
   return data.data;
 }
 
-export async function getLimitedStockProducts(lang: Lang = "en"): Promise<ApiProduct[]> {
+export async function getLimitedStockProducts(params: ProductQueryParams = {}): Promise<ApiProduct[]> {
   const { data } = await apiClient.get<{ data: ApiProduct[] }>("/api/product/limited-stock", {
-    params: { lang: LANG_PARAM[lang] },
+    params: buildParams(params),
   });
   return data.data;
 }

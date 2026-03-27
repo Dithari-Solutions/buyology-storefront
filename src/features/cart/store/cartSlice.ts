@@ -117,7 +117,7 @@ export const fetchCartProductsThunk = createAsyncThunk(
     "cart/fetchCartProducts",
     async ({ productIds, lang }: { productIds: string[]; lang: Lang }) => {
         const unique = [...new Set(productIds)];
-        const products = await Promise.all(unique.map((id) => getProductById(id, lang)));
+        const products = await Promise.all(unique.map((id) => getProductById(id, { lang })));
         return products;
     }
 );

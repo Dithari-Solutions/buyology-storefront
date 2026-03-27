@@ -26,6 +26,7 @@ interface ProductCardProps {
   price?: number;
   originalPrice?: number;
   discount?: number;
+  currency?: string;
   rating?: number;
   inStock?: boolean;
   category?: string;
@@ -33,6 +34,20 @@ interface ProductCardProps {
   ram?: string;
   storage?: string;
   imageUrl?: string;
+}
+
+function formatPrice(amount: number, currency: string): string {
+  if (!amount && amount !== 0) return '';
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount}`;
+  }
 }
 
 interface FlyCard {
@@ -53,6 +68,7 @@ export default function ProductCard({
   price = 600,
   originalPrice = 900,
   discount = 300,
+  currency = 'USD',
   rating = 4.6,
   inStock = true,
   category = "laptops",
@@ -264,7 +280,7 @@ export default function ProductCard({
                   <div className="flex items-center justify-between gap-[6px] flex-shrink-0">
                     <div>
                       <p className="font-bold text-[13px] text-gray-900 truncate max-w-[120px]">{title}</p>
-                      <p className="text-[#402F75] font-bold text-[17px] leading-tight">${price}</p>
+                      <p className="text-[#402F75] font-bold text-[17px] leading-tight">{formatPrice(price, currency)}</p>
                     </div>
                     <div className="flex items-center gap-[3px] bg-[#F6F4FF] rounded-full px-[7px] py-[3px] flex-shrink-0">
                       <Image src={StarIcon} alt="star" width={11} height={11} />
@@ -364,11 +380,11 @@ export default function ProductCard({
             <div className="flex flex-col gap-[2px]">
               {discount > 0 && (
                 <div className="flex items-center gap-[5px]">
-                  <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">-${discount}</span>
-                  <span className="text-gray-400 line-through text-[12px]">${originalPrice}</span>
+                  <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">-{formatPrice(discount, currency)}</span>
+                  <span className="text-gray-400 line-through text-[12px]">{formatPrice(originalPrice, currency)}</span>
                 </div>
               )}
-              <span className="text-[21px] xl:text-[24px] text-[#402F75] font-bold leading-none">${price}</span>
+              <span className="text-[21px] xl:text-[24px] text-[#402F75] font-bold leading-none">{formatPrice(price, currency)}</span>
             </div>
 
             {/* Stock + Buttons */}

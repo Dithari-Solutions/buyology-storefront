@@ -10,6 +10,9 @@ export interface UserProfile {
     avatarUrl: string | null;
     paymentReady: boolean;
     missingFields: string[];
+    selectedCountryCode: string | null;
+    preferredCurrency: string | null;
+    preferredLanguage: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -55,4 +58,7 @@ export interface UpdateProfilePayload {
     lastName?: string;
     phoneNumber?: string;
     dateOfBirth?: string;
+    selectedCountryCode?: string;
+    preferredCurrency?: string;
+    preferredLanguage?: string;
 }

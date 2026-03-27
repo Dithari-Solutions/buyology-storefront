@@ -44,7 +44,7 @@ export default function SuperDeals() {
     const isJumping = useRef(false);
 
     useEffect(() => {
-        getSuperDealProducts(lang)
+        getSuperDealProducts({ lang })
             .then(setProducts)
             .catch(() => {})
             .finally(() => setLoading(false));

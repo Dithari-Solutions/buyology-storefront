@@ -42,7 +42,7 @@ export default function LimitedStock() {
     const isJumping = useRef(false);
 
     useEffect(() => {
-        getLimitedStockProducts(lang)
+        getLimitedStockProducts({ lang })
             .then(setProducts)
             .catch(() => {})
             .finally(() => setLoading(false));

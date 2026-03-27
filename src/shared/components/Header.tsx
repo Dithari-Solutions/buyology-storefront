@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import CartIcon from "@/assets/icons/cart.svg";
 import LanguageSwitcher from "./LanguageSwitcher";
+import CountrySelector from "./CountrySelector";
 import FavIcon from "@/assets/icons/favorite.svg";
 import ProfileIcon from "@/assets/icons/profile.svg";
 import SearchIcon from "@/assets/icons/searchicon.svg";
@@ -362,6 +363,7 @@ export default function Header() {
                         </button>
 
                         <LanguageSwitcher />
+                        <CountrySelector />
 
                         {/* Thin divider */}
                         <div className="w-px h-5 bg-white/20 mx-1" />
@@ -457,7 +459,10 @@ export default function Header() {
                                             </li>
                                         ))}
                                     </ul>
-                                    <LanguageSwitcher />
+                                    <div className="flex items-center gap-[10px] flex-wrap">
+                                        <LanguageSwitcher />
+                                        <CountrySelector />
+                                    </div>
                                 </div>
                             </motion.div>
                         )}

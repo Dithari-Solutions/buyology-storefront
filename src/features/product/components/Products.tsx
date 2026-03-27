@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useSelector } from 'react-redux';
 import ProductCard from './ProductCard';
 import { getProducts, getPrimaryImage, type ApiProduct } from '../services/productService';
+import { selectSelectedCountryCode, selectPreferredCurrency, selectSelectedCountry } from '@/features/country/store/countrySlice';
 import type { Lang } from '@/config/pathSlugs';
 
 function ProductCardSkeleton() {
@@ -152,6 +154,10 @@ export default function Products({ onFilterToggle, filterOpen }: {
   const params = useParams();
   const lang = (params?.lang as Lang) ?? 'en';
 
+  const countryCode = useSelector(selectSelectedCountryCode);
+  const currency = useSelector(selectPreferredCurrency);
+  const selectedCountry = useSelector(selectSelectedCountry);
+
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -161,11 +167,12 @@ export default function Products({ onFilterToggle, filterOpen }: {
 
   useEffect(() => {
     setLoading(true);
-    getProducts(lang)
+    setPage(1);
+    getProducts({ lang, countryCode, currency })
       .then(setProducts)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [lang]);
+  }, [lang, countryCode, currency]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PER_PAGE));
   const startItem = products.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
@@ -176,16 +183,23 @@ export default function Products({ onFilterToggle, filterOpen }: {
     <div className="flex-1 flex flex-col gap-[16px] min-w-0">
       {/* Toolbar */}
       <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px] flex flex-wrap items-center justify-between gap-[10px]">
-        <p className="text-[13px] text-gray-500">
-          {loading ? (
-            'Loading products…'
-          ) : (
-            <>
-              Showing <span className="font-medium text-gray-800">{startItem}–{endItem}</span> of{' '}
-              <span className="font-medium text-gray-800">{products.length}</span> products
-            </>
+        <div className="flex items-center gap-[10px] flex-wrap">
+          <p className="text-[13px] text-gray-500">
+            {loading ? (
+              'Loading products…'
+            ) : (
+              <>
+                Showing <span className="font-medium text-gray-800">{startItem}–{endItem}</span> of{' '}
+                <span className="font-medium text-gray-800">{products.length}</span> products
+              </>
+            )}
+          </p>
+          {selectedCountry && (
+            <span className="inline-flex items-center gap-[5px] bg-[#F6F4FF] border border-[#402F75]/20 rounded-full px-[10px] py-[3px] text-[11px] font-semibold text-[#402F75]">
+              {selectedCountry.name} · {currency}
+            </span>
           )}
-        </p>
+        </div>
 
         <div className="flex items-center gap-[12px] flex-wrap">
           {/* Filter toggle - mobile only */}
@@ -280,6 +294,8 @@ export default function Products({ onFilterToggle, filterOpen }: {
             const slugs = { en: product.slug, az: product.slug, ar: product.slug };
             const ram = getSpecValue(product, 'ram');
             const storage = getSpecValue(product, 'storage');
+            const displayPrice = product.storePrice ?? product.effectivePrice ?? 0;
+            const displayCurrency = product.currency ?? currency;
             return (
               <ProductCard
                 key={product.id}
@@ -287,9 +303,10 @@ export default function Products({ onFilterToggle, filterOpen }: {
                 slugs={slugs}
                 productId={product.id}
                 title={product.title}
-                price={product.effectivePrice ?? 0}
+                price={displayPrice}
                 originalPrice={product.basePrice ?? 0}
                 discount={product.discountValue ?? 0}
+                currency={displayCurrency}
                 ram={ram ? `${ram} RAM` : undefined}
                 storage={storage ? `${storage} SSD` : undefined}
                 imageUrl={getPrimaryImage(product.media)}

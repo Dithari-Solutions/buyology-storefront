@@ -18,7 +18,7 @@ export const fetchFavouritesThunk = createAsyncThunk(
         const list = await getFavourites(userId);
 
         const settled = await Promise.allSettled(
-            list.items.map((item) => getProductById(item.productId))
+            list.items.map((item) => getProductById(item.productId, {}))
         );
 
         const items: FavouriteItemMeta[] = [];

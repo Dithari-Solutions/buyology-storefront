@@ -12,7 +12,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     const { lang, slug } = await params;
 
     try {
-        const product = await getProductBySlug(slug, lang as Lang);
+        const product = await getProductBySlug(slug, { lang: lang as Lang });
         const images = [...product.media]
             .sort((a, b) => a.orderIndex - b.orderIndex)
             .map((m) => getImageUrl(m.url));

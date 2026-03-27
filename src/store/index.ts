@@ -3,6 +3,7 @@ import languageReducer from "./languageSlice";
 import cartReducer from "@/features/cart/store/cartSlice";
 import favouritesReducer from "@/features/favourites/store/favouritesSlice";
 import authReducer from "@/features/auth/store/authSlice";
+import countryReducer from "@/features/country/store/countrySlice";
 
 export const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
         cart: cartReducer,
         favourites: favouritesReducer,
         auth: authReducer,
+        country: countryReducer,
     },
 });
 
