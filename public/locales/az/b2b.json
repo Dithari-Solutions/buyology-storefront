@@ -1,0 +1,138 @@
+{
+    "badge": "🏢 B2B Topdansatış",
+    "hero": {
+        "title": "Çox Al,",
+        "titleHighlight": "Çox Qənaət Et",
+        "subtitle": "Bizneslər, məktəblər və təşkilatlar üçün xüsusi toplu qiymətlər. Nə qədər çox sifariş versəniz, bir o qədər çox qənaət edərsiniz — hər addımda özəl dəstəklə.",
+        "cta": "Qiymət Tələb Et",
+        "ctaSecondary": "Məhsullara Bax"
+    },
+    "tiers": {
+        "title": "Toplu Qiymət Pilləsi",
+        "subtitle": "Sifariş miqdarına görə şəffaf qiymətlər. Bütün endirim vahid başına tətbiq olunur.",
+        "units": "ədəd",
+        "discount": "endirim",
+        "perUnit": "vahid başına",
+        "contactUs": "Bizimlə əlaqə",
+        "popular": "Ən Populyar",
+        "tiers": [
+            { "label": "Başlanğıc", "min": 1,  "max": 4,  "discount": 0,  "badge": null },
+            { "label": "Bürünc",   "min": 5,  "max": 9,  "discount": 5,  "badge": null },
+            { "label": "Gümüş",   "min": 10, "max": 14, "discount": 10, "badge": null },
+            { "label": "Qızıl",   "min": 15, "max": 19, "discount": 15, "badge": "Ən Populyar" },
+            { "label": "Platin",  "min": 20, "max": 49, "discount": 20, "badge": null },
+            { "label": "Almaz",   "min": 50, "max": null,"discount": null,"badge": "Xüsusi Razılaşma" }
+        ]
+    },
+    "calculator": {
+        "title": "Qənaət Kalkulyatoru",
+        "subtitle": "Pillənizi və təxmini qənaətinizi görmək üçün miqdar daxil edin.",
+        "label": "Neçə vahid?",
+        "placeholder": "məs. 12",
+        "yourTier": "Pilləniz",
+        "discount": "Endirim",
+        "estimatedSaving": "Təxmini Qənaət",
+        "perUnit": "vahid başına",
+        "contactForQuote": "Xüsusi qiymət üçün bizimlə əlaqə saxlayın",
+        "units": "vahid",
+        "customDeal": "Xüsusi razılaşma"
+    },
+    "benefits": {
+        "title": "Niyə B2B?",
+        "subtitle": "Biznesinizin ehtiyac duyduğu hər şey — qiymətdən satış sonrası dəstəyə qədər.",
+        "items": [
+            {
+                "icon": "tag",
+                "title": "Zəmanətli Aşağı Qiymətlər",
+                "description": "Sifarişinizlə birlikdə böyüyən pillə endirimləri — həmişə pərakəndə satışdan ucuz."
+            },
+            {
+                "icon": "headset",
+                "title": "Özəl Hesab Meneceri",
+                "description": "Biznesinizi tanıyan və kömək etməyə hazır olan tək əlaqə nöqtəsi."
+            },
+            {
+                "icon": "truck",
+                "title": "Prioritet Toplu Çatdırılma",
+                "description": "Toplu sifarişlər koordinasiyalı flot çatdırılması ilə prioritet planlaşdırma alır."
+            },
+            {
+                "icon": "shield",
+                "title": "Genişləndirilmiş Zəmanət Seçimləri",
+                "description": "Korporativ parklar üçün hazırlanmış isteğe bağlı genişləndirilmiş sığorta planları."
+            }
+        ]
+    },
+    "howItWorks": {
+        "title": "Necə İşləyir",
+        "subtitle": "B2B ilə başlamaq sürətli və asandır.",
+        "steps": [
+            {
+                "number": "01",
+                "title": "Sorğunuzu Göndərin",
+                "description": "Şirkət məlumatlarınız və təxmini miqdarla aşağıdakı sorğu formasını doldurun."
+            },
+            {
+                "number": "02",
+                "title": "Qiymətinizi Alın",
+                "description": "B2B komandamız sorğunuzu nəzərdən keçirir və 24 saat ərzində fərdi qiymət göndərir."
+            },
+            {
+                "number": "03",
+                "title": "Təsdiq Edin və Ödəyin",
+                "description": "Qiyməti təsdiq edin, ödəniş şərtlərini seçin, qalanını biz edirik."
+            },
+            {
+                "number": "04",
+                "title": "Sürətli Çatdırılma",
+                "description": "Sifarişiniz qablaşdırılır və prioritet göndəri ilə qapınıza çatdırılır."
+            }
+        ]
+    },
+    "form": {
+        "title": "Qiymət Tələb Et",
+        "subtitle": "Ehtiyaclarınız haqqında bizə məlumat verin, 24 saat ərzində əlaqə saxlayacağıq.",
+        "company": "Şirkət Adı",
+        "companyPlaceholder": "məs. Acme MMC",
+        "contact": "Əlaqə Şəxsi",
+        "contactPlaceholder": "Ad və soyad",
+        "email": "İş E-poçtu",
+        "emailPlaceholder": "ad@sirket.com",
+        "phone": "Telefon Nömrəsi",
+        "phonePlaceholder": "+994 (50) 000-00-00",
+        "quantity": "Təxmini Miqdar",
+        "quantityPlaceholder": "məs. 20",
+        "message": "Əlavə Qeydlər",
+        "messagePlaceholder": "Məhsul üstünlükləriniz, vaxt çərçivəniz və ya xüsusi tələbləriniz haqqında bizə məlumat verin…",
+        "submit": "Sorğu Göndər",
+        "sending": "Göndərilir…",
+        "successTitle": "Sorğu qəbul edildi!",
+        "successSubtext": "B2B komandamız 24 saat ərzində sizinlə əlaqə saxlayacaq.",
+        "errorMessage": "Xəta baş verdi. Yenidən cəhd edin."
+    },
+    "faq": {
+        "title": "Tez-tez Verilən Suallar",
+        "items": [
+            {
+                "question": "B2B qiyməti üçün minimum sifariş nədir?",
+                "answer": "B2B endirimləri 5 vahiddən başlayır. 1–4 vahidlik sifarişlər standart pərakəndə qiymətlə yerinə yetirilir."
+            },
+            {
+                "question": "Bir toplu sifarişdə müxtəlif məhsulları qarışdıra bilərəmmi?",
+                "answer": "Bəli. Bütün məhsullar üzrə ümumi miqdarınız pillə endirimi müəyyən edir."
+            },
+            {
+                "question": "Qiymət almaq nə qədər vaxt alır?",
+                "answer": "Komandamız bütün B2B sorğularına 24 iş saatı ərzində cavab verir."
+            },
+            {
+                "question": "Böyük sifarişlər üçün ödəniş şərtləri varmı?",
+                "answer": "Bəli, 20-dən çox vahidlik sifarişlər üçün yoxlanılmış bizneslərə net-30 və net-60 ödəniş şərtləri təklif edirik."
+            },
+            {
+                "question": "Toplu sifarişlər zəmanətlə gəlirmi?",
+                "answer": "Bütün məhsullar standart istehsalçı zəmanəti daşıyır. Genişləndirilmiş sığorta əlavə olaraq mövcuddur."
+            }
+        ]
+    }
+}

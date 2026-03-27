@@ -1,0 +1,49 @@
+{
+  "hero": {
+    "label": "Əlaqəyə Keçin",
+    "title": "Bizimlə Əlaqə",
+    "subtitle": "Sizə kömək etmək üçün buradayıq. Bölgənizdəki komandamızla əlaqə saxlayın."
+  },
+  "globe": {
+    "selectCountry": "Ölkəni seçin",
+    "chooseYourSide": "Tərəfinizi seçin"
+  },
+  "countries": {
+    "uae": "Birləşmiş Ərəb Əmirlikləri",
+    "sa": "Səudiyyə Ərəbistanı",
+    "qa": "Qətər",
+    "om": "Oman",
+    "az": "Azərbaycan",
+    "bh": "Bəhreyn"
+  },
+  "info": {
+    "email": "E-poçt",
+    "emailNote": "24 saat ərzində cavab veririk",
+    "call": "Zəng",
+    "callNote": "Bazar ertəsi–Cümə 9:00–18:00",
+    "address": "Ünvan"
+  },
+  "form": {
+    "title": "Bizə Mesaj Göndər",
+    "sectionLabel": "Sizə Kömək etməyə Hazırıq",
+    "description": "Sualınız var mı və ya ideal məhsulu tapmaqda kömək lazımdır? Komandamız 24/7 alış-veriş təcrübənizin stresssiz olmasını təmin etmək üçün əlçatandır.",
+    "fullName": "Ad və Soyad",
+    "fullNamePlaceholder": "Əli Həsənov",
+    "email": "E-poçt Ünvanı",
+    "emailPlaceholder": "ali@misal.com",
+    "phone": "Telefon Nömrəsi",
+    "phonePlaceholder": "+994 50 000 00 00",
+    "inquiryType": "Sorğu Növü",
+    "message": "Mesaj",
+    "messagePlaceholder": "Mesajınızı yazın...",
+    "submit": "Mesaj Göndər",
+    "inquiryTypes": {
+      "general": "Ümumi Sorğu",
+      "support": "Müştəri Dəstəyi",
+      "b2b": "B2B Tərəfdaşlıq",
+      "other": "Digər"
+    },
+    "successTitle": "Mesaj Göndərildi!",
+    "successMessage": "Müraciətiniz üçün təşəkkür edirik. Tezliklə sizinlə əlaqə saxlayacağıq."
+  }
+}

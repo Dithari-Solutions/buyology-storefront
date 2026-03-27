@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /Users/firdovsirz/Documents/buyology-e-commerce/buyology-web/src/app/[lang]/shop/)",
+      "Bash(find /Users/firdovsirz/Documents/buyology-e-commerce/buyology-web/src -name *glob* -o -name *map* -o -name *world*)",
+      "Bash(ls -la /Users/firdovsirz/Documents/buyology-e-commerce/buyology-web/src/app/[lang]/map/)"
+    ]
+  }
+}

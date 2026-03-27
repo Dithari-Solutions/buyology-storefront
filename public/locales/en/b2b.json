@@ -1,0 +1,138 @@
+{
+    "badge": "🏢 B2B Wholesale",
+    "hero": {
+        "title": "Buy More,",
+        "titleHighlight": "Save More",
+        "subtitle": "Exclusive bulk pricing for businesses, schools, and organisations. The more you order, the more you save — with dedicated support every step of the way.",
+        "cta": "Request a Quote",
+        "ctaSecondary": "Browse Products"
+    },
+    "tiers": {
+        "title": "Bulk Pricing Tiers",
+        "subtitle": "Transparent pricing based on your order quantity. All discounts apply per unit.",
+        "units": "units",
+        "discount": "discount",
+        "perUnit": "per unit",
+        "contactUs": "Contact us",
+        "popular": "Most Popular",
+        "tiers": [
+            { "label": "Starter", "min": 1,  "max": 4,  "discount": 0,  "badge": null },
+            { "label": "Bronze",  "min": 5,  "max": 9,  "discount": 5,  "badge": null },
+            { "label": "Silver",  "min": 10, "max": 14, "discount": 10, "badge": null },
+            { "label": "Gold",    "min": 15, "max": 19, "discount": 15, "badge": "Most Popular" },
+            { "label": "Platinum","min": 20, "max": 49, "discount": 20, "badge": null },
+            { "label": "Diamond", "min": 50, "max": null,"discount": null,"badge": "Custom Deal" }
+        ]
+    },
+    "calculator": {
+        "title": "Savings Calculator",
+        "subtitle": "Enter a quantity to see your tier and estimated savings.",
+        "label": "How many units?",
+        "placeholder": "e.g. 12",
+        "yourTier": "Your Tier",
+        "discount": "Discount",
+        "estimatedSaving": "Estimated Saving",
+        "perUnit": "per unit",
+        "contactForQuote": "Contact us for a custom quote",
+        "units": "units",
+        "customDeal": "Custom deal"
+    },
+    "benefits": {
+        "title": "Why Choose B2B?",
+        "subtitle": "Everything your business needs — from pricing to post-sale support.",
+        "items": [
+            {
+                "icon": "tag",
+                "title": "Guaranteed Lower Prices",
+                "description": "Tier-based discounts that grow with your order — always cheaper than retail."
+            },
+            {
+                "icon": "headset",
+                "title": "Dedicated Account Manager",
+                "description": "A single point of contact who knows your business and is ready to help."
+            },
+            {
+                "icon": "truck",
+                "title": "Priority Bulk Delivery",
+                "description": "Bulk orders get priority scheduling with coordinated fleet delivery."
+            },
+            {
+                "icon": "shield",
+                "title": "Extended Warranty Options",
+                "description": "Optional extended coverage plans tailored for corporate fleets."
+            }
+        ]
+    },
+    "howItWorks": {
+        "title": "How It Works",
+        "subtitle": "Getting started with B2B is quick and straightforward.",
+        "steps": [
+            {
+                "number": "01",
+                "title": "Submit Your Request",
+                "description": "Fill out the inquiry form below with your company details and estimated quantity."
+            },
+            {
+                "number": "02",
+                "title": "Get Your Quote",
+                "description": "Our B2B team reviews your request and sends a tailored quote within 24 hours."
+            },
+            {
+                "number": "03",
+                "title": "Confirm & Pay",
+                "description": "Approve the quote, choose your payment terms, and we handle the rest."
+            },
+            {
+                "number": "04",
+                "title": "Fast Delivery",
+                "description": "Your order is packed and dispatched with priority shipping to your door."
+            }
+        ]
+    },
+    "form": {
+        "title": "Request a Quote",
+        "subtitle": "Tell us about your needs and we'll get back to you within 24 hours.",
+        "company": "Company Name",
+        "companyPlaceholder": "e.g. Acme Corp",
+        "contact": "Contact Person",
+        "contactPlaceholder": "Full name",
+        "email": "Business Email",
+        "emailPlaceholder": "name@company.com",
+        "phone": "Phone Number",
+        "phonePlaceholder": "+1 (555) 000-0000",
+        "quantity": "Estimated Quantity",
+        "quantityPlaceholder": "e.g. 20",
+        "message": "Additional Notes",
+        "messagePlaceholder": "Tell us about your product preferences, timeline, or any special requirements…",
+        "submit": "Send Request",
+        "sending": "Sending…",
+        "successTitle": "Request received!",
+        "successSubtext": "Our B2B team will reach out within 24 hours.",
+        "errorMessage": "Something went wrong. Please try again."
+    },
+    "faq": {
+        "title": "Frequently Asked Questions",
+        "items": [
+            {
+                "question": "What is the minimum order for B2B pricing?",
+                "answer": "B2B discounts start from 5 units. Orders of 1–4 units are fulfilled at standard retail pricing."
+            },
+            {
+                "question": "Can I mix different products in one bulk order?",
+                "answer": "Yes. Your total quantity across all products determines your tier discount."
+            },
+            {
+                "question": "How long does it take to receive a quote?",
+                "answer": "Our team responds to all B2B inquiries within 24 business hours."
+            },
+            {
+                "question": "Are there payment terms available for large orders?",
+                "answer": "Yes, we offer net-30 and net-60 payment terms for verified businesses with orders over 20 units."
+            },
+            {
+                "question": "Do bulk orders come with a warranty?",
+                "answer": "All products carry their standard manufacturer warranty. Extended coverage is available as an add-on."
+            }
+        ]
+    }
+}

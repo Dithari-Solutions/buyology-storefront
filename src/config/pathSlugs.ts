@@ -13,6 +13,8 @@ export const PATH_SLUGS: Record<string, Record<Lang, string>> = {
     rent: { en: "rent", az: "icare", ar: "tajir" },
     repair: { en: "repair", az: "temir", ar: "islah" },
     "quick-delivery": { en: "quick-delivery", az: "tez-catdirilma", ar: "tawsil-sarih" },
+    b2b: { en: "b2b", az: "b2b", ar: "b2b" },
+    contact: { en: "contact", az: "elaqe", ar: "ittisal" },
 };
 
 /**

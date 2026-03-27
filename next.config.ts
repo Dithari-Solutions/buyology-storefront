@@ -44,6 +44,11 @@ const nextConfig: NextConfig = {
         port: "8080",
         pathname: "/product/**",
       },
+      {
+        protocol: "https",
+        hostname: "api-dev.dithari.com",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -17,6 +17,8 @@ import enProfile    from "../../../public/locales/en/profile.json";
 import enComingSoon  from "../../../public/locales/en/coming-soon.json";
 import enProduct    from "../../../public/locales/en/product.json";
 import enQuickDelivery from "../../../public/locales/en/quick-delivery.json";
+import enB2B from "../../../public/locales/en/b2b.json";
+import enContact from "../../../public/locales/en/contact.json";
 
 import azAuth   from "../../../public/locales/az/auth.json";
 import azBanner from "../../../public/locales/az/banner.json";
@@ -31,6 +33,8 @@ import azProfile    from "../../../public/locales/az/profile.json";
 import azComingSoon  from "../../../public/locales/az/coming-soon.json";
 import azProduct    from "../../../public/locales/az/product.json";
 import azQuickDelivery from "../../../public/locales/az/quick-delivery.json";
+import azB2B from "../../../public/locales/az/b2b.json";
+import azContact from "../../../public/locales/az/contact.json";
 
 import arAuth   from "../../../public/locales/ar/auth.json";
 import arBanner from "../../../public/locales/ar/banner.json";
@@ -45,6 +49,8 @@ import arProfile    from "../../../public/locales/ar/profile.json";
 import arComingSoon  from "../../../public/locales/ar/coming-soon.json";
 import arProduct    from "../../../public/locales/ar/product.json";
 import arQuickDelivery from "../../../public/locales/ar/quick-delivery.json";
+import arB2B from "../../../public/locales/ar/b2b.json";
+import arContact from "../../../public/locales/ar/contact.json";
 
 if (!i18n.isInitialized) {
     i18n
@@ -54,7 +60,7 @@ if (!i18n.isInitialized) {
             fallbackLng: "en",
             debug: false,
             supportedLngs: ["en", "az", "ar"],
-            ns: ["auth", "banner", "cart", "checkout", "coming-soon", "favourites", "footer", "header", "home", "notFound", "product", "profile", "quick-delivery"],
+            ns: ["auth", "b2b", "banner", "cart", "checkout", "coming-soon", "contact", "favourites", "footer", "header", "home", "notFound", "product", "profile", "quick-delivery"],
             defaultNS: "home",
             interpolation: {
                 escapeValue: false,
@@ -62,7 +68,9 @@ if (!i18n.isInitialized) {
             resources: {
                 en: {
                     auth:        enAuth,
+                    b2b:         enB2B,
                     banner:      enBanner,
+                    contact:     enContact,
                     cart:        enCart,
                     checkout:    enCheckout,
                     "coming-soon": enComingSoon,
@@ -77,7 +85,9 @@ if (!i18n.isInitialized) {
                 },
                 az: {
                     auth:        azAuth,
+                    b2b:         azB2B,
                     banner:      azBanner,
+                    contact:     azContact,
                     cart:        azCart,
                     checkout:    azCheckout,
                     "coming-soon": azComingSoon,
@@ -92,7 +102,9 @@ if (!i18n.isInitialized) {
                 },
                 ar: {
                     auth:        arAuth,
+                    b2b:         arB2B,
                     banner:      arBanner,
+                    contact:     arContact,
                     cart:        arCart,
                     checkout:    arCheckout,
                     "coming-soon": arComingSoon,
