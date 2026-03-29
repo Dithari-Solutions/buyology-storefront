@@ -51,6 +51,7 @@ export interface ApiProduct {
   createdAt: string;
   updatedAt: string;
   // Country-scoped pricing (present when countryCode param is passed)
+  storeId?: string | null;
   storePrice?: number | null;
   currency?: string | null;
   availableInSelectedCountry?: boolean | null;
