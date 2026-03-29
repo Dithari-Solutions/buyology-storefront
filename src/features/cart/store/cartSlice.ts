@@ -77,8 +77,9 @@ export const addToCartThunk = createAsyncThunk(
         try {
             const result = await addItemToCart(arg.userId, arg.payload);
             return { result, tempId: arg.tempId };
-        } catch {
-            return rejectWithValue({ tempId: arg.tempId });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Failed to add item to cart";
+            return rejectWithValue({ tempId: arg.tempId, message });
         }
     }
 );
@@ -124,9 +125,14 @@ export const clearCartThunk = createAsyncThunk(
 
 export const fetchCartProductsThunk = createAsyncThunk(
     "cart/fetchCartProducts",
-    async ({ productIds, lang }: { productIds: string[]; lang: Lang }) => {
+    async ({ productIds, lang }: { productIds: string[]; lang: Lang }, { getState }) => {
+        const state = getState() as RootState;
+        const countryCode = state.country.selectedCountryCode;
+        const currency = state.country.preferredCurrency;
         const unique = [...new Set(productIds)];
-        const products = await Promise.all(unique.map((id) => getProductById(id, { lang })));
+        const products = await Promise.all(
+            unique.map((id) => getProductById(id, { lang, countryCode, currency }))
+        );
         return products;
     }
 );

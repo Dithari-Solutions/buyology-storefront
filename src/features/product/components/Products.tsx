@@ -302,6 +302,7 @@ export default function Products({ onFilterToggle, filterOpen }: {
                 view={view}
                 slugs={slugs}
                 productId={product.id}
+                storeId={product.storeId ?? undefined}
                 title={product.title}
                 price={displayPrice}
                 originalPrice={product.basePrice ?? 0}

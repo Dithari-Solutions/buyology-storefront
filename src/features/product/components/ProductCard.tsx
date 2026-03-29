@@ -11,7 +11,7 @@ import MacPro13 from "@/assets/devices/macPro13.png";
 import { useRouter, useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { addToCartThunk } from "@/features/cart/store/cartSlice";
+import { addToCartThunk, clearCart, clearCartThunk } from "@/features/cart/store/cartSlice";
 import { useId, useState, useEffect, useRef } from "react";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import ProccessorIcon from "@/assets/icons/proccessor.png";
@@ -99,6 +99,8 @@ export default function ProductCard({
   const [flyCards, setFlyCards] = useState<FlyCard[]>([]);
   const [favBounce, setFavBounce] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [crossCountryError, setCrossCountryError] = useState<string | null>(null);
+  const [pendingStoreId, setPendingStoreId] = useState<string>("");
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -143,15 +145,8 @@ export default function ProductCard({
     }
   }
 
-  function handleAddToCart(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!userId) {
-      setShowLoginPrompt(true);
-      return;
-    }
-
-    const tempId = `cart-${productId}-${Date.now()}`;
-    const displayMeta = {
+  function buildDisplayMeta() {
+    return {
       productId,
       title,
       imageUrl: MacPro13.src,
@@ -162,24 +157,17 @@ export default function ProductCard({
       quantity: 1,
       savedForLater: false,
     };
+  }
 
-    dispatch(addToCartThunk({
-      userId,
-      payload: { storeId: storeId ?? "", productId, quantity: 1 },
-      displayMeta,
-      tempId,
-    }));
-
+  function triggerAddAnimations() {
     if (!added) {
       setAdded(true);
       setTimeout(() => setAdded(false), 1600);
     }
-
     const pid = Date.now();
     setParticles(prev => [...prev, pid]);
     setTimeout(() => setParticles(prev => prev.filter(p => p !== pid)), 900);
 
-    // Flying card to cart icon
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
       const cartIconEl = document.querySelector('[data-cart-icon]');
@@ -197,6 +185,56 @@ export default function ProductCard({
         setFlyCards(prev => [...prev, card]);
         setTimeout(() => setFlyCards(prev => prev.filter(f => f.id !== card.id)), 850);
       }
+    }
+  }
+
+  async function handleAddToCart(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!userId) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    const resolvedStoreId = storeId ?? "";
+    const tempId = `cart-${productId}-${Date.now()}`;
+
+    const result = await dispatch(addToCartThunk({
+      userId,
+      payload: { storeId: resolvedStoreId, productId, quantity: 1 },
+      displayMeta: buildDisplayMeta(),
+      tempId,
+    }));
+
+    if (addToCartThunk.rejected.match(result)) {
+      const payload = result.payload as { tempId: string; message?: string } | undefined;
+      const msg = payload?.message ?? "";
+      if (msg.toLowerCase().includes("country")) {
+        setPendingStoreId(resolvedStoreId);
+        setCrossCountryError(msg);
+      }
+      return;
+    }
+
+    triggerAddAnimations();
+  }
+
+  async function handleClearAndAdd() {
+    if (!userId) return;
+    dispatch(clearCart());
+    await dispatch(clearCartThunk(userId));
+    setCrossCountryError(null);
+
+    const tempId = `cart-${productId}-${Date.now()}`;
+    const result = await dispatch(addToCartThunk({
+      userId,
+      payload: { storeId: pendingStoreId, productId, quantity: 1 },
+      displayMeta: buildDisplayMeta(),
+      tempId,
+    }));
+
+    setPendingStoreId("");
+    if (!addToCartThunk.rejected.match(result)) {
+      triggerAddAnimations();
     }
   }
 
@@ -237,6 +275,47 @@ export default function ProductCard({
           onClose={() => setShowLoginPrompt(false)}
         />
       )}
+
+      {mounted && crossCountryError && createPortal(
+        <div
+          className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+          onClick={() => setCrossCountryError(null)}
+        >
+          <div
+            className="bg-white rounded-[28px] py-8 px-6 w-full max-w-sm shadow-2xl flex flex-col items-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-5">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              </svg>
+            </div>
+            <h2 className="font-bold text-[20px] text-gray-900 mb-2 text-center">Country Mismatch</h2>
+            <p className="text-gray-500 text-[13px] text-center mb-6 leading-relaxed max-w-[260px]">
+              {crossCountryError}
+            </p>
+            <div className="w-full flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleClearAndAdd}
+                className="w-full py-[13px] rounded-[30px] bg-[#402F75] text-white font-bold text-[15px] cursor-pointer hover:bg-[#352566] active:scale-[0.98] transition-all duration-150"
+              >
+                Clear Cart &amp; Add Item
+              </button>
+              <button
+                type="button"
+                onClick={() => setCrossCountryError(null)}
+                className="w-full py-[13px] rounded-[30px] border border-gray-200 text-gray-600 font-medium text-[15px] cursor-pointer hover:bg-gray-50 active:scale-[0.98] transition-all duration-150"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* Portal: full card clone flies to the header fav icon */}
       {mounted && createPortal(
         <AnimatePresence>
