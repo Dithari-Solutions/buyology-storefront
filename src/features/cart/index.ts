@@ -20,6 +20,8 @@ export {
     selectSelectedIds,
     selectPromo,
     selectCartTotals,
+    selectCartCurrency,
+    selectCartCountryCode,
     fetchCartThunk,
     fetchCartProductsThunk,
     addToCartThunk,
@@ -28,4 +30,5 @@ export {
     clearCartThunk,
 } from "./store/cartSlice";
 
-export type { CartItemMeta, CartItemVariant, CartState, CartTotals, PromoState, AddToCartPayload, ApiCartResponse } from "./types";
+export type { CartItemMeta, CartItemVariant, CartState, CartTotals, PromoState, AddToCartPayload, ApiCartResponse, ApiCartItem, ApiSpecSelection } from "./types";
+export type { FetchCartThunkArg } from "./store/cartSlice";

@@ -21,6 +21,8 @@ const initialState: CartState = {
     shippingFree: true,
     taxRate: TAX_RATE,
     cartId: null,
+    countryCode: null,
+    currency: null,
     loading: { cart: false, products: false },
 };
 
@@ -36,6 +38,7 @@ function mergeApiItems(existing: CartItemMeta[], apiItems: ApiCartItem[]): CartI
             cartItemId: apiItem.id,
             productId: apiItem.productId,
             variantId: apiItem.variantId ?? undefined,
+            storeId: apiItem.storeId,
             title: match?.title ?? apiItem.productSku,
             imageUrl: match?.imageUrl ?? "",
             variant: match?.variant ?? { color: "", storage: "" },
@@ -43,6 +46,7 @@ function mergeApiItems(existing: CartItemMeta[], apiItems: ApiCartItem[]): CartI
             originalPrice: match?.originalPrice ?? apiItem.unitPrice,
             discountPercent: match?.discountPercent ?? 0,
             quantity: apiItem.quantity,
+            quickDelivery: apiItem.quickDelivery,
             savedForLater: false,
         };
     });
@@ -50,9 +54,14 @@ function mergeApiItems(existing: CartItemMeta[], apiItems: ApiCartItem[]): CartI
 
 // ── Async Thunks ──────────────────────────────────────────────────────────────
 
+export interface FetchCartThunkArg {
+    authCredentialId: string;
+    coords?: { lat: number; lng: number };
+}
+
 export const fetchCartThunk = createAsyncThunk(
     "cart/fetchCart",
-    async (userId: string) => getCart(userId)
+    async ({ authCredentialId, coords }: FetchCartThunkArg) => getCart(authCredentialId, coords)
 );
 
 export interface AddToCartThunkArg {
@@ -181,6 +190,8 @@ const cartSlice = createSlice({
             state.items = state.items.filter((i) => i.savedForLater);
             state.selectedIds = [];
             state.promo = { code: "", discount: 0, applied: false, error: null };
+            state.countryCode = null;
+            state.currency = null;
         },
 
         applyPromo(state, action: PayloadAction<string>) {
@@ -212,6 +223,8 @@ const cartSlice = createSlice({
         builder.addCase(fetchCartThunk.fulfilled, (state, action) => {
             const apiCart: ApiCartResponse = action.payload;
             state.cartId = apiCart.id;
+            state.countryCode = apiCart.countryCode;
+            state.currency = apiCart.currency;
             state.items = mergeApiItems(state.items, apiCart.items);
             state.selectedIds = state.items.map((i) => i.id);
             state.loading.cart = false;
@@ -266,6 +279,8 @@ const cartSlice = createSlice({
         builder.addCase(addToCartThunk.fulfilled, (state, action) => {
             const { result, tempId } = action.payload as { result: ApiCartResponse; tempId: string };
             state.cartId = result.id;
+            state.countryCode = result.countryCode;
+            state.currency = result.currency;
             const { payload: addPayload } = action.meta.arg as AddToCartThunkArg;
             const apiItem = result.items.find((i) => i.productId === addPayload.productId);
             if (!apiItem) return;
@@ -359,6 +374,10 @@ export const selectSelectedIds = (state: RootState) => state.cart.selectedIds;
 export const selectPromo = (state: RootState) => state.cart.promo;
 
 export const selectCartLoading = (state: RootState) => state.cart.loading;
+
+export const selectCartCurrency = (state: RootState) => state.cart.currency;
+
+export const selectCartCountryCode = (state: RootState) => state.cart.countryCode;
 
 export const selectCartTotals = createSelector(
     selectCartItems,

@@ -9,7 +9,8 @@
         "color": "اللون",
         "storage": "التخزين",
         "saveForLater": "احفظ لوقت لاحق",
-        "moveToCart": "نقل إلى السلة"
+        "moveToCart": "نقل إلى السلة",
+        "quickDelivery": "أقل من 30 دقيقة"
     },
     "savedForLater": {
         "heading": "محفوظ للاحقاً"

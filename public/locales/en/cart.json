@@ -9,7 +9,8 @@
         "color": "Color",
         "storage": "Storage",
         "saveForLater": "Save for Later",
-        "moveToCart": "Move to Cart"
+        "moveToCart": "Move to Cart",
+        "quickDelivery": "Under 30 min"
     },
     "savedForLater": {
         "heading": "Saved for Later"

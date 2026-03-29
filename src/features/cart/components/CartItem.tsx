@@ -14,8 +14,9 @@ import {
     moveToCart,
     removeItemThunk,
     updateQuantityThunk,
+    selectSelectedIds,
+    selectCartCurrency,
 } from "../store/cartSlice";
-import { selectSelectedIds } from "../store/cartSlice";
 import type { CartItemMeta } from "../types";
 import MacPro14 from "@/assets/products/macpro14/1.png";
 
@@ -30,6 +31,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
     const selectedIds = useSelector(selectSelectedIds);
     const userId = useSelector((state: RootState) => state.auth.userId);
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
+    const currency = useSelector(selectCartCurrency) ?? "$";
     const isSelected = selectedIds.includes(item.id);
 
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
@@ -74,7 +76,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
     }
 
     return (
-        <div className="flex items-start gap-3 p-4 sm:p-5 bg-white rounded-2xl border border-[#FBBB14] shadow-sm hover:shadow-md transition-shadow">
+        <div className="relative flex items-start gap-3 p-4 sm:p-5 bg-white rounded-2xl border border-[#FBBB14] shadow-sm hover:shadow-md transition-shadow">
 
             {/* ── Checkbox ── */}
             <div className="pt-1 flex-shrink-0">
@@ -86,6 +88,13 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                     aria-label={`Select ${item.title}`}
                 />
             </div>
+
+            {/* ── Quick Delivery badge ── */}
+            {item.quickDelivery && (
+                <span className="absolute top-2 end-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none flex items-center gap-1">
+                    ⚡ {t("cartItems.quickDelivery")}
+                </span>
+            )}
 
             {/* ── Image with discount badge ── */}
             <div className="relative w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] rounded-xl border border-[#FBBB14] flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -129,10 +138,10 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                     )}
                     <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                         <span className="text-[#402F75] font-bold text-[20px]">
-                            ${(item.price ?? 0).toLocaleString()}
+                            {currency} {(item.price ?? 0).toLocaleString()}
                         </span>
                         <span className="text-gray-400 line-through text-[15px]">
-                            ${(item.originalPrice ?? 0).toLocaleString()}
+                            {currency} {(item.originalPrice ?? 0).toLocaleString()}
                         </span>
                     </div>
                 </div>
@@ -183,7 +192,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                         {/* Subtotal */}
                         <div className="text-start">
                             <p className="text-[14px] text-gray-400">{t("cartItems.subtotal")}:</p>
-                            <p className="text-[#402F75] font-bold text-[16px]">${subtotal}</p>
+                            <p className="text-[#402F75] font-bold text-[16px]">{currency} {subtotal}</p>
                         </div>
                     </div>
 

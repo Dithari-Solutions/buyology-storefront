@@ -13,6 +13,8 @@ export interface CartItemMeta {
     cartItemId?: string;
     productId: string;
     variantId?: string;
+    /** UUID of the store this item was priced from */
+    storeId?: string;
     title: string;
     imageUrl: string;
     /** Product slug for linking to the product detail page */
@@ -23,6 +25,8 @@ export interface CartItemMeta {
     discountPercent: number;
     quantity: number;
     savedForLater: boolean;
+    /** true = store is within ~30-min delivery radius of the user */
+    quickDelivery?: boolean;
     /** true while the add-to-cart API call is in flight */
     pending?: boolean;
 }
@@ -48,6 +52,10 @@ export interface CartState {
     taxRate: number;
     /** API cart UUID */
     cartId: string | null;
+    /** ISO 3166-1 alpha-3 — null until first item is added */
+    countryCode: string | null;
+    /** ISO 4217 currency code — null until first item is added */
+    currency: string | null;
     loading: { cart: boolean; products: boolean };
 }
 
@@ -66,6 +74,8 @@ export interface CartTotals {
 // ── API Types ─────────────────────────────────────────────────────────────────
 
 export interface AddToCartPayload {
+    /** Required — the store the product is purchased from; determines price and country */
+    storeId: string;
     productId: string;
     variantId?: string;
     specOptionIds?: string[];
@@ -87,9 +97,13 @@ export interface ApiCartItem {
     productSku: string;
     variantId: string | null;
     variantSku: string | null;
+    /** The store this item was priced from */
+    storeId: string;
     quantity: number;
     unitPrice: number;
     totalPrice: number;
+    /** true = store is within ~30-min delivery radius of the user */
+    quickDelivery: boolean;
     selectedSpecs: ApiSpecSelection[];
     createdAt: string;
     updatedAt: string;
@@ -97,9 +111,13 @@ export interface ApiCartItem {
 
 export interface ApiCartResponse {
     id: string;
-    userId: string;
-    status: "ACTIVE" | "CHECKED_OUT";
+    authCredentialId: string;
+    status: "ACTIVE" | "CHECKED_OUT" | "ABANDONED";
     totalPrice: number;
+    /** ISO 3166-1 alpha-3 — null until first item is added */
+    countryCode: string | null;
+    /** ISO 4217 currency code — null until first item is added */
+    currency: string | null;
     createdAt: string;
     updatedAt: string;
     items: ApiCartItem[];

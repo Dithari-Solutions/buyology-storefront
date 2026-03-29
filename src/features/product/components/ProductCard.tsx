@@ -22,6 +22,8 @@ interface ProductCardProps {
   view?: 'grid' | 'list';
   slugs: Record<Lang, string>;
   productId?: string;
+  /** Required by the cart API — the store this product is purchased from */
+  storeId?: string;
   title?: string;
   price?: number;
   originalPrice?: number;
@@ -64,6 +66,7 @@ export default function ProductCard({
   view = 'grid',
   slugs,
   productId = "mock-product-1",
+  storeId,
   title = "MacBook Pro 14",
   price = 600,
   originalPrice = 900,
@@ -162,7 +165,7 @@ export default function ProductCard({
 
     dispatch(addToCartThunk({
       userId,
-      payload: { productId, quantity: 1 },
+      payload: { storeId: storeId ?? "", productId, quantity: 1 },
       displayMeta,
       tempId,
     }));

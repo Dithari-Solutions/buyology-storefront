@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-import { applyPromo, removePromo, selectCartTotals, selectPromo } from "../store/cartSlice";
+import { applyPromo, removePromo, selectCartTotals, selectPromo, selectCartCurrency } from "../store/cartSlice";
 
 // ── Benefit icon helpers ──────────────────────────────────────────────────────
 
@@ -57,6 +57,7 @@ export default function OrderSummary() {
 
     const totals = useSelector(selectCartTotals);
     const promo = useSelector(selectPromo);
+    const currency = useSelector(selectCartCurrency) ?? "$";
 
     const [promoInput, setPromoInput] = useState(promo.applied ? promo.code : "");
 
@@ -110,14 +111,14 @@ export default function OrderSummary() {
                         ({t("orderSummary.items_other", { count: totals.selectedItemCount })})
                     </span>
                     <span className="font-semibold text-gray-800">
-                        ${totals.subtotal.toFixed(2)}
+                        {currency} {totals.subtotal.toFixed(2)}
                     </span>
                 </div>
 
                 {promo.applied && (
                     <div className="flex justify-between items-center text-green-600">
                         <span className="font-medium">Promo ({promo.code})</span>
-                        <span className="font-semibold">-${promo.discount.toFixed(2)}</span>
+                        <span className="font-semibold">-{currency} {promo.discount.toFixed(2)}</span>
                     </div>
                 )}
 
@@ -126,13 +127,13 @@ export default function OrderSummary() {
                     {totals.shipping === 0 ? (
                         <span className="text-green-500 font-bold">{t("orderSummary.free")}</span>
                     ) : (
-                        <span className="font-semibold text-gray-800">${totals.shipping.toFixed(2)}</span>
+                        <span className="font-semibold text-gray-800">{currency} {totals.shipping.toFixed(2)}</span>
                     )}
                 </div>
 
                 <div className="flex justify-between items-center">
                     <span className="text-gray-500">{t("orderSummary.estimatedTax")}</span>
-                    <span className="font-semibold text-gray-800">${totals.tax.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-800">{currency} {totals.tax.toFixed(2)}</span>
                 </div>
             </div>
 
@@ -143,7 +144,7 @@ export default function OrderSummary() {
             <div className="flex items-end justify-between">
                 <span className="text-[17px] font-bold text-gray-900">{t("orderSummary.total")}</span>
                 <span className="text-[26px] font-bold text-[#402F75] leading-none">
-                    ${totals.total.toFixed(2)}
+                    {currency} {totals.total.toFixed(2)}
                 </span>
             </div>
             <p className="text-[11px] text-gray-400 text-end mt-1">{t("orderSummary.includingVat")}</p>

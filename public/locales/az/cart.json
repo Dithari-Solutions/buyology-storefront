@@ -9,7 +9,8 @@
         "color": "Rəng",
         "storage": "Yaddaş",
         "saveForLater": "Sonraya Saxla",
-        "moveToCart": "Səbətə Köçür"
+        "moveToCart": "Səbətə Köçür",
+        "quickDelivery": "30 dəqiqədən az"
     },
     "savedForLater": {
         "heading": "Sonraya Saxlanılanlar"

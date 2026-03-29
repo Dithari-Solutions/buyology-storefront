@@ -52,10 +52,12 @@ export default function CartPage() {
     const isLoading = loading?.cart || loading?.products;
     const hasContent = cartItems.length > 0 || savedItems.length > 0;
 
-    // Sync cart from API on mount when authenticated
+    // Sync cart from API on mount when authenticated; include device coords for quickDelivery
     useEffect(() => {
-        if (userId) {
-            dispatch(fetchCartThunk(userId)).then((action) => {
+        if (!userId) return;
+
+        const loadCart = (coords?: { lat: number; lng: number }) => {
+            dispatch(fetchCartThunk({ authCredentialId: userId, coords })).then((action) => {
                 if (fetchCartThunk.fulfilled.match(action)) {
                     const cart = action.payload as ApiCartResponse;
                     const productIds = cart.items.map((i) => i.productId);
@@ -64,6 +66,15 @@ export default function CartPage() {
                     }
                 }
             });
+        };
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => loadCart({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                () => loadCart()
+            );
+        } else {
+            loadCart();
         }
     }, [userId, lang, dispatch]);
 
