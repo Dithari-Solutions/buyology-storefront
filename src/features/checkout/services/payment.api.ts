@@ -8,7 +8,10 @@ interface ApiEnvelope<T> {
 }
 
 export interface InitiatePaymentPayload {
-    appOrderId: string;
+    cartId: string;
+    addressId?: string;
+    deliveryMethod: "LOCAL_EXPRESS" | "INTERNATIONAL";
+    shippingFee: number;
     methodType: "CARD" | "TABBY" | "TAMARA";
     amount: number;
     currency: string;
@@ -16,14 +19,14 @@ export interface InitiatePaymentPayload {
     customerEmail: string;
     customerPhone?: string;
     billingName: string;
-    billingApartment?: string;
-    billingFloor?: string;
-    billingStreet?: string;
-    billingBuilding?: string;
-    billingCity?: string;
-    billingCountry?: string;
-    billingState?: string;
-    billingPostalCode?: string;
+    street?: string;
+    building?: string;
+    floor?: string;
+    apartment?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postalCode?: string;
 }
 
 export async function initiatePayment(

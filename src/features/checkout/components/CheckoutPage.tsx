@@ -158,11 +158,18 @@ function OrderConfirmed({ lang }: { lang: string }) {
             </div>
             <h2 className="text-[24px] font-bold text-gray-900 mb-2">{t("confirmed.title")}</h2>
             <p className="text-gray-500 text-[14px] max-w-sm mb-8">{t("confirmed.description")}</p>
-            <a href={`/${lang}/shop`}>
-                <button className="bg-[#402F75] hover:bg-[#2e2156] transition-colors text-white font-bold px-8 py-3 rounded-full text-[14px] cursor-pointer">
-                    {t("confirmed.continueShopping")}
-                </button>
-            </a>
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+                <a href={`/${lang}/orders`}>
+                    <button className="bg-[#402F75] hover:bg-[#2e2156] transition-colors text-white font-bold px-8 py-3 rounded-full text-[14px] cursor-pointer">
+                        View My Orders
+                    </button>
+                </a>
+                <a href={`/${lang}/shop`}>
+                    <button className="bg-white hover:bg-gray-50 border border-gray-200 transition-colors text-gray-700 font-bold px-8 py-3 rounded-full text-[14px] cursor-pointer">
+                        {t("confirmed.continueShopping")}
+                    </button>
+                </a>
+            </div>
         </div>
     );
 }
@@ -187,7 +194,6 @@ export default function CheckoutPage() {
     const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
 
     // Payment state
-    const [appOrderId, setAppOrderId] = useState<string | null>(null);
     const [isPolling, setIsPolling] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
 
@@ -301,14 +307,14 @@ export default function CheckoutPage() {
         setPaymentError(null);
 
         try {
-            // Use the cart ID as the appOrderId (reused across retries)
-            const orderId = appOrderId ?? cartId;
-            if (!orderId) throw new Error("No active cart found. Please add items and try again.");
-            if (!appOrderId) setAppOrderId(orderId);
+            if (!cartId) throw new Error("No active cart found. Please add items and try again.");
 
             // Initiate payment
             const result = await initiatePayment({
-                appOrderId: orderId,
+                cartId,
+                addressId: shippingData.addressId,
+                deliveryMethod: shippingData.deliveryMethod,
+                shippingFee: totals.shipping,
                 methodType: METHOD_MAP[paymentMethod],
                 amount: totals.total,
                 currency: "AED",
@@ -316,11 +322,11 @@ export default function CheckoutPage() {
                 customerEmail: profile?.email ?? shippingData.email,
                 customerPhone: shippingData.phone || undefined,
                 billingName: `${shippingData.firstName} ${shippingData.lastName}`.trim(),
-                billingApartment: shippingData.apartment || undefined,
-                billingStreet: shippingData.streetAddress || undefined,
-                billingCity: shippingData.city || undefined,
-                billingCountry: shippingData.country || undefined,
-                billingPostalCode: shippingData.postalCode || undefined,
+                street: shippingData.streetAddress || undefined,
+                apartment: shippingData.apartment || undefined,
+                city: shippingData.city || undefined,
+                country: shippingData.country || undefined,
+                postalCode: shippingData.postalCode || undefined,
             });
 
             // All methods use Unified Checkout — store transactionId and redirect
@@ -339,7 +345,6 @@ export default function CheckoutPage() {
 
     function handleRetry() {
         setPaymentError(null);
-        // Keep appOrderId so we reuse the same order on retry
     }
 
     // ── Render ────────────────────────────────────────────────────────────────

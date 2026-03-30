@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ShippingFormData } from "../types";
+import type { ShippingFormData, DeliveryMethod } from "../types";
 import type { Address, CreateAddressPayload, AddressLabel } from "@/features/profile/types";
 
 const COUNTRIES = [
@@ -92,6 +92,9 @@ export default function ShippingStep({
     const [saveForLater, setSaveForLater] = useState(initialData?.saveInfo ?? false);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>(
+        initialData?.deliveryMethod ?? "LOCAL_EXPRESS"
+    );
 
     function setAddrField<K extends keyof CreateAddressPayload>(key: K, value: CreateAddressPayload[K]) {
         setAddrForm((p) => ({ ...p, [key]: value }));
@@ -140,6 +143,8 @@ export default function ShippingStep({
                     city: "city" in addr ? addr.city : addrForm.city,
                     postalCode: ("postalCode" in addr ? addr.postalCode : addrForm.postalCode) ?? "",
                     saveInfo: saveForLater,
+                    addressId: undefined,
+                    deliveryMethod,
                 });
             } catch (err) {
                 setSaveError(err instanceof Error ? err.message : "Failed to save address.");
@@ -160,6 +165,8 @@ export default function ShippingStep({
                 city: selected.city,
                 postalCode: selected.postalCode ?? "",
                 saveInfo: false,
+                addressId: selected.id,
+                deliveryMethod,
             });
         }
     }
@@ -424,6 +431,51 @@ export default function ShippingStep({
                         {saveError && <p className="text-[12px] text-red-500">{saveError}</p>}
                     </div>
                 )}
+            </div>
+
+            {/* ── Delivery Method ──────────────────────────────────────────── */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+                <h2 className="text-[16px] font-bold text-gray-900 mb-5 flex items-center gap-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="1" y="3" width="15" height="13" rx="1" />
+                        <path d="M16 8h4l3 3v5h-7V8z" />
+                        <circle cx="5.5" cy="18.5" r="2.5" />
+                        <circle cx="18.5" cy="18.5" r="2.5" />
+                    </svg>
+                    Delivery Method
+                </h2>
+                <div className="flex flex-col gap-3">
+                    {([
+                        { value: "LOCAL_EXPRESS" as DeliveryMethod, label: "Local Express", description: "Fast local delivery to your address" },
+                        { value: "INTERNATIONAL" as DeliveryMethod, label: "International", description: "Cross-border shipping via carrier" },
+                    ] as const).map((option) => {
+                        const isSelected = deliveryMethod === option.value;
+                        return (
+                            <label
+                                key={option.value}
+                                className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${isSelected ? "border-[#402F75] bg-[#EDE9FF]/40" : "border-gray-100 hover:border-gray-200 bg-white"}`}
+                            >
+                                <div className="mt-0.5 flex-shrink-0">
+                                    <input
+                                        type="radio"
+                                        name="deliveryMethod"
+                                        value={option.value}
+                                        checked={isSelected}
+                                        onChange={() => setDeliveryMethod(option.value)}
+                                        className="sr-only"
+                                    />
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "border-[#402F75]" : "border-gray-300"}`}>
+                                        {isSelected && <div className="w-2 h-2 rounded-full bg-[#402F75]" />}
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className={`text-[13px] font-bold ${isSelected ? "text-[#402F75]" : "text-gray-800"}`}>{option.label}</p>
+                                    <p className="text-[12px] text-gray-500 mt-0.5">{option.description}</p>
+                                </div>
+                            </label>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* ── CTA ──────────────────────────────────────────────────────── */}

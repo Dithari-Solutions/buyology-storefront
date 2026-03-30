@@ -15,6 +15,7 @@ export const PATH_SLUGS: Record<string, Record<Lang, string>> = {
     "quick-delivery": { en: "quick-delivery", az: "tez-catdirilma", ar: "tawsil-sarih" },
     b2b: { en: "b2b", az: "b2b", ar: "b2b" },
     contact: { en: "contact", az: "elaqe", ar: "ittisal" },
+    orders: { en: "orders", az: "sifarishler", ar: "talab" },
 };
 
 /**

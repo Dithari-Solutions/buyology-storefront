@@ -1,0 +1,359 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import type { RootState } from "@/store";
+import Header from "@/shared/components/Header";
+import Footer from "@/shared/components/Footer";
+import { getOrderDetail } from "../services/orders.api";
+import type { OrderDetail, OrderStatus, TrackingEvent } from "../types";
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const STATUS_LABELS: Record<OrderStatus, string> = {
+    PENDING_PAYMENT: "Pending Payment",
+    PAID: "Payment Confirmed",
+    PROCESSING: "Processing",
+    COURIER_ASSIGNED: "Courier Assigned",
+    PICKED_UP: "Picked Up",
+    SHIPPED: "Shipped",
+    IN_TRANSIT: "In Transit",
+    DELIVERED: "Delivered",
+    CANCELLED: "Cancelled",
+    FAILED: "Failed",
+};
+
+const STATUS_COLORS: Record<OrderStatus, string> = {
+    PENDING_PAYMENT: "bg-yellow-100 text-yellow-800",
+    PAID: "bg-blue-100 text-blue-800",
+    PROCESSING: "bg-blue-100 text-blue-800",
+    COURIER_ASSIGNED: "bg-purple-100 text-purple-800",
+    PICKED_UP: "bg-purple-100 text-purple-800",
+    SHIPPED: "bg-indigo-100 text-indigo-800",
+    IN_TRANSIT: "bg-orange-100 text-orange-800",
+    DELIVERED: "bg-green-100 text-green-800",
+    CANCELLED: "bg-gray-100 text-gray-700",
+    FAILED: "bg-red-100 text-red-800",
+};
+
+// ── StatusBadge ───────────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: OrderStatus }) {
+    return (
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-bold ${STATUS_COLORS[status]}`}>
+            {STATUS_LABELS[status]}
+        </span>
+    );
+}
+
+// ── TrackingTimeline ──────────────────────────────────────────────────────────
+
+function TrackingTimeline({ events }: { events: TrackingEvent[] }) {
+    const sorted = [...events].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+
+    const actorLabel: Record<string, string> = {
+        SYSTEM: "System",
+        ADMIN: "Admin",
+        COURIER: "Courier",
+    };
+
+    return (
+        <ol className="relative border-l-2 border-gray-100 ml-3 flex flex-col gap-0">
+            {sorted.map((event, i) => {
+                const isCurrent = i === sorted.length - 1;
+                return (
+                    <li key={event.id} className="mb-6 ml-6">
+                        <span
+                            className={`absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-white ${
+                                isCurrent ? "bg-[#402F75]" : "bg-gray-300"
+                            }`}
+                        >
+                            {isCurrent && (
+                                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                            )}
+                        </span>
+                        <div className="flex items-baseline justify-between gap-4 flex-wrap">
+                            <p className={`text-[13px] font-bold ${isCurrent ? "text-[#402F75]" : "text-gray-700"}`}>
+                                {STATUS_LABELS[event.status]}
+                            </p>
+                            <time className="text-[11px] text-gray-400 flex-shrink-0">
+                                {new Date(event.createdAt).toLocaleString("en-GB", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}
+                            </time>
+                        </div>
+                        {event.notes && (
+                            <p className="text-[12px] text-gray-500 mt-0.5">{event.notes}</p>
+                        )}
+                        {event.locationDescription && (
+                            <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                                {event.locationDescription}
+                            </p>
+                        )}
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                            — {actorLabel[event.actorRole] ?? event.actorRole}
+                        </p>
+                    </li>
+                );
+            })}
+        </ol>
+    );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+export default function OrderDetailPage({ orderId }: { orderId: string }) {
+    const router = useRouter();
+    const lang = useSelector((state: RootState) => state.language.lang) as string;
+    const userId = useSelector((state: RootState) => state.auth.userId);
+
+    const [order, setOrder] = useState<OrderDetail | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Auth guard
+    useEffect(() => {
+        if (!userId) {
+            router.push(`/${lang}/auth`);
+        }
+    }, [userId, lang, router]);
+
+    useEffect(() => {
+        if (!userId) return;
+        setLoading(true);
+        setError(null);
+        getOrderDetail(orderId)
+            .then(setOrder)
+            .catch((err) => setError(err instanceof Error ? err.message : "Failed to load order."))
+            .finally(() => setLoading(false));
+    }, [userId, orderId]);
+
+    if (!userId) return null;
+
+    return (
+        <>
+            <Header />
+            <main className="w-[90%] mx-auto py-8 md:py-12">
+                {/* Back link */}
+                <a
+                    href={`/${lang}/orders`}
+                    className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-gray-500 hover:text-[#402F75] transition-colors mb-6 cursor-pointer"
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5M12 5l-7 7 7 7" />
+                    </svg>
+                    Back to Orders
+                </a>
+
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <div className="w-12 h-12 rounded-full bg-[#EDE9FF] flex items-center justify-center mb-4">
+                            <svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2">
+                                <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity="0.3" />
+                                <path d="M21 12a9 9 0 00-9-9" />
+                            </svg>
+                        </div>
+                        <p className="text-[13px] text-gray-500">Loading order details…</p>
+                    </div>
+                ) : error ? (
+                    <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-center">
+                        <p className="text-[14px] font-semibold text-red-700 mb-2">{error}</p>
+                        <a href={`/${lang}/orders`} className="text-[13px] font-bold text-red-600 hover:underline">
+                            Back to orders
+                        </a>
+                    </div>
+                ) : order ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+                        {/* ── Left column ──────────────────────────────────── */}
+                        <div className="flex flex-col gap-5">
+                            {/* Order header */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <div className="flex items-start justify-between gap-4 flex-wrap">
+                                    <div>
+                                        <p className="text-[13px] text-gray-500 mb-1">Order</p>
+                                        <h1 className="text-[20px] font-bold text-gray-900">
+                                            #{order.id.slice(-8).toUpperCase()}
+                                        </h1>
+                                        <p className="text-[12px] text-gray-400 mt-0.5">
+                                            Placed on{" "}
+                                            {new Date(order.createdAt).toLocaleDateString("en-GB", {
+                                                day: "2-digit",
+                                                month: "long",
+                                                year: "numeric",
+                                            })}
+                                        </p>
+                                    </div>
+                                    <StatusBadge status={order.status} />
+                                </div>
+                            </div>
+
+                            {/* Delivery address */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <h2 className="text-[15px] font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                    Delivery Address
+                                </h2>
+                                <p className="text-[14px] font-semibold text-gray-800">
+                                    {order.recipientFirstName} {order.recipientLastName}
+                                </p>
+                                <p className="text-[13px] text-gray-500 mt-0.5">{order.recipientPhone}</p>
+                                <p className="text-[13px] text-gray-500 mt-1">
+                                    {order.addressLine1}
+                                    {order.addressLine2 ? `, ${order.addressLine2}` : ""}
+                                </p>
+                                <p className="text-[13px] text-gray-500">
+                                    {[order.city, order.state, order.country, order.postalCode]
+                                        .filter(Boolean)
+                                        .join(", ")}
+                                </p>
+                                <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="1" y="3" width="15" height="13" rx="1" />
+                                        <path d="M16 8h4l3 3v5h-7V8z" />
+                                        <circle cx="5.5" cy="18.5" r="2.5" />
+                                        <circle cx="18.5" cy="18.5" r="2.5" />
+                                    </svg>
+                                    <span className="text-[11px] font-semibold text-gray-500">
+                                        {order.deliveryMethod === "LOCAL_EXPRESS" ? "Local Express" : "International"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Order items */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <h2 className="text-[15px] font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                                        <line x1="3" y1="6" x2="21" y2="6" />
+                                        <path d="M16 10a4 4 0 01-8 0" />
+                                    </svg>
+                                    Order Items
+                                </h2>
+                                <div className="flex flex-col divide-y divide-gray-50">
+                                    {order.items.map((item) => (
+                                        <div key={item.id} className="py-3 flex items-center justify-between gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[13px] font-semibold text-gray-800 truncate">
+                                                    {item.variantSku || item.productSku}
+                                                </p>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">
+                                                    Qty: {item.quantity} × {order.currency} {item.unitPrice.toFixed(2)}
+                                                </p>
+                                            </div>
+                                            <p className="text-[13px] font-bold text-gray-900 flex-shrink-0">
+                                                {order.currency} {item.totalPrice.toFixed(2)}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Pricing summary */}
+                                <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-1.5">
+                                    <div className="flex justify-between text-[12px] text-gray-500">
+                                        <span>Subtotal</span>
+                                        <span>{order.currency} {order.subtotal.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[12px] text-gray-500">
+                                        <span>Shipping</span>
+                                        <span>{order.shippingFee === 0 ? "Free" : `${order.currency} ${order.shippingFee.toFixed(2)}`}</span>
+                                    </div>
+                                    {order.discount > 0 && (
+                                        <div className="flex justify-between text-[12px] text-green-600">
+                                            <span>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</span>
+                                            <span>− {order.currency} {order.discount.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between text-[15px] font-bold text-gray-900 mt-2 pt-2 border-t border-gray-100">
+                                        <span>Total</span>
+                                        <span>{order.currency} {order.totalAmount.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Carrier tracking (INTERNATIONAL only) */}
+                            {order.deliveryMethod === "INTERNATIONAL" && order.trackingCode && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                    <h2 className="text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <polyline points="12 6 12 12 16 14" />
+                                        </svg>
+                                        Carrier Tracking
+                                    </h2>
+                                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                                        <div>
+                                            {order.carrierName && (
+                                                <p className="text-[13px] font-semibold text-gray-800">{order.carrierName}</p>
+                                            )}
+                                            <p className="text-[12px] text-gray-500 font-mono mt-0.5">{order.trackingCode}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ── Right column — Tracking Timeline ─────────────── */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:sticky lg:top-24">
+                            <h2 className="text-[15px] font-bold text-gray-900 mb-5 flex items-center gap-2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                                Tracking History
+                            </h2>
+                            {order.trackingHistory.length === 0 ? (
+                                <p className="text-[13px] text-gray-400">No tracking events yet.</p>
+                            ) : (
+                                <TrackingTimeline events={order.trackingHistory} />
+                            )}
+
+                            {/* Milestone timestamps */}
+                            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-2">
+                                {order.paidAt && (
+                                    <div className="flex justify-between text-[11px] text-gray-400">
+                                        <span>Paid</span>
+                                        <span>{new Date(order.paidAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                                    </div>
+                                )}
+                                {order.shippedAt && (
+                                    <div className="flex justify-between text-[11px] text-gray-400">
+                                        <span>Shipped</span>
+                                        <span>{new Date(order.shippedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                                    </div>
+                                )}
+                                {order.deliveredAt && (
+                                    <div className="flex justify-between text-[11px] text-gray-400">
+                                        <span>Delivered</span>
+                                        <span>{new Date(order.deliveredAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                                    </div>
+                                )}
+                                {order.cancelledAt && (
+                                    <div className="flex justify-between text-[11px] text-red-400">
+                                        <span>Cancelled</span>
+                                        <span>{new Date(order.cancelledAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
+            </main>
+            <Footer />
+        </>
+    );
+}

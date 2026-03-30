@@ -1,3 +1,5 @@
+export type DeliveryMethod = "LOCAL_EXPRESS" | "INTERNATIONAL";
+
 export interface ShippingFormData {
     email: string;
     phone: string;
@@ -9,6 +11,8 @@ export interface ShippingFormData {
     city: string;
     postalCode: string;
     saveInfo: boolean;
+    addressId?: string;
+    deliveryMethod: DeliveryMethod;
 }
 
 export type PaymentMethod = "card" | "tabby" | "tamara";
