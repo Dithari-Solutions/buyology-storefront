@@ -143,10 +143,18 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
                 <ul className="flex flex-col gap-1">
                     {navItems.map(({ key, label, icon, badge }) => {
                         const isActive = activeSection === key;
+                        const handleNavItemClick = () => {
+                            if (key === "orders") {
+                                router.push(`/${lang}/orders`);
+                                return;
+                            }
+                            onSectionChange(key);
+                        };
+
                         return (
                             <li key={key}>
                                 <button
-                                    onClick={() => onSectionChange(key)}
+                                    onClick={handleNavItemClick}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-[12px] text-[14px] font-medium transition-colors text-start cursor-pointer ${
                                         isActive
                                             ? "bg-[#402F75] text-white"

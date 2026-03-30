@@ -143,6 +143,7 @@ export default function OrdersPage() {
     const router = useRouter();
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const authRestored = useSelector((state: RootState) => state.auth.isRestored);
 
     const [orders, setOrders] = useState<OrderSummary[]>([]);
     const [loading, setLoading] = useState(true);
@@ -158,10 +159,11 @@ export default function OrdersPage() {
 
     // Auth guard
     useEffect(() => {
+        if (!authRestored) return;
         if (!userId) {
             router.push(`/${lang}/auth`);
         }
-    }, [userId, lang, router]);
+    }, [authRestored, userId, lang, router]);
 
     useEffect(() => {
         if (!userId) return;
@@ -197,6 +199,7 @@ export default function OrdersPage() {
         setDateTo("");
     }
 
+    if (!authRestored) return null;
     if (!userId) return null;
 
     return (

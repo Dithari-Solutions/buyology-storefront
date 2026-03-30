@@ -119,6 +119,7 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
     const router = useRouter();
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const authRestored = useSelector((state: RootState) => state.auth.isRestored);
 
     const [order, setOrder] = useState<OrderDetail | null>(null);
     const [loading, setLoading] = useState(true);
@@ -126,10 +127,11 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
 
     // Auth guard
     useEffect(() => {
+        if (!authRestored) return;
         if (!userId) {
             router.push(`/${lang}/auth`);
         }
-    }, [userId, lang, router]);
+    }, [authRestored, userId, lang, router]);
 
     useEffect(() => {
         if (!userId) return;
@@ -141,6 +143,7 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
             .finally(() => setLoading(false));
     }, [userId, orderId]);
 
+    if (!authRestored) return null;
     if (!userId) return null;
 
     return (

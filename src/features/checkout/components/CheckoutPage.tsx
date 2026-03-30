@@ -313,7 +313,6 @@ export default function CheckoutPage() {
             const result = await initiatePayment({
                 cartId,
                 addressId: shippingData.addressId,
-                deliveryMethod: shippingData.deliveryMethod,
                 shippingFee: totals.shipping,
                 methodType: METHOD_MAP[paymentMethod],
                 amount: totals.total,

@@ -33,6 +33,13 @@ export async function tryRestoreSession(): Promise<void> {
     setTokens(d.accessToken, d.expiresIn);
   } catch {
     // No valid refresh token — stay logged out
+    if (typeof window !== "undefined") {
+      import("@/store").then(({ store }) =>
+        import("@/features/auth/store/authSlice").then(({ setAuthRestored }) => {
+          store.dispatch(setAuthRestored());
+        })
+      );
+    }
   }
 }
 

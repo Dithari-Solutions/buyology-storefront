@@ -198,6 +198,7 @@ const cartSlice = createSlice({
             state.promo = { code: "", discount: 0, applied: false, error: null };
             state.countryCode = null;
             state.currency = null;
+            state.cartId = null;
         },
 
         applyPromo(state, action: PayloadAction<string>) {

@@ -10,7 +10,6 @@ interface ApiEnvelope<T> {
 export interface InitiatePaymentPayload {
     cartId: string;
     addressId?: string;
-    deliveryMethod: "LOCAL_EXPRESS" | "INTERNATIONAL";
     shippingFee: number;
     methodType: "CARD" | "TABBY" | "TAMARA";
     amount: number;
