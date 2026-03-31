@@ -125,6 +125,8 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const COURIER_ACTIVE_STATUSES: OrderStatus[] = ["COURIER_ASSIGNED", "PICKED_UP", "IN_TRANSIT"];
+
     // Auth guard
     useEffect(() => {
         if (!authRestored) return;
@@ -142,6 +144,19 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
             .catch((err) => setError(err instanceof Error ? err.message : "Failed to load order."))
             .finally(() => setLoading(false));
     }, [userId, orderId]);
+
+    // Poll every 15 s while courier is active on a LOCAL_EXPRESS order
+    useEffect(() => {
+        if (!userId || !order) return;
+        if (order.deliveryMethod !== "LOCAL_EXPRESS") return;
+        if (!COURIER_ACTIVE_STATUSES.includes(order.status)) return;
+
+        const interval = setInterval(() => {
+            getOrderDetail(orderId).then(setOrder).catch(() => {});
+        }, 15000);
+        return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId, orderId, order?.status, order?.deliveryMethod]);
 
     if (!authRestored) return null;
     if (!userId) return null;
@@ -288,6 +303,65 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Courier live location (LOCAL_EXPRESS only) */}
+                            {order.deliveryMethod === "LOCAL_EXPRESS" && COURIER_ACTIVE_STATUSES.includes(order.status) && (() => {
+                                const courierEvents = [...order.trackingHistory]
+                                    .filter(e => e.actorRole === "COURIER" && e.latitude != null && e.longitude != null)
+                                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                                const latest = courierEvents[0];
+                                return (
+                                    <div className="bg-white rounded-2xl shadow-sm border border-green-100 p-6">
+                                        <h2 className="text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="3" />
+                                                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                                            </svg>
+                                            Courier Location
+                                            <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                                Live
+                                            </span>
+                                        </h2>
+                                        {latest ? (
+                                            <>
+                                                {latest.locationDescription && (
+                                                    <p className="text-[13px] text-gray-600 mb-3 flex items-center gap-1.5">
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                                            <circle cx="12" cy="10" r="3" />
+                                                        </svg>
+                                                        {latest.locationDescription}
+                                                    </p>
+                                                )}
+                                                <p className="text-[11px] text-gray-400 mb-3">
+                                                    Last updated{" "}
+                                                    {new Date(latest.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                                                </p>
+                                                <iframe
+                                                    title="Courier location"
+                                                    width="100%"
+                                                    height="220"
+                                                    style={{ border: 0, borderRadius: 12 }}
+                                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${latest.longitude! - 0.01},${latest.latitude! - 0.01},${latest.longitude! + 0.01},${latest.latitude! + 0.01}&layer=mapnik&marker=${latest.latitude},${latest.longitude}`}
+                                                />
+                                                <a
+                                                    href={`https://www.google.com/maps?q=${latest.latitude},${latest.longitude}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold text-[#402F75] hover:underline"
+                                                >
+                                                    Open in Google Maps →
+                                                </a>
+                                            </>
+                                        ) : (
+                                            <p className="text-[13px] text-gray-400">
+                                                Waiting for courier to share location…
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })()}
 
                             {/* Carrier tracking (INTERNATIONAL only) */}
                             {order.deliveryMethod === "INTERNATIONAL" && order.trackingCode && (

@@ -182,7 +182,12 @@ export default function CheckoutPage() {
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
     const cartId = useSelector((state: RootState) => state.cart.cartId);
+    const cartItems = useSelector((state: RootState) => state.cart.items);
     const totals = useSelector(selectCartTotals);
+    const deliveryMethod: "LOCAL_EXPRESS" | "INTERNATIONAL" =
+        cartItems.length > 0 && cartItems.every((item) => item.quickDelivery === true)
+            ? "LOCAL_EXPRESS"
+            : "INTERNATIONAL";
 
     const [step, setStep] = useState<CheckoutStep>("shipping");
     const [shippingData, setShippingData] = useState<ShippingFormData | null>(null);
@@ -326,6 +331,7 @@ export default function CheckoutPage() {
                 city: shippingData.city || undefined,
                 country: shippingData.country || undefined,
                 postalCode: shippingData.postalCode || undefined,
+                deliveryMethod,
             });
 
             // All methods use Unified Checkout — store transactionId and redirect
