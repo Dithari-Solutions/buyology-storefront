@@ -156,6 +156,11 @@ export default function ProductCard({
   }
 
   function buildDisplayMeta() {
+    const activeStoreId = selectedStoreId ?? storeId;
+    const selectedOption = storeOptions?.find((o) => o.storeId === activeStoreId);
+    const isExpress = selectedOption
+      ? selectedOption.expressDelivery === true
+      : expressDelivery === true;
     return {
       productId,
       title,
@@ -166,6 +171,7 @@ export default function ProductCard({
       discountPercent: originalPrice > 0 ? Math.round((discount / originalPrice) * 100) : 0,
       quantity: 1,
       savedForLater: false,
+      quickDelivery: isExpress,
     };
   }
 

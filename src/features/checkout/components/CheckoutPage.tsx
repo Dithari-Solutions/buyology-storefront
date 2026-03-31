@@ -11,7 +11,7 @@ import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment, getTransaction } from "../services/payment.api";
-import { selectCartTotals, clearCart } from "@/features/cart/store/cartSlice";
+import { selectCartTotals, selectCartItems, clearCart } from "@/features/cart/store/cartSlice";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
 import {
     getProfile,
@@ -182,7 +182,7 @@ export default function CheckoutPage() {
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
     const cartId = useSelector((state: RootState) => state.cart.cartId);
-    const cartItems = useSelector((state: RootState) => state.cart.items);
+    const cartItems = useSelector(selectCartItems);
     const totals = useSelector(selectCartTotals);
     const deliveryMethod: "LOCAL_EXPRESS" | "INTERNATIONAL" =
         cartItems.length > 0 && cartItems.every((item) => item.quickDelivery === true)
