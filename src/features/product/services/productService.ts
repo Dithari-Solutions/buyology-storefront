@@ -56,6 +56,12 @@ export interface ApiProduct {
   currency?: string | null;
   availableInSelectedCountry?: boolean | null;
   expressDelivery?: boolean | null;
+  storeOptions?: Array<{
+    storeId: string;
+    storePrice: number;
+    currency: string;
+    expressDelivery: boolean | null;
+  }> | null;
 }
 
 const LANG_PARAM: Record<Lang, string> = {

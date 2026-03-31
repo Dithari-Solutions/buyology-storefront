@@ -37,6 +37,12 @@ interface ProductCardProps {
   storage?: string;
   imageUrl?: string;
   expressDelivery?: boolean | null;
+  storeOptions?: Array<{
+    storeId: string;
+    storePrice: number;
+    currency: string;
+    expressDelivery: boolean | null;
+  }> | null;
 }
 
 function formatPrice(amount: number, currency: string): string {
@@ -81,6 +87,7 @@ export default function ProductCard({
   storage = "1024GB SSD",
   imageUrl,
   expressDelivery,
+  storeOptions,
 }: ProductCardProps) {
   const id = useId();
   const clipId = `productImageClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
@@ -103,6 +110,7 @@ export default function ProductCard({
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [crossCountryError, setCrossCountryError] = useState<string | null>(null);
   const [pendingStoreId, setPendingStoreId] = useState<string>("");
+  const [selectedStoreId, setSelectedStoreId] = useState<string | undefined>(storeId);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -197,7 +205,7 @@ export default function ProductCard({
       return;
     }
 
-    const resolvedStoreId = storeId ?? "";
+    const resolvedStoreId = selectedStoreId ?? storeId ?? "";
     const tempId = `cart-${productId}-${Date.now()}`;
 
     const result = await dispatch(addToCartThunk({
@@ -432,16 +440,44 @@ export default function ProductCard({
             )}
           </div>
 
-          {/* Delivery badge */}
-          {expressDelivery === true && (
-            <span className="inline-flex items-center gap-[4px] self-start bg-green-50 text-green-700 border border-green-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
-              ⚡ Express — under 30 min
-            </span>
-          )}
-          {expressDelivery === false && (
-            <span className="inline-flex items-center gap-[4px] self-start bg-gray-50 text-gray-500 border border-gray-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
-              🚢 Standard shipping
-            </span>
+          {/* Delivery badges */}
+          {storeOptions && storeOptions.length > 1 ? (
+            <div className="flex flex-col gap-[4px]">
+              {storeOptions.map((opt) => {
+                const isSelected = (selectedStoreId ?? storeId) === opt.storeId;
+                return (
+                  <button
+                    key={opt.storeId}
+                    onClick={(e) => { e.stopPropagation(); setSelectedStoreId(opt.storeId); }}
+                    className={`inline-flex items-center justify-between gap-[6px] rounded-[6px] px-[8px] py-[4px] text-[11px] font-semibold border transition-colors cursor-pointer w-full text-left ${
+                      opt.expressDelivery
+                        ? isSelected
+                          ? 'bg-green-100 text-green-700 border-green-400'
+                          : 'bg-green-50 text-green-700 border-green-200 hover:border-green-400'
+                        : isSelected
+                          ? 'bg-gray-100 text-gray-600 border-gray-400'
+                          : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    <span>{opt.expressDelivery ? '⚡ Express — under 30 min' : '🚢 Standard shipping'}</span>
+                    <span className="font-bold">{formatPrice(opt.storePrice, opt.currency)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              {expressDelivery === true && (
+                <span className="inline-flex items-center gap-[4px] self-start bg-green-50 text-green-700 border border-green-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
+                  ⚡ Express — under 30 min
+                </span>
+              )}
+              {expressDelivery === false && (
+                <span className="inline-flex items-center gap-[4px] self-start bg-gray-50 text-gray-500 border border-gray-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
+                  🚢 Standard shipping
+                </span>
+              )}
+            </>
           )}
 
           {/* Specs */}

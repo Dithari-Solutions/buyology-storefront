@@ -322,6 +322,7 @@ export default function Products({ onFilterToggle, filterOpen }: {
                 storage={storage ? `${storage} SSD` : undefined}
                 imageUrl={getPrimaryImage(product.media)}
                 expressDelivery={product.expressDelivery}
+                storeOptions={product.storeOptions}
               />
             );
           })}
