@@ -164,15 +164,25 @@ export default function Products({ onFilterToggle, filterOpen }: {
   const [sort, setSort] = useState('Most Popular');
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => setCoords(null),
+      );
+    }
+  }, []);
 
   useEffect(() => {
     setLoading(true);
     setPage(1);
-    getProducts({ lang, countryCode, currency })
+    getProducts({ lang, countryCode, currency, lat: coords?.lat, lng: coords?.lng })
       .then(setProducts)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [lang, countryCode, currency]);
+  }, [lang, countryCode, currency, coords]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PER_PAGE));
   const startItem = products.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
@@ -311,6 +321,7 @@ export default function Products({ onFilterToggle, filterOpen }: {
                 ram={ram ? `${ram} RAM` : undefined}
                 storage={storage ? `${storage} SSD` : undefined}
                 imageUrl={getPrimaryImage(product.media)}
+                expressDelivery={product.expressDelivery}
               />
             );
           })}

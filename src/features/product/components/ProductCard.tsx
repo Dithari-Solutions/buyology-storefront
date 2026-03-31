@@ -36,6 +36,7 @@ interface ProductCardProps {
   ram?: string;
   storage?: string;
   imageUrl?: string;
+  expressDelivery?: boolean | null;
 }
 
 function formatPrice(amount: number, currency: string): string {
@@ -79,6 +80,7 @@ export default function ProductCard({
   ram = "32GB RAM",
   storage = "1024GB SSD",
   imageUrl,
+  expressDelivery,
 }: ProductCardProps) {
   const id = useId();
   const clipId = `productImageClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
@@ -429,6 +431,18 @@ export default function ProductCard({
               </div>
             )}
           </div>
+
+          {/* Delivery badge */}
+          {expressDelivery === true && (
+            <span className="inline-flex items-center gap-[4px] self-start bg-green-50 text-green-700 border border-green-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
+              ⚡ Express — under 30 min
+            </span>
+          )}
+          {expressDelivery === false && (
+            <span className="inline-flex items-center gap-[4px] self-start bg-gray-50 text-gray-500 border border-gray-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
+              🚢 Standard shipping
+            </span>
+          )}
 
           {/* Specs */}
           <div className={`grid gap-[6px]${isList ? ' grid-cols-3' : ' grid-cols-2'}`}>

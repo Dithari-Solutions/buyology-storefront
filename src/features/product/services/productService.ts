@@ -55,6 +55,7 @@ export interface ApiProduct {
   storePrice?: number | null;
   currency?: string | null;
   availableInSelectedCountry?: boolean | null;
+  expressDelivery?: boolean | null;
 }
 
 const LANG_PARAM: Record<Lang, string> = {
@@ -67,12 +68,16 @@ export interface ProductQueryParams {
   lang?: Lang;
   countryCode?: string;
   currency?: string;
+  lat?: number;
+  lng?: number;
 }
 
-function buildParams({ lang = "en", countryCode, currency }: ProductQueryParams) {
+function buildParams({ lang = "en", countryCode, currency, lat, lng }: ProductQueryParams) {
   const params: Record<string, string> = { lang: LANG_PARAM[lang] };
   if (countryCode) params.countryCode = countryCode;
   if (currency) params.currency = currency;
+  if (lat != null) params.lat = String(lat);
+  if (lng != null) params.lng = String(lng);
   return params;
 }
 
