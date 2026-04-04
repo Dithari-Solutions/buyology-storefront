@@ -18,6 +18,9 @@ export default function Home() {
       <Header />
       <main className="flex flex-col items-center justify-center pb-10 md:pb-16">
         <Stories />
+        <ScrollReveal className="w-full flex justify-center" delay={0.05}>
+          <Features />
+        </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center">
           <Banner />
         </ScrollReveal>
@@ -35,9 +38,6 @@ export default function Home() {
         </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
           <TrustStats />
-        </ScrollReveal>
-        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
-          <Features />
         </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
           <SuperDeals />

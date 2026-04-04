@@ -17,7 +17,7 @@ export default function Features() {
     const repairSlug = PATH_SLUGS.repair?.[lang] ?? "repair";
 
     return (
-        <section className="flex flex-col items-center w-full mt-[30px] md:mt-[50px]">
+        <section className="flex flex-col items-center w-full ">
             {/* Header */}
             <div className="w-[95%] md:w-[90%] flex items-end justify-between mb-[20px] md:mb-[28px]">
                 <div>
