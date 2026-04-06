@@ -5,7 +5,7 @@ interface FeatureCardProps {
     id: string;
     title: string;
     description: string;
-    bg: StaticImageData;
+    bg?: StaticImageData;
     variant?: "tall" | "wide" | "normal";
     href?: string;
 }
@@ -17,17 +17,24 @@ export default function FeatureCard({ title, description, bg, variant = "normal"
 
     return (
         <Wrapper>
-            {/* Background image */}
+            {/* Background image or gradient fallback */}
             <div className="absolute inset-0">
-                <div
-                    className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
-                    style={{
-                        backgroundImage: `url(${bg.src})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        backgroundRepeat: "no-repeat",
-                    }}
-                />
+                {bg ? (
+                    <div
+                        className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                        style={{
+                            backgroundImage: `url(${bg.src})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                        }}
+                    />
+                ) : (
+                    <div
+                        className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                        style={{ background: "linear-gradient(135deg, #1a0f3c 0%, #2a1a5e 50%, #3a2070 100%)" }}
+                    />
+                )}
                 {/* Gradient overlays */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f40]/95 via-[#2a1860]/40 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-br from-[#402F75]/20 to-transparent" />

@@ -26,8 +26,7 @@ export interface InitiatePaymentPayload {
     state?: string;
     country?: string;
     postalCode?: string;
-    /** LOCAL_EXPRESS when all cart items are from stores within 30-min radius, otherwise INTERNATIONAL */
-    deliveryMethod?: "LOCAL_EXPRESS" | "INTERNATIONAL";
+    // deliveryMethod is intentionally omitted — backend auto-determines it based on store distance
 }
 
 export async function initiatePayment(

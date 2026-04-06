@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 
-type ServiceId = "rent" | "repair";
+type ServiceId = "rent" | "repair" | "sell";
 
 interface ComingSoonPageProps {
     serviceId: ServiceId;
@@ -29,9 +29,20 @@ function RentIcon() {
     );
 }
 
+function SellIcon() {
+    return (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+        </svg>
+    );
+}
+
 const SERVICE_ICONS: Record<ServiceId, () => React.ReactElement> = {
     repair: RepairIcon,
     rent: RentIcon,
+    sell: SellIcon,
 };
 
 function CurveDecoration({ className }: { className?: string }) {

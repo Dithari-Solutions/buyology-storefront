@@ -31,5 +31,18 @@
             "Swap or upgrade anytime",
             "Easy return with no penalties"
         ]
+    },
+    "sell": {
+        "name": "Sell Your Device",
+        "tagline": "Turn your old devices into cash — fast",
+        "description": "Sell your used or unwanted devices with zero hassle. List your item in minutes, receive instant offers from verified buyers, and schedule a free pickup from your door. Secure payments are released as soon as your device is verified.",
+        "releaseDate": "September 1, 2026",
+        "steps": [
+            "List your device with photos & details",
+            "Receive instant offers from verified buyers",
+            "Accept the best offer",
+            "Schedule a free door pickup",
+            "Get paid securely within 24 hours"
+        ]
     }
 }

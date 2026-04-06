@@ -15,6 +15,7 @@ export default function Features() {
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
     const rentSlug = PATH_SLUGS.rent?.[lang] ?? "rent";
     const repairSlug = PATH_SLUGS.repair?.[lang] ?? "repair";
+    const sellSlug = PATH_SLUGS.sell?.[lang] ?? "sell";
 
     return (
         <section className="flex flex-col items-center w-full ">
@@ -50,7 +51,7 @@ export default function Features() {
                 lg (3 col):  [ Rent tall ] [ Repair   ] [ BrandNew  ]
                              [ Rent tall ] [  Refurbished wide      ]
             */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:grid-rows-[260px_260px] lg:grid-rows-[240px_240px] gap-4 w-[95%] md:w-[90%]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:grid-rows-[260px_260px_220px] lg:grid-rows-[240px_240px_200px] gap-4 w-[95%] md:w-[90%]">
                 {/* Tall card — spans both rows on sm+ */}
                 <div className="min-h-[220px] sm:row-span-2">
                     <FeatureCard
@@ -94,6 +95,17 @@ export default function Features() {
                         description={t("features.refurbishedDesc")}
                         bg={RefubishedBg}
                         variant="wide"
+                    />
+                </div>
+
+                {/* Sell — spans full width on all breakpoints */}
+                <div className="min-h-[200px] sm:col-span-2 lg:col-span-3">
+                    <FeatureCard
+                        id="sell"
+                        title={t("features.sell")}
+                        description={t("features.sellDesc")}
+                        variant="wide"
+                        href={`/${lang}/${sellSlug}`}
                     />
                 </div>
             </div>

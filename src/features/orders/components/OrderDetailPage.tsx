@@ -12,16 +12,16 @@ import type { OrderDetail, OrderStatus, TrackingEvent } from "../types";
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-    PENDING_PAYMENT: "Pending Payment",
-    PAID: "Payment Confirmed",
-    PROCESSING: "Processing",
-    COURIER_ASSIGNED: "Courier Assigned",
-    PICKED_UP: "Picked Up",
-    SHIPPED: "Shipped",
-    IN_TRANSIT: "In Transit",
+    PENDING_PAYMENT: "Awaiting payment confirmation",
+    PAID: "Payment confirmed — preparing your order",
+    PROCESSING: "Your order is being prepared",
+    COURIER_ASSIGNED: "A courier has been assigned",
+    PICKED_UP: "Courier has picked up your order",
+    SHIPPED: "Order has been shipped",
+    IN_TRANSIT: "Your order is on the way",
     DELIVERED: "Delivered",
-    CANCELLED: "Cancelled",
-    FAILED: "Failed",
+    CANCELLED: "Order cancelled",
+    FAILED: "Delivery failed — contact support",
 };
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
@@ -145,10 +145,10 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
             .finally(() => setLoading(false));
     }, [userId, orderId]);
 
-    // Poll every 15 s while courier is active on a LOCAL_EXPRESS order
+    // Poll every 15 s while courier is active on an EXPRESS_DELIVERY order
     useEffect(() => {
         if (!userId || !order) return;
-        if (order.deliveryMethod !== "LOCAL_EXPRESS") return;
+        if (order.deliveryMethod !== "EXPRESS_DELIVERY") return;
         if (!COURIER_ACTIVE_STATUSES.includes(order.status)) return;
 
         const interval = setInterval(() => {
@@ -248,7 +248,7 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                         <circle cx="18.5" cy="18.5" r="2.5" />
                                     </svg>
                                     <span className="text-[11px] font-semibold text-gray-500">
-                                        {order.deliveryMethod === "LOCAL_EXPRESS" ? "Local Express" : "International"}
+                                        {order.deliveryMethod === "EXPRESS_DELIVERY" ? "Express delivery" : "Regular delivery"}
                                     </span>
                                 </div>
                             </div>
@@ -304,8 +304,8 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                 </div>
                             </div>
 
-                            {/* Courier live location (LOCAL_EXPRESS only) */}
-                            {order.deliveryMethod === "LOCAL_EXPRESS" && COURIER_ACTIVE_STATUSES.includes(order.status) && (() => {
+                            {/* Courier live location (EXPRESS_DELIVERY only) */}
+                            {order.deliveryMethod === "EXPRESS_DELIVERY" && COURIER_ACTIVE_STATUSES.includes(order.status) && (() => {
                                 const courierEvents = [...order.trackingHistory]
                                     .filter(e => e.actorRole === "COURIER" && e.latitude != null && e.longitude != null)
                                     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -363,8 +363,8 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                 );
                             })()}
 
-                            {/* Carrier tracking (INTERNATIONAL only) */}
-                            {order.deliveryMethod === "INTERNATIONAL" && order.trackingCode && (
+                            {/* Carrier tracking (REGULAR_ORDER only) */}
+                            {order.deliveryMethod === "REGULAR_ORDER" && order.trackingCode && (
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                     <h2 className="text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-2">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

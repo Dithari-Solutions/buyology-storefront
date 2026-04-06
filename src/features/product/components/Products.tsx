@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import ProductCard from './ProductCard';
 import { getProducts, getPrimaryImage, type ApiProduct } from '../services/productService';
 import { selectSelectedCountryCode, selectPreferredCurrency, selectSelectedCountry } from '@/features/country/store/countrySlice';
+import { selectUserCoords } from '@/features/location/store/locationSlice';
 import type { Lang } from '@/config/pathSlugs';
 
 function ProductCardSkeleton() {
@@ -157,6 +158,7 @@ export default function Products({ onFilterToggle, filterOpen }: {
   const countryCode = useSelector(selectSelectedCountryCode);
   const currency = useSelector(selectPreferredCurrency);
   const selectedCountry = useSelector(selectSelectedCountry);
+  const coords = useSelector(selectUserCoords);
 
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,16 +166,6 @@ export default function Products({ onFilterToggle, filterOpen }: {
   const [sort, setSort] = useState('Most Popular');
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(1);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-
-  useEffect(() => {
-    if (typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setCoords(null),
-      );
-    }
-  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -323,6 +315,7 @@ export default function Products({ onFilterToggle, filterOpen }: {
                 imageUrl={getPrimaryImage(product.media)}
                 expressDelivery={product.expressDelivery}
                 storeOptions={product.storeOptions}
+                availableInSelectedCountry={product.availableInSelectedCountry}
               />
             );
           })}

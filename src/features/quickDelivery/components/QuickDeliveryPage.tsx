@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import ProductCard from "@/features/product/components/ProductCard";
 import { getQuickDeliveryProducts } from "../services/quickDeliveryService";
 import { getPrimaryImage } from "@/features/product/services/productService";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import { selectUserCoords, selectLocationDenied } from "@/features/location/store/locationSlice";
 
 type PageState =
     | "requesting-location"
@@ -79,9 +81,12 @@ export default function QuickDeliveryPage() {
     const router = useRouter();
     const lang = (params?.lang as Lang) ?? "en";
 
+    // Use global coords from Redux (set when user allowed location on app open)
+    const globalCoords = useSelector(selectUserCoords);
+    const locationDenied = useSelector(selectLocationDenied);
+
     const [state, setState] = useState<PageState>("requesting-location");
     const [products, setProducts] = useState<ApiProduct[]>([]);
-    const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
     const fetchProducts = useCallback(
         async (lat: number, lng: number) => {
@@ -97,22 +102,20 @@ export default function QuickDeliveryPage() {
         [lang]
     );
 
-    // On mount: check cached coords first
+    // Auto-fetch when global coords become available
     useEffect(() => {
-        const cached = getCachedCoords();
-        if (cached) {
-            setCoords(cached);
-            fetchProducts(cached.lat, cached.lng);
+        if (globalCoords) {
+            fetchProducts(globalCoords.lat, globalCoords.lng);
+        } else if (locationDenied) {
+            setState("location-denied");
         }
-        // else stay in "requesting-location"
-    }, [fetchProducts]);
+    }, [globalCoords, locationDenied, fetchProducts]);
 
     function handleAllowLocation() {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
                 cacheCoords(latitude, longitude);
-                setCoords({ lat: latitude, lng: longitude });
                 fetchProducts(latitude, longitude);
             },
             () => {
@@ -123,8 +126,8 @@ export default function QuickDeliveryPage() {
     }
 
     function handleRetry() {
-        if (coords) {
-            fetchProducts(coords.lat, coords.lng);
+        if (globalCoords) {
+            fetchProducts(globalCoords.lat, globalCoords.lng);
         }
     }
 

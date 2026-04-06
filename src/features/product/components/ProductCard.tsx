@@ -43,6 +43,8 @@ interface ProductCardProps {
     currency: string;
     expressDelivery: boolean | null;
   }> | null;
+  /** null = no country context; false = not in user's country (browse only) */
+  availableInSelectedCountry?: boolean | null;
 }
 
 function formatPrice(amount: number, currency: string): string {
@@ -88,6 +90,7 @@ export default function ProductCard({
   imageUrl,
   expressDelivery,
   storeOptions,
+  availableInSelectedCountry,
 }: ProductCardProps) {
   const id = useId();
   const clipId = `productImageClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
@@ -208,6 +211,11 @@ export default function ProductCard({
     e.stopPropagation();
     if (!userId) {
       setShowLoginPrompt(true);
+      return;
+    }
+
+    // Block purchase if product is not available in user's country
+    if (availableInSelectedCountry === false) {
       return;
     }
 
@@ -446,6 +454,13 @@ export default function ProductCard({
             )}
           </div>
 
+          {/* Browse-only badge */}
+          {availableInSelectedCountry === false && (
+            <span className="inline-flex items-center gap-[4px] self-start bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
+              🌐 Browse only — not available in your country
+            </span>
+          )}
+
           {/* Delivery badges */}
           {storeOptions && storeOptions.length > 1 ? (
             <div className="flex flex-col gap-[4px]">
@@ -556,16 +571,32 @@ export default function ProductCard({
 
                   <motion.button
                     onClick={handleAddToCart}
+                    disabled={availableInSelectedCountry === false}
                     animate={added
                       ? { scale: [1, 0.88, 1.06, 1], transition: { duration: 0.35, ease: "easeOut" } }
                       : { scale: 1 }
                     }
-                    className={`flex items-center gap-[5px] py-[8px] px-[12px] rounded-[30px] cursor-pointer text-[12px] font-bold whitespace-nowrap transition-colors duration-300 ${
-                      added ? "bg-green-500 text-white" : "bg-[#FBBB14] text-white hover:bg-[#f0b000]"
+                    className={`flex items-center gap-[5px] py-[8px] px-[12px] rounded-[30px] text-[12px] font-bold whitespace-nowrap transition-colors duration-300 ${
+                      availableInSelectedCountry === false
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : added
+                        ? "bg-green-500 text-white cursor-pointer"
+                        : "bg-[#FBBB14] text-white hover:bg-[#f0b000] cursor-pointer"
                     }`}
                   >
                     <AnimatePresence mode="wait" initial={false}>
-                      {added ? (
+                      {availableInSelectedCountry === false ? (
+                        <motion.span
+                          key="browse-only"
+                          initial={{ opacity: 0, scale: 0.6 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.6 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center gap-[5px]"
+                        >
+                          🌐 Browse only
+                        </motion.span>
+                      ) : added ? (
                         <motion.span
                           key="added"
                           initial={{ opacity: 0, scale: 0.6 }}

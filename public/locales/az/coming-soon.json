@@ -31,5 +31,18 @@
             "İstənilən vaxt dəyişdirin və ya yeniləyin",
             "Cərimə olmadan asan qaytarma"
         ]
+    },
+    "sell": {
+        "name": "Cihazınızı Satın",
+        "tagline": "Köhnə cihazlarınızı tez bir zamanda pula çevirin",
+        "description": "İstifadə etmədiyiniz cihazları heç bir çətinlik olmadan satın. Bir neçə dəqiqə ərzində elanınızı yerləşdirin, doğrulanmış alıcılardan ani təkliflər alın və qapınızdan pulsuz çatdırılma təyin edin. Cihazınız yoxlandıqdan sonra ödəniş təhlükəsiz şəkildə həyata keçirilir.",
+        "releaseDate": "1 Sentyabr 2026",
+        "steps": [
+            "Foto və məlumatlarla cihazınızı siyahıya alın",
+            "Doğrulanmış alıcılardan ani təkliflər alın",
+            "Ən yaxşı təklifi qəbul edin",
+            "Pulsuz ev çatdırılması təyin edin",
+            "24 saat ərzində təhlükəsiz ödəniş alın"
+        ]
     }
 }
