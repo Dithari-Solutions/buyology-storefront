@@ -16,6 +16,12 @@ export interface SignInRequest {
   password: string;
 }
 
+export interface AppleSigninRequest {
+  code: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 // ── Response DTOs ─────────────────────────────────────────────────────────────
 
 export interface SignInResponse {

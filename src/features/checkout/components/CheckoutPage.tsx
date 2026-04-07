@@ -12,7 +12,7 @@ import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment, getTransaction } from "../services/payment.api";
 import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee, clearCart } from "@/features/cart/store/cartSlice";
-import { checkoutCart } from "@/features/cart/services/cart.api";
+import { checkoutCart, clearCartApi } from "@/features/cart/services/cart.api";
 import { createOrder } from "@/features/orders/services/orders.api";
 import { selectUserCoords } from "@/features/location/store/locationSlice";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
@@ -290,6 +290,10 @@ export default function CheckoutPage() {
 
                 if (tx.status === "SUCCESS") {
                     setIsPolling(false);
+                    // Clear backend cart so the next purchase starts with a fresh cart.
+                    // Without this the old CHECKED_OUT cart lingers and the backend
+                    // raises a unique-constraint error when adding the same product again.
+                    if (userId) clearCartApi(userId).catch(() => {});
                     dispatch(clearCart());
                     setPendingOrderId(null);
                     setPendingShippingFee(null);

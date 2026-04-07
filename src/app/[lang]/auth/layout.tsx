@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Script from "next/script";
 import { ReactNode } from "react";
 import Logo from "@/../public/logo.png";
 import { COLORS } from "@/shared/styles/variables";
@@ -15,6 +16,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             className="relative min-h-screen flex flex-col px-5 sm:px-10 md:px-16 lg:px-24 xl:px-32 py-8"
             style={{ backgroundColor: COLORS.primary }}
         >
+            <Script
+                src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/auth/en_US/appleid.auth.js"
+                strategy="lazyOnload"
+            />
             {/* Logo */}
             <div className="mb-[30px] sm:mb-[20px] flex justify-center lg:justify-start">
                 <Image 

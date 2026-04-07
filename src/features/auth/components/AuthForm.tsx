@@ -307,7 +307,7 @@ export default function AuthForm() {
                 <div className="flex-1 h-px bg-gray-200" />
             </div>
 
-            <SocialButtons />
+            <SocialButtons onError={setApiError} />
         </div>
     );
 }

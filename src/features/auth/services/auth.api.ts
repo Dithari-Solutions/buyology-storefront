@@ -5,14 +5,15 @@ import type {
   SignInRequest,
   SignInResponse,
   SignUpRequest,
+  AppleSigninRequest,
 } from "@/features/auth/types";
 
 type HttpError = Error & { status?: number };
 
 // Normalize backend responses that use { statusCode, message, data }
 // instead of our expected { success, message, data } shape.
-function normalizeResponse<T>(data: any): ApiResponse<T> {
-  if ("success" in data) return data as ApiResponse<T>;
+function normalizeResponse<T>(data: { statusCode?: number; message?: string; data?: T; success?: boolean }): ApiResponse<T> {
+  if ("success" in data && typeof data.success === 'boolean') return data as ApiResponse<T>;
   const statusCode: number = data.statusCode ?? 200;
   return {
     success: statusCode < 400,
@@ -42,7 +43,7 @@ function errorResponse<T>(error: unknown): ApiResponse<T> {
 
 export async function signup(payload: SignUpRequest): Promise<ApiResponse<string>> {
   try {
-    const { data } = await apiClient.post<any>("/auth/signup", payload);
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/signup", payload);
     return normalizeResponse<string>(data);
   } catch (error) {
     return errorResponse<string>(error);
@@ -54,7 +55,7 @@ export async function signup(payload: SignUpRequest): Promise<ApiResponse<string
 
 export async function verifyOtp(payload: OtpVerifyRequest): Promise<ApiResponse<SignInResponse>> {
   try {
-    const { data } = await apiClient.post<any>("/auth/verify-otp", payload);
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/verify-otp", payload);
     return normalizeResponse<SignInResponse>(data);
   } catch (error) {
     return errorResponse<SignInResponse>(error);
@@ -67,7 +68,20 @@ export async function verifyOtp(payload: OtpVerifyRequest): Promise<ApiResponse<
 
 export async function signin(payload: SignInRequest): Promise<ApiResponse<SignInResponse>> {
   try {
-    const { data } = await apiClient.post<any>("/auth/signin", payload, {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/signin", payload, {
+      withCredentials: true,
+    });
+    return normalizeResponse<SignInResponse>(data);
+  } catch (error) {
+    return errorResponse<SignInResponse>(error);
+  }
+}
+
+// ── Apple Sign In ─────────────────────────────────────────────────────────────
+
+export async function appleSignin(payload: AppleSigninRequest): Promise<ApiResponse<SignInResponse>> {
+  try {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/apple/callback", payload, {
       withCredentials: true,
     });
     return normalizeResponse<SignInResponse>(data);
@@ -82,7 +96,7 @@ export async function signin(payload: SignInRequest): Promise<ApiResponse<SignIn
 
 export async function refreshAccessToken(): Promise<ApiResponse<SignInResponse>> {
   try {
-    const { data } = await apiClient.post<any>("/auth/refresh", undefined, {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/refresh", undefined, {
       withCredentials: true,
     });
     return normalizeResponse<SignInResponse>(data);
@@ -96,7 +110,7 @@ export async function refreshAccessToken(): Promise<ApiResponse<SignInResponse>>
 
 export async function logout(): Promise<ApiResponse<null>> {
   try {
-    const { data } = await apiClient.post<any>("/auth/logout", undefined, {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/logout", undefined, {
       withCredentials: true,
     });
     return normalizeResponse<null>(data);

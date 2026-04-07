@@ -112,6 +112,7 @@ export default function ProductCard({
   const [favBounce, setFavBounce] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [crossCountryError, setCrossCountryError] = useState<string | null>(null);
+  const [addToCartError, setAddToCartError] = useState<string | null>(null);
   const [pendingStoreId, setPendingStoreId] = useState<string>("");
   const [selectedStoreId, setSelectedStoreId] = useState<string | undefined>(storeId);
 
@@ -237,6 +238,9 @@ export default function ProductCard({
         setCrossCountryError(
           "You can only purchase products from stores in your selected country. Go to Profile → Country Settings to change your home country."
         );
+      } else {
+        setAddToCartError("Couldn't add to cart. Please try again.");
+        setTimeout(() => setAddToCartError(null), 4000);
       }
       return;
     }
@@ -338,6 +342,17 @@ export default function ProductCard({
               </button>
             </div>
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Add-to-cart generic error toast */}
+      {mounted && addToCartError && createPortal(
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[99999] flex items-center gap-3 bg-gray-900 text-white text-[13px] font-semibold px-5 py-3 rounded-full shadow-xl pointer-events-none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          {addToCartError}
         </div>,
         document.body
       )}
