@@ -14,17 +14,17 @@ const socials = [
 
 export default function SocialButtons({ onError }: { onError?: (msg: string | null) => void }) {
     const { handleAppleSignin } = useAppleSignin();
-const handleClick = async (provider?: string) => {
-    if (onError) onError(null);
-    if (provider === "apple") {
-        try {
-            await handleAppleSignin();
-        } catch (err) {
-            const message = err instanceof Error ? err.message : "Apple Sign In failed";
-            if (onError) onError(message);
-        }
-    } else {
-...
+
+    const handleClick = async (provider?: string) => {
+        if (onError) onError(null);
+        if (provider === "apple") {
+            try {
+                await handleAppleSignin();
+            } catch (err) {
+                const message = err instanceof Error ? err.message : "Apple Sign In failed";
+                if (onError) onError(message);
+            }
+        } else {
             // Other providers to be implemented
             console.log(`${provider} login not implemented yet`);
         }
