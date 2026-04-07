@@ -193,8 +193,8 @@ export default function CheckoutPage() {
 
     // Determine delivery method: EXPRESS if any item has quickDelivery, else REGULAR
     const deliveryMethod = cartItems.some((i) => i.quickDelivery)
-        ? ("EXPRESS_DELIVERY" as const)
-        : ("REGULAR_ORDER" as const);
+        ? ("EXPRESS" as const)
+        : ("REGULAR" as const);
 
     const [step, setStep] = useState<CheckoutStep>("shipping");
     const [shippingData, setShippingData] = useState<ShippingFormData | null>(null);

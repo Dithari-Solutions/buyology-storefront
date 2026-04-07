@@ -85,7 +85,7 @@ function OrderCard({ order, lang }: { order: OrderSummary; lang: string }) {
                             <circle cx="5.5" cy="18.5" r="2.5" />
                             <circle cx="18.5" cy="18.5" r="2.5" />
                         </svg>
-                        {order.deliveryMethod === "EXPRESS_DELIVERY" ? "Express delivery" : "Regular delivery"}
+                        {order.deliveryMethod === "EXPRESS" ? "Express delivery" : "Regular delivery"}
                     </span>
                     <span className="flex items-center gap-1">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -240,8 +240,8 @@ export default function OrdersPage() {
                                 className="border border-gray-200 rounded-xl px-3.5 py-2 text-[12px] text-gray-700 outline-none focus:border-[#402F75] appearance-none bg-white cursor-pointer pr-8 min-w-[160px]"
                             >
                                 <option value="">All Delivery Methods</option>
-                                <option value="EXPRESS_DELIVERY">Express delivery</option>
-                                <option value="REGULAR_ORDER">Regular delivery</option>
+                                <option value="EXPRESS">Express delivery</option>
+                                <option value="REGULAR">Regular delivery</option>
                             </select>
                             <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="6 9 12 15 18 9" />

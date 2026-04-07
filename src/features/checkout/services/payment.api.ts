@@ -11,7 +11,7 @@ export interface InitiatePaymentPayload {
     appOrderId?: string;
     cartId: string;
     addressId?: string;
-    deliveryMethod?: "EXPRESS_DELIVERY" | "REGULAR_ORDER";
+    deliveryMethod?: "EXPRESS" | "REGULAR";
     shippingFee?: number;
     methodType: "CARD" | "TABBY" | "TAMARA";
     amount: number;

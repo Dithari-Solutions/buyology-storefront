@@ -10,7 +10,7 @@ export type OrderStatus =
     | "CANCELLED"
     | "FAILED";
 
-export type DeliveryMethod = "EXPRESS_DELIVERY" | "REGULAR_ORDER";
+export type DeliveryMethod = "EXPRESS" | "REGULAR";
 
 export type ActorRole = "SYSTEM" | "ADMIN" | "COURIER";
 

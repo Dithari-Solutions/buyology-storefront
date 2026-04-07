@@ -145,10 +145,10 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
             .finally(() => setLoading(false));
     }, [userId, orderId]);
 
-    // Poll every 15 s while courier is active on an EXPRESS_DELIVERY order
+    // Poll every 15 s while courier is active on an EXPRESS order
     useEffect(() => {
         if (!userId || !order) return;
-        if (order.deliveryMethod !== "EXPRESS_DELIVERY") return;
+        if (order.deliveryMethod !== "EXPRESS") return;
         if (!COURIER_ACTIVE_STATUSES.includes(order.status)) return;
 
         const interval = setInterval(() => {
@@ -248,7 +248,7 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                         <circle cx="18.5" cy="18.5" r="2.5" />
                                     </svg>
                                     <span className="text-[11px] font-semibold text-gray-500">
-                                        {order.deliveryMethod === "EXPRESS_DELIVERY" ? "Express delivery" : "Regular delivery"}
+                                        {order.deliveryMethod === "EXPRESS" ? "Express delivery" : "Regular delivery"}
                                     </span>
                                 </div>
                             </div>
@@ -304,8 +304,8 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                 </div>
                             </div>
 
-                            {/* Courier live location (EXPRESS_DELIVERY only) */}
-                            {order.deliveryMethod === "EXPRESS_DELIVERY" && COURIER_ACTIVE_STATUSES.includes(order.status) && (() => {
+                            {/* Courier live location (EXPRESS only) */}
+                            {order.deliveryMethod === "EXPRESS" && COURIER_ACTIVE_STATUSES.includes(order.status) && (() => {
                                 const courierEvents = [...order.trackingHistory]
                                     .filter(e => e.actorRole === "COURIER" && e.latitude != null && e.longitude != null)
                                     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -363,8 +363,8 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                 );
                             })()}
 
-                            {/* Carrier tracking (REGULAR_ORDER only) */}
-                            {order.deliveryMethod === "REGULAR_ORDER" && order.trackingCode && (
+                            {/* Carrier tracking (REGULAR only) */}
+                            {order.deliveryMethod === "REGULAR" && order.trackingCode && (
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                     <h2 className="text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-2">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
