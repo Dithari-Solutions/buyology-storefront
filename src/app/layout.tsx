@@ -54,7 +54,7 @@ export default async function RootLayout({
     <html lang={lang} dir={dir}>
       <head>
         <Script
-          src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/auth/en_US/appleid.auth.js"
+          src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
           strategy="beforeInteractive"
         />
       </head>
