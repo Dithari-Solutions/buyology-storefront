@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         >
             <Script
                 src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/auth/en_US/appleid.auth.js"
-                strategy="lazyOnload"
+                strategy="afterInteractive"
             />
             {/* Logo */}
             <div className="mb-[30px] sm:mb-[20px] flex justify-center lg:justify-start">
