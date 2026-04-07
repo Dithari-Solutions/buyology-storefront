@@ -45,8 +45,7 @@ export const useAppleSignin = () => {
 
   const handleAppleSignin = async () => {
     if (!window.AppleID) {
-      console.error("AppleID JS library not loaded");
-      return;
+      throw new Error("Apple Sign In is currently unavailable. Please try again in a few seconds.");
     }
 
     try {

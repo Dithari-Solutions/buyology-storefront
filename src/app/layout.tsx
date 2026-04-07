@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { headers } from "next/headers";
 import Providers from "@/shared/components/Providers";
 import "./globals.css";
@@ -51,6 +52,12 @@ export default async function RootLayout({
 
   return (
     <html lang={lang} dir={dir}>
+      <head>
+        <Script
+          src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/auth/en_US/appleid.auth.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body
         className="antialiased bg-[#F7F7F7]"
       >
