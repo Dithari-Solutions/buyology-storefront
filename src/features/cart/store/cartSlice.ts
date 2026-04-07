@@ -195,6 +195,10 @@ const cartSlice = createSlice({
             }
         },
 
+        setShippingFee(state, action: PayloadAction<number>) {
+            state.shippingFee = action.payload;
+        },
+
         clearCart(state) {
             state.items = state.items.filter((i) => i.savedForLater);
             state.selectedIds = [];
@@ -364,6 +368,7 @@ export const {
     toggleSelectItem,
     saveForLater,
     moveToCart,
+    setShippingFee,
     clearCart,
     applyPromo,
     removePromo,

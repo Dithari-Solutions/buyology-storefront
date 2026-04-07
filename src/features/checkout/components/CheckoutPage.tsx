@@ -11,8 +11,10 @@ import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment, getTransaction } from "../services/payment.api";
-import { selectCartTotals, selectCartItems, selectCartShippingFee, clearCart } from "@/features/cart/store/cartSlice";
+import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee, clearCart } from "@/features/cart/store/cartSlice";
+import { checkoutCart } from "@/features/cart/services/cart.api";
 import { createOrder } from "@/features/orders/services/orders.api";
+import { selectUserCoords } from "@/features/location/store/locationSlice";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
 import {
     getProfile,
@@ -187,6 +189,7 @@ export default function CheckoutPage() {
     const totals = useSelector(selectCartTotals);
     const cartItems = useSelector(selectCartItems);
     const shippingFee = useSelector(selectCartShippingFee);
+    const userCoords = useSelector(selectUserCoords);
 
     // Determine delivery method: EXPRESS if any item has quickDelivery, else REGULAR
     const deliveryMethod = cartItems.some((i) => i.quickDelivery)
@@ -219,6 +222,33 @@ export default function CheckoutPage() {
                 // non-blocking — user can still fill form manually
             });
     }, [userId]);
+
+    // ── Refetch cart with coords on mount to get accurate shippingFee ─────────
+
+    useEffect(() => {
+        if (!userId) return;
+        // Use stored Redux coords if available; otherwise fall back to browser API
+        const fetchWithCoords = (coords?: { lat: number; lng: number }) => {
+            import("@/features/cart/services/cart.api").then(({ getCart }) => {
+                getCart(userId, coords).then((cart) => {
+                    if (cart.shippingFee != null) {
+                        dispatch(setShippingFee(cart.shippingFee));
+                    }
+                }).catch(() => {});
+            });
+        };
+
+        if (userCoords) {
+            fetchWithCoords(userCoords);
+        } else if (typeof navigator !== "undefined" && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => fetchWithCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                () => fetchWithCoords()
+            );
+        } else {
+            fetchWithCoords();
+        }
+    }, [userId, userCoords, dispatch]);
 
     // ── Save address from checkout ─────────────────────────────────────────────
 
@@ -319,24 +349,30 @@ export default function CheckoutPage() {
             if (!cartId) throw new Error("No active cart found. Please add items and try again.");
             if (!shippingData.addressId) throw new Error("Please select a delivery address.");
 
-            // Step 1 — Create order
+            // Step 1 — Checkout the cart (ACTIVE → CHECKED_OUT)
+            const checkedOutCart = await checkoutCart(userId);
+            // Use the server-returned shippingFee from the checkout response (most accurate)
+            const finalShippingFee = checkedOutCart.shippingFee ?? shippingFee;
+            dispatch(setShippingFee(finalShippingFee));
+
+            // Step 2 — Create order (cart must be CHECKED_OUT)
             const order = await createOrder(userId, {
                 cartId,
                 addressId: shippingData.addressId,
                 deliveryMethod,
-                shippingFee,
+                shippingFee: finalShippingFee,
                 couponCode: undefined,
             });
 
-            // Step 2 — Initiate payment
+            // Step 3 — Initiate payment
             const result = await initiatePayment({
                 appOrderId: order.id,
                 cartId,
                 addressId: shippingData.addressId,
                 deliveryMethod,
-                shippingFee,
+                shippingFee: finalShippingFee,
                 methodType: METHOD_MAP[paymentMethod],
-                amount: totals.total,
+                amount: parseFloat((totals.subtotal - totals.promoDiscount + finalShippingFee).toFixed(2)),
                 currency: cartCurrency,
                 customerId: userId,
                 customerEmail: profile?.email ?? shippingData.email,
