@@ -49,10 +49,17 @@ export const useAppleSignin = () => {
     }
 
     try {
+      const clientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID;
+      const redirectURI = process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI || (typeof window !== "undefined" ? window.location.origin : "");
+
+      if (!clientId) {
+        throw new Error("Apple Client ID is not configured. Please check your environment variables.");
+      }
+
       window.AppleID.auth.init({
-        clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID,
+        clientId,
         scope: "name email",
-        redirectURI: process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI || window.location.origin,
+        redirectURI,
         usePopup: true,
       });
 
