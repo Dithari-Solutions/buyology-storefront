@@ -28,6 +28,7 @@ export interface InitiatePaymentPayload {
     billingState?: string;
     billingCountry?: string;
     billingPostalCode?: string;
+    redirectionUrl?: string;
 }
 
 export async function initiatePayment(

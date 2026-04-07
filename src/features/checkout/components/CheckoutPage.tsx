@@ -410,6 +410,7 @@ export default function CheckoutPage() {
                 billingCity: shippingData.city || undefined,
                 billingCountry: shippingData.country || undefined,
                 billingPostalCode: shippingData.postalCode || undefined,
+                redirectionUrl: `${window.location.origin}/${lang}/orders/${orderId}`,
             });
 
             // All methods use Unified Checkout — store transactionId and redirect
