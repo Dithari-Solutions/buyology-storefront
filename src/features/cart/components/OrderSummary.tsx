@@ -131,10 +131,6 @@ export default function OrderSummary() {
                     )}
                 </div>
 
-                <div className="flex justify-between items-center">
-                    <span className="text-gray-500">{t("orderSummary.estimatedTax")}</span>
-                    <span className="font-semibold text-gray-800">{currency} {totals.tax.toFixed(2)}</span>
-                </div>
             </div>
 
             {/* ── Divider ── */}

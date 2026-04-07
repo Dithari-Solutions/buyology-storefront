@@ -232,9 +232,11 @@ export default function ProductCard({
     if (addToCartThunk.rejected.match(result)) {
       const payload = result.payload as { tempId: string; message?: string } | undefined;
       const msg = payload?.message ?? "";
-      if (msg.toLowerCase().includes("country")) {
+      if (msg === "COUNTRY_RESTRICTION" || msg.toLowerCase().includes("country")) {
         setPendingStoreId(resolvedStoreId);
-        setCrossCountryError(msg);
+        setCrossCountryError(
+          "You can only purchase products from stores in your selected country. Go to Profile → Country Settings to change your home country."
+        );
       }
       return;
     }

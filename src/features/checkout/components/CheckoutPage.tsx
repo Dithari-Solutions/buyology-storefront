@@ -11,7 +11,8 @@ import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment, getTransaction } from "../services/payment.api";
-import { selectCartTotals, clearCart } from "@/features/cart/store/cartSlice";
+import { selectCartTotals, selectCartItems, selectCartShippingFee, clearCart } from "@/features/cart/store/cartSlice";
+import { createOrder } from "@/features/orders/services/orders.api";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
 import {
     getProfile,
@@ -182,7 +183,15 @@ export default function CheckoutPage() {
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
     const cartId = useSelector((state: RootState) => state.cart.cartId);
+    const cartCurrency = useSelector((state: RootState) => state.cart.currency) ?? "AED";
     const totals = useSelector(selectCartTotals);
+    const cartItems = useSelector(selectCartItems);
+    const shippingFee = useSelector(selectCartShippingFee);
+
+    // Determine delivery method: EXPRESS if any item has quickDelivery, else REGULAR
+    const deliveryMethod = cartItems.some((i) => i.quickDelivery)
+        ? ("EXPRESS_DELIVERY" as const)
+        : ("REGULAR_ORDER" as const);
 
     const [step, setStep] = useState<CheckoutStep>("shipping");
     const [shippingData, setShippingData] = useState<ShippingFormData | null>(null);
@@ -308,24 +317,36 @@ export default function CheckoutPage() {
 
         try {
             if (!cartId) throw new Error("No active cart found. Please add items and try again.");
+            if (!shippingData.addressId) throw new Error("Please select a delivery address.");
 
-            // Initiate payment
-            const result = await initiatePayment({
+            // Step 1 — Create order
+            const order = await createOrder(userId, {
                 cartId,
                 addressId: shippingData.addressId,
-                shippingFee: totals.shipping,
+                deliveryMethod,
+                shippingFee,
+                couponCode: undefined,
+            });
+
+            // Step 2 — Initiate payment
+            const result = await initiatePayment({
+                appOrderId: order.id,
+                cartId,
+                addressId: shippingData.addressId,
+                deliveryMethod,
+                shippingFee,
                 methodType: METHOD_MAP[paymentMethod],
                 amount: totals.total,
-                currency: "AED",
+                currency: cartCurrency,
                 customerId: userId,
                 customerEmail: profile?.email ?? shippingData.email,
                 customerPhone: shippingData.phone || undefined,
                 billingName: `${shippingData.firstName} ${shippingData.lastName}`.trim(),
-                street: shippingData.streetAddress || undefined,
-                apartment: shippingData.apartment || undefined,
-                city: shippingData.city || undefined,
-                country: shippingData.country || undefined,
-                postalCode: shippingData.postalCode || undefined,
+                billingStreet: shippingData.streetAddress || undefined,
+                billingApartment: shippingData.apartment || undefined,
+                billingCity: shippingData.city || undefined,
+                billingCountry: shippingData.country || undefined,
+                billingPostalCode: shippingData.postalCode || undefined,
             });
 
             // All methods use Unified Checkout — store transactionId and redirect
@@ -369,6 +390,33 @@ export default function CheckoutPage() {
                 ) : (
                     <>
                         <StepIndicator current={step} />
+
+                        {/* Incomplete profile banner */}
+                        {profile && !profile.paymentReady && (
+                            <div className="mb-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 flex items-start gap-3">
+                                <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                    <line x1="12" y1="9" x2="12" y2="13" />
+                                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                                </svg>
+                                <div className="flex-1">
+                                    <p className="text-[13px] font-semibold text-yellow-800">
+                                        Complete your profile before checkout
+                                    </p>
+                                    {profile.missingFields.length > 0 && (
+                                        <p className="text-[12px] text-yellow-700 mt-0.5">
+                                            Missing: {profile.missingFields.join(", ")}
+                                        </p>
+                                    )}
+                                    <a
+                                        href={`/${lang}/profile`}
+                                        className="mt-1 inline-block text-[12px] font-bold text-yellow-700 hover:text-yellow-900 underline"
+                                    >
+                                        Go to Profile →
+                                    </a>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Payment error banner */}
                         {paymentError && (

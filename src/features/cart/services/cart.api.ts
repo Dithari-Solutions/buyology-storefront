@@ -1,3 +1,4 @@
+import axios from "axios";
 import { apiClient } from "@/shared/lib/apiClient";
 import type { AddToCartPayload, ApiCartResponse } from "../types";
 
@@ -5,6 +6,14 @@ interface ApiEnvelope<T> {
     success: boolean;
     message: string;
     data: T | null;
+}
+
+/** Thrown when the store's country does not match the user's selectedCountryCode */
+export class CountryRestrictionError extends Error {
+    constructor() {
+        super("COUNTRY_RESTRICTION");
+        this.name = "CountryRestrictionError";
+    }
 }
 
 export async function getCart(
@@ -20,12 +29,19 @@ export async function getCart(
 }
 
 export async function addItemToCart(authCredentialId: string, payload: AddToCartPayload): Promise<ApiCartResponse> {
-    const { data } = await apiClient.post<ApiEnvelope<ApiCartResponse>>(
-        `/api/cart/${authCredentialId}/items`,
-        payload
-    );
-    if (!data.data) throw new Error(data.message);
-    return data.data;
+    try {
+        const { data } = await apiClient.post<ApiEnvelope<ApiCartResponse>>(
+            `/api/cart/${authCredentialId}/items`,
+            payload
+        );
+        if (!data.data) throw new Error(data.message);
+        return data.data;
+    } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 403) {
+            throw new CountryRestrictionError();
+        }
+        throw err;
+    }
 }
 
 export async function updateCartItemQuantity(

@@ -48,8 +48,8 @@ export interface CartState {
     /** IDs of items the user has checked (selected for order summary) */
     selectedIds: string[];
     promo: PromoState;
-    shippingFree: boolean;
-    taxRate: number;
+    /** Delivery fee returned by the backend — 0 until cart is loaded */
+    shippingFee: number;
     /** API cart UUID */
     cartId: string | null;
     /** ISO 3166-1 alpha-3 — null until first item is added */
@@ -65,7 +65,6 @@ export interface CartTotals {
     subtotal: number;
     promoDiscount: number;
     shipping: number;
-    tax: number;
     total: number;
     selectedItemCount: number;
     selectedLineCount: number;
@@ -114,6 +113,8 @@ export interface ApiCartResponse {
     authCredentialId: string;
     status: "ACTIVE" | "CHECKED_OUT" | "ABANDONED";
     totalPrice: number;
+    /** Delivery fee computed by the backend — always display this value, never hardcode */
+    shippingFee: number | null;
     /** ISO 3166-1 alpha-3 — null until first item is added */
     countryCode: string | null;
     /** ISO 4217 currency code — null until first item is added */

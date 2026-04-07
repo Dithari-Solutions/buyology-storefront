@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import type { RootState } from "@/store";
 import { selectCartItems, selectSelectedIds, selectCartTotals } from "@/features/cart/store/cartSlice";
 
 export default function CheckoutSummary() {
@@ -10,6 +11,9 @@ export default function CheckoutSummary() {
     const allItems = useSelector(selectCartItems);
     const selectedIds = useSelector(selectSelectedIds);
     const totals = useSelector(selectCartTotals);
+    const currency = useSelector((state: RootState) => state.cart.currency) ?? "AED";
+    const hasExpressItem = allItems.some((i) => i.quickDelivery);
+    const deliveryEstimate = hasExpressItem ? "Within 30 minutes" : "2–3 business days";
 
     const items = allItems.filter((i) => selectedIds.includes(i.id));
 
@@ -57,7 +61,7 @@ export default function CheckoutSummary() {
 
                         {/* Price */}
                         <span className="text-[13px] font-bold text-gray-800 flex-shrink-0">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            {currency} {(item.price * item.quantity).toFixed(2)}
                         </span>
                     </div>
                 ))}
@@ -73,19 +77,15 @@ export default function CheckoutSummary() {
             <div className="flex flex-col gap-2.5 text-[13px]">
                 <div className="flex justify-between">
                     <span className="text-gray-500">{t("summary.subtotal")}</span>
-                    <span className="font-semibold text-gray-800">${totals.subtotal.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-800">{currency} {totals.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                     <span className="text-gray-500">{t("summary.shipping")}</span>
                     {totals.shipping === 0 ? (
                         <span className="text-green-500 font-bold">{t("summary.free")}</span>
                     ) : (
-                        <span className="font-semibold text-gray-800">${totals.shipping.toFixed(2)}</span>
+                        <span className="font-semibold text-gray-800">{currency} {totals.shipping.toFixed(2)}</span>
                     )}
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-gray-500">{t("summary.tax")}</span>
-                    <span className="font-semibold text-gray-800">${totals.tax.toFixed(2)}</span>
                 </div>
             </div>
 
@@ -94,7 +94,7 @@ export default function CheckoutSummary() {
             {/* Total */}
             <div className="flex items-end justify-between mb-5">
                 <span className="text-[16px] font-bold text-gray-900">{t("summary.total")}</span>
-                <span className="text-[26px] font-bold text-[#402F75] leading-none">${totals.total.toFixed(2)}</span>
+                <span className="text-[26px] font-bold text-[#402F75] leading-none">{currency} {totals.total.toFixed(2)}</span>
             </div>
 
             {/* Info notes */}
@@ -103,13 +103,13 @@ export default function CheckoutSummary() {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    {t("summary.freeShipping")}
+                    {hasExpressItem ? "Express delivery" : "Standard delivery"}
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-gray-500">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    {t("summary.estimatedDelivery")}
+                    {deliveryEstimate}
                 </div>
             </div>
         </aside>

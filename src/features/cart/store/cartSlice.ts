@@ -1,13 +1,14 @@
 import { createSlice, createSelector, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 import type { AddToCartPayload, ApiCartItem, ApiCartResponse, CartItemMeta, CartState, CartTotals } from "../types";
-import { FLAT_SHIPPING_COST, TAX_RATE, VALID_PROMO_CODES } from "../constants";
+import { VALID_PROMO_CODES } from "../constants";
 import {
     addItemToCart,
     clearCartApi,
     getCart,
     removeCartItem,
     updateCartItemQuantity,
+    CountryRestrictionError,
 } from "../services/cart.api";
 import { getProductById, getPrimaryImage } from "@/features/product/services/productService";
 import type { Lang } from "@/config/pathSlugs";
@@ -18,8 +19,7 @@ const initialState: CartState = {
     items: [],
     selectedIds: [],
     promo: { code: "", discount: 0, applied: false, error: null },
-    shippingFree: true,
-    taxRate: TAX_RATE,
+    shippingFee: 0,
     cartId: null,
     countryCode: null,
     currency: null,
@@ -78,6 +78,9 @@ export const addToCartThunk = createAsyncThunk(
             const result = await addItemToCart(arg.userId, arg.payload);
             return { result, tempId: arg.tempId };
         } catch (err) {
+            if (err instanceof CountryRestrictionError) {
+                return rejectWithValue({ tempId: arg.tempId, message: "COUNTRY_RESTRICTION" });
+            }
             const message = err instanceof Error ? err.message : "Failed to add item to cart";
             return rejectWithValue({ tempId: arg.tempId, message });
         }
@@ -199,6 +202,7 @@ const cartSlice = createSlice({
             state.countryCode = null;
             state.currency = null;
             state.cartId = null;
+            state.shippingFee = 0;
         },
 
         applyPromo(state, action: PayloadAction<string>) {
@@ -232,6 +236,7 @@ const cartSlice = createSlice({
             state.cartId = apiCart.id;
             state.countryCode = apiCart.countryCode;
             state.currency = apiCart.currency;
+            state.shippingFee = apiCart.shippingFee ?? 0;
             state.items = mergeApiItems(state.items, apiCart.items);
             state.selectedIds = state.items.map((i) => i.id);
             state.loading.cart = false;
@@ -286,6 +291,7 @@ const cartSlice = createSlice({
             state.cartId = result.id;
             state.countryCode = result.countryCode;
             state.currency = result.currency;
+            state.shippingFee = result.shippingFee ?? 0;
             const { payload: addPayload } = action.meta.arg as AddToCartThunkArg;
             const apiItem = result.items.find((i) => i.productId === addPayload.productId);
             if (!apiItem) return;
@@ -384,13 +390,14 @@ export const selectCartCurrency = (state: RootState) => state.cart.currency;
 
 export const selectCartCountryCode = (state: RootState) => state.cart.countryCode;
 
+export const selectCartShippingFee = (state: RootState) => state.cart.shippingFee;
+
 export const selectCartTotals = createSelector(
     selectCartItems,
     selectSelectedIds,
     (state: RootState) => state.cart.promo,
-    (state: RootState) => state.cart.shippingFree,
-    (state: RootState) => state.cart.taxRate,
-    (items, selectedIds, promo, shippingFree, taxRate): CartTotals => {
+    (state: RootState) => state.cart.shippingFee,
+    (items, selectedIds, promo, shippingFee): CartTotals => {
         const selectedLines = items.filter((i) => selectedIds.includes(i.id));
 
         const subtotal = selectedLines.reduce(
@@ -401,9 +408,8 @@ export const selectCartTotals = createSelector(
         const promoDiscount = promo.applied ? promo.discount : 0;
         const discountedSubtotal = Math.max(0, subtotal - promoDiscount);
 
-        const shipping = shippingFree ? 0 : FLAT_SHIPPING_COST;
-        const tax = parseFloat((discountedSubtotal * taxRate).toFixed(2));
-        const total = parseFloat((discountedSubtotal + shipping + tax).toFixed(2));
+        const shipping = shippingFee;
+        const total = parseFloat((discountedSubtotal + shipping).toFixed(2));
 
         const selectedItemCount = selectedLines.reduce((acc, i) => acc + i.quantity, 0);
 
@@ -411,7 +417,6 @@ export const selectCartTotals = createSelector(
             subtotal,
             promoDiscount,
             shipping,
-            tax,
             total,
             selectedItemCount,
             selectedLineCount: selectedLines.length,

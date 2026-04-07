@@ -74,10 +74,21 @@ export interface OrderDetail extends OrderSummary {
     shippingFee: number;
     discount: number;
     couponCode: string | null;
+    /** Human-readable estimate, e.g. "Within 30 minutes" or "2–3 business days" */
+    estimatedDeliveryTime: string | null;
     shippedAt: string | null;
     cancelledAt: string | null;
     items: OrderItem[];
     trackingHistory: TrackingEvent[];
+}
+
+export interface CreateOrderPayload {
+    cartId: string;
+    addressId: string;
+    deliveryMethod: DeliveryMethod;
+    shippingFee?: number;
+    couponCode?: string;
+    notes?: string;
 }
 
 export interface PaginatedOrders {
