@@ -217,7 +217,7 @@ export default function IntroScreen() {
           </div>
 
           {/* ── SERVICES GRID (scrollable on mobile) ── */}
-          <div className="relative z-10 w-full max-w-lg flex-1 min-h-0 overflow-y-auto px-6 py-4">
+          <div className="relative z-10 w-full max-w-lg flex-1 min-h-0 overflow-y-auto px-6 py-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

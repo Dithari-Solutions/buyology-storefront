@@ -209,6 +209,12 @@ export default function CheckoutPage() {
     const [isPolling, setIsPolling] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
 
+    // Track the order created in this checkout session.
+    // On payment retry we skip checkoutCart + createOrder (both already done)
+    // and go straight to initiatePayment with the existing orderId.
+    const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+    const [pendingShippingFee, setPendingShippingFee] = useState<number | null>(null);
+
     // ── Load profile + addresses on mount ─────────────────────────────────────
 
     useEffect(() => {
@@ -285,6 +291,8 @@ export default function CheckoutPage() {
                 if (tx.status === "SUCCESS") {
                     setIsPolling(false);
                     dispatch(clearCart());
+                    setPendingOrderId(null);
+                    setPendingShippingFee(null);
                     setOrderPlaced(true);
                 } else if (tx.status === "FAILED") {
                     setIsPolling(false);
@@ -349,24 +357,39 @@ export default function CheckoutPage() {
             if (!cartId) throw new Error("No active cart found. Please add items and try again.");
             if (!shippingData.addressId) throw new Error("Please select a delivery address.");
 
-            // Step 1 — Checkout the cart (ACTIVE → CHECKED_OUT)
-            const checkedOutCart = await checkoutCart(userId);
-            // Use the server-returned shippingFee from the checkout response (most accurate)
-            const finalShippingFee = checkedOutCart.shippingFee ?? shippingFee;
-            dispatch(setShippingFee(finalShippingFee));
+            let finalShippingFee: number;
+            let orderId: string;
 
-            // Step 2 — Create order (cart must be CHECKED_OUT)
-            const order = await createOrder(userId, {
-                cartId,
-                addressId: shippingData.addressId,
-                deliveryMethod,
-                shippingFee: finalShippingFee,
-                couponCode: undefined,
-            });
+            if (pendingOrderId && pendingShippingFee != null) {
+                // ── Retry path: order already created, skip checkout + order creation ──
+                finalShippingFee = pendingShippingFee;
+                orderId = pendingOrderId;
+            } else {
+                // ── First attempt: checkout cart then create order ──
+
+                // Step 1 — Checkout the cart (ACTIVE → CHECKED_OUT)
+                const checkedOutCart = await checkoutCart(userId);
+                finalShippingFee = checkedOutCart.shippingFee ?? shippingFee;
+                dispatch(setShippingFee(finalShippingFee));
+
+                // Step 2 — Create order (cart must be CHECKED_OUT)
+                const order = await createOrder(userId, {
+                    cartId,
+                    addressId: shippingData.addressId,
+                    deliveryMethod,
+                    shippingFee: finalShippingFee,
+                    couponCode: undefined,
+                });
+                orderId = order.id;
+
+                // Persist so retries reuse the same order
+                setPendingOrderId(order.id);
+                setPendingShippingFee(finalShippingFee);
+            }
 
             // Step 3 — Initiate payment
             const result = await initiatePayment({
-                appOrderId: order.id,
+                appOrderId: orderId,
                 cartId,
                 addressId: shippingData.addressId,
                 deliveryMethod,
