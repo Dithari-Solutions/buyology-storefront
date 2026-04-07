@@ -52,6 +52,7 @@ export default function SignupGate() {
   }, [isAuthenticated]);
 
   function goToAuth(mode: "register" | "signin") {
+    setVisible(false);
     router.push(`/${lang}/${PATH_SLUGS.auth[lang]}?mode=${mode}`);
   }
 

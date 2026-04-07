@@ -117,6 +117,19 @@ export default function IntroScreen() {
     setMounted(true);
   }, []);
 
+  // Lock body scroll while intro is visible
+  useEffect(() => {
+    if (!mounted) return;
+    if (visible) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mounted, visible]);
+
   useEffect(() => {
     if (!mounted) return;
     const start = Date.now();
@@ -152,7 +165,7 @@ export default function IntroScreen() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.03 }}
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-          className="fixed inset-0 z-[99999] flex flex-col items-center justify-between overflow-hidden py-10 px-6"
+          className="fixed inset-0 z-[99999] flex flex-col items-center overflow-hidden"
           style={{ background: "linear-gradient(145deg, #0f0825 0%, #2a1a5e 45%, #1a0f3c 100%)" }}
         >
           {/* Background orbs */}
@@ -169,8 +182,8 @@ export default function IntroScreen() {
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
           />
 
-          {/* ── BRAND SECTION ── */}
-          <div className="relative z-10 flex flex-col items-center text-center">
+          {/* ── BRAND SECTION (fixed height, never shrinks) ── */}
+          <div className="relative z-10 flex flex-col items-center text-center flex-shrink-0 pt-10 px-6">
             <motion.div
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -188,7 +201,7 @@ export default function IntroScreen() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.2 }}
-              className="text-[38px] sm:text-[46px] font-extrabold text-white tracking-tight leading-none mb-1.5"
+              className="text-[34px] sm:text-[46px] font-extrabold text-white tracking-tight leading-none mb-1.5"
             >
               Buyology
             </motion.h1>
@@ -197,14 +210,14 @@ export default function IntroScreen() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.35 }}
-              className="text-[14px] sm:text-[15px] text-white/60 font-medium"
+              className="text-[13px] sm:text-[15px] text-white/60 font-medium"
             >
               Your all-in-one local tech platform
             </motion.p>
           </div>
 
-          {/* ── SERVICES GRID ── */}
-          <div className="relative z-10 w-full max-w-lg">
+          {/* ── SERVICES GRID (scrollable on mobile) ── */}
+          <div className="relative z-10 w-full max-w-lg flex-1 min-h-0 overflow-y-auto px-6 py-4">
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -268,12 +281,13 @@ export default function IntroScreen() {
             </div>
           </div>
 
-          {/* ── BOTTOM: progress + skip ── */}
+          {/* ── BOTTOM: progress + skip (always pinned, never pushed out) ── */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 1.1 }}
-            className="relative z-10 flex flex-col items-center gap-3 w-full"
+            className="relative z-10 flex-shrink-0 flex flex-col items-center gap-3 w-full pb-8 pt-3 px-6"
+            style={{ background: "linear-gradient(to top, rgba(15,8,37,0.95) 60%, transparent)" }}
           >
             <div className="w-full max-w-[180px] h-[3px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.12)" }}>
               <div
@@ -284,7 +298,7 @@ export default function IntroScreen() {
 
             <button
               onClick={() => setVisible(false)}
-              className="flex items-center gap-1.5 text-[12px] font-semibold text-white/45 hover:text-white transition-colors cursor-pointer group"
+              className="flex items-center gap-1.5 text-[13px] font-semibold text-white/60 hover:text-white transition-colors cursor-pointer group py-2 px-4"
             >
               Skip intro
               <svg
