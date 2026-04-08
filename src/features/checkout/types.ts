@@ -42,7 +42,7 @@ export interface TransactionResponse {
     amountCents: number;
     currency: string;
     status: PaymentStatus;
-    providerTransactionId: string | null;
+    paymobTransactionId: string | null;
     failureReason: string | null;
     failureCode: string | null;
     createdAt: string;

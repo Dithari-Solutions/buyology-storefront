@@ -205,8 +205,6 @@ export default function CheckoutPage() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
 
-    // Payment state
-    const [isPolling, setIsPolling] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
 
     // Track the order created in this checkout session.
@@ -269,79 +267,6 @@ export default function CheckoutPage() {
         });
         return created;
     }
-
-    // ── Polling ────────────────────────────────────────────────────────────────
-
-    const pollTransactionStatus = useCallback(
-        async (transactionId: string, attempts = 0) => {
-            if (attempts >= MAX_POLL_ATTEMPTS) {
-                setIsPolling(false);
-                setPaymentError(
-                    t("payment.error.timeout", {
-                        defaultValue:
-                            "Payment confirmation is taking longer than expected. Please check your order history or contact support.",
-                    })
-                );
-                return;
-            }
-
-            try {
-                const tx = await getTransaction(transactionId);
-
-                if (tx.status === "SUCCESS") {
-                    setIsPolling(false);
-                    // Clear backend cart so the next purchase starts with a fresh cart.
-                    // Without this the old CHECKED_OUT cart lingers and the backend
-                    // raises a unique-constraint error when adding the same product again.
-                    if (userId) clearCartApi(userId).catch(() => {});
-                    dispatch(clearCart());
-                    setPendingOrderId(null);
-                    setPendingShippingFee(null);
-                    setOrderPlaced(true);
-                } else if (tx.status === "FAILED") {
-                    setIsPolling(false);
-                    setPaymentError(
-                        t("payment.error.failed", {
-                            defaultValue: "Payment was declined. Please try a different payment method.",
-                        })
-                    );
-                } else if (tx.status === "CANCELLED") {
-                    setIsPolling(false);
-                    setPaymentError(
-                        t("payment.error.cancelled", {
-                            defaultValue: "Payment was cancelled. Please try again.",
-                        })
-                    );
-                } else {
-                    // PENDING or PROCESSING — keep polling
-                    setTimeout(
-                        () => pollTransactionStatus(transactionId, attempts + 1),
-                        POLL_INTERVAL_MS
-                    );
-                }
-            } catch {
-                // Network hiccup — retry
-                setTimeout(
-                    () => pollTransactionStatus(transactionId, attempts + 1),
-                    POLL_INTERVAL_MS
-                );
-            }
-        },
-        [dispatch, t]
-    );
-
-    // ── Handle BNPL return after redirect ─────────────────────────────────────
-
-    useEffect(() => {
-        const pendingTxId = sessionStorage.getItem(PENDING_TX_KEY);
-        if (pendingTxId) {
-            sessionStorage.removeItem(PENDING_TX_KEY);
-            setIsPolling(true);
-            setStep("payment");
-            pollTransactionStatus(pendingTxId);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -410,7 +335,7 @@ export default function CheckoutPage() {
                 billingCity: shippingData.city || undefined,
                 billingCountry: shippingData.country || undefined,
                 billingPostalCode: shippingData.postalCode || undefined,
-                redirectionUrl: `${window.location.origin}/${lang}/orders/${orderId}`,
+                redirectionUrl: `${window.location.origin}/${lang}/payment/callback?orderId=${orderId}`,
             });
 
             // All methods use Unified Checkout — store transactionId and redirect

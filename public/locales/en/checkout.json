@@ -54,7 +54,22 @@
             "label": "Secure Checkout",
             "description": "Your payment info is encrypted and secure. We never store your card details."
         },
-        "secureNote": "Your payment information is encrypted and secure. We never store your card details."
+        "secureNote": "Your payment information is encrypted and secure. We never store your card details.",
+        "processing": "Processing your payment...",
+        "processing_desc": "We're verifying your transaction. Please do not close this window or go back.",
+        "success": "Payment Successful!",
+        "success_desc": "Thank you for your order. We've received your payment and are processing your order.",
+        "view_order": "View Order",
+        "failed": "Payment Failed",
+        "failed_desc": "There was an issue processing your payment. Please try again.",
+        "back_to_checkout": "Back to Checkout",
+        "order_history": "Order History",
+        "error": {
+            "timeout": "Payment confirmation is taking longer than expected. Please check your order history or contact support.",
+            "failed": "Payment was declined. Please try a different payment method.",
+            "cancelled": "Payment was cancelled. Please try again.",
+            "invalid_session": "Invalid payment session."
+        }
     },
     "summary": {
         "heading": "Order Summary",
