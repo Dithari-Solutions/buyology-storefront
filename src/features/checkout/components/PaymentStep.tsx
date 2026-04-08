@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import type { RootState } from "@/store";
 import { selectCartTotals } from "@/features/cart/store/cartSlice";
 import type { ShippingFormData, PaymentMethod } from "../types";
 
