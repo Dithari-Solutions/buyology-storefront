@@ -157,8 +157,8 @@ export default function CheckoutPage() {
     const shippingFee = useSelector(selectCartShippingFee);
     const userCoords = useSelector(selectUserCoords);
 
-    // Determine delivery method: EXPRESS if any item has quickDelivery, else REGULAR
-    const deliveryMethod = cartItems.some((i) => i.quickDelivery)
+    // Determine delivery method: EXPRESS if any item has quickDelivery AND coordinates are available, else REGULAR
+    const deliveryMethod = (cartItems.some((i) => i.quickDelivery) && shippingData?.latitude != null && shippingData?.longitude != null)
         ? ("EXPRESS" as const)
         : ("REGULAR" as const);
 
@@ -414,6 +414,7 @@ export default function CheckoutPage() {
                         {step === "payment" && shippingData && (
                             <PaymentStep
                                 shipping={shippingData}
+                                deliveryMethod={deliveryMethod}
                                 onEdit={() => setStep("shipping")}
                                 onPlaceOrder={handlePlaceOrder}
                                 isSubmitting={isSubmitting}

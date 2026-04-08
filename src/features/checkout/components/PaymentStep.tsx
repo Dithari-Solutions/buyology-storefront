@@ -55,6 +55,7 @@ const COUNTRY_NAMES: Record<string, string> = {
 
 interface PaymentStepProps {
     shipping: ShippingFormData;
+    deliveryMethod: "EXPRESS" | "REGULAR";
     onEdit: () => void;
     onPlaceOrder: (paymentMethod: PaymentMethod) => void;
     isSubmitting?: boolean;
@@ -62,11 +63,15 @@ interface PaymentStepProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitting }: PaymentStepProps) {
+export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceOrder, isSubmitting }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
     const [selected, setSelected] = useState<PaymentMethod>("card");
     const totals = useSelector(selectCartTotals);
+    const cartItems = useSelector((state: RootState) => state.cart.items);
     const total = totals.total;
+
+    const hasQuickDeliveryItems = cartItems.some((i) => i.quickDelivery);
+    const expressUnavailable = hasQuickDeliveryItems && deliveryMethod === "REGULAR";
 
     const countryName = COUNTRY_NAMES[shipping.country] ?? shipping.country;
 
@@ -118,6 +123,36 @@ export default function PaymentStep({ shipping, onEdit, onPlaceOrder, isSubmitti
                             </p>
                             {shipping.email && (
                                 <p className="text-[12px] text-gray-400 mt-0.5">{shipping.email}{shipping.phone && ` · ${shipping.phone}`}</p>
+                            )}
+                            
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                                    deliveryMethod === "EXPRESS" 
+                                        ? "bg-green-50 text-green-700 border-green-100" 
+                                        : "bg-gray-50 text-gray-600 border-gray-100"
+                                }`}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="1" y="3" width="15" height="13" rx="1" />
+                                        <path d="M16 8h4l3 3v5h-7V8z" />
+                                        <circle cx="5.5" cy="18.5" r="2.5" />
+                                        <circle cx="18.5" cy="18.5" r="2.5" />
+                                    </svg>
+                                    {deliveryMethod === "EXPRESS" ? "Express Delivery" : "Regular Delivery"}
+                                </span>
+                            </div>
+
+                            {expressUnavailable && (
+                                <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start gap-2.5">
+                                    <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="12" />
+                                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                                    </svg>
+                                    <p className="text-[11px] text-amber-700 leading-normal">
+                                        <strong>Express unavailable:</strong> You have quick-delivery items, but this address has no map coordinates. Standard delivery will be used. 
+                                        <button onClick={onEdit} className="ml-1 font-bold underline hover:text-amber-900 cursor-pointer">Add location pin</button>
+                                    </p>
+                                </div>
                             )}
                         </div>
                     </div>

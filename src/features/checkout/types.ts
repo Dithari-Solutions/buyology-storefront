@@ -10,6 +10,8 @@ export interface ShippingFormData {
     postalCode: string;
     saveInfo: boolean;
     addressId?: string;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 export type PaymentMethod = "card" | "tabby" | "tamara";

@@ -6,6 +6,9 @@ import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import type { Address, AddressLabel, CreateAddressPayload } from "../types";
 import { getAddresses, createAddress, deleteAddress, setDefaultAddress } from "../services/profile.api";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(() => import("@/features/map/components/LocationPicker"), { ssr: false });
 
 const COUNTRIES = [
     { code: "AE", name: "United Arab Emirates" },
@@ -40,6 +43,8 @@ const EMPTY_FORM: CreateAddressPayload = {
     country: "AE",
     postalCode: "",
     isDefault: false,
+    latitude: null,
+    longitude: null,
 };
 
 function AddressForm({
@@ -106,6 +111,19 @@ function AddressForm({
                     ))}
                 </div>
             </div>
+
+            {/* Location Picker */}
+            <LocationPicker
+                initialCoords={
+                    form.latitude && form.longitude
+                        ? { lat: form.latitude, lng: form.longitude }
+                        : undefined
+                }
+                onChange={(coords) => {
+                    setField("latitude", coords.lat);
+                    setField("longitude", coords.lng);
+                }}
+            />
 
             {/* Name row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -232,6 +250,14 @@ function AddressCard({
                 {address.isDefault && (
                     <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#EDE9FF] text-[#402F75]">
                         Default
+                    </span>
+                )}
+                {address.latitude != null && address.longitude != null && (
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 flex items-center gap-1">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Express Ready
                     </span>
                 )}
             </div>

@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShippingFormData } from "../types";
 import type { Address, CreateAddressPayload, AddressLabel } from "@/features/profile/types";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(() => import("@/features/map/components/LocationPicker"), { ssr: false });
 
 const COUNTRIES = [
     { code: "AE", name: "United Arab Emirates" },
@@ -38,6 +41,8 @@ const EMPTY_ADDRESS_FORM: CreateAddressPayload = {
     country: "AE",
     postalCode: "",
     isDefault: false,
+    latitude: null,
+    longitude: null,
 };
 
 export interface ShippingStepProps {
@@ -140,6 +145,8 @@ export default function ShippingStep({
                     postalCode: ("postalCode" in addr ? addr.postalCode : addrForm.postalCode) ?? "",
                     saveInfo: saveForLater,
                     addressId: undefined,
+                    latitude: "latitude" in addr ? addr.latitude : addrForm.latitude,
+                    longitude: "longitude" in addr ? addr.longitude : addrForm.longitude,
                 });
             } catch (err) {
                 setSaveError(err instanceof Error ? err.message : "Failed to save address.");
@@ -161,6 +168,8 @@ export default function ShippingStep({
                 postalCode: selected.postalCode ?? "",
                 saveInfo: false,
                 addressId: selected.id,
+                latitude: selected.latitude,
+                longitude: selected.longitude,
             });
         }
     }
@@ -286,6 +295,19 @@ export default function ShippingStep({
                                 ))}
                             </div>
                         </div>
+
+                        {/* Location Picker */}
+                        <LocationPicker
+                            initialCoords={
+                                addrForm.latitude && addrForm.longitude
+                                    ? { lat: addrForm.latitude, lng: addrForm.longitude }
+                                    : undefined
+                            }
+                            onChange={(coords) => {
+                                setAddrField("latitude", coords.lat);
+                                setAddrField("longitude", coords.lng);
+                            }}
+                        />
 
                         {/* Name row */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

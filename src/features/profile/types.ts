@@ -51,6 +51,8 @@ export interface CreateAddressPayload {
     country: string;
     postalCode?: string;
     isDefault?: boolean;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 export interface UpdateProfilePayload {
