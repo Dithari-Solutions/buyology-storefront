@@ -10,9 +10,9 @@ import ShippingStep from "./ShippingStep";
 import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
-import { initiatePayment, getTransaction } from "../services/payment.api";
-import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee, clearCart } from "@/features/cart/store/cartSlice";
-import { checkoutCart, clearCartApi } from "@/features/cart/services/cart.api";
+import { initiatePayment } from "../services/payment.api";
+import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee } from "@/features/cart/store/cartSlice";
+import { checkoutCart } from "@/features/cart/services/cart.api";
 import { createOrder } from "@/features/orders/services/orders.api";
 import { selectUserCoords } from "@/features/location/store/locationSlice";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
@@ -28,8 +28,6 @@ const METHOD_MAP: Record<PaymentMethod, "CARD" | "TABBY" | "TAMARA"> = {
     tamara: "TAMARA",
 };
 
-const POLL_INTERVAL_MS = 2000;
-const MAX_POLL_ATTEMPTS = 15;
 const PENDING_TX_KEY = "buyology_pending_tx_id";
 
 // ── Step Indicator ────────────────────────────────────────────────────────────
@@ -102,38 +100,6 @@ function StepIndicator({ current }: { current: CheckoutStep }) {
                     </div>
                 );
             })}
-        </div>
-    );
-}
-
-// ── Polling Overlay ────────────────────────────────────────────────────────────
-
-function PollingOverlay() {
-    const { t } = useTranslation("checkout");
-    return (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-20 h-20 rounded-full bg-[#EDE9FF] flex items-center justify-center mb-5">
-                <svg
-                    className="animate-spin"
-                    width="36"
-                    height="36"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#402F75"
-                    strokeWidth="2"
-                >
-                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity="0.3" />
-                    <path d="M21 12a9 9 0 00-9-9" />
-                </svg>
-            </div>
-            <h2 className="text-[20px] font-bold text-gray-900 mb-2">
-                {t("polling.title", { defaultValue: "Confirming your payment…" })}
-            </h2>
-            <p className="text-gray-500 text-[14px] max-w-sm">
-                {t("polling.description", {
-                    defaultValue: "Please wait while we verify your payment. This usually takes a few seconds.",
-                })}
-            </p>
         </div>
     );
 }
@@ -374,96 +340,90 @@ export default function CheckoutPage() {
         <>
             <Header />
             <main className="w-[90%] mx-auto py-8 md:py-12">
-                {isPolling ? (
-                    <PollingOverlay />
-                ) : (
-                    <>
-                        <StepIndicator current={step} />
+                <StepIndicator current={step} />
 
-                        {/* Incomplete profile banner */}
-                        {profile && !profile.paymentReady && (
-                            <div className="mb-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 flex items-start gap-3">
-                                <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                    <line x1="12" y1="9" x2="12" y2="13" />
-                                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                                </svg>
-                                <div className="flex-1">
-                                    <p className="text-[13px] font-semibold text-yellow-800">
-                                        Complete your profile before checkout
-                                    </p>
-                                    {profile.missingFields.length > 0 && (
-                                        <p className="text-[12px] text-yellow-700 mt-0.5">
-                                            Missing: {profile.missingFields.join(", ")}
-                                        </p>
-                                    )}
-                                    <a
-                                        href={`/${lang}/profile`}
-                                        className="mt-1 inline-block text-[12px] font-bold text-yellow-700 hover:text-yellow-900 underline"
-                                    >
-                                        Go to Profile →
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Payment error banner */}
-                        {paymentError && (
-                            <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
-                                <svg
-                                    className="flex-shrink-0 mt-0.5"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="#ef4444"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <circle cx="12" cy="12" r="10" />
-                                    <line x1="12" y1="8" x2="12" y2="12" />
-                                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                                </svg>
-                                <div className="flex-1">
-                                    <p className="text-[13px] font-semibold text-red-700">{paymentError}</p>
-                                    <button
-                                        onClick={handleRetry}
-                                        className="mt-1 text-[12px] font-bold text-red-600 hover:text-red-800 underline cursor-pointer"
-                                    >
-                                        {t("payment.error.retry", { defaultValue: "Try again" })}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 items-start">
-                            {/* Left column */}
-                            <div>
-                                {step === "shipping" && (
-                                    <ShippingStep
-                                        onContinue={handleShippingContinue}
-                                        initialData={shippingData ?? undefined}
-                                        savedAddresses={savedAddresses}
-                                        profilePhone={profile?.phoneNumber ?? undefined}
-                                        onSaveAddress={handleSaveAddress}
-                                    />
-                                )}
-                                {step === "payment" && shippingData && (
-                                    <PaymentStep
-                                        shipping={shippingData}
-                                        onEdit={() => setStep("shipping")}
-                                        onPlaceOrder={handlePlaceOrder}
-                                        isSubmitting={isSubmitting}
-                                    />
-                                )}
-                            </div>
-
-                            {/* Right column */}
-                            <CheckoutSummary />
+                {/* Incomplete profile banner */}
+                {profile && !profile.paymentReady && (
+                    <div className="mb-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 flex items-start gap-3">
+                        <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        <div className="flex-1">
+                            <p className="text-[13px] font-semibold text-yellow-800">
+                                Complete your profile before checkout
+                            </p>
+                            {profile.missingFields.length > 0 && (
+                                <p className="text-[12px] text-yellow-700 mt-0.5">
+                                    Missing: {profile.missingFields.join(", ")}
+                                </p>
+                            )}
+                            <a
+                                href={`/${lang}/profile`}
+                                className="mt-1 inline-block text-[12px] font-bold text-yellow-700 hover:text-yellow-900 underline"
+                            >
+                                Go to Profile →
+                            </a>
                         </div>
-                    </>
+                    </div>
                 )}
+
+                {/* Payment error banner */}
+                {paymentError && (
+                    <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
+                        <svg
+                            className="flex-shrink-0 mt-0.5"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#ef4444"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        <div className="flex-1">
+                            <p className="text-[13px] font-semibold text-red-700">{paymentError}</p>
+                            <button
+                                onClick={handleRetry}
+                                className="mt-1 text-[12px] font-bold text-red-600 hover:text-red-800 underline cursor-pointer"
+                            >
+                                {t("payment.error.retry", { defaultValue: "Try again" })}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 items-start">
+                    {/* Left column */}
+                    <div>
+                        {step === "shipping" && (
+                            <ShippingStep
+                                onContinue={handleShippingContinue}
+                                initialData={shippingData ?? undefined}
+                                savedAddresses={savedAddresses}
+                                profilePhone={profile?.phoneNumber ?? undefined}
+                                onSaveAddress={handleSaveAddress}
+                            />
+                        )}
+                        {step === "payment" && shippingData && (
+                            <PaymentStep
+                                shipping={shippingData}
+                                onEdit={() => setStep("shipping")}
+                                onPlaceOrder={handlePlaceOrder}
+                                isSubmitting={isSubmitting}
+                            />
+                        )}
+                    </div>
+
+                    {/* Right column */}
+                    <CheckoutSummary />
+                </div>
             </main>
             <Footer />
         </>
