@@ -46,6 +46,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "eu2.contabostorage.com",
+        pathname: "/ecommerce-storage/**",
+      },
+      {
+        protocol: "https",
         hostname: "api-dev.dithari.com",
         pathname: "/**",
       },

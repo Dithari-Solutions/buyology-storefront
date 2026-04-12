@@ -6,8 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import type { UserProfile } from "../types";
 import { updateProfile, uploadAvatar } from "../services/profile.api";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+import { getImageUrl } from "@/shared/utils/imageUrl";
 
 interface Props {
     profile: UserProfile | null;
@@ -102,7 +101,7 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
         }
     }
 
-    const avatarSrc = profile?.avatarUrl ? `${API_BASE}${profile.avatarUrl}` : null;
+    const avatarSrc = getImageUrl(profile?.avatarUrl);
     const displayName = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "—";
 
     const missingLabels: Record<string, string> = {

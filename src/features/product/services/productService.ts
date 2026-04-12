@@ -1,5 +1,6 @@
 import { apiClient } from "@/shared/lib/apiClient";
 import type { Lang } from "@/config/pathSlugs";
+import { getImageUrl } from "@/shared/utils/imageUrl";
 
 export interface ApiProductMedia {
   id: string;
@@ -120,11 +121,6 @@ export async function getLimitedStockProducts(params: ProductQueryParams = {}): 
     params: buildParams(params),
   });
   return data.data;
-}
-
-export function getImageUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-  return `${base}${path}`;
 }
 
 export function getPrimaryImage(media: ApiProductMedia[]): string {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { StorySummaryResponse } from "../services/story.api";
+import { getImageUrl } from "@/shared/utils/imageUrl";
 
 interface StoryViewerProps {
     stories: StorySummaryResponse[];
@@ -146,7 +147,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                     )}
                     <Image
                         key={`${currentStoryIndex}-${currentMediaIndex}`}
-                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${currentMedia.url}`}
+                        src={getImageUrl(currentMedia.url)}
                         alt={story.title}
                         fill
                         className="object-cover"
@@ -218,7 +219,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                                 style={{ inset: "2px" }}
                             >
                                 <Image
-                                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${story.thumbnailUrl}`}
+                                    src={getImageUrl(story.thumbnailUrl)}
                                     alt={story.title}
                                     fill
                                     className="object-cover"
