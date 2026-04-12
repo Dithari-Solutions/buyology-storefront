@@ -1,7 +1,8 @@
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ProductDetailClient from "@/features/product/components/ProductDetailClient";
-import { getProductBySlug, getImageUrl } from "@/features/product/services/productService";
+import { getProductBySlug } from "@/features/product/services/productService";
+import { getImageUrl } from "@/shared/utils/imageUrl";
 import type { Lang } from "@/config/pathSlugs";
 
 type PageProps = {
