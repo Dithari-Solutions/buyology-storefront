@@ -86,7 +86,9 @@
         "brandNewDesc": "Ən son modellər, qutusunda möhürlənmiş, tam istehsalçı zəmanəti.",
         "refurbishedDesc": "Sertifikatlı işlənmiş — yoxlanılmış, təmizlənmiş və istifadəyə hazır.",
         "sell": "Sat",
-        "sellDesc": "Köhnə cihazlarınızı pula çevirin — elan yerləşdirin, təklif alın, ödəniş alın."
+        "sellDesc": "Köhnə cihazlarınızı pula çevirin — elan yerləşdirin, təklif alın, ödəniş alın.",
+        "games": "Token Qazan",
+        "gamesDesc": "Tətbiqimizdə maraqlı oyunlar oynayın və növbəti alış-verişiniz üçün tokenlər qazanın."
     },
     "limitedStock": {
         "badge": "🔥 Məhdud Stok",

@@ -86,7 +86,9 @@
         "brandNewDesc": "Latest models, sealed in the box, full manufacturer warranty.",
         "refurbishedDesc": "Certified pre-owned — tested, cleaned, and ready to perform.",
         "sell": "Sell",
-        "sellDesc": "Turn your old devices into cash — list, get offers, get paid."
+        "sellDesc": "Turn your old devices into cash — list, get offers, get paid.",
+        "games": "Win Tokens",
+        "gamesDesc": "Play exciting games on our app and win tokens for your next purchase."
     },
     "limitedStock": {
         "badge": "🔥 Limited Stock",

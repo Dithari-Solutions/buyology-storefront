@@ -25,6 +25,7 @@ const NAV_CANONICAL: Record<string, string> = {
     contactUs: "contact",
     buyobot: "buyobot",
     b2b: "b2b",
+    games: "games",
 };
 
 /* ── Icon button wrapper ── */

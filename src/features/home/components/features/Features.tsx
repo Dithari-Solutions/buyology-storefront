@@ -16,6 +16,7 @@ export default function Features() {
     const rentSlug = PATH_SLUGS.rent?.[lang] ?? "rent";
     const repairSlug = PATH_SLUGS.repair?.[lang] ?? "repair";
     const sellSlug = PATH_SLUGS.sell?.[lang] ?? "sell";
+    const gamesSlug = PATH_SLUGS.games?.[lang] ?? "games";
 
     return (
         <section className="flex flex-col items-center w-full ">
@@ -106,6 +107,17 @@ export default function Features() {
                         description={t("features.sellDesc")}
                         variant="wide"
                         href={`/${lang}/${sellSlug}`}
+                    />
+                </div>
+
+                {/* Games — Win Tokens */}
+                <div className="min-h-[200px] sm:col-span-2 lg:col-span-3">
+                    <FeatureCard
+                        id="games"
+                        title={t("features.games")}
+                        description={t("features.gamesDesc")}
+                        variant="wide"
+                        href={`/${lang}/${gamesSlug}`}
                     />
                 </div>
             </div>
