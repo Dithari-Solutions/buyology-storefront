@@ -63,6 +63,7 @@ export interface OrderDetail extends OrderSummary {
     authCredentialId: string;
     cartId: string;
     paymentTransactionId: string;
+    deliveryOrderId: string | null;
     recipientPhone: string;
     addressLine1: string;
     addressLine2: string | null;
@@ -80,6 +81,30 @@ export interface OrderDetail extends OrderSummary {
     cancelledAt: string | null;
     items: OrderItem[];
     trackingHistory: TrackingEvent[];
+}
+
+export type MessageType = "TEXT" | "CALL_START" | "CALL_END" | "CALL_REJECTED" | "CALL_MISSED";
+export type SenderType = "CUSTOMER" | "COURIER";
+
+export interface ChatMsg {
+    messageId: string;
+    deliveryOrderId: string;
+    ecommerceOrderId: string;
+    senderId: string;
+    senderType: SenderType;
+    messageType: MessageType;
+    content: string;
+    sentAt: string;
+    deliveredAt: string | null;
+    readAt: string | null;
+}
+
+export interface PaginatedChat {
+    content: ChatMsg[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
 }
 
 export interface CreateOrderPayload {

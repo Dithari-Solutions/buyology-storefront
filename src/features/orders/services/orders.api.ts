@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/lib/apiClient";
-import type { PaginatedOrders, OrderDetail, CreateOrderPayload } from "../types";
+import type { PaginatedOrders, OrderDetail, CreateOrderPayload, PaginatedChat } from "../types";
 
 interface ApiEnvelope<T> {
     statusCode: number;
@@ -33,5 +33,17 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail> {
         `/api/orders/${orderId}`
     );
     if (!data.data) throw new Error(data.message ?? "Order not found.");
+    return data.data;
+}
+
+export async function getChatHistory(
+    ecommerceOrderId: string,
+    page = 0,
+    size = 50
+): Promise<PaginatedChat> {
+    const { data } = await apiClient.get<ApiEnvelope<PaginatedChat>>(
+        `/api/orders/${ecommerceOrderId}/chat?page=${page}&size=${size}`
+    );
+    if (!data.data) throw new Error(data.message ?? "Failed to load chat history.");
     return data.data;
 }

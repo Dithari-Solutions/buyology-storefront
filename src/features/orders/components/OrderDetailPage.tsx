@@ -8,6 +8,7 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import { getOrderDetail } from "../services/orders.api";
 import type { OrderDetail, OrderStatus, TrackingEvent } from "../types";
+import ChatPanel from "./ChatPanel";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -124,8 +125,10 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
     const [order, setOrder] = useState<OrderDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     const COURIER_ACTIVE_STATUSES: OrderStatus[] = ["COURIER_ASSIGNED", "PICKED_UP", "IN_TRANSIT"];
+    const COURIER_CHAT_STATUSES: OrderStatus[] = [...COURIER_ACTIVE_STATUSES, "DELIVERED", "CANCELLED", "FAILED"];
 
     // Auth guard
     useEffect(() => {
@@ -214,7 +217,33 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                             })}
                                         </p>
                                     </div>
-                                    <StatusBadge status={order.status} />
+                                    <div className="flex items-center gap-3">
+                                        {order.deliveryMethod === "EXPRESS" &&
+                                            order.deliveryOrderId &&
+                                            COURIER_CHAT_STATUSES.includes(order.status) && (
+                                                <>
+                                                    <button
+                                                        onClick={() => setIsChatOpen(true)}
+                                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#402F75] text-white text-[13px] font-bold shadow-sm hover:bg-[#34265f] transition-colors"
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                        </svg>
+                                                        Chat
+                                                    </button>
+                                                    <button
+                                                        onClick={() => alert("Please install the mobile app to use the call feature.")}
+                                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#402F75] border border-[#402F75] text-[13px] font-bold shadow-sm hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+                                                        </svg>
+                                                        Call
+                                                    </button>
+                                                </>
+                                            )}
+                                        <StatusBadge status={order.status} />
+                                    </div>
                                 </div>
                             </div>
 
@@ -353,11 +382,53 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                                 >
                                                     Open in Google Maps →
                                                 </a>
+                                                <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                                                    <button
+                                                        onClick={() => setIsChatOpen(true)}
+                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#402F75] text-white text-[13px] font-bold shadow-sm hover:bg-[#34265f] transition-colors"
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                        </svg>
+                                                        Chat with Courier
+                                                    </button>
+                                                    <button
+                                                        onClick={() => alert("Please install the mobile app to use the call feature.")}
+                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#402F75] border border-[#402F75] text-[13px] font-bold shadow-sm hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+                                                        </svg>
+                                                        Call Courier
+                                                    </button>
+                                                </div>
                                             </>
                                         ) : (
-                                            <p className="text-[13px] text-gray-400">
-                                                Waiting for courier to share location…
-                                            </p>
+                                            <>
+                                                <p className="text-[13px] text-gray-400">
+                                                    Waiting for courier to share location…
+                                                </p>
+                                                <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                                                    <button
+                                                        onClick={() => setIsChatOpen(true)}
+                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#402F75] text-white text-[13px] font-bold shadow-sm hover:bg-[#34265f] transition-colors"
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                        </svg>
+                                                        Chat with Courier
+                                                    </button>
+                                                    <button
+                                                        onClick={() => alert("Please install the mobile app to use the call feature.")}
+                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#402F75] border border-[#402F75] text-[13px] font-bold shadow-sm hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+                                                        </svg>
+                                                        Call Courier
+                                                    </button>
+                                                </div>
+                                            </>
                                         )}
                                     </div>
                                 );
@@ -430,6 +501,15 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                     </div>
                 ) : null}
             </main>
+            {order && order.deliveryOrderId && (
+                <ChatPanel
+                    ecommerceOrderId={order.id}
+                    deliveryOrderId={order.deliveryOrderId}
+                    orderStatus={order.status}
+                    isOpen={isChatOpen}
+                    onClose={() => setIsChatOpen(false)}
+                />
+            )}
             <Footer />
         </>
     );

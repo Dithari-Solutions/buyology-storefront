@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useStories } from "../hooks/useStories";
 import StoryViewer from "./StoryViewer";
 import type { StorySummaryResponse } from "../services/story.api";
-import { getImageUrl } from "@/shared/utils/imageUrl";
 
 function StoryItem({
     story,
@@ -67,7 +66,7 @@ function StoryItem({
                         <div className="absolute inset-0 rounded-full bg-gray-200 animate-pulse" />
                     )}
                     <Image
-                        src={getImageUrl(story.thumbnailUrl)}
+                        src={story.thumbnailUrl}
                         alt={story.title}
                         fill
                         className={`object-cover transition-opacity duration-300 ${
