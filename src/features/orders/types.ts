@@ -54,6 +54,7 @@ export interface TrackingEvent {
     latitude: number | null;
     longitude: number | null;
     locationDescription: string | null;
+    proofImageUrl?: string | null;
     actorId: string;
     actorRole: ActorRole;
     createdAt: string;
@@ -64,6 +65,8 @@ export interface OrderDetail extends OrderSummary {
     cartId: string;
     paymentTransactionId: string;
     deliveryOrderId: string | null;
+    courierName?: string | null;
+    courierPhone?: string | null;
     recipientPhone: string;
     addressLine1: string;
     addressLine2: string | null;

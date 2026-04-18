@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+import { getAccessToken } from "@/shared/lib/tokenManager";
 import type { RootState } from "@/store";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
@@ -95,6 +98,16 @@ function TrackingTimeline({ events }: { events: TrackingEvent[] }) {
                         {event.notes && (
                             <p className="text-[12px] text-gray-500 mt-0.5">{event.notes}</p>
                         )}
+                        {event.proofImageUrl && (
+                            <div className="mt-2 mb-1">
+                                <p className="text-[11px] text-gray-400 mb-1">Courier Photo:</p>
+                                <img
+                                    src={event.proofImageUrl}
+                                    alt="Delivery Proof"
+                                    className="w-full max-w-[200px] h-auto rounded-lg border border-gray-100 shadow-sm"
+                                />
+                            </div>
+                        )}
                         {event.locationDescription && (
                             <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -126,6 +139,8 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [connected, setConnected] = useState(false);
+    const clientRef = useRef<Client | null>(null);
 
     const COURIER_ACTIVE_STATUSES: OrderStatus[] = ["COURIER_ASSIGNED", "PICKED_UP", "IN_TRANSIT"];
     const COURIER_CHAT_STATUSES: OrderStatus[] = [...COURIER_ACTIVE_STATUSES, "DELIVERED", "CANCELLED", "FAILED"];
@@ -148,15 +163,54 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
             .finally(() => setLoading(false));
     }, [userId, orderId]);
 
-    // Poll every 15 s while courier is active on an EXPRESS order
+    // WebSocket connection for live status updates
+    useEffect(() => {
+        if (!userId || !orderId || !authRestored) return;
+
+        const token = getAccessToken();
+        if (!token) return;
+
+        const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+        const wsUrl = `${baseURL.replace(/^http/, "ws")}/ws`;
+
+        const client = new Client({
+            webSocketFactory: () => new SockJS(wsUrl),
+            connectHeaders: {
+                Authorization: `Bearer ${token}`,
+                "X-Client-Type": "WEB",
+            },
+            onConnect: () => {
+                setConnected(true);
+                client.subscribe(`/topic/orders/${orderId}/status`, (frame) => {
+                    const update = JSON.parse(frame.body);
+                    // Refresh entire order to get latest tracking history, location, courier details, etc.
+                    getOrderDetail(orderId).then(setOrder).catch(console.error);
+                });
+            },
+            onDisconnect: () => setConnected(false),
+            onStompError: () => setConnected(false),
+            reconnectDelay: 5000,
+        });
+
+        client.activate();
+        clientRef.current = client;
+
+        return () => {
+            client.deactivate();
+        };
+    }, [userId, orderId, authRestored]);
+
+    // Poll every 10 s while courier is active on an EXPRESS order (fallback or location tracking)
     useEffect(() => {
         if (!userId || !order) return;
         if (order.deliveryMethod !== "EXPRESS") return;
         if (!COURIER_ACTIVE_STATUSES.includes(order.status)) return;
 
+        // If connected via WebSocket, status updates are pushed.
+        // But for location tracking, we still poll as a fallback or if not pushed.
         const interval = setInterval(() => {
             getOrderDetail(orderId).then(setOrder).catch(() => {});
-        }, 15000);
+        }, 10000);
         return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, orderId, order?.status, order?.deliveryMethod]);
@@ -352,6 +406,21 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                                 Live
                                             </span>
                                         </h2>
+
+                                        {order.courierName && (
+                                            <div className="mb-4 flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <div className="w-10 h-10 rounded-full bg-[#402F75] text-white flex items-center justify-center font-bold text-[14px]">
+                                                    {order.courierName.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <p className="text-[13px] font-bold text-gray-900">{order.courierName}</p>
+                                                    {order.courierPhone && (
+                                                        <p className="text-[11px] text-gray-500">{order.courierPhone}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {latest ? (
                                             <>
                                                 {latest.locationDescription && (
