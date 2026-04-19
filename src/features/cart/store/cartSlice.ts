@@ -406,7 +406,6 @@ export const {
     moveToCart,
     setShippingFee,
     clearCart,
-    applyPromo,
     removePromo,
 } = cartSlice.actions;
 

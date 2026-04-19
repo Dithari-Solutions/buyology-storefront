@@ -12,6 +12,7 @@ export {
     toggleSelectItem,
     saveForLater,
     moveToCart,
+    setShippingFee,
     clearCart,
     applyPromoThunk,
     removePromo,
