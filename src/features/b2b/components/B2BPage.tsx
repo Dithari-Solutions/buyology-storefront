@@ -192,9 +192,24 @@ function InquiryForm() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setFormState("sending");
-        // Simulate submission — replace with real API call
-        await new Promise((r) => setTimeout(r, 1200));
-        setFormState("success");
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/b2b/inquiries`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    company: fields.company,
+                    contactPerson: fields.contact,
+                    email: fields.email,
+                    phone: fields.phone || undefined,
+                    quantity: parseInt(fields.quantity, 10),
+                    message: fields.message || undefined,
+                }),
+            });
+            if (!res.ok) throw new Error('failed');
+            setFormState("success");
+        } catch {
+            setFormState("error");
+        }
     }
 
     if (formState === "success") {

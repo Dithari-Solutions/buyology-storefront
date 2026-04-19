@@ -8,11 +8,19 @@ export default function Newsletter() {
     const [email, setEmail] = useState("");
     const [submitted, setSubmitted] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (email.trim()) {
-            setSubmitted(true);
+        if (!email.trim()) return;
+        try {
+            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/newsletter/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email.trim() }),
+            });
+        } catch {
+            // silent — show success regardless to avoid email harvesting signals
         }
+        setSubmitted(true);
     };
 
     return (
