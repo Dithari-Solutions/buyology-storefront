@@ -116,10 +116,108 @@ export async function getSuperDealProducts(params: ProductQueryParams = {}): Pro
   return data.data;
 }
 
+export interface ProductSearchParams extends ProductQueryParams {
+  condition?: string;
+  brandId?: string;
+  availabilityStatus?: string;
+  categoryId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  ram?: string;
+  storage?: string;
+  processor?: string;
+  screenSize?: string;
+  touchableScreen?: string;
+  operatingSystem?: string;
+  keyboardLanguage?: string;
+  /** additional dynamic spec filters keyed by spec code */
+  specs?: Record<string, string>;
+}
+
+export async function searchProducts(params: ProductSearchParams = {}): Promise<ApiProduct[]> {
+  const { lang = 'en', countryCode, currency, lat, lng, specs, ...filterParams } = params;
+  const queryParams: Record<string, string> = { lang: LANG_PARAM[lang] };
+  if (countryCode) queryParams.countryCode = countryCode;
+  if (currency) queryParams.currency = currency;
+  if (lat != null) queryParams.lat = String(lat);
+  if (lng != null) queryParams.lng = String(lng);
+
+  // Standard filter params
+  if (filterParams.condition) queryParams.condition = filterParams.condition;
+  if (filterParams.brandId) queryParams.brandId = filterParams.brandId;
+  if (filterParams.availabilityStatus) queryParams.availabilityStatus = filterParams.availabilityStatus;
+  if (filterParams.categoryId) queryParams.categoryId = filterParams.categoryId;
+  if (filterParams.minPrice != null) queryParams.minPrice = String(filterParams.minPrice);
+  if (filterParams.maxPrice != null) queryParams.maxPrice = String(filterParams.maxPrice);
+  if (filterParams.ram) queryParams.ram = filterParams.ram;
+  if (filterParams.storage) queryParams.storage = filterParams.storage;
+  if (filterParams.processor) queryParams.processor = filterParams.processor;
+  if (filterParams.screenSize) queryParams.screenSize = filterParams.screenSize;
+  if (filterParams.touchableScreen) queryParams.touchableScreen = filterParams.touchableScreen;
+  if (filterParams.operatingSystem) queryParams.operatingSystem = filterParams.operatingSystem;
+  if (filterParams.keyboardLanguage) queryParams.keyboardLanguage = filterParams.keyboardLanguage;
+
+  // Dynamic spec filters (map to known query param names by code)
+  if (specs) {
+    const CODE_TO_PARAM: Record<string, string> = {
+      ram: 'ram', storage: 'storage', processor: 'processor', screen_size: 'screenSize',
+      touchable_screen: 'touchableScreen', operating_system: 'operatingSystem',
+      keyboard_language: 'keyboardLanguage',
+    };
+    for (const [code, val] of Object.entries(specs)) {
+      if (val && CODE_TO_PARAM[code]) queryParams[CODE_TO_PARAM[code]] = val;
+    }
+  }
+
+  const { data } = await apiClient.get<{ data: ApiProduct[] }>('/api/product/search', { params: queryParams });
+  return data.data;
+}
+
 export async function getLimitedStockProducts(params: ProductQueryParams = {}): Promise<ApiProduct[]> {
   const { data } = await apiClient.get<{ data: ApiProduct[] }>("/api/product/limited-stock", {
     params: buildParams(params),
   });
+  return data.data;
+}
+
+// ── Filter options API ────────────────────────────────────────────────────────
+
+export interface PriceRange { min: number; max: number }
+
+export interface CategoryFilterOption {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+}
+
+export interface BrandFilterOption {
+  id: string;
+  name: string;
+}
+
+export interface SpecFilterOption {
+  code: string;
+  label: string;
+  values: string[];
+}
+
+export interface ProductFilters {
+  priceRange: PriceRange;
+  conditions: string[];
+  categories: CategoryFilterOption[];
+  brands: BrandFilterOption[];
+  availabilityStatuses: string[];
+  specs: SpecFilterOption[];
+}
+
+export async function getProductFilters(
+  lang: Lang = 'en',
+  countryCode?: string
+): Promise<ProductFilters> {
+  const params: Record<string, string> = { lang: LANG_PARAM[lang] };
+  if (countryCode) params.countryCode = countryCode;
+  const { data } = await apiClient.get<{ data: ProductFilters }>('/api/product/filters', { params });
   return data.data;
 }
 

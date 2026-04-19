@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import ProductCard from './ProductCard';
-import { getProducts, getPrimaryImage, type ApiProduct } from '../services/productService';
+import { getProducts, searchProducts, getPrimaryImage, type ApiProduct } from '../services/productService';
+import type { ActiveFilters } from './ProductFilter';
 import { selectSelectedCountryCode, selectPreferredCurrency, selectSelectedCountry } from '@/features/country/store/countrySlice';
 import { selectUserCoords } from '@/features/location/store/locationSlice';
 import type { Lang } from '@/config/pathSlugs';
@@ -148,9 +149,10 @@ function getSpecValue(product: ApiProduct, code: string): string {
   return `${opt.value}${opt.unit}`;
 }
 
-export default function Products({ onFilterToggle, filterOpen }: {
+export default function Products({ onFilterToggle, filterOpen, activeFilters }: {
   onFilterToggle?: () => void;
   filterOpen?: boolean;
+  activeFilters?: ActiveFilters;
 }) {
   const params = useParams();
   const lang = (params?.lang as Lang) ?? 'en';
@@ -170,11 +172,17 @@ export default function Products({ onFilterToggle, filterOpen }: {
   useEffect(() => {
     setLoading(true);
     setPage(1);
-    getProducts({ lang, countryCode, currency, lat: coords?.lat, lng: coords?.lng })
-      .then(setProducts)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [lang, countryCode, currency, coords]);
+    const base = { lang, countryCode, currency, lat: coords?.lat, lng: coords?.lng };
+    const hasActiveFilters = activeFilters && (
+      activeFilters.minPrice != null || activeFilters.maxPrice != null ||
+      activeFilters.condition || activeFilters.categoryId || activeFilters.brandId ||
+      activeFilters.availabilityStatus || Object.values(activeFilters.specs ?? {}).some(Boolean)
+    );
+    const fetch = hasActiveFilters
+      ? searchProducts({ ...base, ...activeFilters, specs: activeFilters!.specs })
+      : getProducts(base);
+    fetch.then(setProducts).catch(console.error).finally(() => setLoading(false));
+  }, [lang, countryCode, currency, coords, activeFilters]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PER_PAGE));
   const startItem = products.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;

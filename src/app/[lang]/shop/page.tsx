@@ -1,16 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import ProductFilter from '@/features/product/components/ProductFilter'
-import Products from '@/features/product/components/Products'
-import Footer from '@/shared/components/Footer'
-import Header from '@/shared/components/Header'
+import ProductFilter, { type ActiveFilters } from '@/features/product/components/ProductFilter';
+import Products from '@/features/product/components/Products';
+import Footer from '@/shared/components/Footer';
+import Header from '@/shared/components/Header';
 
 const easing = [0.04, 0.62, 0.23, 0.98] as [number, number, number, number];
 
-export default function page() {
+export default function ShopPage() {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({ specs: {} });
+
+  const handleFiltersChange = useCallback((filters: ActiveFilters) => {
+    setActiveFilters(filters);
+  }, []);
 
   return (
     <>
@@ -26,20 +31,21 @@ export default function page() {
             className="md:!hidden"
           >
             <div className="pb-[4px]">
-              <ProductFilter />
+              <ProductFilter onFiltersChange={handleFiltersChange} />
             </div>
           </motion.div>
           {/* Desktop: always visible */}
           <div className="hidden md:block">
-            <ProductFilter />
+            <ProductFilter onFiltersChange={handleFiltersChange} />
           </div>
         </div>
         <Products
           onFilterToggle={() => setFilterOpen(v => !v)}
           filterOpen={filterOpen}
+          activeFilters={activeFilters}
         />
       </main>
       <Footer />
     </>
-  )
+  );
 }
