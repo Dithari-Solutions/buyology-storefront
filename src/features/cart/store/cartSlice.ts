@@ -9,6 +9,8 @@ import {
     removeCartItem,
     updateCartItemQuantity,
     CountryRestrictionError,
+    validatePromoCode,
+    type ValidatePromoCodeRequest,
 } from "../services/cart.api";
 import { getProductById, getPrimaryImage } from "@/features/product/services/productService";
 import type { Lang } from "@/config/pathSlugs";
@@ -18,12 +20,12 @@ import type { Lang } from "@/config/pathSlugs";
 const initialState: CartState = {
     items: [],
     selectedIds: [],
-    promo: { code: "", discount: 0, applied: false, error: null },
+    promo: { code: "", discount: 0, applied: false, error: null, message: null },
     shippingFee: 0,
     cartId: null,
     countryCode: null,
     currency: null,
-    loading: { cart: false, products: false },
+    loading: { cart: false, products: false, promo: false },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -140,6 +142,30 @@ export const fetchCartProductsThunk = createAsyncThunk(
     }
 );
 
+export const applyPromoThunk = createAsyncThunk(
+    "cart/applyPromo",
+    async (code: string, { getState, rejectWithValue }) => {
+        const state = getState() as RootState;
+        const subtotal = selectCartTotals(state).subtotal;
+        const productIds = state.cart.items.filter(i => state.cart.selectedIds.includes(i.id)).map(i => i.productId);
+
+        try {
+            const payload: ValidatePromoCodeRequest = {
+                code,
+                orderAmount: subtotal,
+                productIds
+            };
+            const result = await validatePromoCode(payload);
+            if (!result.valid) {
+                return rejectWithValue(result.message);
+            }
+            return { code, result };
+        } catch (err) {
+            return rejectWithValue(err instanceof Error ? err.message : "Failed to validate promo code");
+        }
+    }
+);
+
 // ── Slice ─────────────────────────────────────────────────────────────────────
 
 const cartSlice = createSlice({
@@ -202,34 +228,44 @@ const cartSlice = createSlice({
         clearCart(state) {
             state.items = state.items.filter((i) => i.savedForLater);
             state.selectedIds = [];
-            state.promo = { code: "", discount: 0, applied: false, error: null };
+            state.promo = { code: "", discount: 0, applied: false, error: null, message: null };
             state.countryCode = null;
             state.currency = null;
             state.cartId = null;
             state.shippingFee = 0;
         },
 
-        applyPromo(state, action: PayloadAction<string>) {
-            const code = action.payload.trim().toUpperCase();
-            const discount = VALID_PROMO_CODES[code];
-            if (discount !== undefined) {
-                state.promo = { code, discount, applied: true, error: null };
-            } else {
-                state.promo = {
-                    ...state.promo,
-                    code: action.payload,
-                    applied: false,
-                    error: "invalid",
-                };
-            }
-        },
-
         removePromo(state) {
-            state.promo = { code: "", discount: 0, applied: false, error: null };
+            state.promo = { code: "", discount: 0, applied: false, error: null, message: null };
         },
     },
 
     extraReducers: (builder) => {
+        // ... (existing cases)
+        builder.addCase(applyPromoThunk.pending, (state) => {
+            state.loading.promo = true;
+            state.promo.error = null;
+            state.promo.message = null;
+        });
+        builder.addCase(applyPromoThunk.fulfilled, (state, action) => {
+            state.loading.promo = false;
+            state.promo = {
+                code: action.payload.code,
+                discount: action.payload.result.discountAmount,
+                applied: true,
+                error: null,
+                message: action.payload.result.message,
+            };
+        });
+        builder.addCase(applyPromoThunk.rejected, (state, action) => {
+            state.loading.promo = false;
+            state.promo = {
+                ...state.promo,
+                applied: false,
+                error: "invalid",
+                message: action.payload as string || "Invalid promo code",
+            };
+        });
         // ── fetchCart ──────────────────────────────────────────────────────────
         builder.addCase(fetchCartThunk.pending, (state) => {
             state.loading.cart = true;

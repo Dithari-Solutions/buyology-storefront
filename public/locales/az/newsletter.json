@@ -1,0 +1,9 @@
+{
+  "unsubscribe": {
+    "title": "Abunəlikdən çıx",
+    "loading": "Sizi e-poçt siyahımızdan çıxarırıq...",
+    "success": "Siz uğurla e-poçt siyahımızdan çıxarıldınız.",
+    "error": "Abunəlikdən çıxmaq mümkün olmadı. Keçid yanlış ola bilər və ya müddəti bitib.",
+    "backToHome": "Ana Səhifəyə qayıt"
+  }
+}

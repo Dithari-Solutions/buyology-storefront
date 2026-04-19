@@ -39,6 +39,7 @@ export interface PromoState {
     discount: number;
     applied: boolean;
     error: string | null;
+    message: string | null;
 }
 
 // ── Cart State ────────────────────────────────────────────────────────────────
@@ -56,7 +57,7 @@ export interface CartState {
     countryCode: string | null;
     /** ISO 4217 currency code — null until first item is added */
     currency: string | null;
-    loading: { cart: boolean; products: boolean };
+    loading: { cart: boolean; products: boolean; promo: boolean };
 }
 
 // ── Derived / View ────────────────────────────────────────────────────────────

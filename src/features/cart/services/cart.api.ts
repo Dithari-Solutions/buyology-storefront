@@ -75,3 +75,27 @@ export async function checkoutCart(authCredentialId: string): Promise<ApiCartRes
     if (!data.data) throw new Error(data.message);
     return data.data;
 }
+
+export interface ValidatePromoCodeRequest {
+    code: string;
+    orderAmount: number;
+    productIds?: string[];
+}
+
+export interface ValidatePromoCodeResponse {
+    valid: boolean;
+    message: string;
+    promoCodeId: string;
+    discountAmount: number;
+    discountType: "FIXED" | "PERCENTAGE";
+    discountValue: number;
+}
+
+export async function validatePromoCode(payload: ValidatePromoCodeRequest): Promise<ValidatePromoCodeResponse> {
+    const { data } = await apiClient.post<ApiEnvelope<ValidatePromoCodeResponse>>(
+        "/api/promo/validate",
+        payload
+    );
+    if (!data.data) throw new Error(data.message);
+    return data.data;
+}

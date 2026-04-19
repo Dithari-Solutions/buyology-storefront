@@ -13,7 +13,7 @@ export {
     saveForLater,
     moveToCart,
     clearCart,
-    applyPromo,
+    applyPromoThunk,
     removePromo,
     selectCartItems,
     selectSavedItems,

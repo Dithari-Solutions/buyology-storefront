@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-import { applyPromo, removePromo, selectCartTotals, selectPromo, selectCartCurrency } from "../store/cartSlice";
+import { applyPromoThunk, removePromo, selectCartTotals, selectPromo, selectCartCurrency, selectCartLoading } from "../store/cartSlice";
 
 // ── Benefit icon helpers ──────────────────────────────────────────────────────
 
@@ -58,6 +58,7 @@ export default function OrderSummary() {
     const totals = useSelector(selectCartTotals);
     const promo = useSelector(selectPromo);
     const currency = useSelector(selectCartCurrency) ?? "$";
+    const loading = useSelector(selectCartLoading);
 
     const [promoInput, setPromoInput] = useState(promo.applied ? promo.code : "");
 
@@ -87,7 +88,7 @@ export default function OrderSummary() {
 
     function handleApplyPromo() {
         if (!promoInput.trim()) return;
-        dispatch(applyPromo(promoInput));
+        dispatch(applyPromoThunk(promoInput) as any);
     }
 
     function handleRemovePromo() {
@@ -195,15 +196,16 @@ export default function OrderSummary() {
                             />
                             <button
                                 onClick={handleApplyPromo}
-                                className="bg-[#402F75] hover:bg-[#2e2156] active:scale-[0.97] transition-all text-white px-4 py-2.5 rounded-xl font-bold text-[13px] flex-shrink-0 cursor-pointer"
+                                disabled={loading.promo}
+                                className="bg-[#402F75] hover:bg-[#2e2156] active:scale-[0.97] transition-all text-white px-4 py-2.5 rounded-xl font-bold text-[13px] flex-shrink-0 cursor-pointer disabled:opacity-50"
                             >
-                                {t("promoCode.apply")}
+                                {loading.promo ? "..." : t("promoCode.apply")}
                             </button>
                         </div>
 
-                        {promo.error && (
+                        {(promo.error || promo.message) && (
                             <p className="text-[12px] text-red-500 mt-1.5 font-medium">
-                                {t("promoCode.error")}
+                                {promo.message || t("promoCode.error")}
                             </p>
                         )}
 

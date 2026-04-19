@@ -2,25 +2,26 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { subscribeToNewsletter } from "../../newsletter/services/newsletter.api";
 
 export default function Newsletter() {
     const { t } = useTranslation("home");
     const [email, setEmail] = useState("");
     const [submitted, setSubmitted] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email.trim()) return;
+        if (!email.trim() || loading) return;
+        setLoading(true);
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/newsletter/subscribe`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email.trim() }),
-            });
+            await subscribeToNewsletter(email.trim());
         } catch {
             // silent — show success regardless to avoid email harvesting signals
+        } finally {
+            setLoading(false);
+            setSubmitted(true);
         }
-        setSubmitted(true);
     };
 
     return (
@@ -79,10 +80,11 @@ export default function Newsletter() {
                             />
                             <button
                                 type="submit"
-                                className="flex items-center justify-center gap-2 px-6 py-3 rounded-full text-[14px] font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg whitespace-nowrap"
+                                disabled={loading}
+                                className="flex items-center justify-center gap-2 px-6 py-3 rounded-full text-[14px] font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg whitespace-nowrap disabled:opacity-50"
                                 style={{ backgroundColor: "#402F75" }}
                             >
-                                {t("newsletter.subscribe")}
+                                {loading ? "..." : t("newsletter.subscribe")}
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                                     <line x1="5" y1="12" x2="19" y2="12" />
                                     <polyline points="12 5 19 12 12 19" />

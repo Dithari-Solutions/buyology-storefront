@@ -1,0 +1,9 @@
+{
+  "unsubscribe": {
+    "title": "Unsubscribe",
+    "loading": "Unsubscribing you from our mailing list...",
+    "success": "You have been successfully removed from our mailing list.",
+    "error": "Failed to unsubscribe. The link might be invalid or expired.",
+    "backToHome": "Back to Home"
+  }
+}
