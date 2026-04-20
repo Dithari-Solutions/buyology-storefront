@@ -7,6 +7,7 @@ import Logo from "@/../public/logo.png";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter, useParams } from "next/navigation";
 import CartIcon from "@/assets/icons/cart.svg";
 import LanguageSwitcher from "./LanguageSwitcher";
 import CountrySelector from "./CountrySelector";
@@ -98,6 +99,9 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState("");
+    const router = useRouter();
+    const params = useParams();
+    const lang = (params?.lang as Lang) ?? 'en';
 
     useEffect(() => {
         if (open) {
@@ -121,6 +125,13 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
     const filtered = query.trim()
         ? TRENDING_SEARCHES.filter(s => s.label.toLowerCase().includes(query.toLowerCase()))
         : TRENDING_SEARCHES;
+
+    const handleSearch = (q: string) => {
+        if (!q.trim()) return;
+        const shopSlug = PATH_SLUGS["shop"]?.[lang] ?? "shop";
+        router.push(`/${lang}/${shopSlug}?q=${encodeURIComponent(q.trim())}`);
+        onClose();
+    };
 
     return (
         <AnimatePresence>
@@ -173,7 +184,13 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Input row */}
-                        <div className="flex items-center gap-3 bg-white/10 border-2 border-white/20 focus-within:border-[#FBBB14] rounded-2xl px-5 py-4 transition-colors duration-200">
+                        <form 
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                handleSearch(query);
+                            }}
+                            className="flex items-center gap-3 bg-white/10 border-2 border-white/20 focus-within:border-[#FBBB14] rounded-2xl px-5 py-4 transition-colors duration-200"
+                        >
                             <Image src={SearchIcon} alt="search" width={22} className="opacity-50 flex-shrink-0" />
                             <input
                                 ref={inputRef}
@@ -188,6 +205,7 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
                                         initial={{ opacity: 0, scale: 0.7 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.7 }}
+                                        type="button"
                                         onClick={() => { setQuery(""); inputRef.current?.focus(); }}
                                         className="text-white/40 hover:text-white/80 transition-colors cursor-pointer flex-shrink-0"
                                     >
@@ -197,7 +215,7 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
                                     </motion.button>
                                 )}
                             </AnimatePresence>
-                        </div>
+                        </form>
 
                         {/* Trending / filtered suggestions */}
                         <motion.div
@@ -226,7 +244,7 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.85 }}
                                                 transition={{ delay: i * 0.04, type: "spring", stiffness: 400, damping: 25 }}
-                                                onClick={() => { setQuery(item.label); inputRef.current?.focus(); }}
+                                                onClick={() => handleSearch(item.label)}
                                                 className="flex items-center gap-2 bg-white/8 hover:bg-[#FBBB14]/15 border border-white/12 hover:border-[#FBBB14]/40 rounded-full px-4 py-2 text-white/70 hover:text-white text-[13px] font-medium transition-all duration-200 cursor-pointer group"
                                             >
                                                 <span className="text-[14px] group-hover:scale-110 transition-transform duration-150">{item.icon}</span>

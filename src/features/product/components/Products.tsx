@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import ProductCard from './ProductCard';
-import { getProducts, searchProducts, getPrimaryImage, type ApiProduct } from '../services/productService';
+import { getProducts, searchProducts, searchProductsElastic, getPrimaryImage, type ApiProduct } from '../services/productService';
 import type { ActiveFilters } from './ProductFilter';
 import { selectSelectedCountryCode, selectPreferredCurrency, selectSelectedCountry } from '@/features/country/store/countrySlice';
 import { selectUserCoords } from '@/features/location/store/locationSlice';
@@ -154,7 +155,10 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
   filterOpen?: boolean;
   activeFilters?: ActiveFilters;
 }) {
+  const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
+  const query = searchParams.get('q');
   const lang = (params?.lang as Lang) ?? 'en';
 
   const countryCode = useSelector(selectSelectedCountryCode);
@@ -173,16 +177,23 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
     setLoading(true);
     setPage(1);
     const base = { lang, countryCode, currency, lat: coords?.lat, lng: coords?.lng };
-    const hasActiveFilters = activeFilters && (
-      activeFilters.minPrice != null || activeFilters.maxPrice != null ||
-      activeFilters.condition || activeFilters.categoryId || activeFilters.brandId ||
-      activeFilters.availabilityStatus || Object.values(activeFilters.specs ?? {}).some(Boolean)
-    );
-    const fetch = hasActiveFilters
-      ? searchProducts({ ...base, ...activeFilters, specs: activeFilters!.specs })
-      : getProducts(base);
-    fetch.then(setProducts).catch(console.error).finally(() => setLoading(false));
-  }, [lang, countryCode, currency, coords, activeFilters]);
+    
+    let fetchPromise;
+    if (query) {
+      fetchPromise = searchProductsElastic({ ...base, query });
+    } else {
+      const hasActiveFilters = activeFilters && (
+        activeFilters.minPrice != null || activeFilters.maxPrice != null ||
+        activeFilters.condition || activeFilters.categoryId || activeFilters.brandId ||
+        activeFilters.availabilityStatus || Object.values(activeFilters.specs ?? {}).some(Boolean)
+      );
+      fetchPromise = hasActiveFilters
+        ? searchProducts({ ...base, ...activeFilters, specs: activeFilters!.specs })
+        : getProducts(base);
+    }
+    
+    fetchPromise.then(setProducts).catch(console.error).finally(() => setLoading(false));
+  }, [lang, countryCode, currency, coords, activeFilters, query]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PER_PAGE));
   const startItem = products.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
@@ -191,6 +202,30 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
 
   return (
     <div className="flex-1 flex flex-col gap-[16px] min-w-0">
+      {/* Search status */}
+      {query && (
+        <div className="flex items-center justify-between bg-[#FBBB14]/10 border border-[#FBBB14]/30 rounded-[16px] px-[20px] py-[12px]">
+          <div className="flex items-center gap-[8px]">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <p className="text-[14px] font-medium text-[#402F75]">
+              Search results for: <span className="font-bold">&ldquo;{query}&rdquo;</span>
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.delete('q');
+              router.push(url.pathname);
+            }}
+            className="text-[12px] font-bold text-[#402F75] hover:underline cursor-pointer"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px] flex flex-wrap items-center justify-between gap-[10px]">
         <div className="flex items-center gap-[10px] flex-wrap">

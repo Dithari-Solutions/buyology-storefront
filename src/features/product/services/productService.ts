@@ -117,6 +117,7 @@ export async function getSuperDealProducts(params: ProductQueryParams = {}): Pro
 }
 
 export interface ProductSearchParams extends ProductQueryParams {
+  query?: string;
   condition?: string;
   brandId?: string;
   availabilityStatus?: string;
@@ -143,6 +144,7 @@ export async function searchProducts(params: ProductSearchParams = {}): Promise<
   if (lng != null) queryParams.lng = String(lng);
 
   // Standard filter params
+  if (filterParams.query) queryParams.query = filterParams.query;
   if (filterParams.condition) queryParams.condition = filterParams.condition;
   if (filterParams.brandId) queryParams.brandId = filterParams.brandId;
   if (filterParams.availabilityStatus) queryParams.availabilityStatus = filterParams.availabilityStatus;
@@ -171,6 +173,19 @@ export async function searchProducts(params: ProductSearchParams = {}): Promise<
 
   const { data } = await apiClient.get<{ data: ApiProduct[] }>('/api/product/search', { params: queryParams });
   return data.data;
+}
+
+export async function searchProductsElastic(params: ProductSearchParams = {}): Promise<ApiProduct[]> {
+    const { lang = 'en', countryCode, currency, lat, lng, query } = params;
+    const queryParams: Record<string, string> = { lang: LANG_PARAM[lang] };
+    if (countryCode) queryParams.countryCode = countryCode;
+    if (currency) queryParams.currency = currency;
+    if (lat != null) queryParams.lat = String(lat);
+    if (lng != null) queryParams.lng = String(lng);
+    if (query) queryParams.query = query;
+
+    const { data } = await apiClient.get<{ data: ApiProduct[] }>('/api/product/search-elastic', { params: queryParams });
+    return data.data;
 }
 
 export async function getLimitedStockProducts(params: ProductQueryParams = {}): Promise<ApiProduct[]> {
