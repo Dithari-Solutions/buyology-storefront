@@ -11,21 +11,37 @@ import {
 } from "@/features/country/store/countrySlice";
 import type { AppDispatch, RootState } from "@/store";
 
+// Maps app country codes (as stored in DB) → ISO 3166-1 alpha-2 lowercase for flagcdn.com
+// Includes both 2-letter and 3-letter variants since the DB may use either format.
 const APP_TO_ISO2: Record<string, string> = {
-  UAE: "ae",
-  AZE: "az",
-  SAU: "sa",
-  KWT: "kw",
-  QAT: "qa",
-  OMN: "om",
-  BHR: "bh",
-  EGY: "eg",
-  JOR: "jo",
-  LBN: "lb",
-  TUR: "tr",
-  USA: "us",
-  GBR: "gb",
-  DEU: "de",
+  // UAE / United Arab Emirates
+  UAE: "ae", AE: "ae",
+  // Azerbaijan
+  AZE: "az", AZ: "az",
+  // Saudi Arabia
+  SAU: "sa", SA: "sa",
+  // Kuwait
+  KWT: "kw", KW: "kw",
+  // Qatar
+  QAT: "qa", QA: "qa",
+  // Oman
+  OMN: "om", OM: "om",
+  // Bahrain
+  BHR: "bh", BH: "bh",
+  // Egypt
+  EGY: "eg", EG: "eg",
+  // Jordan
+  JOR: "jo", JO: "jo",
+  // Lebanon
+  LBN: "lb", LB: "lb",
+  // Turkey
+  TUR: "tr", TR: "tr",
+  // USA
+  USA: "us", US: "us",
+  // UK
+  GBR: "gb", GB: "gb",
+  // Germany
+  DEU: "de", DE: "de",
 };
 
 function FlagImg({ code, size = 24 }: { code: string; size?: number }) {

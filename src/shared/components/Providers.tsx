@@ -33,7 +33,8 @@ function CountryInitializer() {
 }
 
 // Maps URL language to the most likely country code when no preference is saved
-const LANG_DEFAULT_COUNTRY: Record<string, string> = { az: "AZE" };
+// Must match the actual country code stored in the DB (e.g. "AZ" not "AZE")
+const LANG_DEFAULT_COUNTRY: Record<string, string> = { az: "AZ" };
 
 function GeolocationInitializer() {
   const dispatch = useDispatch<AppDispatch>();
@@ -58,17 +59,19 @@ function GeolocationInitializer() {
     dispatch(requestLocationThunk());
   }, [dispatch]);
 
-  // Step 1b — apply lang-based country immediately if no saved preference.
-  // This gives users on /az/... an AZE default without waiting for geolocation.
-  // Geolocation can still override this if it detects a different country.
+  // Step 1b — apply lang-based country default once countries are loaded, if no saved preference.
+  // Waits for the countries list so currency resolves correctly (e.g. AZN not AED).
+  // Geolocation can still override this later.
   useEffect(() => {
-    if (!lang || langAppliedRef.current) return;
+    if (!lang || langAppliedRef.current || countries.length === 0) return;
     if (typeof window !== "undefined" && localStorage.getItem("selectedCountryCode")) return;
     const langCountry = LANG_DEFAULT_COUNTRY[lang];
     if (!langCountry) return;
+    const supported = countries.some((c) => c.code === langCountry);
+    if (!supported) return;
     langAppliedRef.current = true;
     dispatch(setCountryThunk({ countryCode: langCountry, userId }));
-  }, [lang, dispatch, userId]);
+  }, [lang, countries, dispatch, userId]);
 
   // Step 2 — set country as soon as it is detected from geolocation.
   // We dispatch immediately (don't wait for countries list) so the product list

@@ -1,22 +1,22 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 
-// Maps ISO 3166-1 alpha-2 (from Nominatim) → app country codes
+// Maps ISO 3166-1 alpha-2 (from Nominatim / ipapi) → app country codes as stored in DB
 const ISO2_TO_APP: Record<string, string> = {
   AE: "UAE",
-  AZ: "AZE",
-  SA: "SAU",
-  KW: "KWT",
-  QA: "QAT",
-  OM: "OMN",
-  BH: "BHR",
-  EG: "EGY",
-  JO: "JOR",
-  LB: "LBN",
-  TR: "TUR",
-  US: "USA",
-  GB: "GBR",
-  DE: "DEU",
+  AZ: "AZ",
+  SA: "SA",
+  KW: "KW",
+  QA: "QA",
+  OM: "OM",
+  BH: "BH",
+  EG: "EG",
+  JO: "JO",
+  LB: "LB",
+  TR: "TR",
+  US: "US",
+  GB: "GB",
+  DE: "DE",
 };
 
 interface LocationState {

@@ -341,6 +341,17 @@ function CountryShape({ countryId }: { countryId: CountryId }) {
     );
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^\+?[\d\s\-().]{7,20}$/;
+
+interface ContactFormErrors {
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    inquiryType?: string;
+    message?: string;
+}
+
 // ─── ContactForm ─────────────────────────────────────────────────────────────
 function ContactForm() {
     const { t } = useTranslation("contact");
@@ -351,6 +362,7 @@ function ContactForm() {
         inquiryType: "",
         message: "",
     });
+    const [errors, setErrors] = useState<ContactFormErrors>({});
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -358,10 +370,32 @@ function ContactForm() {
         e: React.ChangeEvent<
             HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
         >
-    ) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    ) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+        if (errors[name as keyof ContactFormErrors]) {
+            setErrors((prev) => ({ ...prev, [name]: undefined }));
+        }
+    };
+
+    function validate(): boolean {
+        const e: ContactFormErrors = {};
+        if (!form.fullName.trim()) e.fullName = "Full name is required.";
+        else if (form.fullName.trim().length < 2) e.fullName = "Name must be at least 2 characters.";
+        if (!form.email.trim()) e.email = "Email is required.";
+        else if (!EMAIL_RE.test(form.email.trim())) e.email = "Enter a valid email address.";
+        if (!form.phone.trim()) e.phone = "Phone number is required.";
+        else if (!PHONE_RE.test(form.phone.trim())) e.phone = "Enter a valid phone number.";
+        if (!form.inquiryType) e.inquiryType = "Please select an inquiry type.";
+        if (!form.message.trim()) e.message = "Message is required.";
+        else if (form.message.trim().length < 10) e.message = "Message must be at least 10 characters.";
+        setErrors(e);
+        return Object.keys(e).length === 0;
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!validate()) return;
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
@@ -369,8 +403,12 @@ function ContactForm() {
         }, 1200);
     };
 
-    const inputClass =
-        "w-full bg-white border border-gray-200 rounded-2xl px-5 py-3 text-[14px] text-gray-800 placeholder-gray-400 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/12 transition-all";
+    const inputClass = (hasErr: boolean) =>
+        `w-full bg-white border rounded-2xl px-5 py-3 text-[14px] text-gray-800 placeholder-gray-400 outline-none focus:ring-2 transition-all ${
+            hasErr
+                ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+                : "border-gray-200 focus:border-[#402F75] focus:ring-[#402F75]/12"
+        }`;
 
     return (
         <section className="w-full flex justify-center mt-[40px] md:mt-[60px]">
@@ -508,6 +546,7 @@ function ContactForm() {
                                 <motion.form
                                     key="form"
                                     onSubmit={handleSubmit}
+                                    noValidate
                                     className="flex flex-col gap-4"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -520,12 +559,12 @@ function ContactForm() {
                                             <input
                                                 type="text"
                                                 name="fullName"
-                                                required
                                                 placeholder={t("form.fullNamePlaceholder")}
                                                 value={form.fullName}
                                                 onChange={handleChange}
-                                                className={inputClass}
+                                                className={inputClass(!!errors.fullName)}
                                             />
+                                            {errors.fullName && <p className="text-[11px] text-red-500 mt-1">{errors.fullName}</p>}
                                         </div>
                                         <div>
                                             <label className="block text-[12px] font-semibold text-gray-600 mb-1.5">
@@ -534,12 +573,12 @@ function ContactForm() {
                                             <input
                                                 type="email"
                                                 name="email"
-                                                required
                                                 placeholder={t("form.emailPlaceholder")}
                                                 value={form.email}
                                                 onChange={handleChange}
-                                                className={inputClass}
+                                                className={inputClass(!!errors.email)}
                                             />
+                                            {errors.email && <p className="text-[11px] text-red-500 mt-1">{errors.email}</p>}
                                         </div>
                                     </div>
 
@@ -551,12 +590,12 @@ function ContactForm() {
                                             <input
                                                 type="tel"
                                                 name="phone"
-                                                required
                                                 placeholder={t("form.phonePlaceholder")}
                                                 value={form.phone}
                                                 onChange={handleChange}
-                                                className={inputClass}
+                                                className={inputClass(!!errors.phone)}
                                             />
+                                            {errors.phone && <p className="text-[11px] text-red-500 mt-1">{errors.phone}</p>}
                                         </div>
                                         <div>
                                             <label className="block text-[12px] font-semibold text-gray-600 mb-1.5">
@@ -564,10 +603,9 @@ function ContactForm() {
                                             </label>
                                             <select
                                                 name="inquiryType"
-                                                required
                                                 value={form.inquiryType}
                                                 onChange={handleChange}
-                                                className={inputClass}
+                                                className={inputClass(!!errors.inquiryType)}
                                             >
                                                 <option value="">— {t("form.inquiryType")} —</option>
                                                 <option value="general">{t("form.inquiryTypes.general")}</option>
@@ -575,6 +613,7 @@ function ContactForm() {
                                                 <option value="b2b">{t("form.inquiryTypes.b2b")}</option>
                                                 <option value="other">{t("form.inquiryTypes.other")}</option>
                                             </select>
+                                            {errors.inquiryType && <p className="text-[11px] text-red-500 mt-1">{errors.inquiryType}</p>}
                                         </div>
                                     </div>
 
@@ -584,13 +623,13 @@ function ContactForm() {
                                         </label>
                                         <textarea
                                             name="message"
-                                            required
                                             rows={4}
                                             placeholder={t("form.messagePlaceholder")}
                                             value={form.message}
                                             onChange={handleChange}
-                                            className={`${inputClass} resize-none`}
+                                            className={`${inputClass(!!errors.message)} resize-none`}
                                         />
+                                        {errors.message && <p className="text-[11px] text-red-500 mt-1">{errors.message}</p>}
                                     </div>
 
                                     <motion.button

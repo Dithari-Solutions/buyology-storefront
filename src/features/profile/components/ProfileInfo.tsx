@@ -29,9 +29,11 @@ interface FormErrors {
 
 function validateProfileForm(form: EditForm): FormErrors {
     const errors: FormErrors = {};
-    if (form.firstName && form.firstName.trim().length < 2) errors.firstName = "First name must be at least 2 characters.";
-    if (form.lastName && form.lastName.trim().length < 2) errors.lastName = "Last name must be at least 2 characters.";
-    if (form.phoneNumber && !/^\+?[\d\s\-().]{7,20}$/.test(form.phoneNumber.trim())) errors.phoneNumber = "Enter a valid phone number.";
+    if (!form.firstName.trim()) errors.firstName = "First name is required.";
+    else if (form.firstName.trim().length < 2) errors.firstName = "First name must be at least 2 characters.";
+    if (!form.lastName.trim()) errors.lastName = "Last name is required.";
+    else if (form.lastName.trim().length < 2) errors.lastName = "Last name must be at least 2 characters.";
+    if (form.phoneNumber.trim() && !/^\+?[\d\s\-().]{7,20}$/.test(form.phoneNumber.trim())) errors.phoneNumber = "Enter a valid phone number.";
     return errors;
 }
 

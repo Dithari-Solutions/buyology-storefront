@@ -35,13 +35,6 @@ export default function Features() {
                         {t("features.subtitle")}
                     </p>
                 </div>
-                <a
-                    href="#"
-                    className="hidden sm:flex items-center gap-[6px] text-[13px] font-semibold text-[#402F75] hover:text-[#2e2055] transition-colors whitespace-nowrap mb-1 flex-shrink-0 ms-4 group"
-                >
-                    {t("features.seeAll")}
-                    <span className="transition-transform duration-200 group-hover:translate-x-[3px]">→</span>
-                </a>
             </div>
 
             {/*
