@@ -305,7 +305,11 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                                     <input
                                         type="tel"
                                         value={form.phoneNumber}
-                                        onChange={(e) => { setForm((p) => ({ ...p, phoneNumber: e.target.value })); setFormErrors(p => ({ ...p, phoneNumber: undefined })); }}
+                                        onChange={(e) => {
+                                            const cleaned = e.target.value.replace(/[^\d+\s\-().]/g, "");
+                                            setForm((p) => ({ ...p, phoneNumber: cleaned }));
+                                            setFormErrors(p => ({ ...p, phoneNumber: undefined }));
+                                        }}
                                         placeholder="+971501234567"
                                         className={`w-full border rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300 ${formErrors.phoneNumber ? "border-red-400" : "border-gray-200"}`}
                                     />
