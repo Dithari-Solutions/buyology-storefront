@@ -235,6 +235,7 @@ export default function ProductQA({ productId }: ProductQAProps) {
 
   // Form state
   const [questionText, setQuestionText] = useState("");
+  const [questionError, setQuestionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -289,7 +290,10 @@ export default function ProductQA({ productId }: ProductQAProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isAuthenticated) { requireLogin(); return; }
-    if (!authCredentialId || !questionText.trim()) return;
+    if (!questionText.trim()) { setQuestionError("Please enter your question before submitting."); return; }
+    if (questionText.trim().length < 10) { setQuestionError("Question must be at least 10 characters."); return; }
+    if (!authCredentialId) return;
+    setQuestionError("");
     setSubmitting(true);
     try {
       await askQuestion({ productId, authCredentialId, body: questionText.trim() });
@@ -344,16 +348,17 @@ export default function ProductQA({ productId }: ProductQAProps) {
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <textarea
                 value={questionText}
-                onChange={(e) => setQuestionText(e.target.value)}
+                onChange={(e) => { setQuestionText(e.target.value); if (questionError) setQuestionError(""); }}
                 onFocus={() => { if (!isAuthenticated) requireLogin(); }}
                 placeholder={t("qa.questionPlaceholder")}
                 rows={3}
-                className="w-full px-4 py-3 text-sm text-gray-700 placeholder-gray-400 border border-gray-200 rounded-xl outline-none focus:border-[#402F75]/40 focus:ring-2 focus:ring-[#402F75]/10 transition-all resize-none bg-transparent"
+                className={`w-full px-4 py-3 text-sm text-gray-700 placeholder-gray-400 border rounded-xl outline-none focus:ring-2 transition-all resize-none bg-transparent ${questionError ? "border-red-400 focus:border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#402F75]/40 focus:ring-[#402F75]/10"}`}
               />
+              {questionError && <p className="text-[11px] text-red-500 -mt-1">{questionError}</p>}
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={submitting || !questionText.trim()}
+                  disabled={submitting}
                   className="flex items-center gap-2 bg-[#402F75] text-white text-xs font-bold px-5 py-2 rounded-full hover:bg-[#362867] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {submitting ? (

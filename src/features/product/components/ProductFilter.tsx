@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
@@ -81,31 +81,66 @@ function CheckboxItem({ label, checked, onChange }: {
 function PriceRange({ min, max, value, onChange }: {
   min: number; max: number; value: [number, number]; onChange: (v: [number, number]) => void;
 }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
   const toPercent = (v: number) => max === min ? 0 : ((v - min) / (max - min)) * 100;
   const minPct = toPercent(value[0]);
   const maxPct = toPercent(value[1]);
-  // When min thumb is at the right end, raise its z-index so it can be moved back
-  const minZIndex = minPct >= maxPct - 1 ? 3 : 2;
-  const maxZIndex = minPct >= maxPct - 1 ? 2 : 3;
+
+  function getValueFromClientX(clientX: number): number {
+    const rect = trackRef.current!.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return Math.round(min + pct * (max - min));
+  }
+
+  function startDrag(thumb: 'min' | 'max') {
+    return (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      const move = (ev: MouseEvent | TouchEvent) => {
+        const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX;
+        const v = getValueFromClientX(clientX);
+        const [curMin, curMax] = valueRef.current;
+        if (thumb === 'min') {
+          onChange([Math.max(min, Math.min(v, curMax - 1)), curMax]);
+        } else {
+          onChange([curMin, Math.min(max, Math.max(v, curMin + 1))]);
+        }
+      };
+      const up = () => {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('touchmove', move);
+        document.removeEventListener('mouseup', up);
+        document.removeEventListener('touchend', up);
+      };
+      document.addEventListener('mousemove', move);
+      document.addEventListener('touchmove', move, { passive: false });
+      document.addEventListener('mouseup', up);
+      document.addEventListener('touchend', up);
+    };
+  }
 
   return (
     <div className="pt-[6px] pb-[4px]">
-      <div className="relative h-[4px] mx-[8px] my-[16px]">
+      <div ref={trackRef} className="relative h-[4px] mx-[8px] my-[16px]">
         <div className="absolute inset-0 rounded-full bg-gray-200" />
         <div className="absolute h-full rounded-full bg-[#402F75]"
           style={{ left: `${minPct}%`, right: `${100 - maxPct}%` }} />
-        <input type="range" min={min} max={max} value={value[0]}
-          onChange={e => { const v = Math.min(Number(e.target.value), value[1] - 1); onChange([v, value[1]]); }}
-          className="absolute w-full h-full opacity-0 cursor-pointer"
-          style={{ zIndex: minZIndex }} />
-        <input type="range" min={min} max={max} value={value[1]}
-          onChange={e => { const v = Math.max(Number(e.target.value), value[0] + 1); onChange([value[0], v]); }}
-          className="absolute w-full h-full opacity-0 cursor-pointer"
-          style={{ zIndex: maxZIndex }} />
-        <div className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-[#402F75] border-[3px] border-white shadow-md -translate-x-1/2 pointer-events-none"
-          style={{ left: `${minPct}%` }} />
-        <div className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-[#402F75] border-[3px] border-white shadow-md -translate-x-1/2 pointer-events-none"
-          style={{ left: `${maxPct}%` }} />
+        {/* Min thumb */}
+        <div
+          onMouseDown={startDrag('min')}
+          onTouchStart={startDrag('min')}
+          className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-[#402F75] border-[3px] border-white shadow-md -translate-x-1/2 cursor-grab active:cursor-grabbing select-none"
+          style={{ left: `${minPct}%`, zIndex: minPct >= maxPct - 1 ? 3 : 2 }}
+        />
+        {/* Max thumb */}
+        <div
+          onMouseDown={startDrag('max')}
+          onTouchStart={startDrag('max')}
+          className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-[#402F75] border-[3px] border-white shadow-md -translate-x-1/2 cursor-grab active:cursor-grabbing select-none"
+          style={{ left: `${maxPct}%`, zIndex: minPct >= maxPct - 1 ? 2 : 3 }}
+        />
       </div>
       <div className="flex justify-between mt-[10px]">
         <span className="text-[12px] text-gray-500">{value[0].toLocaleString()}</span>

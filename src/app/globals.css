@@ -39,3 +39,16 @@ body {
 .animate-rotate-dashed {
   animation: rotate-dashed 3s linear infinite;
 }
+
+/* Dual-range slider: disable pointer events on the track, re-enable on thumb only */
+.range-thumb-only {
+  pointer-events: none;
+}
+.range-thumb-only::-webkit-slider-thumb {
+  pointer-events: all;
+  cursor: grab;
+}
+.range-thumb-only::-moz-range-thumb {
+  pointer-events: all;
+  cursor: grab;
+}
