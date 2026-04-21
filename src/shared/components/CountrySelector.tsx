@@ -11,22 +11,38 @@ import {
 } from "@/features/country/store/countrySlice";
 import type { AppDispatch, RootState } from "@/store";
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  UAE: "🇦🇪",
-  AZE: "🇦🇿",
-  SAU: "🇸🇦",
-  KWT: "🇰🇼",
-  QAT: "🇶🇦",
-  OMN: "🇴🇲",
-  BHR: "🇧🇭",
-  EGY: "🇪🇬",
-  JOR: "🇯🇴",
-  LBN: "🇱🇧",
-  TUR: "🇹🇷",
-  USA: "🇺🇸",
-  GBR: "🇬🇧",
-  DEU: "🇩🇪",
+const APP_TO_ISO2: Record<string, string> = {
+  UAE: "ae",
+  AZE: "az",
+  SAU: "sa",
+  KWT: "kw",
+  QAT: "qa",
+  OMN: "om",
+  BHR: "bh",
+  EGY: "eg",
+  JOR: "jo",
+  LBN: "lb",
+  TUR: "tr",
+  USA: "us",
+  GBR: "gb",
+  DEU: "de",
 };
+
+function FlagImg({ code, size = 24 }: { code: string; size?: number }) {
+  const iso2 = APP_TO_ISO2[code];
+  if (!iso2) return <span className="text-[16px] leading-none">🌍</span>;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`https://flagcdn.com/w40/${iso2}.png`}
+      alt={code}
+      width={size}
+      height={size * 0.75}
+      className="rounded-sm object-cover"
+      style={{ minWidth: size }}
+    />
+  );
+}
 
 export default function CountrySelector() {
   const [open, setOpen] = useState(false);
@@ -37,7 +53,6 @@ export default function CountrySelector() {
   const userId = useSelector((state: RootState) => state.auth.userId);
 
   const currency = selectedCountry?.currency ?? "AED";
-  const flag = COUNTRY_FLAGS[selectedCode] ?? "🌍";
 
   function handleSelect(code: string) {
     dispatch(setCountryThunk({ countryCode: code, userId }));
@@ -51,7 +66,7 @@ export default function CountrySelector() {
         className="flex items-center gap-[6px] bg-white/15 hover:bg-white/25 border border-white/20 rounded-full h-[36px] px-[12px] transition-all duration-200 cursor-pointer"
         title="Select country"
       >
-        <span className="text-[16px] leading-none">{flag}</span>
+        <FlagImg code={selectedCode} size={20} />
         <span className="hidden xl:inline text-[13px] font-medium text-white/80">{selectedCode}</span>
         <span className="text-white/40 text-[11px] hidden xl:inline">· {currency}</span>
       </button>
@@ -120,9 +135,7 @@ export default function CountrySelector() {
                           }`}
                         >
                           <div className="flex items-center gap-[12px]">
-                            <span className="text-[24px] leading-none">
-                              {COUNTRY_FLAGS[country.code] ?? "🌍"}
-                            </span>
+                            <FlagImg code={country.code} size={28} />
                             <div>
                               <p className={`text-[14px] font-semibold ${isSelected ? "text-[#402F75]" : "text-gray-800"}`}>
                                 {country.name}

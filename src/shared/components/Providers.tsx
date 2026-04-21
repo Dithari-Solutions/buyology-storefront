@@ -32,6 +32,9 @@ function CountryInitializer() {
   return null;
 }
 
+// Maps URL language to the most likely country code when no preference is saved
+const LANG_DEFAULT_COUNTRY: Record<string, string> = { az: "AZE" };
+
 function GeolocationInitializer() {
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.auth.userId);
@@ -42,13 +45,30 @@ function GeolocationInitializer() {
   // Detected country code stored in Redux after reverse geocoding
   const detectedCountryCode = useSelector(selectDetectedCountryCode);
 
+  // Current UI language (set by LangSync from URL segment)
+  const lang = useSelector((state: RootState) => state.language.lang as string);
+
   // Ensure we only apply the auto-detected country once
   const appliedRef = useRef(false);
+  // Tracks whether a lang-based default was already applied
+  const langAppliedRef = useRef(false);
 
   // Step 1 — kick off the geolocation request once on mount
   useEffect(() => {
     dispatch(requestLocationThunk());
   }, [dispatch]);
+
+  // Step 1b — apply lang-based country immediately if no saved preference.
+  // This gives users on /az/... an AZE default without waiting for geolocation.
+  // Geolocation can still override this if it detects a different country.
+  useEffect(() => {
+    if (!lang || langAppliedRef.current) return;
+    if (typeof window !== "undefined" && localStorage.getItem("selectedCountryCode")) return;
+    const langCountry = LANG_DEFAULT_COUNTRY[lang];
+    if (!langCountry) return;
+    langAppliedRef.current = true;
+    dispatch(setCountryThunk({ countryCode: langCountry, userId }));
+  }, [lang, dispatch, userId]);
 
   // Step 2 — set country as soon as it is detected from geolocation.
   // We dispatch immediately (don't wait for countries list) so the product list

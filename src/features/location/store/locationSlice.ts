@@ -34,13 +34,18 @@ const initialState: LocationState = {
 };
 
 async function detectCountryByIP(): Promise<string | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(5000) });
+    const res = await fetch("https://ipapi.co/json/", { signal: controller.signal });
+    if (!res.ok) return null;
     const data = await res.json();
     const iso2 = (data?.country_code as string | undefined)?.toUpperCase();
     if (iso2) return ISO2_TO_APP[iso2] ?? null;
   } catch {
     // IP lookup failed
+  } finally {
+    clearTimeout(timer);
   }
   return null;
 }
