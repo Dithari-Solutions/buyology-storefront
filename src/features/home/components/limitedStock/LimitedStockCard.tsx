@@ -2,9 +2,14 @@
 
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
+import { useRouter, useParams } from "next/navigation";
+import { useDispatch } from "react-redux";
 import Button from "@/shared/components/Button";
+import { addItem } from "@/features/cart/store/cartSlice";
+import type { AppDispatch } from "@/store";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { getPrimaryImage } from "@/features/product/services/productService";
+import type { Lang } from "@/config/pathSlugs";
 
 function extractSpecs(product: ApiProduct): string[] {
     return product.specs.slice(0, 5).map((group) => {
@@ -16,10 +21,30 @@ function extractSpecs(product: ApiProduct): string[] {
 
 export default function LimitedStockCard({ product }: { product: ApiProduct }) {
     const { t } = useTranslation("home");
+    const router = useRouter();
+    const params = useParams();
+    const lang = (params?.lang as Lang) ?? "en";
+    const dispatch = useDispatch<AppDispatch>();
     const imageUrl = getPrimaryImage(product.media);
     const specs = extractSpecs(product);
     const effectivePrice = product.effectivePrice ?? 0;
     const basePrice = product.basePrice ?? effectivePrice;
+
+    function handleBuyNow() {
+        dispatch(addItem({
+            id: `buy-${product.id}-${Date.now()}`,
+            productId: product.id,
+            title: product.title,
+            imageUrl: imageUrl ?? "",
+            variant: { color: "", storage: "" },
+            price: effectivePrice,
+            originalPrice: basePrice,
+            discountPercent: basePrice > effectivePrice ? Math.round((1 - effectivePrice / basePrice) * 100) : 0,
+            quantity: 1,
+            savedForLater: false,
+        }));
+        router.push(`/${lang}/checkout`);
+    }
 
     return (
         <div
@@ -92,7 +117,7 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
                                 )}
                             </div>
                         )}
-                        <Button title={t("limitedStock.buyNow")} />
+                        <Button title={t("limitedStock.buyNow")} onClick={handleBuyNow} />
                     </div>
                 </div>
             </div>

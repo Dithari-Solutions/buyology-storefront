@@ -4,15 +4,22 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { subscribeToNewsletter } from "../../newsletter/services/newsletter.api";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Newsletter() {
     const { t } = useTranslation("home");
     const [email, setEmail] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email.trim() || loading) return;
+        const trimmed = email.trim();
+        if (!trimmed) { setEmailError("Email is required."); return; }
+        if (!EMAIL_RE.test(trimmed)) { setEmailError("Please enter a valid email address."); return; }
+        setEmailError(null);
+        if (loading) return;
         setLoading(true);
         try {
             await subscribeToNewsletter(email.trim());
@@ -69,14 +76,14 @@ export default function Newsletter() {
                             </p>
                         </div>
                     ) : (
-                        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full max-w-md">
+                            <div className="flex flex-col sm:flex-row gap-3">
                             <input
                                 type="email"
                                 placeholder={t("newsletter.placeholder")}
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className="flex-1 bg-white border border-gray-200 rounded-full px-5 py-3 text-[14px] text-gray-800 placeholder-gray-400 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/15 transition-all"
+                                onChange={(e) => { setEmail(e.target.value); setEmailError(null); }}
+                                className={`flex-1 bg-white border rounded-full px-5 py-3 text-[14px] text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#402F75]/15 transition-all ${emailError ? "border-red-400 focus:border-red-400" : "border-gray-200 focus:border-[#402F75]"}`}
                             />
                             <button
                                 type="submit"
@@ -90,6 +97,10 @@ export default function Newsletter() {
                                     <polyline points="12 5 19 12 12 19" />
                                 </svg>
                             </button>
+                            </div>
+                            {emailError && (
+                                <p className="text-red-500 text-[12px] text-center">{emailError}</p>
+                            )}
                         </form>
                     )}
 

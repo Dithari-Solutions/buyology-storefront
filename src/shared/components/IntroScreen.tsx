@@ -105,9 +105,11 @@ const SERVICE_DEFS: ServiceDef[] = [
   },
 ];
 
+const INTRO_STORAGE_KEY = "buyology_intro_seen";
+
 export default function IntroScreen() {
   const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const router = useRouter();
@@ -115,6 +117,10 @@ export default function IntroScreen() {
 
   useEffect(() => {
     setMounted(true);
+    const alreadySeen = localStorage.getItem(INTRO_STORAGE_KEY);
+    if (!alreadySeen) {
+      setVisible(true);
+    }
   }, []);
 
   // Lock body scroll while intro is visible
@@ -139,6 +145,7 @@ export default function IntroScreen() {
       setProgress(pct);
       if (elapsed >= AUTO_DISMISS_MS) {
         clearInterval(interval);
+        localStorage.setItem(INTRO_STORAGE_KEY, "1");
         setVisible(false);
       }
     }, 50);
@@ -151,6 +158,7 @@ export default function IntroScreen() {
   }
 
   function handleServiceClick(routeKey: string, query?: string) {
+    localStorage.setItem(INTRO_STORAGE_KEY, "1");
     setVisible(false);
     router.push(getPath(routeKey, query));
   }
@@ -297,7 +305,7 @@ export default function IntroScreen() {
             </div>
 
             <button
-              onClick={() => setVisible(false)}
+              onClick={() => { localStorage.setItem(INTRO_STORAGE_KEY, "1"); setVisible(false); }}
               className="flex items-center gap-1.5 text-[13px] font-semibold text-white/60 hover:text-white transition-colors cursor-pointer group py-2 px-4"
             >
               Skip intro

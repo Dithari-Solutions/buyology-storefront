@@ -38,6 +38,7 @@ export default function NotFound() {
 
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
     const favSlug = PATH_SLUGS.favourites?.[lang] ?? "favourites";
+    const profileSlug = PATH_SLUGS.profile?.[lang] ?? "profile";
 
     function handleSearch(e: React.FormEvent) {
         e.preventDefault();
@@ -282,7 +283,7 @@ export default function NotFound() {
 
                         {/* My Account */}
                         <Link
-                            href={`/${lang}`}
+                            href={`/${lang}/${profileSlug}`}
                             className="flex flex-col items-center gap-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:border-[#402F75] transition-colors"
                         >
                             <div

@@ -1,13 +1,23 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import Logo from "@/../public/logo.png";
 import { COLORS } from "../styles/variables";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import AuthVector from "@/assets/vectors/auth-bg-vector.png";
 
 export default function Footer() {
     const { t } = useTranslation("footer");
+    const lang = (useSelector((state: RootState) => state.language.lang) as Lang) ?? "en";
+    const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
+    const repairSlug = PATH_SLUGS.repair?.[lang] ?? "repair";
+    const rentSlug = PATH_SLUGS.rent?.[lang] ?? "rent";
+    const sellSlug = PATH_SLUGS.sell?.[lang] ?? "sell";
+    const contactSlug = PATH_SLUGS.contact?.[lang] ?? "contact";
 
     return (
         <footer className="relative overflow-hidden flex flex-col items-center justify-center w-full mt-[30px] md:mt-[50px] py-[30px] md:py-[50px] px-[20px] sm:px-[40px] md:px-[60px] lg:px-[100px]" style={{
@@ -55,27 +65,27 @@ export default function Footer() {
                     <div>
                         <h2 className="text-white text-[20px] md:text-[20px] font-bold mb-[15px] md:mb-[30px]">{t("shop.heading")}</h2>
                         <ul>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("shop.new_arrivals")}</li>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("shop.refurbished")}</li>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("shop.special_offer")}</li>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("shop.reviews")}</li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${shopSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.new_arrivals")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${shopSlug}?condition=REFURBISHED`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.refurbished")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${shopSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.special_offer")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${shopSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.reviews")}</Link></li>
                         </ul>
                     </div>
                     <div>
                         <h2 className="text-white text-[20px] md:text-[20px] font-bold mb-[15px] md:mb-[30px]">{t("services.heading")}</h2>
                         <ul>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("services.fixing")}</li>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("services.rental")}</li>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("services.sell")}</li>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("services.maintenance")}</li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${repairSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("services.fixing")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${rentSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("services.rental")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${sellSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("services.sell")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${repairSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("services.maintenance")}</Link></li>
                         </ul>
                     </div>
                     <div>
                         <h2 className="text-white text-[18px] md:text-[20px] font-bold mb-[15px] md:mb-[30px]">{t("company.heading")}</h2>
                         <ul>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("company.aboutUs")}</li>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("company.contactSupport")}</li>
-                            <li className="text-white text-[14px] md:text-[16px] my-[6px] md:my-[10px] cursor-pointer">{t("company.privacyPolicy")}</li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.aboutUs")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${contactSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.contactSupport")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.privacyPolicy")}</Link></li>
                         </ul>
                     </div>
                 </div>

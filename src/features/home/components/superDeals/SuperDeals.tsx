@@ -2,13 +2,14 @@
 
 import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
 import SuperDealsCard from "./SuperDealsCard";
 import arrowLeft from "@/assets/icons/Arrow-left.png";
 import { getSuperDealProducts } from "@/features/product/services/productService";
 import type { ApiProduct } from "@/features/product/services/productService";
-import type { Lang } from "@/config/pathSlugs";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 function SuperDealsSkeleton() {
     return (
@@ -102,12 +103,15 @@ export default function SuperDeals() {
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-3">
-                    <a
-                        href="#"
-                        className="hidden sm:flex items-center gap-1.5 text-[13px] font-semibold text-[#402F75] hover:text-[#2f2258] transition-colors whitespace-nowrap me-1"
+                    <Link
+                        href={`/${lang}/${PATH_SLUGS.shop?.[lang] ?? "shop"}`}
+                        className="hidden sm:flex items-center gap-2 text-[12px] font-semibold text-[#402F75] bg-[#EDE9FF] hover:bg-[#402F75] hover:text-white px-4 py-2 rounded-full transition-all duration-200 whitespace-nowrap"
                     >
-                        {t("superDeals.seeAll")} <span className="text-[15px]">→</span>
-                    </a>
+                        {t("superDeals.seeAll")}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </Link>
                     <button
                         onClick={() => scroll("left")}
                         aria-label={t("superDeals.prev")}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter, useParams } from "next/navigation";
 import ProductDetailImage from "./ProductDetailImage";
 import ProductFeaturesBadges from "./ProductFeaturesBadges";
 import ProductReviews from "./ProductReviews";
@@ -11,6 +12,7 @@ import { addItem } from "@/features/cart/store/cartSlice";
 import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import type { AppDispatch, RootState } from "@/store";
 import type { ApiProduct, ApiSpec, ApiSpecOption } from "../services/productService";
+import type { Lang } from "@/config/pathSlugs";
 
 interface ProductDetailClientProps {
   product: ApiProduct;
@@ -102,6 +104,9 @@ function SpecSelector({
 
 export default function ProductDetailClient({ product, images }: ProductDetailClientProps) {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const params = useParams();
+  const lang = (params?.lang as Lang) ?? "en";
   const isFav = useSelector((state: RootState) => selectIsFavourite(product.id)(state));
   const userId = useSelector((state: RootState) => state.auth.userId);
 
@@ -189,16 +194,46 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
     setTimeout(() => setFavBounce(false), 400);
   }
 
+  function handleBuyNow() {
+    dispatch(addItem({
+      id: `buy-${product.id}-${Date.now()}`,
+      productId: product.id,
+      title: product.title,
+      imageUrl: images[0] ?? "",
+      variant: { color: "", storage: getVariantLabel() },
+      price: totalPrice,
+      originalPrice: product.basePrice ?? 0,
+      discountPercent:
+        hasDiscount && (product.basePrice ?? 0) > 0
+          ? Math.round((((product.basePrice ?? 0) - (product.effectivePrice ?? 0)) / (product.basePrice ?? 0)) * 100)
+          : 0,
+      quantity: 1,
+      savedForLater: false,
+    }));
+    router.push(`/${lang}/checkout`);
+  }
+
   async function handleShare() {
     const url = window.location.href;
     if (navigator.share) {
       try {
         await navigator.share({ title: product.title, url });
       } catch {
-        // user cancelled
+        await navigator.clipboard.writeText(url).catch(() => {});
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
       }
     } else {
-      await navigator.clipboard.writeText(url);
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -347,7 +382,10 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
           {/* Action buttons */}
           <div className="flex flex-col gap-3 pt-1">
             {/* Buy Now — primary */}
-            <button className="w-full py-4 rounded-2xl bg-[#FBBB14] text-gray-900 font-bold text-[15px] hover:brightness-95 active:scale-[0.98] transition-all shadow-sm shadow-yellow-200">
+            <button
+              onClick={handleBuyNow}
+              className="w-full py-4 rounded-2xl bg-[#FBBB14] text-gray-900 font-bold text-[15px] hover:brightness-95 active:scale-[0.98] transition-all shadow-sm shadow-yellow-200 cursor-pointer"
+            >
               Buy Now
             </button>
 

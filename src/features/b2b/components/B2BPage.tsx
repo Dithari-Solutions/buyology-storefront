@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
@@ -98,7 +98,7 @@ const TIER_COLORS = [
 ];
 
 // ─── Savings Calculator ────────────────────────────────────────────────────────
-function SavingsCalculator({ tiers }: { tiers: Tier[] }) {
+function SavingsCalculator({ tiers, onQuantityChange }: { tiers: Tier[]; onQuantityChange?: (qty: string) => void }) {
     const { t } = useTranslation("b2b");
     const [qty, setQty] = useState("");
 
@@ -128,7 +128,7 @@ function SavingsCalculator({ tiers }: { tiers: Tier[] }) {
                     type="number"
                     min="1"
                     value={qty}
-                    onChange={(e) => setQty(e.target.value)}
+                    onChange={(e) => { setQty(e.target.value); onQuantityChange?.(e.target.value); }}
                     placeholder={t("calculator.placeholder")}
                     className="w-full max-w-[200px] border border-gray-200 rounded-[12px] px-4 py-3 text-[14px] font-semibold text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
                 />
@@ -177,20 +177,44 @@ function SavingsCalculator({ tiers }: { tiers: Tier[] }) {
     );
 }
 
+const B2B_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // ─── Inquiry Form ──────────────────────────────────────────────────────────────
-function InquiryForm() {
+function InquiryForm({ initialQuantity }: { initialQuantity?: string }) {
     const { t } = useTranslation("b2b");
     const [formState, setFormState] = useState<"idle" | "sending" | "success" | "error">("idle");
     const [fields, setFields] = useState({
-        company: "", contact: "", email: "", phone: "", quantity: "", message: "",
+        company: "", contact: "", email: "", phone: "", quantity: initialQuantity ?? "", message: "",
     });
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    // Sync calculator quantity into the form whenever it changes
+    useEffect(() => {
+        if (initialQuantity !== undefined && initialQuantity !== "") {
+            setFields(f => ({ ...f, quantity: initialQuantity }));
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialQuantity]);
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         setFields((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        setFieldErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+    }
+
+    function validate(): boolean {
+        const errors: Record<string, string> = {};
+        if (!fields.company.trim()) errors.company = "Company name is required.";
+        if (!fields.contact.trim()) errors.contact = "Contact person is required.";
+        if (!fields.email.trim()) errors.email = "Email is required.";
+        else if (!B2B_EMAIL_RE.test(fields.email.trim())) errors.email = "Enter a valid email address.";
+        if (!fields.quantity || parseInt(fields.quantity, 10) < 1) errors.quantity = "Enter a valid quantity (min 1).";
+        if (Object.keys(errors).length > 0) { setFieldErrors(errors); return false; }
+        return true;
     }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        if (!validate()) return;
         setFormState("sending");
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/b2b/inquiries`, {
@@ -239,24 +263,24 @@ function InquiryForm() {
                 <label className="text-[13px] font-semibold text-gray-700">{t("form.company")}</label>
                 <input
                     name="company"
-                    required
                     value={fields.company}
                     onChange={handleChange}
                     placeholder={t("form.companyPlaceholder")}
-                    className="border border-gray-200 rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
+                    className={`border rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all ${fieldErrors.company ? "border-red-400" : "border-gray-200"}`}
                 />
+                {fieldErrors.company && <p className="text-[11px] text-red-500">{fieldErrors.company}</p>}
             </div>
             {/* Contact person */}
             <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-semibold text-gray-700">{t("form.contact")}</label>
                 <input
                     name="contact"
-                    required
                     value={fields.contact}
                     onChange={handleChange}
                     placeholder={t("form.contactPlaceholder")}
-                    className="border border-gray-200 rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
+                    className={`border rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all ${fieldErrors.contact ? "border-red-400" : "border-gray-200"}`}
                 />
+                {fieldErrors.contact && <p className="text-[11px] text-red-500">{fieldErrors.contact}</p>}
             </div>
             {/* Email */}
             <div className="flex flex-col gap-1.5">
@@ -264,12 +288,12 @@ function InquiryForm() {
                 <input
                     name="email"
                     type="email"
-                    required
                     value={fields.email}
                     onChange={handleChange}
                     placeholder={t("form.emailPlaceholder")}
-                    className="border border-gray-200 rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
+                    className={`border rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all ${fieldErrors.email ? "border-red-400" : "border-gray-200"}`}
                 />
+                {fieldErrors.email && <p className="text-[11px] text-red-500">{fieldErrors.email}</p>}
             </div>
             {/* Phone */}
             <div className="flex flex-col gap-1.5">
@@ -290,12 +314,12 @@ function InquiryForm() {
                     name="quantity"
                     type="number"
                     min="1"
-                    required
                     value={fields.quantity}
                     onChange={handleChange}
                     placeholder={t("form.quantityPlaceholder")}
-                    className="border border-gray-200 rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
+                    className={`border rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all ${fieldErrors.quantity ? "border-red-400" : "border-gray-200"}`}
                 />
+                {fieldErrors.quantity && <p className="text-[11px] text-red-500">{fieldErrors.quantity}</p>}
             </div>
             {/* Message — spans 2 cols */}
             <div className="flex flex-col gap-1.5 sm:col-span-2">
@@ -366,6 +390,7 @@ export default function B2BPage() {
     const params = useParams();
     const router = useRouter();
     const lang = (params?.lang as Lang) ?? "en";
+    const [calculatorQty, setCalculatorQty] = useState("");
 
     const tiers = t("tiers.tiers", { returnObjects: true }) as Tier[];
     const benefits = t("benefits.items", { returnObjects: true }) as {
@@ -419,86 +444,15 @@ export default function B2BPage() {
                 </div>
             </motion.div>
 
-            {/* ── Pricing Tiers ────────────────────────────────────────────── */}
+            {/* ── Savings Calculator ───────────────────────────────────────── */}
             <section className="mb-[64px]">
-                <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-80px" }}
-                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-                    className="mb-8"
-                >
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#402F75] bg-[#EDE9FF] px-3 py-[5px] rounded-full mb-3">
-                        💰 {t("tiers.title")}
-                    </span>
-                    <h2 className="text-[24px] sm:text-[28px] font-bold text-gray-900 mb-2">
-                        {t("tiers.title")}
-                    </h2>
-                    <p className="text-gray-500 text-[14px]">{t("tiers.subtitle")}</p>
-                </motion.div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
-                    {tiers.map((tier, i) => {
-                        const colors = TIER_COLORS[i] ?? TIER_COLORS[0];
-                        const isCustom = tier.discount === null;
-                        return (
-                            <motion.div
-                                key={tier.label}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-60px" }}
-                                transition={{ duration: 0.5, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
-                                className="relative rounded-[20px] p-5 border-2 flex flex-col gap-3"
-                                style={{ backgroundColor: colors.bg, borderColor: colors.border }}
-                            >
-                                {tier.badge && (
-                                    <span
-                                        className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold px-3 py-[3px] rounded-full whitespace-nowrap"
-                                        style={{ backgroundColor: colors.border, color: i === 3 ? "#fff" : "#fff" }}
-                                    >
-                                        {tier.badge}
-                                    </span>
-                                )}
-                                <p className="text-[13px] font-bold" style={{ color: colors.text }}>
-                                    {tier.label}
-                                </p>
-                                <p className="text-[12px] text-gray-500 leading-tight">
-                                    {tier.max === null
-                                        ? `${tier.min}+ ${t("tiers.units")}`
-                                        : `${tier.min}–${tier.max} ${t("tiers.units")}`}
-                                </p>
-                                {isCustom ? (
-                                    <p className="text-[12px] font-semibold" style={{ color: colors.text }}>
-                                        {t("tiers.contactUs")}
-                                    </p>
-                                ) : (
-                                    <div className="mt-auto">
-                                        <span
-                                            className="text-[22px] font-extrabold leading-none"
-                                            style={{ color: colors.text }}
-                                        >
-                                            {tier.discount === 0 ? "—" : `${tier.discount}%`}
-                                        </span>
-                                        {tier.discount !== 0 && (
-                                            <p className="text-[11px] text-gray-400 mt-0.5">
-                                                {t("tiers.discount")}
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-                            </motion.div>
-                        );
-                    })}
-                </div>
-
-                {/* Savings Calculator */}
                 <motion.div
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-60px" }}
                     transition={{ duration: 0.65, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 >
-                    <SavingsCalculator tiers={tiers} />
+                    <SavingsCalculator tiers={tiers} onQuantityChange={setCalculatorQty} />
                 </motion.div>
             </section>
 
@@ -603,7 +557,7 @@ export default function B2BPage() {
                         </h2>
                         <p className="text-gray-500 text-[14px]">{t("form.subtitle")}</p>
                     </div>
-                    <InquiryForm />
+                    <InquiryForm initialQuantity={calculatorQty} />
                 </motion.div>
             </section>
 

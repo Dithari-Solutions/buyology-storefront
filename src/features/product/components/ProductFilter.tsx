@@ -82,22 +82,30 @@ function PriceRange({ min, max, value, onChange }: {
   min: number; max: number; value: [number, number]; onChange: (v: [number, number]) => void;
 }) {
   const toPercent = (v: number) => max === min ? 0 : ((v - min) / (max - min)) * 100;
+  const minPct = toPercent(value[0]);
+  const maxPct = toPercent(value[1]);
+  // When min thumb is at the right end, raise its z-index so it can be moved back
+  const minZIndex = minPct >= maxPct - 1 ? 3 : 2;
+  const maxZIndex = minPct >= maxPct - 1 ? 2 : 3;
+
   return (
     <div className="pt-[6px] pb-[4px]">
       <div className="relative h-[4px] mx-[8px] my-[16px]">
         <div className="absolute inset-0 rounded-full bg-gray-200" />
         <div className="absolute h-full rounded-full bg-[#402F75]"
-          style={{ left: `${toPercent(value[0])}%`, right: `${100 - toPercent(value[1])}%` }} />
+          style={{ left: `${minPct}%`, right: `${100 - maxPct}%` }} />
         <input type="range" min={min} max={max} value={value[0]}
           onChange={e => { const v = Math.min(Number(e.target.value), value[1] - 1); onChange([v, value[1]]); }}
-          className="absolute w-full h-full opacity-0 cursor-pointer" />
+          className="absolute w-full h-full opacity-0 cursor-pointer"
+          style={{ zIndex: minZIndex }} />
         <input type="range" min={min} max={max} value={value[1]}
           onChange={e => { const v = Math.max(Number(e.target.value), value[0] + 1); onChange([value[0], v]); }}
-          className="absolute w-full h-full opacity-0 cursor-pointer" />
+          className="absolute w-full h-full opacity-0 cursor-pointer"
+          style={{ zIndex: maxZIndex }} />
         <div className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-[#402F75] border-[3px] border-white shadow-md -translate-x-1/2 pointer-events-none"
-          style={{ left: `${toPercent(value[0])}%` }} />
+          style={{ left: `${minPct}%` }} />
         <div className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-[#402F75] border-[3px] border-white shadow-md -translate-x-1/2 pointer-events-none"
-          style={{ left: `${toPercent(value[1])}%` }} />
+          style={{ left: `${maxPct}%` }} />
       </div>
       <div className="flex justify-between mt-[10px]">
         <span className="text-[12px] text-gray-500">{value[0].toLocaleString()}</span>

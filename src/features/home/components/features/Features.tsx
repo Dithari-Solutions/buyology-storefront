@@ -13,6 +13,7 @@ import FeatureCard from "./FeatureCard";
 export default function Features() {
     const { t } = useTranslation("home");
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
+    const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
     const rentSlug = PATH_SLUGS.rent?.[lang] ?? "rent";
     const repairSlug = PATH_SLUGS.repair?.[lang] ?? "repair";
     const sellSlug = PATH_SLUGS.sell?.[lang] ?? "sell";
@@ -85,6 +86,7 @@ export default function Features() {
                         description={t("features.brandNewDesc")}
                         bg={BrandNewBg}
                         variant="normal"
+                        href={`/${lang}/${shopSlug}?condition=NEW`}
                     />
                 </div>
 
@@ -96,6 +98,7 @@ export default function Features() {
                         description={t("features.refurbishedDesc")}
                         bg={RefubishedBg}
                         variant="wide"
+                        href={`/${lang}/${shopSlug}?condition=REFURBISHED`}
                     />
                 </div>
 

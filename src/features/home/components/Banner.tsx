@@ -1,12 +1,19 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 import BannerBg from "@/assets/banner/banner.png";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import type { RootState } from "@/store";
 
 const CATEGORY_KEYS = ["laptops", "smartphones", "tablets", "gaming", "accessories"] as const;
 
 export default function Banner() {
     const { t } = useTranslation("banner");
+    const router = useRouter();
+    const lang = (useSelector((state: RootState) => state.language.lang) as Lang) ?? "en";
+    const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
 
     const stats = [
         { value: t("stats.devicesValue"),   label: t("stats.devicesLabel") },
@@ -54,13 +61,13 @@ export default function Banner() {
                     </span>
                     <div className="hidden sm:flex items-center gap-2 flex-wrap">
                         {CATEGORY_KEYS.map((key) => (
-                            <a
+                            <button
                                 key={key}
-                                href="#"
-                                className="text-white/70 hover:text-white text-[12px] font-medium transition-all px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 hover:border-white/35 backdrop-blur-sm"
+                                onClick={() => router.push(`/${lang}/${shopSlug}?category=${key}`)}
+                                className="text-white/70 hover:text-white text-[12px] font-medium transition-all px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 hover:border-white/35 backdrop-blur-sm cursor-pointer"
                             >
                                 {t(`categories.${key}`)}
-                            </a>
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -81,9 +88,9 @@ export default function Banner() {
 
                     {/* CTA buttons */}
                     <div className="flex items-center gap-3 flex-wrap">
-                        <a
-                            href="#"
-                            className="flex items-center gap-2 text-[13px] sm:text-[15px] font-bold text-[#402F75] px-5 sm:px-7 py-2.5 sm:py-3 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-2xl active:scale-95"
+                        <button
+                            onClick={() => router.push(`/${lang}/${shopSlug}`)}
+                            className="flex items-center gap-2 text-[13px] sm:text-[15px] font-bold text-[#402F75] px-5 sm:px-7 py-2.5 sm:py-3 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-2xl active:scale-95 cursor-pointer"
                             style={{ backgroundColor: "#FBBB14" }}
                         >
                             {t("shopNow")}
@@ -99,13 +106,13 @@ export default function Banner() {
                                 <line x1="5" y1="12" x2="19" y2="12" />
                                 <polyline points="12 5 19 12 12 19" />
                             </svg>
-                        </a>
-                        <a
-                            href="#"
-                            className="text-[13px] sm:text-[15px] font-semibold text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur-sm transition-all duration-200 hover:bg-white/20 hover:border-white/50"
+                        </button>
+                        <button
+                            onClick={() => router.push(`/${lang}/${shopSlug}`)}
+                            className="text-[13px] sm:text-[15px] font-semibold text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur-sm transition-all duration-200 hover:bg-white/20 hover:border-white/50 cursor-pointer"
                         >
                             {t("browseDeals")}
-                        </a>
+                        </button>
                     </div>
                 </div>
 

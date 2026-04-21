@@ -21,6 +21,20 @@ interface EditForm {
     dateOfBirth: string;
 }
 
+interface FormErrors {
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+}
+
+function validateProfileForm(form: EditForm): FormErrors {
+    const errors: FormErrors = {};
+    if (form.firstName && form.firstName.trim().length < 2) errors.firstName = "First name must be at least 2 characters.";
+    if (form.lastName && form.lastName.trim().length < 2) errors.lastName = "Last name must be at least 2 characters.";
+    if (form.phoneNumber && !/^\+?[\d\s\-().]{7,20}$/.test(form.phoneNumber.trim())) errors.phoneNumber = "Enter a valid phone number.";
+    return errors;
+}
+
 export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Props) {
     const { t } = useTranslation("profile");
     const userId = useSelector((state: RootState) => state.auth.userId);
@@ -30,6 +44,7 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
     const [isSaving, setIsSaving] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [formErrors, setFormErrors] = useState<FormErrors>({});
     const [form, setForm] = useState<EditForm>({
         firstName: "",
         lastName: "",
@@ -64,10 +79,14 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
     function handleCancel() {
         setIsEditing(false);
         setSaveError(null);
+        setFormErrors({});
     }
 
     async function handleSave() {
         if (!userId) return;
+        const errors = validateProfileForm(form);
+        if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
+        setFormErrors({});
         setIsSaving(true);
         setSaveError(null);
         try {
@@ -260,32 +279,35 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                                     <input
                                         type="text"
                                         value={form.firstName}
-                                        onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
+                                        onChange={(e) => { setForm((p) => ({ ...p, firstName: e.target.value })); setFormErrors(p => ({ ...p, firstName: undefined })); }}
                                         placeholder={t("personalInfo.placeholder")}
                                         maxLength={100}
-                                        className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300"
+                                        className={`w-full border rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300 ${formErrors.firstName ? "border-red-400" : "border-gray-200"}`}
                                     />
+                                    {formErrors.firstName && <p className="text-[11px] text-red-500 mt-1">{formErrors.firstName}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-[13px] font-medium text-gray-600 mb-1.5">{t("personalInfo.lastName")}</label>
                                     <input
                                         type="text"
                                         value={form.lastName}
-                                        onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
+                                        onChange={(e) => { setForm((p) => ({ ...p, lastName: e.target.value })); setFormErrors(p => ({ ...p, lastName: undefined })); }}
                                         placeholder={t("personalInfo.placeholder")}
                                         maxLength={100}
-                                        className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300"
+                                        className={`w-full border rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300 ${formErrors.lastName ? "border-red-400" : "border-gray-200"}`}
                                     />
+                                    {formErrors.lastName && <p className="text-[11px] text-red-500 mt-1">{formErrors.lastName}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-[13px] font-medium text-gray-600 mb-1.5">{t("personalInfo.phone")}</label>
                                     <input
                                         type="tel"
                                         value={form.phoneNumber}
-                                        onChange={(e) => setForm((p) => ({ ...p, phoneNumber: e.target.value }))}
+                                        onChange={(e) => { setForm((p) => ({ ...p, phoneNumber: e.target.value })); setFormErrors(p => ({ ...p, phoneNumber: undefined })); }}
                                         placeholder="+971501234567"
-                                        className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300"
+                                        className={`w-full border rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300 ${formErrors.phoneNumber ? "border-red-400" : "border-gray-200"}`}
                                     />
+                                    {formErrors.phoneNumber && <p className="text-[11px] text-red-500 mt-1">{formErrors.phoneNumber}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-[13px] font-medium text-gray-600 mb-1.5">{t("personalInfo.dob")}</label>

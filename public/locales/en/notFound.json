@@ -9,12 +9,12 @@
     "whereToGo": "WHERE WOULD YOU LIKE TO GO?",
     "cards": {
         "home": {
-            "title": "Continue Shopping",
-            "desc": "Browse our full product catalogue"
+            "title": "Go Home",
+            "desc": "Return to the main page"
         },
         "cart": {
-            "title": "Continue Shopping",
-            "desc": "Browse our full product catalogue"
+            "title": "Browse Shop",
+            "desc": "Explore our full product catalogue"
         },
         "favourites": {
             "title": "My Favourites",

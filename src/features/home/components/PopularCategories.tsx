@@ -1,6 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 const CATEGORY_KEYS = [
     {
@@ -71,6 +75,8 @@ const CATEGORY_KEYS = [
 
 export default function PopularCategories() {
     const { t } = useTranslation("home");
+    const lang = (useSelector((state: RootState) => state.language.lang) as Lang) ?? "en";
+    const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
 
     return (
         <section className="w-full flex flex-col items-center mt-[30px] md:mt-[50px]">
@@ -86,16 +92,19 @@ export default function PopularCategories() {
                         {t("categories.subtitle")}
                     </p>
                 </div>
-                <a href="#" className="hidden sm:flex items-center gap-1 text-[13px] font-semibold text-[#402F75] hover:underline whitespace-nowrap mb-1 flex-shrink-0 ms-4">
-                    {t("categories.seeAll")} <span>→</span>
-                </a>
+                <Link href={`/${lang}/${shopSlug}`} className="hidden sm:flex items-center gap-2 text-[12px] font-semibold text-[#402F75] bg-[#EDE9FF] hover:bg-[#402F75] hover:text-white px-4 py-2 rounded-full transition-all duration-200 whitespace-nowrap flex-shrink-0 ms-4">
+                    {t("categories.seeAll")}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </Link>
             </div>
 
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4 w-[95%] md:w-[90%]">
                 {CATEGORY_KEYS.map((cat) => (
-                    <a
+                    <Link
                         key={cat.key}
-                        href="#"
+                        href={`/${lang}/${shopSlug}?category=${cat.key}`}
                         className="group flex flex-col items-center justify-center gap-3 py-5 px-3 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                         style={{ backgroundColor: cat.bg }}
                     >
@@ -113,7 +122,7 @@ export default function PopularCategories() {
                                 {t(`categories.${cat.key}.count`)}
                             </p>
                         </div>
-                    </a>
+                    </Link>
                 ))}
             </div>
         </section>

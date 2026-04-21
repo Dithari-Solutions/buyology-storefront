@@ -22,7 +22,6 @@ interface Props {
 }
 
 const mockUser = {
-    membership: "Gold Member",
     orders: 5,
     reviews: 12,
     wishlist: 8,
@@ -113,13 +112,6 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
                     {[profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "—"}
                 </h3>
                 <p className="text-gray-400 text-[13px] mb-3">{profile?.email ?? ""}</p>
-
-                <span className="inline-flex items-center gap-1.5 bg-[#FFF8E6] text-[#FBBB14] text-[12px] font-semibold px-3 py-1 rounded-full border border-[#FBBB14]/40">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="#FBBB14">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                    {mockUser.membership}
-                </span>
 
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 gap-2 mt-4 w-full">

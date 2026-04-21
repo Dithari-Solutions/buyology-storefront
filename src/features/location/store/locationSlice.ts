@@ -33,22 +33,34 @@ const initialState: LocationState = {
   detectedCountryCode: null,
 };
 
+async function detectCountryByIP(): Promise<string | null> {
+  try {
+    const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    const iso2 = (data?.country_code as string | undefined)?.toUpperCase();
+    if (iso2) return ISO2_TO_APP[iso2] ?? null;
+  } catch {
+    // IP lookup failed
+  }
+  return null;
+}
+
 export const requestLocationThunk = createAsyncThunk<
   { lat: number; lng: number; countryCode: string | null },
   void,
   { rejectValue: string }
 >("location/request", async (_, { rejectWithValue }) => {
   if (typeof navigator === "undefined" || !navigator.geolocation) {
-    return rejectWithValue("Geolocation not supported");
+    const countryCode = await detectCountryByIP();
+    return { lat: 0, lng: 0, countryCode };
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
 
-        // Reverse geocode to detect country code
         let countryCode: string | null = null;
         try {
           const res = await fetch(
@@ -64,8 +76,9 @@ export const requestLocationThunk = createAsyncThunk<
 
         resolve({ lat, lng, countryCode });
       },
-      (err) => {
-        reject(rejectWithValue(err.message));
+      async () => {
+        const countryCode = await detectCountryByIP();
+        resolve({ lat: 0, lng: 0, countryCode });
       },
       { timeout: 10000 }
     );
