@@ -142,7 +142,7 @@ function AddressForm({
             {/* Phone */}
             <div>
                 <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Phone <span className="text-red-400">*</span></label>
-                <input type="tel" value={form.phoneNumber} onChange={(e) => setField("phoneNumber", e.target.value)} placeholder="+971501234567" className={errors.phoneNumber ? inpErr : inp} />
+                <input type="tel" maxLength={13} value={form.phoneNumber} onChange={(e) => setField("phoneNumber", e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13))} placeholder="+971501234567" className={errors.phoneNumber ? inpErr : inp} />
                 {errors.phoneNumber && <p className="text-[11px] text-red-500 mt-0.5">{errors.phoneNumber}</p>}
             </div>
 

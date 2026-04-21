@@ -304,9 +304,10 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                                     <label className="block text-[13px] font-medium text-gray-600 mb-1.5">{t("personalInfo.phone")}</label>
                                     <input
                                         type="tel"
+                                        maxLength={13}
                                         value={form.phoneNumber}
                                         onChange={(e) => {
-                                            const cleaned = e.target.value.replace(/[^\d+\s\-().]/g, "");
+                                            const cleaned = e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13);
                                             setForm((p) => ({ ...p, phoneNumber: cleaned }));
                                             setFormErrors(p => ({ ...p, phoneNumber: undefined }));
                                         }}

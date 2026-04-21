@@ -346,8 +346,9 @@ export default function ShippingStep({
                             </label>
                             <input
                                 type="tel"
+                                maxLength={13}
                                 value={addrForm.phoneNumber}
-                                onChange={(e) => setAddrField("phoneNumber", e.target.value)}
+                                onChange={(e) => setAddrField("phoneNumber", e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13))}
                                 placeholder="+971501234567"
                                 className={addrErrors.phoneNumber ? inpErr : inp}
                             />

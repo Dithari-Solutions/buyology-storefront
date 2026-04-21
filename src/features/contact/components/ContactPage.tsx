@@ -590,9 +590,10 @@ function ContactForm() {
                                             <input
                                                 type="tel"
                                                 name="phone"
+                                                maxLength={13}
                                                 placeholder={t("form.phonePlaceholder")}
                                                 value={form.phone}
-                                                onChange={handleChange}
+                                                onChange={(e) => { const cleaned = e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13); setForm((p) => ({ ...p, phone: cleaned })); if (errors.phone) setErrors((p) => ({ ...p, phone: undefined })); }}
                                                 className={inputClass(!!errors.phone)}
                                             />
                                             {errors.phone && <p className="text-[11px] text-red-500 mt-1">{errors.phone}</p>}

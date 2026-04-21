@@ -301,8 +301,9 @@ function InquiryForm({ initialQuantity }: { initialQuantity?: string }) {
                 <input
                     name="phone"
                     type="tel"
+                    maxLength={13}
                     value={fields.phone}
-                    onChange={handleChange}
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13); setFields((p) => ({ ...p, phone: cleaned })); setFieldErrors((p) => ({ ...p, phone: "" })); }}
                     placeholder={t("form.phonePlaceholder")}
                     className="border border-gray-200 rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
                 />
