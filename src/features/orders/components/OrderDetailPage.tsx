@@ -12,6 +12,7 @@ import Footer from "@/shared/components/Footer";
 import { getOrderDetail } from "../services/orders.api";
 import type { OrderDetail, OrderStatus, TrackingEvent } from "../types";
 import ChatPanel from "./ChatPanel";
+import LiveTrackingMap from "./LiveTrackingMap";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -139,10 +140,12 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isTrackMapOpen, setIsTrackMapOpen] = useState(false);
     const [connected, setConnected] = useState(false);
     const clientRef = useRef<Client | null>(null);
 
     const COURIER_ACTIVE_STATUSES: OrderStatus[] = ["COURIER_ASSIGNED", "PICKED_UP", "IN_TRANSIT"];
+    const TRACKING_VISIBLE_STATUSES: OrderStatus[] = ["PICKED_UP", "IN_TRANSIT"];
     const COURIER_CHAT_STATUSES: OrderStatus[] = [...COURIER_ACTIVE_STATUSES, "DELIVERED", "CANCELLED", "FAILED"];
 
     // Auth guard
@@ -184,7 +187,13 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                 client.subscribe(`/topic/orders/${orderId}/status`, (frame) => {
                     const update = JSON.parse(frame.body);
                     // Refresh entire order to get latest tracking history, location, courier details, etc.
-                    getOrderDetail(orderId).then(setOrder).catch(console.error);
+                    getOrderDetail(orderId).then((newOrder) => {
+                        setOrder(newOrder);
+                        if (newOrder.status === "DELIVERED") {
+                            setIsTrackMapOpen(false);
+                            alert("Your order has been delivered!");
+                        }
+                    }).catch(console.error);
                 });
             },
             onDisconnect: () => setConnected(false),
@@ -276,6 +285,18 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                             order.deliveryOrderId &&
                                             COURIER_CHAT_STATUSES.includes(order.status) && (
                                                 <>
+                                                    {TRACKING_VISIBLE_STATUSES.includes(order.status) && (
+                                                        <button
+                                                            onClick={() => setIsTrackMapOpen(true)}
+                                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-600 text-white text-[13px] font-bold shadow-sm hover:bg-green-700 transition-colors"
+                                                        >
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                                                <circle cx="12" cy="10" r="3" />
+                                                            </svg>
+                                                            Track Order
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => setIsChatOpen(true)}
                                                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#402F75] text-white text-[13px] font-bold shadow-sm hover:bg-[#34265f] transition-colors"
@@ -436,6 +457,18 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                                     Last updated{" "}
                                                     {new Date(latest.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                                                 </p>
+                                                {TRACKING_VISIBLE_STATUSES.includes(order.status) && (
+                                                    <button
+                                                        onClick={() => setIsTrackMapOpen(true)}
+                                                        className="w-full mb-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 text-white text-[13px] font-bold shadow-sm hover:bg-green-700 transition-colors"
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                                            <circle cx="12" cy="10" r="3" />
+                                                        </svg>
+                                                        Track Live on Map
+                                                    </button>
+                                                )}
                                                 <iframe
                                                     title="Courier location"
                                                     width="100%"
@@ -577,6 +610,12 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                     orderStatus={order.status}
                     isOpen={isChatOpen}
                     onClose={() => setIsChatOpen(false)}
+                />
+            )}
+            {order && isTrackMapOpen && (
+                <LiveTrackingMap
+                    order={order}
+                    onClose={() => setIsTrackMapOpen(false)}
                 />
             )}
             <Footer />

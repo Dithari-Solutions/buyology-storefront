@@ -74,6 +74,8 @@ export interface OrderDetail extends OrderSummary {
     postalCode: string | null;
     deliveryLatitude: number | null;
     deliveryLongitude: number | null;
+    storeLatitude: number | null;
+    storeLongitude: number | null;
     subtotal: number;
     shippingFee: number;
     discount: number;
