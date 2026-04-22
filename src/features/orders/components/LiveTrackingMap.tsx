@@ -171,6 +171,33 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
             if (!bounds.isEmpty()) {
                 m.fitBounds(bounds, { padding: 80 });
             }
+
+            // Add Route Line Source
+            m.addSource("courier-route", {
+                type: "geojson",
+                data: {
+                    type: "Feature",
+                    properties: {},
+                    geometry: {
+                        type: "LineString",
+                        coordinates: latestCourierEvent && order.deliveryLongitude && order.deliveryLatitude 
+                            ? [[latestCourierEvent.longitude!, latestCourierEvent.latitude!], [order.deliveryLongitude, order.deliveryLatitude]]
+                            : []
+                    }
+                }
+            });
+
+            m.addLayer({
+                id: "courier-route-line",
+                type: "line",
+                source: "courier-route",
+                layout: { "line-join": "round", "line-cap": "round" },
+                paint: {
+                    "line-color": "#402F75",
+                    "line-width": 4,
+                    "line-dasharray": [2, 2]
+                }
+            });
         });
 
         m.addControl(new maplibregl.NavigationControl(), "top-right");
@@ -207,6 +234,22 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
                         } else {
                             courierMarker.current.setLngLat([loc.longitude, loc.latitude]);
                             if (loc.heading) courierMarker.current.setRotation(loc.heading);
+                        }
+                        
+                        // Update line to delivery location
+                        const source = map.current.getSource("courier-route") as maplibregl.GeoJSONSource;
+                        if (source && order.deliveryLongitude && order.deliveryLatitude) {
+                            source.setData({
+                                type: "Feature",
+                                properties: {},
+                                geometry: {
+                                    type: "LineString",
+                                    coordinates: [
+                                        [loc.longitude, loc.latitude],
+                                        [order.deliveryLongitude, order.deliveryLatitude]
+                                    ]
+                                }
+                            });
                         }
                         
                         // Optionally ease to courier location
