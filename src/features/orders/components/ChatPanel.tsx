@@ -65,9 +65,9 @@ export default function ChatPanel({
         const token = getAccessToken();
         if (!token) return;
 
-        const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-        // Convert http/https to ws/wss and append /ws
-        const wsUrl = `${baseURL.replace(/^http/, "ws")}/ws`;
+        const baseURL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
+        // SockJS requires http/https — it handles the ws/wss upgrade internally
+        const wsUrl = `${baseURL}/ws`;
 
         const client = new Client({
             webSocketFactory: () => new SockJS(wsUrl),
