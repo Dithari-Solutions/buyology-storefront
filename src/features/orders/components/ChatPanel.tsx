@@ -85,9 +85,7 @@ export default function ChatPanel({
             },
             onDisconnect: () => setConnected(false),
             reconnectDelay: 5000,
-            debug: (str) => {
-                // console.log(str);
-            },
+            debug: (str) => console.log('[ChatWS]', str),
         });
 
         client.activate();

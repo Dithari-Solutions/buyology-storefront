@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { getAccessToken } from "@/shared/lib/tokenManager";
-import type { OrderDetail } from "../types";
+import type { OrderDetail, TrackingEvent } from "../types";
 
 // ── Courier Marker CSS ────────────────────────────────────────────────────────
 const MAP_CSS = `
@@ -87,6 +87,8 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const courierMarker = useRef<maplibregl.Marker | null>(null);
+    const storeMarker = useRef<maplibregl.Marker | null>(null);
+    const deliveryMarker = useRef<maplibregl.Marker | null>(null);
     const clientRef = useRef<Client | null>(null);
 
     const [courierLocation, setCourierLocation] = useState<CourierLocation | null>(null);
@@ -101,9 +103,9 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
         document.head.appendChild(s);
     }, []);
 
-    // Initialize Map
+    // Initialize Map Once
     useEffect(() => {
-        if (!mapContainer.current) return;
+        if (!mapContainer.current || map.current) return;
 
         const m = new maplibregl.Map({
             container: mapContainer.current,
@@ -126,64 +128,20 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
                 ],
             },
             center: [
-                order.deliveryLongitude || 0,
-                order.deliveryLatitude || 0
+                order.deliveryLongitude || 49.8671, // Baku fallback
+                order.deliveryLatitude || 40.4093
             ],
-            zoom: 13,
+            zoom: 12,
         });
 
-        // Use custom style for raster tiles if needed
         m.on("load", () => {
-            // Store Marker
-            if (order.storeLatitude && order.storeLongitude) {
-                new maplibregl.Marker({ element: makePinEl("store") })
-                    .setLngLat([order.storeLongitude, order.storeLatitude])
-                    .setPopup(new maplibregl.Popup().setHTML("<b>Store</b>"))
-                    .addTo(m);
-            }
-
-            // Delivery Marker
-            if (order.deliveryLatitude && order.deliveryLongitude) {
-                new maplibregl.Marker({ element: makePinEl("delivery") })
-                    .setLngLat([order.deliveryLongitude, order.deliveryLatitude])
-                    .setPopup(new maplibregl.Popup().setHTML("<b>Delivery Address</b>"))
-                    .addTo(m);
-            }
-
-            // Initial Courier Position (from latest tracking event)
-            const latestCourierEvent = [...order.trackingHistory]
-                .filter(e => e.actorRole === "COURIER" && e.latitude != null && e.longitude != null)
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-
-            if (latestCourierEvent) {
-                const marker = new maplibregl.Marker({ element: makeCourierEl(), rotationAlignment: "map" })
-                    .setLngLat([latestCourierEvent.longitude!, latestCourierEvent.latitude!])
-                    .addTo(m);
-                courierMarker.current = marker;
-            }
-
-            // Fit bounds
-            const bounds = new maplibregl.LngLatBounds();
-            if (order.storeLatitude && order.storeLongitude) bounds.extend([order.storeLongitude, order.storeLatitude]);
-            if (order.deliveryLatitude && order.deliveryLongitude) bounds.extend([order.deliveryLongitude, order.deliveryLatitude]);
-            if (latestCourierEvent) bounds.extend([latestCourierEvent.longitude!, latestCourierEvent.latitude!]);
-            
-            if (!bounds.isEmpty()) {
-                m.fitBounds(bounds, { padding: 80 });
-            }
-
             // Add Route Line Source
             m.addSource("courier-route", {
                 type: "geojson",
                 data: {
                     type: "Feature",
                     properties: {},
-                    geometry: {
-                        type: "LineString",
-                        coordinates: latestCourierEvent && order.deliveryLongitude && order.deliveryLatitude 
-                            ? [[latestCourierEvent.longitude!, latestCourierEvent.latitude!], [order.deliveryLongitude, order.deliveryLatitude]]
-                            : []
-                    }
+                    geometry: { type: "LineString", coordinates: [] }
                 }
             });
 
@@ -198,13 +156,91 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
                     "line-dasharray": [2, 2]
                 }
             });
+
+            updateMapElements(m);
         });
 
         m.addControl(new maplibregl.NavigationControl(), "top-right");
         map.current = m;
 
-        return () => m.remove();
+        return () => {
+            m.remove();
+            map.current = null;
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Update markers and bounds when order changes
+    useEffect(() => {
+        if (map.current && map.current.isStyleLoaded()) {
+            updateMapElements(map.current);
+        }
     }, [order]);
+
+    const updateMapElements = (m: maplibregl.Map) => {
+        const bounds = new maplibregl.LngLatBounds();
+
+        // Store Marker
+        if (order.storeLatitude && order.storeLongitude) {
+            if (!storeMarker.current) {
+                storeMarker.current = new maplibregl.Marker({ element: makePinEl("store") })
+                    .setLngLat([order.storeLongitude, order.storeLatitude])
+                    .setPopup(new maplibregl.Popup().setHTML("<b>Store</b>"))
+                    .addTo(m);
+            } else {
+                storeMarker.current.setLngLat([order.storeLongitude, order.storeLatitude]);
+            }
+            bounds.extend([order.storeLongitude, order.storeLatitude]);
+        }
+
+        // Delivery Marker
+        if (order.deliveryLatitude && order.deliveryLongitude) {
+            if (!deliveryMarker.current) {
+                deliveryMarker.current = new maplibregl.Marker({ element: makePinEl("delivery") })
+                    .setLngLat([order.deliveryLongitude, order.deliveryLatitude])
+                    .setPopup(new maplibregl.Popup().setHTML("<b>Delivery Address</b>"))
+                    .addTo(m);
+            } else {
+                deliveryMarker.current.setLngLat([order.deliveryLongitude, order.deliveryLatitude]);
+            }
+            bounds.extend([order.deliveryLongitude, order.deliveryLatitude]);
+        }
+
+        // Initial Courier Position
+        const latestCourierEvent = [...order.trackingHistory]
+            .filter(e => e.actorRole === "COURIER" && e.latitude != null && e.longitude != null)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+
+        if (latestCourierEvent && latestCourierEvent.longitude != null && latestCourierEvent.latitude != null) {
+            const coords: [number, number] = [latestCourierEvent.longitude, latestCourierEvent.latitude];
+            if (!courierMarker.current) {
+                courierMarker.current = new maplibregl.Marker({ element: makeCourierEl(), rotationAlignment: "map" })
+                    .setLngLat(coords)
+                    .addTo(m);
+            } else {
+                courierMarker.current.setLngLat(coords);
+            }
+            bounds.extend(coords);
+
+            // Update Line
+            const source = m.getSource("courier-route") as maplibregl.GeoJSONSource;
+            if (source && order.deliveryLongitude && order.deliveryLatitude) {
+                source.setData({
+                    type: "Feature",
+                    properties: {},
+                    geometry: {
+                        type: "LineString",
+                        coordinates: [coords, [order.deliveryLongitude, order.deliveryLatitude]]
+                    }
+                });
+            }
+        }
+
+        // Fit bounds with safety
+        if (!bounds.isEmpty()) {
+            m.fitBounds(bounds, { padding: 80, maxZoom: 15 });
+        }
+    };
 
     // WebSocket for live location
     useEffect(() => {
@@ -227,12 +263,13 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
                     setCourierLocation(loc);
                     
                     if (map.current) {
+                        const coords: [number, number] = [loc.longitude, loc.latitude];
                         if (!courierMarker.current) {
                             courierMarker.current = new maplibregl.Marker({ element: makeCourierEl(), rotationAlignment: "map" })
-                                .setLngLat([loc.longitude, loc.latitude])
+                                .setLngLat(coords)
                                 .addTo(map.current);
                         } else {
-                            courierMarker.current.setLngLat([loc.longitude, loc.latitude]);
+                            courierMarker.current.setLngLat(coords);
                             if (loc.heading) courierMarker.current.setRotation(loc.heading);
                         }
                         
@@ -244,16 +281,10 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
                                 properties: {},
                                 geometry: {
                                     type: "LineString",
-                                    coordinates: [
-                                        [loc.longitude, loc.latitude],
-                                        [order.deliveryLongitude, order.deliveryLatitude]
-                                    ]
+                                    coordinates: [coords, [order.deliveryLongitude, order.deliveryLatitude]]
                                 }
                             });
                         }
-                        
-                        // Optionally ease to courier location
-                        // map.current.easeTo({ center: [loc.longitude, loc.latitude], duration: 1000 });
                     }
                 });
             },
@@ -268,7 +299,7 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
         return () => {
             client.deactivate();
         };
-    }, [order.id]);
+    }, [order.id, order.deliveryLongitude, order.deliveryLatitude]);
 
     return (
         <div className="fixed inset-0 z-[100] bg-white flex flex-col">
@@ -296,6 +327,7 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="12" x2="18" y2="12" />
                             <line x1="6" y1="6" x2="18" y2="18" />
                         </svg>
                     </button>
@@ -306,7 +338,7 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
             <div ref={mapContainer} className="flex-1 w-full h-full relative" />
 
             {/* Bottom Info Card */}
-            {courierLocation && (
+            {(courierLocation || order.courierName) && (
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-white rounded-2xl shadow-xl border border-gray-100 p-5 flex items-center gap-4 animate-in slide-in-from-bottom-4 duration-500">
                     <div className="w-12 h-12 rounded-full bg-[#402F75] flex items-center justify-center text-white font-bold text-xl">
                         {order.courierName?.charAt(0).toUpperCase() || "C"}
@@ -314,7 +346,7 @@ export default function LiveTrackingMap({ order, onClose }: LiveTrackingMapProps
                     <div className="flex-1">
                         <p className="text-[14px] font-bold text-gray-900">{order.courierName || "Courier"}</p>
                         <p className="text-[12px] text-gray-500">
-                            Speed: {Math.round(courierLocation.speed)} km/h • Updated just now
+                            {courierLocation ? `Speed: ${Math.round(courierLocation.speed)} km/h • Updated just now` : 'Waiting for live location...'}
                         </p>
                     </div>
                     {order.courierPhone && (
