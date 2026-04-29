@@ -308,6 +308,44 @@ export default function AuthForm() {
             </div>
 
             <SocialButtons onError={setApiError} />
+
+            {/* Business / Supplier sign-up CTA */}
+            <AnimatePresence initial={false}>
+                {mode === "signUp" && (
+                    <motion.div
+                        key="business-cta"
+                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                        animate={{ opacity: 1, height: "auto", marginTop: 16 }}
+                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                        transition={{ duration: 0.28, ease: "easeInOut" }}
+                        style={{ overflow: "hidden" }}
+                        className="w-full"
+                    >
+                        <Link
+                            href={`/${lang}/become-a-supplier`}
+                            className="flex items-center justify-between w-full px-4 py-3 rounded-[14px] border border-[#FBBB14]/40 bg-[#FFFBEB] hover:bg-[#FFF8D6] transition-colors group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl">🏪</span>
+                                <div>
+                                    <p className="text-[13px] font-semibold text-gray-800 leading-tight">
+                                        Selling on Buyology?
+                                    </p>
+                                    <p className="text-[11px] text-gray-500 leading-tight mt-0.5">
+                                        Apply for a business supplier account
+                                    </p>
+                                </div>
+                            </div>
+                            <svg
+                                className="w-4 h-4 text-[#FBBB14] group-hover:translate-x-0.5 transition-transform"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </Link>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -9,6 +9,7 @@ import Footer from "@/shared/components/Footer";
 import ProfileSidebar, { type Section } from "./ProfileSidebar";
 import ProfileInfo from "./ProfileInfo";
 import DeliveryAddress from "./DeliveryAddress";
+import MembershipDashboard from "@/features/membership/components/MembershipDashboard";
 import type { UserProfile } from "../types";
 import { getProfile } from "../services/profile.api";
 
@@ -34,6 +35,7 @@ export default function ProfilePage() {
         delivery: { title: t("deliveryAddress.title"), subtitle: t("deliveryAddress.subtitle") },
         orders: { title: t("orderHistory.title"), subtitle: t("orderHistory.subtitle") },
         settings: { title: t("settings.title"), subtitle: t("settings.subtitle") },
+        membership: { title: "B2B Membership", subtitle: "Manage your B2B membership, wallet, and digital card" },
     };
 
     return (
@@ -77,6 +79,7 @@ export default function ProfilePage() {
                                 <p className="text-gray-400 text-[14px]">{t("orderHistory.comingSoon")}</p>
                             </div>
                         )}
+                        {activeSection === "membership" && <MembershipDashboard />}
                         {activeSection === "settings" && (
                             <div className="bg-white rounded-[20px] p-12 shadow-sm flex flex-col items-center justify-center gap-4 text-center">
                                 <div className="w-16 h-16 rounded-full bg-[#EDE9FF] flex items-center justify-center">

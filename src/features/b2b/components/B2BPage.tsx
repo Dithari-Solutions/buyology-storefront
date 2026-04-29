@@ -562,6 +562,47 @@ export default function B2BPage() {
                 </motion.div>
             </section>
 
+            {/* ── B2B Premium Membership CTA ───────────────────────────────── */}
+            <section className="mb-[64px]">
+                <motion.div
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#2D1F5E] via-[#402F75] to-[#6B4EAD] p-8 sm:p-12 text-white"
+                >
+                    <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/5" />
+                    <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-white/5" />
+                    <div className="relative">
+                        <span className="inline-block rounded-full bg-yellow-400 text-black text-[11px] font-extrabold px-4 py-1.5 mb-4 uppercase tracking-wider">
+                            Premium Membership
+                        </span>
+                        <h2 className="text-[26px] sm:text-[34px] font-bold mb-3 leading-tight">
+                            Become a Buyology<br />B2B Premium Member
+                        </h2>
+                        <p className="text-white/70 text-[15px] max-w-lg mb-6 leading-relaxed">
+                            Get your digital membership card, AED 5,000 wallet credit on approval, dedicated business support, and exclusive B2B pricing — all in one account.
+                        </p>
+                        <div className="flex flex-wrap gap-3 mb-8">
+                            {["AED 5,000 Wallet Credit", "Digital Membership Card", "Priority Support", "Exclusive B2B Pricing"].map((benefit) => (
+                                <span key={benefit} className="flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-[13px] font-medium backdrop-blur-sm">
+                                    <span className="text-yellow-400">✓</span> {benefit}
+                                </span>
+                            ))}
+                        </div>
+                        <a
+                            href={`/${lang}/b2b/apply`}
+                            className="inline-flex items-center gap-2 rounded-full bg-white text-[#402F75] font-bold text-[14px] px-8 py-[14px] hover:bg-yellow-400 hover:text-black transition-all shadow-lg"
+                        >
+                            Apply for Membership
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </motion.div>
+            </section>
+
             {/* ── FAQ ──────────────────────────────────────────────────────── */}
             <section>
                 <motion.div
