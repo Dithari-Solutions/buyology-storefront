@@ -8,7 +8,7 @@ export interface Step1Payload {
   city?: string;
   email: string;
   phoneNumber?: string;
-  preferredContact: "WHATSAPP" | "EMAIL" | "PHONE_CALL";
+  preferredContact?: "WHATSAPP" | "EMAIL" | "PHONE_CALL" | null;
 }
 
 export interface Step2Payload {

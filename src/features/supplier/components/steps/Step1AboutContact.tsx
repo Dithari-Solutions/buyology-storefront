@@ -71,7 +71,7 @@ export default function Step1AboutContact() {
         city: form.city || undefined,
         email: form.email,
         phoneNumber: form.phoneNumber || undefined,
-        preferredContact: form.preferredContact || undefined,
+        preferredContact: form.preferredContact || null,
       });
       
       const appId = res.data?.data;
