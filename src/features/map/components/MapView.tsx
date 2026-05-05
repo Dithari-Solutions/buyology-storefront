@@ -5,9 +5,9 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const BASE_HOST = "5.189.132.250";
-const OSRM      = `http://${BASE_HOST}:5000`;
-const TILES     = `http://${BASE_HOST}:8090`;
+// Hosts must be configured via env vars; HTTPS is required in production.
+const OSRM = process.env.NEXT_PUBLIC_OSRM_URL ?? "http://5.189.132.250:5000";
+const TILES = process.env.NEXT_PUBLIC_TILE_URL ?? "http://5.189.132.250:8090";
 
 // Route endpoints [lng, lat]
 const ORIGIN: [number, number] = [49.8671, 40.4093];
@@ -105,11 +105,17 @@ const COURIER_CSS = `
 function makeCourierEl(): HTMLDivElement {
   const el = document.createElement("div");
   el.className = "cr-wrap";
-  el.innerHTML = `
-    <div class="cr-pulse"></div>
-    <div class="cr-pulse2"></div>
-    <div class="cr-body"><span class="cr-icon">🚴</span></div>
-  `;
+  const pulse1 = document.createElement("div");
+  pulse1.className = "cr-pulse";
+  const pulse2 = document.createElement("div");
+  pulse2.className = "cr-pulse2";
+  const body = document.createElement("div");
+  body.className = "cr-body";
+  const icon = document.createElement("span");
+  icon.className = "cr-icon";
+  icon.textContent = "🚴";
+  body.appendChild(icon);
+  el.append(pulse1, pulse2, body);
   return el;
 }
 
@@ -412,7 +418,9 @@ export default function MapView() {
     // WebSocket live GPS feed
     try {
       // Expects JSON: { lng: number, lat: number, heading?: number }
-      const ws = new WebSocket(`ws://${BASE_HOST}:5000`);
+      const ws = new WebSocket(
+        process.env.NEXT_PUBLIC_COURIER_WS_URL ?? OSRM.replace(/^https?/, "ws")
+      );
       ws.onopen    = () => setWsOk(true);
       ws.onmessage = (e) => {
         try {

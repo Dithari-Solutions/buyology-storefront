@@ -300,6 +300,7 @@ const cartSlice = createSlice({
                 return {
                     ...item,
                     title: product.title,
+                    description: product.description ?? item.description,
                     imageUrl: getPrimaryImage(product.media),
                     slug: product.slug,
                     // Prices are snapshot values from the cart API (unitPrice) — never overwrite them

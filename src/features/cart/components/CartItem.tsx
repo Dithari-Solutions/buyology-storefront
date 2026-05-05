@@ -146,6 +146,13 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                     </div>
                 </div>
 
+                {/* Short description */}
+                {item.description && (
+                    <p className="text-[13px] text-gray-500 leading-snug line-clamp-2">
+                        {item.description.length > 110 ? `${item.description.slice(0, 110).trimEnd()}...` : item.description}
+                    </p>
+                )}
+
                 {/* Variant tags */}
                 <div className="flex flex-wrap gap-2 text-[12px] text-gray-500">
                     <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5">

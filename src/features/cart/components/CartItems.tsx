@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { AppDispatch, RootState } from "@/store";
@@ -71,12 +72,14 @@ export default function CartItems() {
     const cartItems = useSelector(selectCartItems);
     const savedItems = useSelector(selectSavedItems);
     const loading = useSelector(selectCartLoading);
+    const [confirmingClear, setConfirmingClear] = useState(false);
 
     function handleClearCart() {
         dispatch(clearCart());
         if (userId) {
             dispatch(clearCartThunk(userId));
         }
+        setConfirmingClear(false);
     }
 
     return (
@@ -84,7 +87,7 @@ export default function CartItems() {
 
             {/* ── Active Cart Section ── */}
             <section className="bg-white p-[20px] rounded-[20px]">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-4 gap-3">
                     <h2 className="text-[18px] font-bold text-gray-900">
                         {t("cartItems.heading")}{" "}
                         <span className="text-gray-400 font-normal">
@@ -92,12 +95,37 @@ export default function CartItems() {
                         </span>
                     </h2>
                     {cartItems.length > 0 && !loading.cart && !loading.products && (
-                        <button
-                            onClick={handleClearCart}
-                            className="text-[13px] text-gray-500 hover:text-red-500 transition-colors font-medium cursor-pointer"
-                        >
-                            {t("cartItems.clearCart")}
-                        </button>
+                        confirmingClear ? (
+                            <div className="flex items-center gap-2">
+                                <span className="hidden sm:inline text-[12px] text-gray-500">{t("cartItems.confirmClear", { defaultValue: "Are you sure?" })}</span>
+                                <button
+                                    onClick={handleClearCart}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-gradient-to-r from-[#FB2C36] to-[#dc2626] text-white text-[12px] font-bold shadow-sm hover:shadow-md hover:brightness-110 transition-all cursor-pointer"
+                                >
+                                    {t("cartItems.confirm", { defaultValue: "Yes, clear" })}
+                                </button>
+                                <button
+                                    onClick={() => setConfirmingClear(false)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gray-200 text-gray-600 text-[12px] font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
+                                >
+                                    {t("cartItems.cancel", { defaultValue: "Cancel" })}
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setConfirmingClear(true)}
+                                className="group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#FFC9C9] text-[#FB2C36] text-[12px] font-bold bg-white hover:bg-gradient-to-r hover:from-[#FB2C36] hover:to-[#dc2626] hover:text-white hover:border-transparent shadow-sm hover:shadow-md transition-all cursor-pointer"
+                                aria-label={t("cartItems.clearCart")}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                                    <path d="M10 11v6M14 11v6" />
+                                    <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                                </svg>
+                                {t("cartItems.clearCart")}
+                            </button>
+                        )
                     )}
                 </div>
 

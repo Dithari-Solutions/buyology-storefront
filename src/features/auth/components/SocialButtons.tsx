@@ -26,7 +26,9 @@ export default function SocialButtons({ onError }: { onError?: (msg: string | nu
             }
         } else {
             // Other providers to be implemented
-            console.log(`${provider} login not implemented yet`);
+            if (process.env.NODE_ENV !== "production") {
+                console.warn(`${provider} login not implemented yet`);
+            }
         }
     };
 

@@ -6,8 +6,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { COLORS } from "@/shared/styles/variables";
 import CartIcon from "@/assets/icons/cart.png";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { getPrimaryImage } from "@/features/product/services/productService";
+import { addItem, selectCartItems } from "@/features/cart/store/cartSlice";
+import {
+    addToFavouritesThunk,
+    removeFromFavouritesThunk,
+    selectIsFavourite,
+} from "@/features/favourites/store/favouritesSlice";
 
 function extractSpecs(product: ApiProduct): string[] {
     return product.specs.slice(0, 4).map((group) => {
@@ -22,35 +30,92 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
     const id = useId();
     const clipId = `superDealClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
 
+    const dispatch = useDispatch<AppDispatch>();
+    const userId = useSelector((state: RootState) => state.auth.userId);
+    const isFav = useSelector((state: RootState) => selectIsFavourite(product.id)(state));
+    const cartItems = useSelector(selectCartItems);
+    const isInCart = cartItems.some((i) => i.productId === product.id);
+
     const imageUrl = getPrimaryImage(product.media);
     const specs = extractSpecs(product);
-    const effectivePrice = product.effectivePrice ?? 0;
+    const effectivePrice = product.storePrice ?? product.effectivePrice ?? 0;
     const basePrice = product.basePrice ?? effectivePrice;
-    const savings = basePrice - effectivePrice;
+    const savings = Math.max(0, basePrice - effectivePrice);
+    const currencyCode = product.currency ?? "USD";
+    const formatPrice = (amount: number): string => {
+        try {
+            return new Intl.NumberFormat(undefined, {
+                style: "currency",
+                currency: currencyCode,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+            }).format(amount);
+        } catch {
+            return `${currencyCode} ${amount}`;
+        }
+    };
     const discountPercent =
         product.discountType === "PERCENTAGE" && product.discountValue
             ? Math.round(product.discountValue)
-            : basePrice > 0
-            ? Math.round((1 - effectivePrice / basePrice) * 100)
+            : basePrice > 0 && savings > 0
+            ? Math.round((savings / basePrice) * 100)
             : 0;
 
     const [added, setAdded] = useState(false);
-    const [isFav, setIsFav] = useState(false);
     const [favBounce, setFavBounce] = useState(false);
 
     function handleAddToCart(e: React.MouseEvent) {
         e.stopPropagation();
-        if (!added) {
-            setAdded(true);
-            setTimeout(() => setAdded(false), 1600);
-        }
+        if (isInCart) return;
+        dispatch(
+            addItem({
+                id: `cart-${product.id}-${Date.now()}`,
+                productId: product.id,
+                title: product.title,
+                description: product.description,
+                imageUrl: imageUrl || "",
+                slug: product.slug,
+                variant: { color: product.colors?.[0] ?? "Default", storage: "" },
+                price: effectivePrice,
+                originalPrice: basePrice,
+                discountPercent,
+                quantity: 1,
+                savedForLater: false,
+            })
+        );
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1600);
     }
 
     function handleFav(e: React.MouseEvent) {
         e.stopPropagation();
-        setIsFav((prev) => !prev);
+        if (!userId) return;
         setFavBounce(true);
         setTimeout(() => setFavBounce(false), 400);
+        if (isFav) {
+            dispatch(removeFromFavouritesThunk({ userId, productId: product.id }));
+        } else {
+            dispatch(
+                addToFavouritesThunk({
+                    userId,
+                    productId: product.id,
+                    meta: {
+                        id: product.id,
+                        title: product.title,
+                        description: product.description,
+                        price: effectivePrice,
+                        originalPrice: basePrice,
+                        discount: savings,
+                        currency: currencyCode,
+                        rating: 0,
+                        inStock: product.availabilityStatus === "IN_STOCK",
+                        category: product.categoryId,
+                        slugs: { en: product.slug, az: product.slug, ar: product.slug },
+                        imageUrl: imageUrl || undefined,
+                    },
+                })
+            );
+        }
     }
 
     return (
@@ -119,13 +184,13 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                         {savings > 0 && (
                             <div className="flex items-center gap-[5px]">
                                 <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">
-                                    -${savings.toFixed(0)}
+                                    -{discountPercent}%
                                 </span>
-                                <span className="text-gray-400 line-through text-[12px]">${basePrice.toFixed(0)}</span>
+                                <span className="text-gray-400 line-through text-[12px]">{formatPrice(basePrice)}</span>
                             </div>
                         )}
                         <span className="text-[17px] sm:text-[19px] md:text-[21px] text-[#402F75] font-bold leading-none">
-                            ${effectivePrice.toFixed(0)}
+                            {formatPrice(effectivePrice)}
                         </span>
                     </div>
 
@@ -187,8 +252,8 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                                             transition={{ duration: 0.2 }}
                                             className="flex items-center gap-[5px]"
                                         >
-                                            <Image src={CartIcon} alt="cart" width={14} height={14} />
-                                            <span className="hidden sm:inline text-[11px] md:text-[12px] whitespace-nowrap">{t("superDeals.addToCart")}</span>
+                                            <Image src={CartIcon} alt="cart" width={14} height={14} style={{ filter: "brightness(0) invert(1)" }} />
+                                            <span className="hidden sm:inline text-[11px] md:text-[12px] whitespace-nowrap">{isInCart ? t("superDeals.inCart", { defaultValue: "In Cart" }) : t("superDeals.addToCart")}</span>
                                         </motion.span>
                                     )}
                                 </AnimatePresence>

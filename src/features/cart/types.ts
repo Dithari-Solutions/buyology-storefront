@@ -16,6 +16,8 @@ export interface CartItemMeta {
     /** UUID of the store this item was priced from */
     storeId?: string;
     title: string;
+    /** Short product description shown under the title, truncated in UI */
+    description?: string;
     imageUrl: string;
     /** Product slug for linking to the product detail page */
     slug?: string;

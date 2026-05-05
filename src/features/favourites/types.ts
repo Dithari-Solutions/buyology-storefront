@@ -3,9 +3,11 @@ import type { Lang } from "@/config/pathSlugs";
 export interface FavouriteItemMeta {
     id: string;
     title: string;
+    description?: string;
     price: number;
     originalPrice: number;
     discount: number;
+    currency?: string;
     rating: number;
     inStock: boolean;
     category: string;

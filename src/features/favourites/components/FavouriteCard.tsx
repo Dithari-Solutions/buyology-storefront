@@ -46,7 +46,24 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
     const lang = (params?.lang as Lang) ?? "en";
     const href = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${item.slugs[lang] ?? item.slugs.en}`;
 
-    const discountLabel = item.discount > 0 ? `-$${item.discount}` : null;
+    const currencyCode = item.currency || "USD";
+    const formatPrice = (amount: number): string => {
+        if (amount == null) return "";
+        try {
+            return new Intl.NumberFormat(undefined, {
+                style: "currency",
+                currency: currencyCode,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+            }).format(amount);
+        } catch {
+            return `${currencyCode} ${amount}`;
+        }
+    };
+    const discountPercent = item.originalPrice > 0 && item.discount > 0
+        ? Math.round((item.discount / item.originalPrice) * 100)
+        : 0;
+    const discountLabel = discountPercent > 0 ? `-${discountPercent}%` : null;
     const inStock = item.inStock;
 
     const cardRef = useRef<HTMLDivElement>(null);
@@ -211,11 +228,20 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
                     {/* Title + Rating */}
                     <div className="flex items-start justify-between gap-[8px]">
                         <h2 className="font-bold text-[17px] leading-snug text-gray-900">{item.title}</h2>
-                        <div className="flex items-center gap-[3px] flex-shrink-0 bg-[#F6F4FF] rounded-full px-[7px] py-[3px]">
-                            <Image src={StarIcon} alt="star" width={12} height={12} />
-                            <span className="text-[12px] font-bold text-[#402F75]">{item.rating}</span>
-                        </div>
+                        {item.rating > 0 && (
+                            <div className="flex items-center gap-[3px] flex-shrink-0 bg-[#F6F4FF] rounded-full px-[7px] py-[3px]">
+                                <Image src={StarIcon} alt="star" width={12} height={12} />
+                                <span className="text-[12px] font-bold text-[#402F75]">{item.rating}</span>
+                            </div>
+                        )}
                     </div>
+
+                    {/* Short description */}
+                    {item.description && (
+                        <p className="text-[12px] text-gray-500 leading-snug line-clamp-2">
+                            {item.description.length > 90 ? `${item.description.slice(0, 90).trimEnd()}...` : item.description}
+                        </p>
+                    )}
 
                     {/* Specs */}
                     <div className="grid grid-cols-2 gap-[6px]">
@@ -250,10 +276,10 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
                                     <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">
                                         {discountLabel}
                                     </span>
-                                    <span className="text-gray-400 line-through text-[12px]">${item.originalPrice}</span>
+                                    <span className="text-gray-400 line-through text-[12px]">{formatPrice(item.originalPrice)}</span>
                                 </div>
                             )}
-                            <span className="text-[21px] text-[#402F75] font-bold leading-none">${item.price}</span>
+                            <span className="text-[21px] text-[#402F75] font-bold leading-none">{formatPrice(item.price)}</span>
                         </div>
 
                         <div className="flex flex-col items-end gap-[5px]">
@@ -315,7 +341,7 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
                                                 transition={{ duration: 0.2 }}
                                                 className="flex items-center gap-[5px]"
                                             >
-                                                <Image src={CartIcon} alt="cart" width={14} height={14} />
+                                                <Image src={CartIcon} alt="cart" width={14} height={14} style={{ filter: "brightness(0) invert(1)" }} />
                                                 {t("card.addToCart")}
                                             </motion.span>
                                         )}

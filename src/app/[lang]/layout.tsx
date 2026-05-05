@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import LangSync from "@/shared/components/LangSync";
 import AuthBgVector from "@/assets/vectors/auth-bg-vector.png";
+import { SITE_META, getSafeLang } from "@/shared/seo/config";
+import { buildPageMetadata } from "@/shared/seo/buildMetadata";
 
 type Lang = "en" | "az" | "ar";
 
@@ -7,6 +10,23 @@ const validLangs: Lang[] = ["en", "az", "ar"];
 
 export function generateStaticParams() {
   return validLangs.map((lang) => ({ lang }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  const safe = getSafeLang(lang);
+  const meta = SITE_META[safe];
+  return buildPageMetadata({
+    lang: safe,
+    canonical: null,
+    title: meta.title,
+    description: meta.description,
+    keywords: meta.keywords,
+  });
 }
 
 export default async function LangLayout({

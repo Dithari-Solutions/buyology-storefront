@@ -25,6 +25,7 @@ interface ProductCardProps {
   /** Required by the cart API — the store this product is purchased from */
   storeId?: string;
   title?: string;
+  description?: string;
   price?: number;
   originalPrice?: number;
   discount?: number;
@@ -74,19 +75,20 @@ interface FlyCard {
 export default function ProductCard({
   view = 'grid',
   slugs,
-  productId = "mock-product-1",
+  productId = "",
   storeId,
-  title = "MacBook Pro 14",
-  price = 600,
-  originalPrice = 900,
-  discount = 300,
+  title = "",
+  description,
+  price = 0,
+  originalPrice = 0,
+  discount = 0,
   currency = 'USD',
-  rating = 4.6,
+  rating = 0,
   inStock = true,
-  category = "laptops",
-  processor = "M3 Chip",
-  ram = "32GB RAM",
-  storage = "1024GB SSD",
+  category = "",
+  processor = "",
+  ram = "",
+  storage = "",
   imageUrl,
   expressDelivery,
   storeOptions,
@@ -471,6 +473,13 @@ export default function ProductCard({
             )}
           </div>
 
+          {/* Short description */}
+          {description && (
+            <p className="text-[12px] xl:text-[13px] text-gray-500 leading-snug line-clamp-2">
+              {description.length > 90 ? `${description.slice(0, 90).trimEnd()}...` : description}
+            </p>
+          )}
+
           {/* Browse-only badge */}
           {availableInSelectedCountry === false && (
             <span className="inline-flex items-center gap-[4px] self-start bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
@@ -636,7 +645,7 @@ export default function ProductCard({
                           transition={{ duration: 0.2 }}
                           className="flex items-center gap-[5px]"
                         >
-                          <Image src={CartIcon} alt="cart" width={14} height={14} />
+                          <Image src={CartIcon} alt="cart" width={14} height={14} style={{ filter: "brightness(0) invert(1)" }} />
                           Add to Cart
                         </motion.span>
                       )}

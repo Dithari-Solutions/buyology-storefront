@@ -42,14 +42,32 @@ export default function SuperDeals() {
     const sliderRef = useRef<HTMLDivElement>(null);
     const [products, setProducts] = useState<ApiProduct[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [reloadTick, setReloadTick] = useState(0);
     const isJumping = useRef(false);
 
     useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setError(null);
         getSuperDealProducts({ lang })
-            .then(setProducts)
-            .catch(() => {})
-            .finally(() => setLoading(false));
-    }, [lang]);
+            .then((data) => {
+                if (cancelled) return;
+                setProducts(Array.isArray(data) ? data : []);
+            })
+            .catch((err) => {
+                if (cancelled) return;
+                setError(err instanceof Error ? err.message : "Couldn't load deals.");
+                setProducts([]);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [lang, reloadTick]);
 
     // Jump to the middle set on initial render so looping works in both directions
     useEffect(() => {
@@ -136,7 +154,21 @@ export default function SuperDeals() {
                         <SuperDealsSkeleton key={i} />
                     ))}
                 </div>
-            ) : products.length === 0 ? null : (
+            ) : error ? (
+                <div className="bg-red-50 border border-red-100 rounded-2xl p-5 text-center">
+                    <p className="text-[13px] font-semibold text-red-700 mb-2">{error}</p>
+                    <button
+                        onClick={() => setReloadTick((t) => t + 1)}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-bold text-red-700 hover:underline cursor-pointer"
+                    >
+                        Retry
+                    </button>
+                </div>
+            ) : products.length === 0 ? (
+                <div className="bg-white border border-gray-100 rounded-2xl p-5 text-center text-[13px] text-gray-400">
+                    No deals available right now.
+                </div>
+            ) : (
                 <div
                     ref={sliderRef}
                     onScroll={handleScroll}
@@ -147,15 +179,19 @@ export default function SuperDeals() {
                         scrollSnapType: "x mandatory",
                     }}
                 >
-                    {displayItems.map((product, i) => (
-                        <div
-                            key={`${product.id}-${i}`}
-                            className="flex-shrink-0"
-                            style={{ scrollSnapAlign: "start" }}
-                        >
-                            <SuperDealsCard product={product} />
-                        </div>
-                    ))}
+                    {displayItems.map((product, i) => {
+                        const setIdx = Math.floor(i / products.length);
+                        const itemIdx = i % products.length;
+                        return (
+                            <div
+                                key={`set${setIdx}-item${itemIdx}-${product.id}`}
+                                className="flex-shrink-0"
+                                style={{ scrollSnapAlign: "start" }}
+                            >
+                                <SuperDealsCard product={product} />
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </section>

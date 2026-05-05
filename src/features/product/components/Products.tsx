@@ -339,6 +339,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
             const slugs = { en: product.slug, az: product.slug, ar: product.slug };
             const ram = getSpecValue(product, 'ram');
             const storage = getSpecValue(product, 'storage');
+            const processor = getSpecValue(product, 'processor');
             const displayPrice = product.storePrice ?? product.effectivePrice ?? 0;
             const displayCurrency = product.currency ?? currency;
             return (
@@ -349,10 +350,12 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 productId={product.id}
                 storeId={product.storeId ?? undefined}
                 title={product.title}
+                description={product.description}
                 price={displayPrice}
                 originalPrice={product.basePrice ?? 0}
                 discount={product.discountValue ?? 0}
                 currency={displayCurrency}
+                processor={processor || undefined}
                 ram={ram ? `${ram} RAM` : undefined}
                 storage={storage ? `${storage} SSD` : undefined}
                 imageUrl={getPrimaryImage(product.media)}

@@ -1,5 +1,7 @@
 export type AddressLabel = "HOME" | "WORK" | "OTHER";
 
+export type MembershipTier = "B2B" | "SUPPLIER" | null;
+
 export interface UserProfile {
     userId: string;
     email: string | null;
@@ -13,6 +15,8 @@ export interface UserProfile {
     selectedCountryCode: string | null;
     preferredCurrency: string | null;
     preferredLanguage: string | null;
+    membership?: MembershipTier;
+    roles?: string[];
     createdAt: string;
     updatedAt: string;
 }

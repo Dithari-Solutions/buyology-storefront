@@ -1,6 +1,9 @@
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ScrollReveal from "@/shared/components/ScrollReveal";
+import { makeStaticMetadata } from "@/shared/seo/staticMeta";
+
+export const generateMetadata = makeStaticMetadata("home", { canonical: null });
 import Banner from "@/features/home/components/Banner";
 import Stories from "@/features/story/components/Stories";
 import Features from "@/features/home/components/features/Features";

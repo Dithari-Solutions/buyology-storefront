@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import B2BMembershipApply from "@/features/membership/components/B2BMembershipApply";
+import { makeStaticMetadata } from "@/shared/seo/staticMeta";
 
-export const metadata: Metadata = {
-    title: "Become a B2B Member | Buyology",
-    description: "Apply for B2B Premium Membership and unlock exclusive benefits, wallet credits, and dedicated business support.",
-};
+export const generateMetadata = makeStaticMetadata("b2b-apply", {
+    canonical: "b2b",
+    suffix: "/apply",
+    noindex: true,
+});
 
 export default function B2BApplyPage() {
     return (

@@ -4,6 +4,12 @@ import Logo from "@/../public/logo.png";
 import { COLORS } from "@/shared/styles/variables";
 import AuthText from "@/features/auth/components/AuthText";
 import AuthVector from "@/assets/vectors/auth-bg-vector.png";
+import { makeStaticMetadata } from "@/shared/seo/staticMeta";
+
+export const generateMetadata = makeStaticMetadata("auth", {
+    canonical: "auth",
+    noindex: true,
+});
 
 interface AuthLayoutProps {
     children: ReactNode;

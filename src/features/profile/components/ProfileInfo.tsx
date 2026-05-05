@@ -7,6 +7,7 @@ import type { RootState } from "@/store";
 import type { UserProfile } from "../types";
 import { updateProfile, uploadAvatar } from "../services/profile.api";
 import { getImageUrl } from "@/shared/utils/imageUrl";
+import MembershipBadge from "./MembershipBadge";
 
 interface Props {
     profile: UserProfile | null;
@@ -256,8 +257,9 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                                 className="hidden"
                                 onChange={handleAvatarChange}
                             />
+                            <MembershipBadge profile={profile} variant="tag" />
                         </div>
-                        <p className="text-[11px] text-gray-400 text-center">Tap to update photo</p>
+                        <p className="text-[11px] text-gray-400 text-center mt-3">Tap to update photo</p>
                     </div>
 
                     {/* Fields */}

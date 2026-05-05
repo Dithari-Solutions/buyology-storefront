@@ -12,6 +12,7 @@ import { logout } from "@/features/auth/services/auth.api";
 import { clearTokens } from "@/shared/lib/tokenManager";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import type { UserProfile } from "../types";
+import MembershipBadge from "./MembershipBadge";
 
 export type Section = "profile" | "delivery" | "orders" | "settings" | "membership";
 
@@ -106,16 +107,19 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
         <aside className="flex flex-col gap-4 w-full">
             {/* User card */}
             <div className="bg-white rounded-[20px] p-5 flex flex-col items-center text-center shadow-sm">
-                <div className="relative w-[80px] h-[80px] rounded-full overflow-hidden bg-[#E5E0F5] mb-3 flex items-center justify-center">
-                    {profile?.avatarUrl ? (
-                        <img src={getImageUrl(profile.avatarUrl)} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                        <svg viewBox="0 0 80 80" className="w-full h-full" fill="none">
-                            <rect width="80" height="80" fill="#E5E0F5" />
-                            <circle cx="40" cy="32" r="16" fill="#402F75" opacity="0.4" />
-                            <ellipse cx="40" cy="72" rx="26" ry="18" fill="#402F75" opacity="0.25" />
-                        </svg>
-                    )}
+                <div className="relative w-[80px] h-[80px] mb-4 flex items-center justify-center">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-[#E5E0F5] flex items-center justify-center">
+                        {profile?.avatarUrl ? (
+                            <img src={getImageUrl(profile.avatarUrl)} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                            <svg viewBox="0 0 80 80" className="w-full h-full" fill="none">
+                                <rect width="80" height="80" fill="#E5E0F5" />
+                                <circle cx="40" cy="32" r="16" fill="#402F75" opacity="0.4" />
+                                <ellipse cx="40" cy="72" rx="26" ry="18" fill="#402F75" opacity="0.25" />
+                            </svg>
+                        )}
+                    </div>
+                    <MembershipBadge profile={profile} variant="tag" />
                 </div>
 
                 <h3 className="font-bold text-[16px] text-gray-800">

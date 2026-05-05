@@ -11,8 +11,6 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import { getOrderDetail } from "../services/orders.api";
 import type { OrderDetail, OrderStatus, TrackingEvent } from "../types";
-import ChatPanel from "./ChatPanel";
-import LiveTrackingMap from "./LiveTrackingMap";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -139,14 +137,10 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
     const [order, setOrder] = useState<OrderDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isChatOpen, setIsChatOpen] = useState(false);
-    const [isTrackMapOpen, setIsTrackMapOpen] = useState(false);
     const [connected, setConnected] = useState(false);
     const clientRef = useRef<Client | null>(null);
 
     const COURIER_ACTIVE_STATUSES: OrderStatus[] = ["COURIER_ASSIGNED", "PICKED_UP", "IN_TRANSIT"];
-    const TRACKING_VISIBLE_STATUSES: OrderStatus[] = ["PICKED_UP", "IN_TRANSIT"];
-    const COURIER_CHAT_STATUSES: OrderStatus[] = [...COURIER_ACTIVE_STATUSES, "DELIVERED", "CANCELLED", "FAILED"];
 
     // Auth guard
     useEffect(() => {
@@ -189,10 +183,6 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                     // Refresh entire order to get latest tracking history, location, courier details, etc.
                     getOrderDetail(orderId).then((newOrder) => {
                         setOrder(newOrder);
-                        if (newOrder.status === "DELIVERED") {
-                            setIsTrackMapOpen(false);
-                            alert("Your order has been delivered!");
-                        }
                     }).catch(console.error);
                 });
             },
@@ -281,42 +271,6 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {order.deliveryMethod === "EXPRESS" &&
-                                            order.deliveryOrderId &&
-                                            COURIER_CHAT_STATUSES.includes(order.status) && (
-                                                <>
-                                                    {TRACKING_VISIBLE_STATUSES.includes(order.status) && (
-                                                        <button
-                                                            onClick={() => setIsTrackMapOpen(true)}
-                                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-600 text-white text-[13px] font-bold shadow-sm hover:bg-green-700 transition-colors"
-                                                        >
-                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                                                <circle cx="12" cy="10" r="3" />
-                                                            </svg>
-                                                            Track Order
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => setIsChatOpen(true)}
-                                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#402F75] text-white text-[13px] font-bold shadow-sm hover:bg-[#34265f] transition-colors"
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                                        </svg>
-                                                        Chat
-                                                    </button>
-                                                    <button
-                                                        onClick={() => alert("Please install the mobile app to use the call feature.")}
-                                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#402F75] border border-[#402F75] text-[13px] font-bold shadow-sm hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-                                                        </svg>
-                                                        Call
-                                                    </button>
-                                                </>
-                                            )}
                                         <StatusBadge status={order.status} />
                                     </div>
                                 </div>
@@ -408,133 +362,41 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                 </div>
                             </div>
 
-                            {/* Courier live location (EXPRESS only) */}
-                            {order.deliveryMethod === "EXPRESS" && COURIER_ACTIVE_STATUSES.includes(order.status) && (() => {
-                                const courierEvents = [...order.trackingHistory]
-                                    .filter(e => e.actorRole === "COURIER" && e.latitude != null && e.longitude != null)
-                                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                                const latest = courierEvents[0];
-                                return (
-                                    <div className="bg-white rounded-2xl shadow-sm border border-green-100 p-6">
-                                        <h2 className="text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-2">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <circle cx="12" cy="12" r="3" />
-                                                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-                                            </svg>
-                                            Courier Location
-                                            <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                                Live
-                                            </span>
-                                        </h2>
-
-                                        {order.courierName && (
-                                            <div className="mb-4 flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                                <div className="w-10 h-10 rounded-full bg-[#402F75] text-white flex items-center justify-center font-bold text-[14px]">
-                                                    {order.courierName.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <p className="text-[13px] font-bold text-gray-900">{order.courierName}</p>
-                                                    {order.courierPhone && (
-                                                        <p className="text-[11px] text-gray-500">{order.courierPhone}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {latest ? (
-                                            <>
-                                                {latest.locationDescription && (
-                                                    <p className="text-[13px] text-gray-600 mb-3 flex items-center gap-1.5">
-                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                                            <circle cx="12" cy="10" r="3" />
-                                                        </svg>
-                                                        {latest.locationDescription}
-                                                    </p>
-                                                )}
-                                                <p className="text-[11px] text-gray-400 mb-3">
-                                                    Last updated{" "}
-                                                    {new Date(latest.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                                                </p>
-                                                {TRACKING_VISIBLE_STATUSES.includes(order.status) && (
-                                                    <button
-                                                        onClick={() => setIsTrackMapOpen(true)}
-                                                        className="w-full mb-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 text-white text-[13px] font-bold shadow-sm hover:bg-green-700 transition-colors"
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                                            <circle cx="12" cy="10" r="3" />
-                                                        </svg>
-                                                        Track Live on Map
-                                                    </button>
-                                                )}
-                                                <iframe
-                                                    title="Courier location"
-                                                    width="100%"
-                                                    height="220"
-                                                    style={{ border: 0, borderRadius: 12 }}
-                                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${latest.longitude! - 0.01},${latest.latitude! - 0.01},${latest.longitude! + 0.01},${latest.latitude! + 0.01}&layer=mapnik&marker=${latest.latitude},${latest.longitude}`}
-                                                />
-                                                <a
-                                                    href={`https://www.google.com/maps?q=${latest.latitude},${latest.longitude}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold text-[#402F75] hover:underline"
-                                                >
-                                                    Open in Google Maps →
-                                                </a>
-                                                <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                                                    <button
-                                                        onClick={() => setIsChatOpen(true)}
-                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#402F75] text-white text-[13px] font-bold shadow-sm hover:bg-[#34265f] transition-colors"
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                                        </svg>
-                                                        Chat with Courier
-                                                    </button>
-                                                    <button
-                                                        onClick={() => alert("Please install the mobile app to use the call feature.")}
-                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#402F75] border border-[#402F75] text-[13px] font-bold shadow-sm hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-                                                        </svg>
-                                                        Call Courier
-                                                    </button>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <p className="text-[13px] text-gray-400">
-                                                    Waiting for courier to share location…
-                                                </p>
-                                                <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                                                    <button
-                                                        onClick={() => setIsChatOpen(true)}
-                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#402F75] text-white text-[13px] font-bold shadow-sm hover:bg-[#34265f] transition-colors"
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                                        </svg>
-                                                        Chat with Courier
-                                                    </button>
-                                                    <button
-                                                        onClick={() => alert("Please install the mobile app to use the call feature.")}
-                                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#402F75] border border-[#402F75] text-[13px] font-bold shadow-sm hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-                                                        </svg>
-                                                        Call Courier
-                                                    </button>
-                                                </div>
-                                            </>
+                            {/* Courier contact (EXPRESS only) */}
+                            {order.deliveryMethod === "EXPRESS" && COURIER_ACTIVE_STATUSES.includes(order.status) && order.courierName && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                    <h2 className="text-[15px] font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                                            <circle cx="12" cy="7" r="4" />
+                                        </svg>
+                                        Your Courier
+                                    </h2>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#402F75] to-[#6c4fc0] text-white flex items-center justify-center font-bold text-[18px] shadow-md flex-shrink-0">
+                                            {order.courierName.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[15px] font-bold text-gray-900 truncate">{order.courierName}</p>
+                                            {order.courierPhone && (
+                                                <p className="text-[12px] text-gray-500 mt-0.5">{order.courierPhone}</p>
+                                            )}
+                                        </div>
+                                        {order.courierPhone && (
+                                            <a
+                                                href={`tel:${order.courierPhone.replace(/[^+\d]/g, "")}`}
+                                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#402F75] text-white text-[13px] font-bold shadow-sm hover:bg-[#34265f] transition-colors flex-shrink-0"
+                                                aria-label={`Call ${order.courierName}`}
+                                            >
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+                                                </svg>
+                                                Call
+                                            </a>
                                         )}
                                     </div>
-                                );
-                            })()}
+                                </div>
+                            )}
 
                             {/* Carrier tracking (REGULAR only) */}
                             {order.deliveryMethod === "REGULAR" && order.trackingCode && (
@@ -603,21 +465,6 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                     </div>
                 ) : null}
             </main>
-            {order && order.deliveryOrderId && (
-                <ChatPanel
-                    ecommerceOrderId={order.id}
-                    deliveryOrderId={order.deliveryOrderId}
-                    orderStatus={order.status}
-                    isOpen={isChatOpen}
-                    onClose={() => setIsChatOpen(false)}
-                />
-            )}
-            {order && isTrackMapOpen && (
-                <LiveTrackingMap
-                    order={order}
-                    onClose={() => setIsTrackMapOpen(false)}
-                />
-            )}
             <Footer />
         </>
     );

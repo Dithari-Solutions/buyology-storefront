@@ -1,6 +1,12 @@
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import MapLoader from "@/features/map/components/MapLoader";
+import { makeStaticMetadata } from "@/shared/seo/staticMeta";
+
+export const generateMetadata = makeStaticMetadata("map", {
+  canonical: "__raw",
+  suffix: "/map",
+});
 
 export default function MapPage() {
   return (

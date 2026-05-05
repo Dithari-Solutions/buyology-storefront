@@ -204,7 +204,11 @@ export default function CheckoutPage() {
                     if (cart.shippingFee != null) {
                         dispatch(setShippingFee(cart.shippingFee));
                     }
-                }).catch(() => {});
+                }).catch((err) => {
+                    if (process.env.NODE_ENV !== "production") {
+                        console.warn("Failed to refresh cart shipping fee:", err);
+                    }
+                });
             });
         };
 

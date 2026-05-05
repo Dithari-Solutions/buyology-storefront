@@ -3,6 +3,12 @@ import Footer from "@/shared/components/Footer";
 import SupplierStepIndicator from "@/features/supplier/components/SupplierStepIndicator";
 import Step1AboutContact from "@/features/supplier/components/steps/Step1AboutContact";
 import { COLORS } from "@/shared/styles/variables";
+import { makeStaticMetadata } from "@/shared/seo/staticMeta";
+
+export const generateMetadata = makeStaticMetadata("become-a-supplier", {
+  canonical: "__raw",
+  suffix: "/become-a-supplier",
+});
 
 export default function BecomeASupplierPage() {
   return (

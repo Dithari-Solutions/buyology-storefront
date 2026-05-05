@@ -1,5 +1,6 @@
 import { StaticImageData } from "next/image";
 import Link from "next/link";
+import FeatureCardBackground from "./FeatureCardBackground";
 
 interface FeatureCardProps {
     id: string;
@@ -10,18 +11,31 @@ interface FeatureCardProps {
     href?: string;
 }
 
-export default function FeatureCard({ title, description, bg, variant = "normal", href }: FeatureCardProps) {
+export default function FeatureCard({ id, title, description, bg, variant = "normal", href }: FeatureCardProps) {
     const Wrapper = href
-        ? ({ children }: { children: React.ReactNode }) => <Link href={href} className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full block">{children}</Link>
-        : ({ children }: { children: React.ReactNode }) => <div className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full">{children}</div>;
+        ? ({ children }: { children: React.ReactNode }) => (
+            <Link
+                href={href}
+                className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full block ring-1 ring-white/10 hover:ring-[#FBBB14]/40 shadow-lg shadow-[#1a0f3c]/30 hover:shadow-2xl hover:shadow-[#402F75]/40 transition-all duration-500"
+            >
+                {children}
+            </Link>
+        )
+        : ({ children }: { children: React.ReactNode }) => (
+            <div className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full ring-1 ring-white/10 hover:ring-[#FBBB14]/40 shadow-lg shadow-[#1a0f3c]/30 hover:shadow-2xl hover:shadow-[#402F75]/40 transition-all duration-500">
+                {children}
+            </div>
+        );
 
     return (
         <Wrapper>
-            {/* Background image or gradient fallback */}
-            <div className="absolute inset-0">
-                {bg ? (
+            {/* Stunning generated background */}
+            <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-[1.04]">
+                <FeatureCardBackground id={id} />
+                {/* Original PNG faded over for thematic imagery (if provided) */}
+                {bg && (
                     <div
-                        className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                        className="absolute inset-0 mix-blend-overlay opacity-55 transition-opacity duration-500 group-hover:opacity-75"
                         style={{
                             backgroundImage: `url(${bg.src})`,
                             backgroundSize: "cover",
@@ -29,16 +43,12 @@ export default function FeatureCard({ title, description, bg, variant = "normal"
                             backgroundRepeat: "no-repeat",
                         }}
                     />
-                ) : (
-                    <div
-                        className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
-                        style={{ background: "linear-gradient(135deg, #1a0f3c 0%, #2a1a5e 50%, #3a2070 100%)" }}
-                    />
                 )}
-                {/* Gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f40]/95 via-[#2a1860]/40 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-br from-[#402F75]/20 to-transparent" />
             </div>
+
+            {/* Glassmorphism content scrim */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0626]/90 via-[#1a0f40]/45 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FBBB14]/0 via-transparent to-[#FBBB14]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             {/* Arrow button */}
             <div className="absolute top-4 end-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 group-hover:bg-[#FBBB14] group-hover:border-[#FBBB14] group-hover:rotate-45 group-hover:scale-110">
