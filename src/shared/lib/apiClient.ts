@@ -13,7 +13,11 @@ if (!baseURL) {
 
 export const apiClient = axios.create({
   baseURL,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    // Identifies this client to the backend so JWTs are minted with audience="web".
+    "X-Client-Type": "web",
+  },
   // withCredentials: true globally so the browser sends the HttpOnly
   // refresh-token cookie to /auth/refresh and stores the Set-Cookie on signin.
   withCredentials: true,
