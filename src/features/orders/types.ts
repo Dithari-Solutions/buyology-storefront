@@ -1,14 +1,17 @@
 export type OrderStatus =
     | "PENDING_PAYMENT"
     | "PAID"
-    | "PROCESSING"
-    | "COURIER_ASSIGNED"
-    | "PICKED_UP"
-    | "SHIPPED"
+    | "PACKAGING"
+    | "IN_COURIER"
     | "IN_TRANSIT"
     | "DELIVERED"
     | "CANCELLED"
-    | "FAILED";
+    | "FAILED"
+    // Legacy values (kept so historical orders still render)
+    | "PROCESSING"
+    | "COURIER_ASSIGNED"
+    | "PICKED_UP"
+    | "SHIPPED";
 
 export type DeliveryMethod = "EXPRESS" | "REGULAR";
 

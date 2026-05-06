@@ -17,27 +17,33 @@ import type { OrderDetail, OrderStatus, TrackingEvent } from "../types";
 const STATUS_LABELS: Record<OrderStatus, string> = {
     PENDING_PAYMENT: "Awaiting payment confirmation",
     PAID: "Payment confirmed — preparing your order",
-    PROCESSING: "Your order is being prepared",
-    COURIER_ASSIGNED: "A courier has been assigned",
-    PICKED_UP: "Courier has picked up your order",
-    SHIPPED: "Order has been shipped",
+    PACKAGING: "We're packaging your order",
+    IN_COURIER: "Handed over to courier",
     IN_TRANSIT: "Your order is on the way",
     DELIVERED: "Delivered",
     CANCELLED: "Order cancelled",
     FAILED: "Delivery failed — contact support",
+    // Legacy
+    PROCESSING: "Your order is being prepared",
+    COURIER_ASSIGNED: "A courier has been assigned",
+    PICKED_UP: "Courier has picked up your order",
+    SHIPPED: "Order has been shipped",
 };
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
     PENDING_PAYMENT: "bg-yellow-100 text-yellow-800",
     PAID: "bg-blue-100 text-blue-800",
-    PROCESSING: "bg-blue-100 text-blue-800",
-    COURIER_ASSIGNED: "bg-purple-100 text-purple-800",
-    PICKED_UP: "bg-purple-100 text-purple-800",
-    SHIPPED: "bg-indigo-100 text-indigo-800",
+    PACKAGING: "bg-amber-100 text-amber-800",
+    IN_COURIER: "bg-purple-100 text-purple-800",
     IN_TRANSIT: "bg-orange-100 text-orange-800",
     DELIVERED: "bg-green-100 text-green-800",
     CANCELLED: "bg-gray-100 text-gray-700",
     FAILED: "bg-red-100 text-red-800",
+    // Legacy
+    PROCESSING: "bg-blue-100 text-blue-800",
+    COURIER_ASSIGNED: "bg-purple-100 text-purple-800",
+    PICKED_UP: "bg-purple-100 text-purple-800",
+    SHIPPED: "bg-indigo-100 text-indigo-800",
 };
 
 // ── StatusBadge ───────────────────────────────────────────────────────────────

@@ -14,11 +14,14 @@ import type { OrderSummary, OrderStatus, DeliveryMethod } from "../types";
 const ACTIVE_STATUSES: OrderStatus[] = [
     "PENDING_PAYMENT",
     "PAID",
+    "PACKAGING",
+    "IN_COURIER",
+    "IN_TRANSIT",
+    // legacy
     "PROCESSING",
     "COURIER_ASSIGNED",
     "PICKED_UP",
     "SHIPPED",
-    "IN_TRANSIT",
 ];
 
 const PAST_STATUSES: OrderStatus[] = ["DELIVERED", "CANCELLED", "FAILED"];
@@ -26,27 +29,31 @@ const PAST_STATUSES: OrderStatus[] = ["DELIVERED", "CANCELLED", "FAILED"];
 const STATUS_LABELS: Record<OrderStatus, string> = {
     PENDING_PAYMENT: "Pending Payment",
     PAID: "Paid",
-    PROCESSING: "Processing",
-    COURIER_ASSIGNED: "Courier Assigned",
-    PICKED_UP: "Picked Up",
-    SHIPPED: "Shipped",
+    PACKAGING: "Packaging",
+    IN_COURIER: "Handed to Courier",
     IN_TRANSIT: "In Transit",
     DELIVERED: "Delivered",
     CANCELLED: "Cancelled",
     FAILED: "Failed",
+    PROCESSING: "Processing",
+    COURIER_ASSIGNED: "Courier Assigned",
+    PICKED_UP: "Picked Up",
+    SHIPPED: "Shipped",
 };
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
     PENDING_PAYMENT: "bg-yellow-100 text-yellow-800",
     PAID: "bg-blue-100 text-blue-800",
-    PROCESSING: "bg-blue-100 text-blue-800",
-    COURIER_ASSIGNED: "bg-purple-100 text-purple-800",
-    PICKED_UP: "bg-purple-100 text-purple-800",
-    SHIPPED: "bg-indigo-100 text-indigo-800",
+    PACKAGING: "bg-amber-100 text-amber-800",
+    IN_COURIER: "bg-purple-100 text-purple-800",
     IN_TRANSIT: "bg-orange-100 text-orange-800",
     DELIVERED: "bg-green-100 text-green-800",
     CANCELLED: "bg-gray-100 text-gray-700",
     FAILED: "bg-red-100 text-red-800",
+    PROCESSING: "bg-blue-100 text-blue-800",
+    COURIER_ASSIGNED: "bg-purple-100 text-purple-800",
+    PICKED_UP: "bg-purple-100 text-purple-800",
+    SHIPPED: "bg-indigo-100 text-indigo-800",
 };
 
 // ── StatusBadge ───────────────────────────────────────────────────────────────
