@@ -51,9 +51,25 @@ function _extractUserIdFromJwt(token: string): string | null {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     // Backend mints JWTs with `sub` = auth_credentials.id and `uid` = users.id.
-    // Redux's `userId` is consumed by data APIs (orders, membership, addresses)
-    // that expect users.id, so prefer `uid`.
-    return payload.uid ?? payload.userId ?? payload.id ?? payload.sub ?? null;
+    // Redux's `userId` feeds path-variable APIs that expect auth_credentials.id
+    // (cart, addresses, profile, country-preference, etc.). Endpoints that need
+    // the actual users.id (e.g. /api/membership/card) read `uid` themselves.
+    return payload.sub ?? payload.userId ?? payload.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Extracts the `uid` claim (users.id) from the current access token.
+ * Use only for endpoints that key by users.id rather than auth_credentials.id —
+ * specifically {@code /api/membership/card?userId=…}.
+ */
+export function getUidFromAccessToken(): string | null {
+  if (!_accessToken) return null;
+  try {
+    const payload = JSON.parse(atob(_accessToken.split(".")[1]));
+    return (payload.uid as string | undefined) ?? null;
   } catch {
     return null;
   }

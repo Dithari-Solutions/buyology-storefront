@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { type Lang } from "@/config/pathSlugs";
+import { getUidFromAccessToken } from "@/shared/lib/tokenManager";
 import {
     getMembershipCard,
     getMyApplication,
@@ -54,18 +55,23 @@ export default function MembershipDashboard() {
         if (!userId) { setLoading(false); return; }
         setLoading(true);
 
+        // /api/membership/* endpoints key by users.id (uid claim), not auth_credentials.id (sub).
+        // Redux's `userId` is the JWT sub — fall back to it only if uid isn't available.
+        const membershipUid = getUidFromAccessToken() ?? userId;
+
         Promise.allSettled([
-            getMembershipCard(userId).then(setCard),
-            getMyApplication(userId).then(setApplication),
-            getWallet(userId).then(setWallet),
+            getMembershipCard(membershipUid).then(setCard),
+            getMyApplication(membershipUid).then(setApplication),
+            getWallet(membershipUid).then(setWallet),
         ]).finally(() => setLoading(false));
     }, [userId]);
 
     const loadTransactions = async () => {
-        if (!userId) return;
+        const membershipUid = getUidFromAccessToken() ?? userId;
+        if (!membershipUid) return;
         setTxLoading(true);
         try {
-            const txs = await getWalletTransactions(userId);
+            const txs = await getWalletTransactions(membershipUid);
             setTransactions(txs);
         } catch { } finally { setTxLoading(false); }
     };
