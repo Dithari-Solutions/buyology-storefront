@@ -1,24 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 
-// Maps ISO 3166-1 alpha-2 (from Nominatim / ipapi) → app country codes as
-// stored in DB. Backend uses ISO 3166-1 alpha-3 (e.g. "AZE", "UAE").
-const ISO2_TO_APP: Record<string, string> = {
-  AE: "UAE",
-  AZ: "AZE",
-  SA: "SAU",
-  KW: "KWT",
-  QA: "QAT",
-  OM: "OMN",
-  BH: "BHR",
-  EG: "EGY",
-  JO: "JOR",
-  LB: "LBN",
-  TR: "TUR",
-  US: "USA",
-  GB: "GBR",
-  DE: "DEU",
-};
+// Set of countries the app supports. We emit the raw ISO 3166-1 alpha-2
+// upstream and let the country slice match it against whatever the admin
+// actually stored (alpha-2 or alpha-3) using the alias map.
+const SUPPORTED_ISO2 = new Set([
+  "AE", "AZ", "SA", "KW", "QA", "OM", "BH", "EG", "JO", "LB", "TR", "US", "GB", "DE",
+]);
 
 interface LocationState {
   coords: { lat: number; lng: number } | null;
@@ -42,7 +30,7 @@ async function detectCountryByIP(): Promise<string | null> {
     if (!res.ok) return null;
     const data = await res.json();
     const iso2 = (data?.country_code as string | undefined)?.toUpperCase();
-    if (iso2) return ISO2_TO_APP[iso2] ?? null;
+    if (iso2 && SUPPORTED_ISO2.has(iso2)) return iso2;
   } catch {
     // IP lookup failed
   } finally {
@@ -75,7 +63,7 @@ export const requestLocationThunk = createAsyncThunk<
           );
           const data = await res.json();
           const iso2 = (data?.address?.country_code as string | undefined)?.toUpperCase();
-          if (iso2) countryCode = ISO2_TO_APP[iso2] ?? null;
+          if (iso2 && SUPPORTED_ISO2.has(iso2)) countryCode = iso2;
         } catch {
           // Geocoding failed — still store coords, skip country auto-set
         }

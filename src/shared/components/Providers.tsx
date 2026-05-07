@@ -11,6 +11,7 @@ import IntroScreen from "@/shared/components/IntroScreen";
 import SignupGate from "@/shared/components/SignupGate";
 import { tryRestoreSession } from "@/shared/lib/tokenManager";
 import { initFromLocalStorage, fetchCountriesThunk, setCountryThunk } from "@/features/country/store/countrySlice";
+import { findCountryByAlias } from "@/features/country/lib/match";
 import { requestLocationThunk, selectDetectedCountryCode } from "@/features/location/store/locationSlice";
 import type { AppDispatch, RootState } from "@/store";
 
@@ -32,10 +33,11 @@ function CountryInitializer() {
   return null;
 }
 
-// Maps URL language to the most likely country code when no preference is saved.
-// Must match the actual country code stored in the DB — backend uses
-// ISO 3166-1 alpha-3 (e.g. "AZE", not "AZ").
-const LANG_DEFAULT_COUNTRY: Record<string, string> = { az: "AZE" };
+// Maps URL language to a country alias used as a fallback when no
+// preference is saved. The alias is resolved against the active countries
+// list (alpha-2/alpha-3 tolerant), so it works regardless of the form the
+// admin used when seeding the country.
+const LANG_DEFAULT_COUNTRY: Record<string, string> = { az: "AZ" };
 
 function GeolocationInitializer() {
   const dispatch = useDispatch<AppDispatch>();
@@ -74,10 +76,10 @@ function GeolocationInitializer() {
     if (typeof window !== "undefined" && localStorage.getItem("selectedCountryCode")) return;
     const langCountry = LANG_DEFAULT_COUNTRY[lang];
     if (!langCountry) return;
-    const supported = countries.some((c) => c.code === langCountry);
-    if (!supported) return;
+    const matched = findCountryByAlias(countries, langCountry);
+    if (!matched) return;
     langAppliedRef.current = true;
-    dispatch(setCountryThunk({ countryCode: langCountry, userId }));
+    dispatch(setCountryThunk({ countryCode: matched.code, userId }));
   }, [lang, countries, dispatch, userId]);
 
   // Step 2 — apply the detected country whenever geolocation changes it.
@@ -86,11 +88,11 @@ function GeolocationInitializer() {
   useEffect(() => {
     if (!detectedCountryCode) return;
     if (countries.length === 0) return;
-    const supported = countries.some((c) => c.code === detectedCountryCode);
-    if (!supported) return;
-    if (lastAppliedRef.current === detectedCountryCode) return;
-    lastAppliedRef.current = detectedCountryCode;
-    dispatch(setCountryThunk({ countryCode: detectedCountryCode, userId }));
+    const matched = findCountryByAlias(countries, detectedCountryCode);
+    if (!matched) return;
+    if (lastAppliedRef.current === matched.code) return;
+    lastAppliedRef.current = matched.code;
+    dispatch(setCountryThunk({ countryCode: matched.code, userId }));
   }, [detectedCountryCode, countries, dispatch, userId]);
 
   return null;

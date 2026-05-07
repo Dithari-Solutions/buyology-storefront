@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getActiveCountries, updateCountryPreference, type Country } from "../services/country.api";
+import { findCountryByAlias } from "../lib/match";
 import type { RootState } from "@/store";
 
 const DEFAULT_COUNTRY = "UAE";
@@ -36,17 +37,18 @@ export const setCountryThunk = createAsyncThunk(
     { getState }
   ) => {
     const state = getState() as RootState;
-    const country = state.country.countries.find((c) => c.code === countryCode);
+    const country = findCountryByAlias(state.country.countries, countryCode);
+    const resolvedCode = country?.code ?? countryCode;
     const resolvedCurrency = currency ?? country?.currency ?? DEFAULT_CURRENCY;
 
-    localStorage.setItem("selectedCountryCode", countryCode);
+    localStorage.setItem("selectedCountryCode", resolvedCode);
     localStorage.setItem("preferredCurrency", resolvedCurrency);
 
     if (userId) {
-      await updateCountryPreference(userId, countryCode, resolvedCurrency).catch(console.error);
+      await updateCountryPreference(userId, resolvedCode, resolvedCurrency).catch(console.error);
     }
 
-    return { countryCode, currency: resolvedCurrency };
+    return { countryCode: resolvedCode, currency: resolvedCurrency };
   }
 );
 
@@ -80,18 +82,10 @@ const countrySlice = createSlice({
       .addCase(fetchCountriesThunk.fulfilled, (state, action) => {
         state.countries = action.payload;
         state.loading = false;
-        // Heal any persisted 2-letter codes from older sessions
-        // (backend serves alpha-3 like "AZE"/"UAE"/"SAU"; alpha-2 wouldn't match).
-        const aliasFor: Record<string, string> = {
-          AZ: "AZE", AE: "UAE", SA: "SAU", KW: "KWT", QA: "QAT", OM: "OMN",
-          BH: "BHR", EG: "EGY", JO: "JOR", LB: "LBN", TR: "TUR", US: "USA",
-          GB: "GBR", DE: "DEU",
-        };
-        const stored = state.selectedCountryCode;
-        const candidate = aliasFor[stored] ?? stored;
-        const matched =
-          action.payload.find((c) => c.code === candidate) ??
-          action.payload.find((c) => c.code === stored);
+        // Heal a persisted code that doesn't match exactly: try every known
+        // alias (alpha-2 ↔ alpha-3) and adopt whichever form the admin
+        // actually stored, plus its canonical currency.
+        const matched = findCountryByAlias(action.payload, state.selectedCountryCode);
         if (matched) {
           if (state.selectedCountryCode !== matched.code) {
             state.selectedCountryCode = matched.code;
@@ -124,4 +118,4 @@ export const selectCountries = (state: RootState) => state.country.countries;
 export const selectSelectedCountryCode = (state: RootState) => state.country.selectedCountryCode;
 export const selectPreferredCurrency = (state: RootState) => state.country.preferredCurrency;
 export const selectSelectedCountry = (state: RootState) =>
-  state.country.countries.find((c) => c.code === state.country.selectedCountryCode);
+  findCountryByAlias(state.country.countries, state.country.selectedCountryCode);
