@@ -32,9 +32,10 @@ function CountryInitializer() {
   return null;
 }
 
-// Maps URL language to the most likely country code when no preference is saved
-// Must match the actual country code stored in the DB (e.g. "AZ" not "AZE")
-const LANG_DEFAULT_COUNTRY: Record<string, string> = { az: "AZ" };
+// Maps URL language to the most likely country code when no preference is saved.
+// Must match the actual country code stored in the DB — backend uses
+// ISO 3166-1 alpha-3 (e.g. "AZE", not "AZ").
+const LANG_DEFAULT_COUNTRY: Record<string, string> = { az: "AZE" };
 
 function GeolocationInitializer() {
   const dispatch = useDispatch<AppDispatch>();
