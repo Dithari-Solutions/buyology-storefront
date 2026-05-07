@@ -80,6 +80,16 @@ const countrySlice = createSlice({
       .addCase(fetchCountriesThunk.fulfilled, (state, action) => {
         state.countries = action.payload;
         state.loading = false;
+        // Backfill the persisted currency if it was stamped before the
+        // countries list loaded (e.g. the lang-default path persists with
+        // the global default AED, even when the selected code is AZ).
+        const matched = action.payload.find((c) => c.code === state.selectedCountryCode);
+        if (matched && state.preferredCurrency !== matched.currency) {
+          state.preferredCurrency = matched.currency;
+          if (typeof window !== "undefined") {
+            localStorage.setItem("preferredCurrency", matched.currency);
+          }
+        }
       })
       .addCase(fetchCountriesThunk.rejected, (state) => {
         state.loading = false;

@@ -49,14 +49,20 @@ function GeolocationInitializer() {
   // Current UI language (set by LangSync from URL segment)
   const lang = useSelector((state: RootState) => state.language.lang as string);
 
-  // Ensure we only apply the auto-detected country once
-  const appliedRef = useRef(false);
+  // Tracks the last country code we PATCHed to the backend, so we don't spam
+  // the profile endpoint when geolocation re-resolves the same country.
+  const lastAppliedRef = useRef<string | null>(null);
   // Tracks whether a lang-based default was already applied
   const langAppliedRef = useRef(false);
 
-  // Step 1 — kick off the geolocation request once on mount
+  // Step 1 — kick off geolocation on mount and poll every minute so the
+  // detected country stays fresh as the user moves.
   useEffect(() => {
     dispatch(requestLocationThunk());
+    const id = setInterval(() => {
+      dispatch(requestLocationThunk());
+    }, 60_000);
+    return () => clearInterval(id);
   }, [dispatch]);
 
   // Step 1b — apply lang-based country default once countries are loaded, if no saved preference.
@@ -73,36 +79,18 @@ function GeolocationInitializer() {
     dispatch(setCountryThunk({ countryCode: langCountry, userId }));
   }, [lang, countries, dispatch, userId]);
 
-  // Step 2 — set country as soon as it is detected from geolocation.
-  // We dispatch immediately (don't wait for countries list) so the product list
-  // updates without delay. setCountryThunk resolves the currency from the countries
-  // list internally; if the list isn't loaded yet it falls back to the default currency
-  // and will be corrected when countries load via the selector.
+  // Step 2 — apply the detected country whenever geolocation changes it.
+  // Skips if the country isn't in the active countries list or if it matches
+  // what we already applied (avoids redundant profile PATCHes).
   useEffect(() => {
-    if (!detectedCountryCode || appliedRef.current) return;
-
-    // If countries are already loaded, verify this country is active before setting.
-    // If not loaded yet, dispatch anyway — the thunk will use default currency as fallback.
-    if (countries.length > 0) {
-      const supported = countries.some((c) => c.code === detectedCountryCode);
-      if (!supported) return;
-    }
-
-    appliedRef.current = true;
-    dispatch(setCountryThunk({ countryCode: detectedCountryCode, userId }));
-  }, [detectedCountryCode, countries, dispatch, userId]);
-
-  // Step 3 — once countries load, correct the currency if the country was set early
-  // (before the countries list was available).
-  useEffect(() => {
-    if (!detectedCountryCode || !appliedRef.current || countries.length === 0) return;
+    if (!detectedCountryCode) return;
+    if (countries.length === 0) return;
     const supported = countries.some((c) => c.code === detectedCountryCode);
     if (!supported) return;
-    // Re-dispatch silently to get the right currency now that countries are loaded.
-    // userId is not passed here to avoid a redundant PATCH to the profile.
-    dispatch(setCountryThunk({ countryCode: detectedCountryCode }));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countries]);
+    if (lastAppliedRef.current === detectedCountryCode) return;
+    lastAppliedRef.current = detectedCountryCode;
+    dispatch(setCountryThunk({ countryCode: detectedCountryCode, userId }));
+  }, [detectedCountryCode, countries, dispatch, userId]);
 
   return null;
 }
