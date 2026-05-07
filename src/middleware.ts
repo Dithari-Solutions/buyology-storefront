@@ -6,15 +6,16 @@ const locales = ["en", "az", "ar"] as const;
 const defaultLocale = "en";
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
   if (!pathnameHasLocale) {
+    // Preserve the query string (e.g. ?token=...) across the locale redirect.
     return NextResponse.redirect(
-      new URL(`/${defaultLocale}${pathname}`, request.url)
+      new URL(`/${defaultLocale}${pathname}${search}`, request.url)
     );
   }
 
@@ -28,7 +29,8 @@ export function middleware(request: NextRequest) {
     const canonical = SLUG_TO_CANONICAL[lang][pathSegment];
     segments[2] = canonical;
     const rewrittenPath = segments.join("/");
-    const response = NextResponse.rewrite(new URL(rewrittenPath, request.url));
+    // Preserve the query string on rewrites too.
+    const response = NextResponse.rewrite(new URL(`${rewrittenPath}${search}`, request.url));
     response.headers.set("x-lang", lang);
     return response;
   }
