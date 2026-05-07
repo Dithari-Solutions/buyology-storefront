@@ -11,6 +11,7 @@ import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment } from "../services/payment.api";
+import { b2bAccountApi } from "@/features/b2b/account/api";
 import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee } from "@/features/cart/store/cartSlice";
 import { checkoutCart } from "@/features/cart/services/cart.api";
 import { createOrder } from "@/features/orders/services/orders.api";
@@ -246,7 +247,7 @@ export default function CheckoutPage() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    async function handlePlaceOrder(paymentMethod: PaymentMethod) {
+    async function handlePlaceOrder(paymentMethod: PaymentMethod, creditAmount: number = 0) {
         if (!userId || !shippingData) return;
 
         setIsSubmitting(true);
@@ -284,6 +285,28 @@ export default function CheckoutPage() {
                 // Persist so retries reuse the same order
                 setPendingOrderId(order.id);
                 setPendingShippingFee(finalShippingFee);
+            }
+
+            // Step 3a — Apply B2B credit if the user enabled it
+            if (creditAmount > 0) {
+                try {
+                    const creditResult = await b2bAccountApi.payOrderWithCredit(orderId, creditAmount);
+                    if (creditResult.fullySettled) {
+                        // Credit covered the entire order — skip Paymob entirely
+                        window.location.href = `/${lang}/payment/callback?orderId=${orderId}&status=paid`;
+                        return;
+                    }
+                    // Otherwise the order's remaining balance is settled via the normal Paymob flow below;
+                    // PaymentService.initiatePayment subtracts creditApplied server-side.
+                } catch (err) {
+                    setPaymentError(
+                        err instanceof Error
+                            ? err.message
+                            : "Could not apply B2B credit. Please try again."
+                    );
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
             // Step 3 — Initiate payment
@@ -422,6 +445,8 @@ export default function CheckoutPage() {
                                 onEdit={() => setStep("shipping")}
                                 onPlaceOrder={handlePlaceOrder}
                                 isSubmitting={isSubmitting}
+                                userId={userId}
+                                currency={cartCurrency}
                             />
                         )}
                     </div>

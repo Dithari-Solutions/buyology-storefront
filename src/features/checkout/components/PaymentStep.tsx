@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { selectCartTotals } from "@/features/cart/store/cartSlice";
 import type { ShippingFormData, PaymentMethod } from "../types";
+import B2bCreditPanel from "./B2bCreditPanel";
 
 // ── Brand Badge Components ────────────────────────────────────────────────────
 
@@ -58,15 +59,20 @@ interface PaymentStepProps {
     shipping: ShippingFormData;
     deliveryMethod: "EXPRESS" | "REGULAR";
     onEdit: () => void;
-    onPlaceOrder: (paymentMethod: PaymentMethod) => void;
+    onPlaceOrder: (paymentMethod: PaymentMethod, creditAmount: number) => void;
     isSubmitting?: boolean;
+    /** Authenticated user id (users.id) — required to surface the B2B credit panel. */
+    userId?: string | null;
+    /** Cart currency for the credit panel. */
+    currency?: string;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceOrder, isSubmitting }: PaymentStepProps) {
+export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceOrder, isSubmitting, userId, currency }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
     const [selected, setSelected] = useState<PaymentMethod>("card");
+    const [creditAmount, setCreditAmount] = useState<number>(0);
     const totals = useSelector(selectCartTotals);
     const cartItems = useSelector((state: RootState) => state.cart.items);
     const total = totals.total;
@@ -233,9 +239,19 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                 </div>
             </div>
 
+            {/* B2B credit panel — only renders when user has wallet balance */}
+            {userId && (
+                <B2bCreditPanel
+                    userId={userId}
+                    orderTotal={total}
+                    orderCurrency={currency ?? "AED"}
+                    onChange={setCreditAmount}
+                />
+            )}
+
             {/* Place Order CTA */}
             <button
-                onClick={() => onPlaceOrder(selected)}
+                onClick={() => onPlaceOrder(selected, creditAmount)}
                 disabled={isSubmitting}
                 className="w-full bg-[#FBBB14] hover:bg-[#f0b000] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all py-[14px] rounded-xl font-bold text-[15px] text-gray-900 flex items-center justify-center gap-2 cursor-pointer"
             >

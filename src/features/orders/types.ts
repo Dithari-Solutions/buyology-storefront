@@ -82,6 +82,9 @@ export interface OrderDetail extends OrderSummary {
     subtotal: number;
     shippingFee: number;
     discount: number;
+    /** B2B credit applied to this order (in {@link creditCurrency}). */
+    creditApplied?: number | null;
+    creditCurrency?: string | null;
     couponCode: string | null;
     /** Human-readable estimate, e.g. "Within 30 minutes" or "2–3 business days" */
     estimatedDeliveryTime: string | null;

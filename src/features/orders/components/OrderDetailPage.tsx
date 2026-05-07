@@ -361,6 +361,12 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                             <span>− {order.currency} {order.discount.toFixed(2)}</span>
                                         </div>
                                     )}
+                                    {order.creditApplied && order.creditApplied > 0 && (
+                                        <div className="flex justify-between text-[12px] text-[#402F75]">
+                                            <span>B2B credit applied</span>
+                                            <span>− {order.creditCurrency ?? order.currency} {order.creditApplied.toFixed(2)}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between text-[15px] font-bold text-gray-900 mt-2 pt-2 border-t border-gray-100">
                                         <span>Total</span>
                                         <span>{order.currency} {order.totalAmount.toFixed(2)}</span>

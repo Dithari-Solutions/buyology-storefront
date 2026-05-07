@@ -67,22 +67,52 @@ export const b2bAccountApi = {
     return res.data.data;
   },
 
-  async payOrderWithCredit(orderId: string): Promise<{
+  async payOrderWithCredit(
+    orderId: string,
+    amount?: number,
+  ): Promise<{
     orderId: string;
     creditUsageId: string;
-    amount: number;
-    currency: string;
+    creditApplied: number;
+    creditCurrency: string;
+    remainingAmount: number;
+    orderStatus: string;
     dueAt: string;
+    fullySettled: boolean;
   }> {
     const res = await apiClient.post<
       ApiResponse<{
         orderId: string;
         creditUsageId: string;
-        amount: number;
-        currency: string;
+        creditApplied: number;
+        creditCurrency: string;
+        remainingAmount: number;
+        orderStatus: string;
         dueAt: string;
+        fullySettled: boolean;
       }>
-    >(`/api/orders/${orderId}/pay-with-credit`);
+    >(`/api/orders/${orderId}/pay-with-credit`, amount != null ? { amount } : {});
     return res.data.data;
+  },
+
+  async getMyWallet(userId: string): Promise<{
+    balance: number;
+    currency: string;
+    creditLimit?: number;
+    countryCode?: string;
+  } | null> {
+    try {
+      const res = await apiClient.get<
+        ApiResponse<{
+          balance: number;
+          currency: string;
+          creditLimit?: number;
+          countryCode?: string;
+        }>
+      >(`/api/membership/wallet`, { params: { userId } });
+      return res.data.data ?? null;
+    } catch {
+      return null;
+    }
   },
 };

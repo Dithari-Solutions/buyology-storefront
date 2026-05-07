@@ -50,7 +50,10 @@ export async function tryRestoreSession(): Promise<void> {
 function _extractUserIdFromJwt(token: string): string | null {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.sub ?? payload.userId ?? payload.id ?? null;
+    // Backend mints JWTs with `sub` = auth_credentials.id and `uid` = users.id.
+    // Redux's `userId` is consumed by data APIs (orders, membership, addresses)
+    // that expect users.id, so prefer `uid`.
+    return payload.uid ?? payload.userId ?? payload.id ?? payload.sub ?? null;
   } catch {
     return null;
   }
