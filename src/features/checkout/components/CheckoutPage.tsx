@@ -23,7 +23,7 @@ import {
     createAddress,
 } from "@/features/profile/services/profile.api";
 
-const METHOD_MAP: Record<PaymentMethod, "CARD" | "TABBY" | "TAMARA"> = {
+const METHOD_MAP: Record<Exclude<PaymentMethod, "credit">, "CARD" | "TABBY" | "TAMARA"> = {
     card: "CARD",
     tabby: "TABBY",
     tamara: "TAMARA",
@@ -291,8 +291,8 @@ export default function CheckoutPage() {
             if (creditAmount > 0) {
                 try {
                     const creditResult = await b2bAccountApi.payOrderWithCredit(orderId, creditAmount);
-                    if (creditResult.fullySettled) {
-                        // Credit covered the entire order — skip Paymob entirely
+                    if (creditResult.fullySettled || paymentMethod === "credit") {
+                        // Credit covered the entire order (or user explicitly chose credit-only) — skip Paymob.
                         window.location.href = `/${lang}/payment/callback?orderId=${orderId}&status=paid`;
                         return;
                     }
@@ -307,6 +307,13 @@ export default function CheckoutPage() {
                     setIsSubmitting(false);
                     return;
                 }
+            }
+
+            if (paymentMethod === "credit") {
+                // Wallet didn't cover the order and user only wanted credit — surface to user.
+                setPaymentError("Your wallet balance does not cover this order. Pick another payment method.");
+                setIsSubmitting(false);
+                return;
             }
 
             // Step 3 — Initiate payment

@@ -14,7 +14,7 @@ export interface ShippingFormData {
     longitude?: number | null;
 }
 
-export type PaymentMethod = "card" | "tabby" | "tamara";
+export type PaymentMethod = "card" | "tabby" | "tamara" | "credit";
 
 export type CheckoutStep = "shipping" | "payment";
 

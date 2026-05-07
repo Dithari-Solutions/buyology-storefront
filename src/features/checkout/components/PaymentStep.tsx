@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { selectCartTotals } from "@/features/cart/store/cartSlice";
+import { b2bAccountApi } from "@/features/b2b/account/api";
 import type { ShippingFormData, PaymentMethod } from "../types";
-import B2bCreditPanel from "./B2bCreditPanel";
 
 // ── Brand Badge Components ────────────────────────────────────────────────────
 
@@ -38,6 +38,14 @@ function TamaraBadge() {
     );
 }
 
+function CreditBadge() {
+    return (
+        <span className="inline-flex items-center bg-[#FBBB14] text-[#402F75] text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wide">
+            B2B credit
+        </span>
+    );
+}
+
 // ── Country lookup ────────────────────────────────────────────────────────────
 
 const COUNTRY_NAMES: Record<string, string> = {
@@ -61,7 +69,7 @@ interface PaymentStepProps {
     onEdit: () => void;
     onPlaceOrder: (paymentMethod: PaymentMethod, creditAmount: number) => void;
     isSubmitting?: boolean;
-    /** Authenticated user id (users.id) — required to surface the B2B credit panel. */
+    /** Authenticated user id (users.id) — required to surface the B2B credit option. */
     userId?: string | null;
     /** Cart currency for the credit panel. */
     currency?: string;
@@ -72,10 +80,34 @@ interface PaymentStepProps {
 export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceOrder, isSubmitting, userId, currency }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
     const [selected, setSelected] = useState<PaymentMethod>("card");
-    const [creditAmount, setCreditAmount] = useState<number>(0);
     const totals = useSelector(selectCartTotals);
     const cartItems = useSelector((state: RootState) => state.cart.items);
-    const total = totals.total;
+    const orderTotal = totals.total;
+
+    const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(null);
+
+    useEffect(() => {
+        if (!userId) return;
+        let cancelled = false;
+        b2bAccountApi.getMyWallet(userId).then((w) => {
+            if (!cancelled) setWallet(w);
+        });
+        return () => { cancelled = true; };
+    }, [userId]);
+
+    const orderCcy = (currency ?? "AED").toUpperCase();
+    const walletCcy = wallet?.currency.toUpperCase();
+    const sameCurrency = walletCcy != null && walletCcy === orderCcy;
+    // Only show wallet credit if the wallet currency matches the order currency.
+    // Cross-currency wallet usage requires backend FX which is out of scope for
+    // a one-tap auto-deduct flow — admin tooling already handles those cases.
+    const creditAvailable = !!wallet && wallet.balance > 0 && sameCurrency;
+
+    // Amount of wallet credit applied when "credit" is the chosen method.
+    const creditApplied = selected === "credit" && creditAvailable && wallet
+        ? Math.min(wallet.balance, orderTotal)
+        : 0;
+    const newTotal = Math.max(0, orderTotal - creditApplied);
 
     const hasQuickDeliveryItems = cartItems.some((i) => i.quickDelivery);
     const expressUnavailable = hasQuickDeliveryItems && deliveryMethod === "REGULAR";
@@ -93,18 +125,28 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
         {
             id: "tabby",
             label: t("payment.tabby.label"),
-            description: t("payment.tabby.description", { amount: (total / 4).toFixed(2) }),
+            description: t("payment.tabby.description", { amount: (orderTotal / 4).toFixed(2) }),
             badge: <TabbyBadge />,
-            detail: t("payment.tabby.detail", { amount: (total / 4).toFixed(2) }),
+            detail: t("payment.tabby.detail", { amount: (orderTotal / 4).toFixed(2) }),
         },
         {
             id: "tamara",
             label: t("payment.tamara.label"),
-            description: t("payment.tamara.description", { amount: (total / 3).toFixed(2) }),
+            description: t("payment.tamara.description", { amount: (orderTotal / 3).toFixed(2) }),
             badge: <TamaraBadge />,
-            detail: t("payment.tamara.detail", { amount: (total / 3).toFixed(2) }),
+            detail: t("payment.tamara.detail", { amount: (orderTotal / 3).toFixed(2) }),
         },
     ];
+
+    if (creditAvailable && wallet) {
+        PAYMENT_OPTIONS.push({
+            id: "credit",
+            label: "Pay with B2B credit",
+            description: `Available balance: ${wallet.balance.toLocaleString()} ${wallet.currency}`,
+            badge: <CreditBadge />,
+            detail: `${creditApplied.toFixed(2)} ${wallet.currency} will be deducted from your wallet automatically.`,
+        });
+    }
 
     return (
         <div className="flex flex-col gap-4">
@@ -131,11 +173,11 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                             {shipping.email && (
                                 <p className="text-[12px] text-gray-400 mt-0.5">{shipping.email}{shipping.phone && ` · ${shipping.phone}`}</p>
                             )}
-                            
+
                             <div className="mt-3 flex flex-wrap gap-2">
                                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                                    deliveryMethod === "EXPRESS" 
-                                        ? "bg-green-50 text-green-700 border-green-100" 
+                                    deliveryMethod === "EXPRESS"
+                                        ? "bg-green-50 text-green-700 border-green-100"
                                         : "bg-gray-50 text-gray-600 border-gray-100"
                                 }`}>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -156,7 +198,7 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                                         <line x1="12" y1="16" x2="12.01" y2="16" />
                                     </svg>
                                     <p className="text-[11px] text-amber-700 leading-normal">
-                                        <strong>Express unavailable:</strong> You have quick-delivery items, but this address has no map coordinates. Standard delivery will be used. 
+                                        <strong>Express unavailable:</strong> You have quick-delivery items, but this address has no map coordinates. Standard delivery will be used.
                                         <button onClick={onEdit} className="ml-1 font-bold underline hover:text-amber-900 cursor-pointer">Add location pin</button>
                                     </p>
                                 </div>
@@ -190,7 +232,6 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                                 key={option.id}
                                 className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${isSelected ? "border-[#402F75] bg-[#EDE9FF]/40" : "border-gray-100 hover:border-gray-200 bg-white"}`}
                             >
-                                {/* Radio */}
                                 <div className="mt-0.5 flex-shrink-0">
                                     <input
                                         type="radio"
@@ -206,8 +247,6 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                                         )}
                                     </div>
                                 </div>
-
-                                {/* Content */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-2 flex-wrap">
                                         <span className={`text-[13px] font-bold ${isSelected ? "text-[#402F75]" : "text-gray-800"}`}>
@@ -229,7 +268,6 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                     })}
                 </div>
 
-                {/* Secure note */}
                 <div className="mt-4 flex items-center gap-2 text-[11px] text-gray-400">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" />
@@ -239,19 +277,27 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                 </div>
             </div>
 
-            {/* B2B credit panel — only renders when user has wallet balance */}
-            {userId && (
-                <B2bCreditPanel
-                    userId={userId}
-                    orderTotal={total}
-                    orderCurrency={currency ?? "AED"}
-                    onChange={setCreditAmount}
-                />
+            {/* Order summary with credit applied */}
+            {selected === "credit" && creditApplied > 0 && (
+                <div className="rounded-2xl border border-[#402F75]/30 bg-[#FAF8FF] p-5 space-y-1.5 text-[13px]">
+                    <div className="flex justify-between text-gray-700">
+                        <span>Cart total</span>
+                        <strong>{orderTotal.toFixed(2)} {orderCcy}</strong>
+                    </div>
+                    <div className="flex justify-between text-[#402F75]">
+                        <span>Wallet credit applied</span>
+                        <strong>− {creditApplied.toFixed(2)} {orderCcy}</strong>
+                    </div>
+                    <div className="flex justify-between text-gray-900 pt-1.5 border-t border-[#402F75]/10">
+                        <span className="font-semibold">Amount due now</span>
+                        <strong>{newTotal.toFixed(2)} {orderCcy}</strong>
+                    </div>
+                </div>
             )}
 
             {/* Place Order CTA */}
             <button
-                onClick={() => onPlaceOrder(selected, creditAmount)}
+                onClick={() => onPlaceOrder(selected, creditApplied)}
                 disabled={isSubmitting}
                 className="w-full bg-[#FBBB14] hover:bg-[#f0b000] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all py-[14px] rounded-xl font-bold text-[15px] text-gray-900 flex items-center justify-center gap-2 cursor-pointer"
             >
@@ -265,7 +311,7 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                     </>
                 ) : (
                     <>
-                        {t("cta.placeOrder", { total: total.toFixed(2) })}
+                        {t("cta.placeOrder", { total: newTotal.toFixed(2) })}
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7" />
                         </svg>
