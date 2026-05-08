@@ -16,6 +16,7 @@ export default function B2bCreditPanel({ userId, orderTotal, orderCurrency, onCh
     balance: number;
     currency: string;
     creditLimit?: number;
+    minOrderAmount?: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [enabled, setEnabled] = useState(false);
@@ -69,6 +70,16 @@ export default function B2bCreditPanel({ userId, orderTotal, orderCurrency, onCh
   if (loading) return null;
   if (!wallet || wallet.balance <= 0) return null;
 
+  const sameCcy = orderCurrency.toUpperCase() === wallet.currency.toUpperCase();
+  const belowMin = sameCcy
+    && wallet.minOrderAmount != null
+    && orderTotal < wallet.minOrderAmount;
+  const blockedReason = belowMin
+    ? `Minimum order of ${wallet.minOrderAmount!.toLocaleString(undefined, {
+        minimumFractionDigits: 2, maximumFractionDigits: 2,
+      })} ${wallet.currency} required to pay with credit.`
+    : null;
+
   return (
     <div className="rounded-2xl border border-[#402F75]/30 bg-[#FAF8FF] p-5">
       <div className="flex items-start gap-3">
@@ -76,8 +87,9 @@ export default function B2bCreditPanel({ userId, orderTotal, orderCurrency, onCh
           id="b2b-credit-toggle"
           type="checkbox"
           checked={enabled}
+          disabled={blockedReason !== null}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="mt-1 h-4 w-4 rounded border-gray-300"
+          className="mt-1 h-4 w-4 rounded border-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
         />
         <label htmlFor="b2b-credit-toggle" className="flex-1 cursor-pointer">
           <div className="font-semibold text-[#402F75]">Use B2B credit</div>
@@ -89,6 +101,10 @@ export default function B2bCreditPanel({ userId, orderTotal, orderCurrency, onCh
           </div>
         </label>
       </div>
+
+      {blockedReason && (
+        <p className="mt-2 text-xs font-medium text-amber-700">{blockedReason}</p>
+      )}
 
       {enabled && (
         <div className="mt-4 space-y-3">
@@ -137,7 +153,11 @@ export default function B2bCreditPanel({ userId, orderTotal, orderCurrency, onCh
           )}
 
           <div className="rounded-md bg-white px-3 py-2 text-xs text-gray-600">
-            Eligible orders: <strong>AED 20,000+</strong> (or local-currency equivalent set by admin).
+            {wallet.minOrderAmount != null ? (
+              <>Eligible orders: <strong>{wallet.minOrderAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {wallet.currency}+</strong>.</>
+            ) : (
+              <>Eligible orders: <strong>AED 20,000+</strong> (or local-currency equivalent set by admin).</>
+            )}
             {orderCurrency.toUpperCase() !== wallet.currency.toUpperCase() && (
               <span className="ml-1">Order currency ({orderCurrency}) will be converted to wallet currency ({wallet.currency}) at live FX.</span>
             )}

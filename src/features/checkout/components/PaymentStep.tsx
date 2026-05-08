@@ -84,7 +84,11 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
     const cartItems = useSelector((state: RootState) => state.cart.items);
     const orderTotal = totals.total;
 
-    const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(null);
+    const [wallet, setWallet] = useState<{
+        balance: number;
+        currency: string;
+        minOrderAmount?: number;
+    } | null>(null);
 
     useEffect(() => {
         if (!userId) return;
@@ -98,13 +102,32 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
     const orderCcy = (currency ?? "AED").toUpperCase();
     const walletCcy = wallet?.currency.toUpperCase();
     const sameCurrency = walletCcy != null && walletCcy === orderCcy;
-    // Only show wallet credit if the wallet currency matches the order currency.
-    // Cross-currency wallet usage requires backend FX which is out of scope for
-    // a one-tap auto-deduct flow — admin tooling already handles those cases.
-    const creditAvailable = !!wallet && wallet.balance > 0 && sameCurrency;
+
+    // Reason the credit option may be unusable. Render the option but disable it
+    // with a clear message instead of hiding it, so B2B users always see why
+    // they can't pay with credit on this particular order.
+    const creditDisabledReason: string | null = (() => {
+        if (!wallet) return null; // no wallet at all → not a B2B member, hide entirely
+        if (wallet.balance <= 0) return "Wallet balance is empty.";
+        if (!sameCurrency) {
+            return `Wallet (${wallet.currency}) doesn't match order currency (${orderCcy}).`;
+        }
+        if (wallet.minOrderAmount != null && orderTotal < wallet.minOrderAmount) {
+            return `Minimum order of ${wallet.minOrderAmount.toLocaleString(undefined, {
+                minimumFractionDigits: 2, maximumFractionDigits: 2,
+            })} ${wallet.currency} required to pay with credit.`;
+        }
+        return null;
+    })();
+    const creditEligible = !!wallet && wallet.balance > 0 && creditDisabledReason === null;
+
+    // If the user picked credit but conditions changed, fall back to card.
+    useEffect(() => {
+        if (selected === "credit" && !creditEligible) setSelected("card");
+    }, [creditEligible, selected]);
 
     // Amount of wallet credit applied when "credit" is the chosen method.
-    const creditApplied = selected === "credit" && creditAvailable && wallet
+    const creditApplied = selected === "credit" && creditEligible && wallet
         ? Math.min(wallet.balance, orderTotal)
         : 0;
     const newTotal = Math.max(0, orderTotal - creditApplied);
@@ -114,7 +137,15 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
 
     const countryName = COUNTRY_NAMES[shipping.country] ?? shipping.country;
 
-    const PAYMENT_OPTIONS: { id: PaymentMethod; label: string; description: string; badge: React.ReactNode; detail?: string }[] = [
+    const PAYMENT_OPTIONS: {
+        id: PaymentMethod;
+        label: string;
+        description: string;
+        badge: React.ReactNode;
+        detail?: string;
+        disabled?: boolean;
+        disabledReason?: string;
+    }[] = [
         {
             id: "card",
             label: t("payment.card.label"),
@@ -138,13 +169,19 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
         },
     ];
 
-    if (creditAvailable && wallet) {
+    // Always show the credit option when the user has a wallet at all — disable
+    // it (with a reason) when not eligible. Hide entirely only for non-B2B users.
+    if (wallet) {
         PAYMENT_OPTIONS.push({
             id: "credit",
             label: "Pay with B2B credit",
             description: `Available balance: ${wallet.balance.toLocaleString()} ${wallet.currency}`,
             badge: <CreditBadge />,
-            detail: `${creditApplied.toFixed(2)} ${wallet.currency} will be deducted from your wallet automatically.`,
+            detail: creditEligible
+                ? `${creditApplied.toFixed(2)} ${wallet.currency} will be deducted from your wallet automatically.`
+                : undefined,
+            disabled: !creditEligible,
+            disabledReason: creditDisabledReason ?? undefined,
         });
     }
 
@@ -227,10 +264,17 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                 <div className="flex flex-col gap-3">
                     {PAYMENT_OPTIONS.map((option) => {
                         const isSelected = selected === option.id;
+                        const isDisabled = !!option.disabled;
                         return (
                             <label
                                 key={option.id}
-                                className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${isSelected ? "border-[#402F75] bg-[#EDE9FF]/40" : "border-gray-100 hover:border-gray-200 bg-white"}`}
+                                className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-all ${
+                                    isDisabled
+                                        ? "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
+                                        : isSelected
+                                            ? "border-[#402F75] bg-[#EDE9FF]/40 cursor-pointer"
+                                            : "border-gray-100 hover:border-gray-200 bg-white cursor-pointer"
+                                }`}
                             >
                                 <div className="mt-0.5 flex-shrink-0">
                                     <input
@@ -238,7 +282,8 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                                         name="payment"
                                         value={option.id}
                                         checked={isSelected}
-                                        onChange={() => setSelected(option.id)}
+                                        disabled={isDisabled}
+                                        onChange={() => !isDisabled && setSelected(option.id)}
                                         className="sr-only"
                                     />
                                     <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "border-[#402F75]" : "border-gray-300"}`}>
@@ -257,7 +302,12 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                                     <p className="text-[12px] text-gray-500 mt-1 leading-relaxed">
                                         {option.description}
                                     </p>
-                                    {isSelected && option.detail && (
+                                    {isDisabled && option.disabledReason && (
+                                        <p className="text-[11px] text-amber-700 mt-1.5 font-medium">
+                                            {option.disabledReason}
+                                        </p>
+                                    )}
+                                    {isSelected && !isDisabled && option.detail && (
                                         <p className="text-[11px] text-[#402F75]/80 mt-1.5 font-medium">
                                             {option.detail}
                                         </p>

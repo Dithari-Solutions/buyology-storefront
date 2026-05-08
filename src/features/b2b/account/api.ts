@@ -100,6 +100,8 @@ export const b2bAccountApi = {
     currency: string;
     creditLimit?: number;
     countryCode?: string;
+    /** Minimum order total (in {@link currency}) required to pay with B2B credit. */
+    minOrderAmount?: number;
   } | null> {
     try {
       const res = await apiClient.get<
@@ -108,6 +110,7 @@ export const b2bAccountApi = {
           currency: string;
           creditLimit?: number;
           countryCode?: string;
+          minOrderAmount?: number;
         }>
       >(`/api/membership/wallet`, { params: { userId } });
       return res.data.data ?? null;
