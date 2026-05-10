@@ -1,4 +1,64 @@
 {
+  "details": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "shop": "المتجر"
+    },
+    "badges": {
+      "superDeal": "عرض مميز",
+      "limited": "محدود",
+      "express": "سريع",
+      "refurbished": "مجدد"
+    },
+    "info": {
+      "title": "معلومات المنتج",
+      "brand": "العلامة التجارية",
+      "type": "النوع",
+      "sku": "رمز المنتج",
+      "availability": "التوفر",
+      "condition": "الحالة",
+      "currency": "العملة",
+      "expressDelivery": "توصيل سريع",
+      "listed": "تاريخ الإدراج",
+      "new": "جديد",
+      "refurbishedGrade": "مجدد (الدرجة {{grade}})",
+      "refurbished": "مجدد",
+      "available": "متاح",
+      "notAvailable": "غير متاح"
+    },
+    "price": {
+      "save": "وفر",
+      "forOptions": "للخيارات"
+    },
+    "color": "اللون",
+    "actions": {
+      "buyNow": "اشترِ الآن",
+      "outOfStock": "نفد من المخزون",
+      "unavailableInCountry": "غير متاح في بلدك",
+      "addToCart": "أضف إلى السلة",
+      "addedToCart": "تمت الإضافة إلى السلة!"
+    },
+    "unavailableNotice": "هذا المنتج غير متاح في البلد المحدد.",
+    "share": {
+      "copied": "تم النسخ!"
+    },
+    "trust": {
+      "secure": "آمن",
+      "checkout": "الدفع",
+      "thirtyDay": "30 يومًا",
+      "returns": "إرجاع",
+      "official": "رسمي",
+      "warranty": "ضمان"
+    },
+    "whyBuy": "لماذا تشتري منا",
+    "stores": {
+      "title": "متوفر من",
+      "store": "المتجر"
+    },
+    "specs": {
+      "title": "المواصفات التقنية"
+    }
+  },
   "reviews": {
     "title": "آراء العملاء",
     "writeReview": "اكتب تقييمًا",

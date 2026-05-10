@@ -1,4 +1,64 @@
 {
+  "details": {
+    "breadcrumb": {
+      "home": "Ana səhifə",
+      "shop": "Mağaza"
+    },
+    "badges": {
+      "superDeal": "Super Təklif",
+      "limited": "Məhdud",
+      "express": "Ekspress",
+      "refurbished": "Bərpa edilmiş"
+    },
+    "info": {
+      "title": "Məhsul Məlumatı",
+      "brand": "Brend",
+      "type": "Növ",
+      "sku": "SKU",
+      "availability": "Mövcudluq",
+      "condition": "Vəziyyət",
+      "currency": "Valyuta",
+      "expressDelivery": "Ekspress Çatdırılma",
+      "listed": "Yerləşdirilib",
+      "new": "Yeni",
+      "refurbishedGrade": "Bərpa edilmiş (Dərəcə {{grade}})",
+      "refurbished": "Bərpa edilmiş",
+      "available": "Mövcuddur",
+      "notAvailable": "Mövcud deyil"
+    },
+    "price": {
+      "save": "Qənaət",
+      "forOptions": "seçimlər üçün"
+    },
+    "color": "Rəng",
+    "actions": {
+      "buyNow": "İndi Al",
+      "outOfStock": "Stokda Yoxdur",
+      "unavailableInCountry": "Ölkənizdə Mövcud Deyil",
+      "addToCart": "Səbətə Əlavə Et",
+      "addedToCart": "Səbətə Əlavə Edildi!"
+    },
+    "unavailableNotice": "Bu məhsul seçdiyiniz ölkədə mövcud deyil.",
+    "share": {
+      "copied": "Kopyalandı!"
+    },
+    "trust": {
+      "secure": "Təhlükəsiz",
+      "checkout": "Ödəniş",
+      "thirtyDay": "30 Gün",
+      "returns": "Geri qaytarma",
+      "official": "Rəsmi",
+      "warranty": "Zəmanət"
+    },
+    "whyBuy": "Niyə Bizdən Alasınız",
+    "stores": {
+      "title": "Mövcud olan Mağazalar",
+      "store": "Mağaza"
+    },
+    "specs": {
+      "title": "Texniki Xüsusiyyətlər"
+    }
+  },
   "reviews": {
     "title": "Müştəri Rəyləri",
     "writeReview": "Rəy Yaz",

@@ -1,4 +1,64 @@
 {
+  "details": {
+    "breadcrumb": {
+      "home": "Home",
+      "shop": "Shop"
+    },
+    "badges": {
+      "superDeal": "Super Deal",
+      "limited": "Limited",
+      "express": "Express",
+      "refurbished": "Refurbished"
+    },
+    "info": {
+      "title": "Product Information",
+      "brand": "Brand",
+      "type": "Type",
+      "sku": "SKU",
+      "availability": "Availability",
+      "condition": "Condition",
+      "currency": "Currency",
+      "expressDelivery": "Express Delivery",
+      "listed": "Listed",
+      "new": "New",
+      "refurbishedGrade": "Refurbished (Grade {{grade}})",
+      "refurbished": "Refurbished",
+      "available": "Available",
+      "notAvailable": "Not available"
+    },
+    "price": {
+      "save": "Save",
+      "forOptions": "for options"
+    },
+    "color": "Color",
+    "actions": {
+      "buyNow": "Buy Now",
+      "outOfStock": "Out of Stock",
+      "unavailableInCountry": "Unavailable in Your Country",
+      "addToCart": "Add to Cart",
+      "addedToCart": "Added to Cart!"
+    },
+    "unavailableNotice": "This product is not available in your selected country.",
+    "share": {
+      "copied": "Copied!"
+    },
+    "trust": {
+      "secure": "Secure",
+      "checkout": "Checkout",
+      "thirtyDay": "30-Day",
+      "returns": "Returns",
+      "official": "Official",
+      "warranty": "Warranty"
+    },
+    "whyBuy": "Why Buy From Us",
+    "stores": {
+      "title": "Available From",
+      "store": "Store"
+    },
+    "specs": {
+      "title": "Technical Specifications"
+    }
+  },
   "reviews": {
     "title": "Customer Reviews",
     "writeReview": "Write a Review",

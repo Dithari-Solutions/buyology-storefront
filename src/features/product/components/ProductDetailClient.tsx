@@ -1,22 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import ProductDetailImage from "./ProductDetailImage";
 import ProductFeaturesBadges from "./ProductFeaturesBadges";
 import ProductReviews from "./ProductReviews";
 import ProductQA from "./ProductQA";
 import { addItem } from "@/features/cart/store/cartSlice";
 import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
+import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
+import { getProductBySlug, type ApiProduct, type ApiSpec, type ApiSpecOption } from "../services/productService";
+import { getImageUrl } from "@/shared/utils/imageUrl";
 import type { AppDispatch, RootState } from "@/store";
-import type { ApiProduct, ApiSpec, ApiSpecOption } from "../services/productService";
 import type { Lang } from "@/config/pathSlugs";
 
 interface ProductDetailClientProps {
   product: ApiProduct;
   images: string[];
+  slug: string;
 }
 
 function StarRating({ rating, count }: { rating: number; count?: number }) {
@@ -115,11 +119,37 @@ function humanize(value: string) {
   return value.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export default function ProductDetailClient({ product, images }: ProductDetailClientProps) {
+export default function ProductDetailClient({ product: initialProduct, images: initialImages, slug }: ProductDetailClientProps) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const params = useParams();
   const lang = (params?.lang as Lang) ?? "en";
+  const { t } = useTranslation("product");
+  const countryCode = useSelector(selectSelectedCountryCode);
+  const currency = useSelector(selectPreferredCurrency);
+
+  const [product, setProduct] = useState<ApiProduct>(initialProduct);
+  const [images, setImages] = useState<string[]>(initialImages);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!countryCode) return;
+    (async () => {
+      try {
+        const fresh = await getProductBySlug(slug, { lang, countryCode, currency });
+        if (cancelled) return;
+        setProduct(fresh);
+        const sorted = [...fresh.media].sort((a, b) => a.orderIndex - b.orderIndex);
+        setImages(sorted.map((m) => getImageUrl(m.url)));
+      } catch {
+        // keep server-rendered product on failure
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, lang, countryCode, currency]);
+
   const isFav = useSelector((state: RootState) => selectIsFavourite(product.id)(state));
   const userId = useSelector((state: RootState) => state.auth.userId);
 
@@ -260,21 +290,31 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
   }
 
   const infoRows = [
-    product.brandName ? { label: "Brand", value: product.brandName } : null,
-    product.productType ? { label: "Type", value: humanize(product.productType) } : null,
-    product.sku ? { label: "SKU", value: product.sku } : null,
+    product.brandName ? { label: t("details.info.brand"), value: product.brandName } : null,
+    product.productType ? { label: t("details.info.type"), value: humanize(product.productType) } : null,
+    product.sku ? { label: t("details.info.sku"), value: product.sku } : null,
     product.availabilityStatus
-      ? { label: "Availability", value: humanize(product.availabilityStatus) }
+      ? { label: t("details.info.availability"), value: humanize(product.availabilityStatus) }
       : null,
     product.isRefurbished
-      ? { label: "Condition", value: `Refurbished${product.refurbGrade ? ` (Grade ${product.refurbGrade})` : ""}` }
-      : { label: "Condition", value: "New" },
-    product.currency ? { label: "Currency", value: product.currency } : null,
+      ? {
+          label: t("details.info.condition"),
+          value: product.refurbGrade
+            ? t("details.info.refurbishedGrade", { grade: product.refurbGrade })
+            : t("details.info.refurbished"),
+        }
+      : { label: t("details.info.condition"), value: t("details.info.new") },
+    product.currency ? { label: t("details.info.currency"), value: product.currency } : null,
     product.expressDelivery != null
-      ? { label: "Express Delivery", value: product.expressDelivery ? "Available" : "Not available" }
+      ? {
+          label: t("details.info.expressDelivery"),
+          value: product.expressDelivery
+            ? t("details.info.available")
+            : t("details.info.notAvailable"),
+        }
       : null,
     product.createdAt
-      ? { label: "Listed", value: new Date(product.createdAt).toLocaleDateString() }
+      ? { label: t("details.info.listed"), value: new Date(product.createdAt).toLocaleDateString(lang) }
       : null,
   ].filter((row): row is { label: string; value: string } => row !== null);
 
@@ -290,9 +330,9 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-gray-500 mb-6 flex-wrap">
-          <a href={`/${lang}`} className="hover:text-[#402F75] transition-colors">Home</a>
+          <a href={`/${lang}`} className="hover:text-[#402F75] transition-colors">{t("details.breadcrumb.home")}</a>
           <span className="text-gray-300">/</span>
-          <a href={`/${lang}/shop`} className="hover:text-[#402F75] transition-colors">Shop</a>
+          <a href={`/${lang}/shop`} className="hover:text-[#402F75] transition-colors">{t("details.breadcrumb.shop")}</a>
           {product.categoryId && (
             <>
               <span className="text-gray-300">/</span>
@@ -322,7 +362,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                     transition={{ delay: 0.2 }}
                     className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-red-300/40"
                   >
-                    🔥 Super Deal
+                    🔥 {t("details.badges.superDeal")}
                   </motion.span>
                 )}
                 {product.isLimitedStock && (
@@ -332,7 +372,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                     transition={{ delay: 0.3 }}
                     className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-orange-300/40"
                   >
-                    ⏳ Limited
+                    ⏳ {t("details.badges.limited")}
                   </motion.span>
                 )}
                 {hasDiscount && product.discountType === "PERCENTAGE" && product.discountValue && (
@@ -370,7 +410,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                         transition={{ duration: 0.2 }}
                         className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg pointer-events-none z-10"
                       >
-                        Copied!
+                        {t("details.share.copied")}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -420,12 +460,12 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                 )}
                 {product.isRefurbished && (
                   <span className="inline-flex items-center text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                    Refurbished{product.refurbGrade ? ` · ${product.refurbGrade}` : ""}
+                    {t("details.badges.refurbished")}{product.refurbGrade ? ` · ${product.refurbGrade}` : ""}
                   </span>
                 )}
                 {product.expressDelivery && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                    ⚡ Express
+                    ⚡ {t("details.badges.express")}
                   </span>
                 )}
               </div>
@@ -466,7 +506,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
               {unavailableInCountry && (
                 <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   <span>⚠️</span>
-                  <span>This product is not available in your selected country.</span>
+                  <span>{t("details.unavailableNotice")}</span>
                 </div>
               )}
 
@@ -487,21 +527,21 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                 {hasDiscount && (
                   <div className="relative mt-2 flex items-center gap-2 flex-wrap">
                     <span className="inline-flex items-center bg-[#FBBB14] text-gray-900 text-xs font-bold px-2.5 py-1 rounded-full">
-                      Save {formatPrice(savings, product.currency)}
+                      {t("details.price.save")} {formatPrice(savings, product.currency)}
                       {product.discountType === "PERCENTAGE" && product.discountValue
                         ? ` (${product.discountValue}%)`
                         : ""}
                     </span>
                     {additionalPrice > 0 && (
                       <span className="text-xs text-white/80 font-semibold">
-                        +{formatPrice(additionalPrice, product.currency)} for options
+                        +{formatPrice(additionalPrice, product.currency)} {t("details.price.forOptions")}
                       </span>
                     )}
                   </div>
                 )}
                 {!hasDiscount && additionalPrice > 0 && (
                   <span className="relative text-xs text-white/80 font-semibold mt-2 block">
-                    +{formatPrice(additionalPrice, product.currency)} for options
+                    +{formatPrice(additionalPrice, product.currency)} {t("details.price.forOptions")}
                   </span>
                 )}
               </div>
@@ -513,7 +553,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
               {product.colors && product.colors.length > 0 && (
                 <div className="flex flex-col gap-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-gray-900">Color</span>
+                    <span className="text-sm font-bold text-gray-900">{t("details.color")}</span>
                     {selectedColor && (
                       <span className="text-sm text-[#402F75] font-semibold capitalize">{selectedColor}</span>
                     )}
@@ -585,7 +625,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                       </svg>
                     )}
-                    {isOutOfStock ? "Out of Stock" : unavailableInCountry ? "Unavailable in Your Country" : "Buy Now"}
+                    {isOutOfStock ? t("details.actions.outOfStock") : unavailableInCountry ? t("details.actions.unavailableInCountry") : t("details.actions.buyNow")}
                   </span>
                 </button>
 
@@ -616,7 +656,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
-                        Added to Cart!
+                        {t("details.actions.addedToCart")}
                       </motion.span>
                     ) : (
                       <motion.span
@@ -631,7 +671,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                           <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
                           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                         </svg>
-                        Add to Cart
+                        {t("details.actions.addToCart")}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -641,9 +681,9 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
               {/* Trust signals */}
               <div className="grid grid-cols-3 gap-2 pt-2">
                 {[
-                  { icon: "🔒", title: "Secure", sub: "Checkout" },
-                  { icon: "↩", title: "30-Day", sub: "Returns" },
-                  { icon: "✓", title: "Official", sub: "Warranty" },
+                  { icon: "🔒", title: t("details.trust.secure"), sub: t("details.trust.checkout") },
+                  { icon: "↩", title: t("details.trust.thirtyDay"), sub: t("details.trust.returns") },
+                  { icon: "✓", title: t("details.trust.official"), sub: t("details.trust.warranty") },
                 ].map(({ icon, title, sub }) => (
                   <div key={title} className="flex flex-col items-center gap-0.5 rounded-xl bg-gray-50 border border-gray-100 px-3 py-3 text-center">
                     <span className="text-lg">{icon}</span>
@@ -672,7 +712,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                   <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Product Information</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t("details.info.title")}</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
               {infoRows.map((row, i) => (
@@ -691,7 +731,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
           <div className="bg-gradient-to-br from-[#402F75] to-purple-700 rounded-3xl p-6 sm:p-8 shadow-xl shadow-purple-300/30 text-white relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-[#FBBB14]/20 blur-2xl" />
             <div className="relative">
-              <h3 className="text-lg font-bold mb-4">Why Buy From Us</h3>
+              <h3 className="text-lg font-bold mb-4">{t("details.whyBuy")}</h3>
               <ProductFeaturesBadges />
             </div>
           </div>
@@ -712,7 +752,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                   <path d="M3 9l1-5h16l1 5M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9M3 9h18" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Available From</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t("details.stores.title")}</h2>
               <div className="flex-1 h-px bg-gray-100" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -722,9 +762,9 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                   className="group relative bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#402F75]/30 hover:shadow-lg hover:shadow-purple-200/30 transition-all"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Store</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{t("details.stores.store")}</span>
                     {store.expressDelivery && (
-                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">⚡ Express</span>
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">⚡ {t("details.badges.express")}</span>
                     )}
                   </div>
                   <span className="block text-xs font-mono text-gray-600 truncate mb-3">{store.storeId}</span>
@@ -753,7 +793,7 @@ export default function ProductDetailClient({ product, images }: ProductDetailCl
                   <path d="M6 8V6M10 8V6M14 8V6M18 8V6M6 16v2M10 16v2M14 16v2M18 16v2" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Technical Specifications</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t("details.specs.title")}</h2>
               <div className="flex-1 h-px bg-gray-100" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

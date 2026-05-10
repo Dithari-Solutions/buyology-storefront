@@ -148,7 +148,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
         <JsonLd data={breadcrumbLd} />
         <Header />
         <main className="bg-gray-50 min-h-screen">
-          <ProductDetailClient product={product} images={images} />
+          <ProductDetailClient product={product} images={images} slug={slug} />
         </main>
         <Footer />
       </>
