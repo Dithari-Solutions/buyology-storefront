@@ -1,0 +1,60 @@
+{
+    "button": {
+        "request": "Request a refund",
+        "chooseMethod": "Choose return method"
+    },
+    "summary": {
+        "title": "Refund request",
+        "requestId": "Request ID",
+        "amount": "Amount",
+        "method": "Return method"
+    },
+    "modal": {
+        "title": "Request a refund",
+        "description": {
+            "label": "What's the issue?",
+            "placeholder": "Tell us briefly what went wrong with the product…",
+            "help": "Minimum 10 characters."
+        },
+        "images": {
+            "label": "Photos (between {{min}} and {{max}})",
+            "help": "At least 3 photos showing the issue. Each up to 5 MB."
+        },
+        "submit": "Submit request",
+        "submitting": "Submitting…",
+        "cancel": "Cancel"
+    },
+    "method": {
+        "modal": {
+            "title": "How should we get the product back?",
+            "description": "Pick one option. We'll handle the rest."
+        },
+        "dropoff": {
+            "title": "Drop off at our store",
+            "desc": "Free of charge. Bring the product whenever it suits you."
+        },
+        "courier": {
+            "title": "Courier pickup",
+            "desc": "We'll send a courier. The pickup fee is deducted from your refund (charged in {{currency}})."
+        },
+        "submitting": "Saving your choice…"
+    },
+    "status": {
+        "pendingReview": "Pending review",
+        "approved": "Approved",
+        "dropoffSelected": "Drop-off selected",
+        "courierRequested": "Courier requested",
+        "received": "Product received",
+        "rejected": "Rejected",
+        "paid": "Refunded",
+        "failed": "Failed — contact support"
+    },
+    "error": {
+        "generic": "Something went wrong. Please try again.",
+        "descriptionTooShort": "Description must be at least 10 characters.",
+        "minImages": "Please upload at least {{count}} photos.",
+        "maxImages": "Please upload no more than {{count}} photos.",
+        "notImage": "Only image files are allowed.",
+        "fileSize": "Each photo must be 5 MB or smaller."
+    }
+}

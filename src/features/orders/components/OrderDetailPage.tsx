@@ -11,6 +11,7 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import { getOrderDetail } from "../services/orders.api";
 import type { OrderDetail, OrderStatus, TrackingEvent } from "../types";
+import RefundCard from "@/features/refund/components/RefundCard";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -281,6 +282,14 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Refund flow (request / status / choose method) */}
+                            <RefundCard
+                                orderId={order.id}
+                                orderStatus={order.status}
+                                deliveredAt={order.deliveredAt}
+                                orderCurrency={order.currency}
+                            />
 
                             {/* Delivery address */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">

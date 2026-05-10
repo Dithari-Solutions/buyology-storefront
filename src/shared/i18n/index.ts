@@ -20,6 +20,7 @@ import enQuickDelivery from "../../../public/locales/en/quick-delivery.json";
 import enB2B from "../../../public/locales/en/b2b.json";
 import enContact from "../../../public/locales/en/contact.json";
 import enGames from "../../../public/locales/en/games.json";
+import enRefund from "../../../public/locales/en/refund.json";
 
 import azAuth   from "../../../public/locales/az/auth.json";
 import azBanner from "../../../public/locales/az/banner.json";
@@ -37,6 +38,7 @@ import azQuickDelivery from "../../../public/locales/az/quick-delivery.json";
 import azB2B from "../../../public/locales/az/b2b.json";
 import azContact from "../../../public/locales/az/contact.json";
 import azGames from "../../../public/locales/az/games.json";
+import azRefund from "../../../public/locales/az/refund.json";
 
 import arAuth   from "../../../public/locales/ar/auth.json";
 import arBanner from "../../../public/locales/ar/banner.json";
@@ -54,6 +56,7 @@ import arQuickDelivery from "../../../public/locales/ar/quick-delivery.json";
 import arB2B from "../../../public/locales/ar/b2b.json";
 import arContact from "../../../public/locales/ar/contact.json";
 import arGames from "../../../public/locales/ar/games.json";
+import arRefund from "../../../public/locales/ar/refund.json";
 
 if (!i18n.isInitialized) {
     i18n
@@ -63,7 +66,7 @@ if (!i18n.isInitialized) {
             fallbackLng: "en",
             debug: false,
             supportedLngs: ["en", "az", "ar"],
-            ns: ["auth", "b2b", "banner", "cart", "checkout", "coming-soon", "contact", "favourites", "footer", "header", "home", "notFound", "product", "profile", "quick-delivery", "games"],
+            ns: ["auth", "b2b", "banner", "cart", "checkout", "coming-soon", "contact", "favourites", "footer", "header", "home", "notFound", "product", "profile", "quick-delivery", "games", "refund"],
             defaultNS: "home",
             interpolation: {
                 escapeValue: false,
@@ -86,6 +89,7 @@ if (!i18n.isInitialized) {
                     profile:     enProfile,
                     "quick-delivery": enQuickDelivery,
                     games:       enGames,
+                    refund:      enRefund,
                 },
                 az: {
                     auth:        azAuth,
@@ -104,6 +108,7 @@ if (!i18n.isInitialized) {
                     profile:     azProfile,
                     "quick-delivery": azQuickDelivery,
                     games:       azGames,
+                    refund:      azRefund,
                 },
                 ar: {
                     auth:        arAuth,
@@ -122,6 +127,7 @@ if (!i18n.isInitialized) {
                     profile:     arProfile,
                     "quick-delivery": arQuickDelivery,
                     games:       arGames,
+                    refund:      arRefund,
                 },
             },
             react: {

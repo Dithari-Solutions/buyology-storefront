@@ -1,0 +1,60 @@
+{
+    "button": {
+        "request": "Geri qaytarma tələb et",
+        "chooseMethod": "Geri qaytarma üsulunu seç"
+    },
+    "summary": {
+        "title": "Geri qaytarma sorğusu",
+        "requestId": "Sorğu ID",
+        "amount": "Məbləğ",
+        "method": "Geri qaytarma üsulu"
+    },
+    "modal": {
+        "title": "Geri qaytarma tələb et",
+        "description": {
+            "label": "Problem nədir?",
+            "placeholder": "Məhsulla bağlı problemi qısaca yazın…",
+            "help": "Ən azı 10 simvol."
+        },
+        "images": {
+            "label": "Şəkillər ({{min}} ilə {{max}} arası)",
+            "help": "Problemi göstərən ən azı 3 şəkil. Hər biri ən çoxu 5 MB."
+        },
+        "submit": "Sorğunu göndər",
+        "submitting": "Göndərilir…",
+        "cancel": "Ləğv et"
+    },
+    "method": {
+        "modal": {
+            "title": "Məhsulu necə alaq?",
+            "description": "Bir variant seçin, qalanını biz edirik."
+        },
+        "dropoff": {
+            "title": "Mağazaya gətir",
+            "desc": "Pulsuzdur. Sizə uyğun zaman gətirin."
+        },
+        "courier": {
+            "title": "Kuryer ilə götürmə",
+            "desc": "Sizə kuryer göndəririk. Götürmə haqqı geri qaytarmadan tutulur (məbləğ {{currency}} ilə hesablanır)."
+        },
+        "submitting": "Seçiminiz yadda saxlanılır…"
+    },
+    "status": {
+        "pendingReview": "Baxılır",
+        "approved": "Təsdiqləndi",
+        "dropoffSelected": "Mağazada təhvil seçildi",
+        "courierRequested": "Kuryer tələb olunub",
+        "received": "Məhsul alındı",
+        "rejected": "Rədd edildi",
+        "paid": "Geri qaytarıldı",
+        "failed": "Uğursuz oldu — dəstəklə əlaqə saxla"
+    },
+    "error": {
+        "generic": "Xəta baş verdi. Yenidən cəhd edin.",
+        "descriptionTooShort": "Açıqlama ən azı 10 simvol olmalıdır.",
+        "minImages": "Ən azı {{count}} şəkil yükləyin.",
+        "maxImages": "{{count}}-dən çox şəkil yükləməyin.",
+        "notImage": "Yalnız şəkil faylları icazəlidir.",
+        "fileSize": "Hər şəkil ən çox 5 MB ola bilər."
+    }
+}
