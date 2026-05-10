@@ -1,8 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
-import { StorySummaryResponse } from "../services/story.api";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import type { RootState } from "@/store";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import {
+    StorySummaryResponse,
+    recordStoryView,
+    likeStory,
+    unlikeStory,
+} from "../services/story.api";
 
 interface StoryViewerProps {
     stories: StorySummaryResponse[];
@@ -11,11 +20,21 @@ interface StoryViewerProps {
 }
 
 export default function StoryViewer({ stories, initialIndex, onClose }: StoryViewerProps) {
+    const router = useRouter();
+    const isAuthenticated = useSelector(
+        (state: RootState) => state.auth.isAuthenticated
+    );
+    const lang = useSelector((state: RootState) => state.language.lang) as Lang;
+
     const [currentStoryIndex, setCurrentStoryIndex] = useState(initialIndex);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-    const [liked, setLiked] = useState(false);
+    const [liked, setLiked] = useState(stories[initialIndex]?.likedByMe ?? false);
+    const [likeCount, setLikeCount] = useState(stories[initialIndex]?.likeCount ?? 0);
+    const [viewCount, setViewCount] = useState(stories[initialIndex]?.viewCount ?? 0);
+    const [likeBusy, setLikeBusy] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [progress, setProgress] = useState(0);
+    const viewedRef = useRef<Set<string>>(new Set());
 
     // Entrance / exit animation state
     const [visible, setVisible] = useState(false);
@@ -42,15 +61,18 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
             setImageLoaded(false);
             setProgress(0);
         } else if (currentStoryIndex < stories.length - 1) {
-            setCurrentStoryIndex((p) => p + 1);
+            const nextIndex = currentStoryIndex + 1;
+            setCurrentStoryIndex(nextIndex);
             setCurrentMediaIndex(0);
-            setLiked(false);
+            setLiked(stories[nextIndex]?.likedByMe ?? false);
+            setLikeCount(stories[nextIndex]?.likeCount ?? 0);
+            setViewCount(stories[nextIndex]?.viewCount ?? 0);
             setImageLoaded(false);
             setProgress(0);
         } else {
             handleClose();
         }
-    }, [currentMediaIndex, mediaItems.length, currentStoryIndex, stories.length, handleClose]);
+    }, [currentMediaIndex, mediaItems.length, currentStoryIndex, stories, handleClose]);
 
     const goPrev = useCallback(() => {
         if (currentMediaIndex > 0) {
@@ -58,14 +80,54 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
             setImageLoaded(false);
             setProgress(0);
         } else if (currentStoryIndex > 0) {
-            const prevMediaLength = stories[currentStoryIndex - 1].media.length;
-            setCurrentStoryIndex((p) => p - 1);
+            const prevIndex = currentStoryIndex - 1;
+            const prevMediaLength = stories[prevIndex].media.length;
+            setCurrentStoryIndex(prevIndex);
             setCurrentMediaIndex(prevMediaLength - 1);
-            setLiked(false);
+            setLiked(stories[prevIndex]?.likedByMe ?? false);
+            setLikeCount(stories[prevIndex]?.likeCount ?? 0);
+            setViewCount(stories[prevIndex]?.viewCount ?? 0);
             setImageLoaded(false);
             setProgress(0);
         }
     }, [currentMediaIndex, currentStoryIndex, stories]);
+
+    // Record a view once per story per session
+    useEffect(() => {
+        const id = story?.id;
+        if (!id || viewedRef.current.has(id)) return;
+        viewedRef.current.add(id);
+        recordStoryView(id)
+            .then(() => setViewCount((c) => c + 1))
+            .catch(() => {
+                // best-effort; allow retry next mount
+                viewedRef.current.delete(id);
+            });
+    }, [story?.id]);
+
+    const handleLike = useCallback(async () => {
+        if (!isAuthenticated) {
+            router.push(`/${lang}/${PATH_SLUGS.auth[lang]}?mode=signin`);
+            return;
+        }
+        if (likeBusy || !story) return;
+        setLikeBusy(true);
+        const nextLiked = !liked;
+        // optimistic
+        setLiked(nextLiked);
+        setLikeCount((c) => c + (nextLiked ? 1 : -1));
+        try {
+            const res = nextLiked ? await likeStory(story.id) : await unlikeStory(story.id);
+            setLiked(res.liked);
+            setLikeCount(res.likeCount);
+        } catch {
+            // revert
+            setLiked(!nextLiked);
+            setLikeCount((c) => c + (nextLiked ? -1 : 1));
+        } finally {
+            setLikeBusy(false);
+        }
+    }, [isAuthenticated, likeBusy, liked, story, router, lang]);
 
     // Auto-advance timer
     useEffect(() => {
@@ -274,8 +336,9 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                     >
                         {/* Like */}
                         <button
-                            onClick={() => setLiked((p) => !p)}
-                            className="flex flex-col items-center gap-1 hover:scale-110 transition-transform"
+                            onClick={handleLike}
+                            disabled={likeBusy}
+                            className="flex flex-col items-center gap-1 hover:scale-110 transition-transform disabled:opacity-70"
                             style={{ color: liked ? "#ef4444" : "white" }}
                         >
                             <svg
@@ -295,9 +358,18 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                             </svg>
                             <span className="text-[10px] font-medium text-white/80">
-                                {liked ? "Liked" : "Like"}
+                                {likeCount > 0 ? likeCount : liked ? "Liked" : "Like"}
                             </span>
                         </button>
+
+                        {/* Views */}
+                        <div className="flex flex-col items-center gap-1 text-white/80">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <span className="text-[10px] font-medium">{viewCount}</span>
+                        </div>
 
                         {/* Divider */}
                         <div className="w-px h-7" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />

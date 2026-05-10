@@ -19,7 +19,16 @@ export interface StorySummaryResponse {
     id: string;
     title: string;
     thumbnailUrl: string;
+    status: string;
     media: StoryMedia[];
+    viewCount: number;
+    likeCount: number;
+    likedByMe: boolean;
+}
+
+export interface StoryLikeResponse {
+    liked: boolean;
+    likeCount: number;
 }
 
 export const getStories = async (
@@ -34,5 +43,23 @@ export const getStories = async (
         throw new Error("Invalid stories response format");
     }
 
+    return data.data;
+};
+
+export const recordStoryView = async (storyId: string): Promise<void> => {
+    await apiClient.post(`/api/story/${storyId}/view`);
+};
+
+export const likeStory = async (storyId: string): Promise<StoryLikeResponse> => {
+    const { data } = await apiClient.post<ApiResponse<StoryLikeResponse>>(
+        `/api/story/${storyId}/like`
+    );
+    return data.data;
+};
+
+export const unlikeStory = async (storyId: string): Promise<StoryLikeResponse> => {
+    const { data } = await apiClient.delete<ApiResponse<StoryLikeResponse>>(
+        `/api/story/${storyId}/like`
+    );
     return data.data;
 };
