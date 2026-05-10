@@ -18,6 +18,19 @@ function readLocal(key: string, fallback: string): string {
   return localStorage.getItem(key) ?? fallback;
 }
 
+function writeCookie(key: string, value: string) {
+  if (typeof document === "undefined") return;
+  document.cookie = `${key}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
+function persist(countryCode: string, currency: string) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("selectedCountryCode", countryCode);
+  localStorage.setItem("preferredCurrency", currency);
+  writeCookie("selectedCountryCode", countryCode);
+  writeCookie("preferredCurrency", currency);
+}
+
 const initialState: CountryState = {
   countries: [],
   selectedCountryCode: DEFAULT_COUNTRY,
@@ -41,8 +54,7 @@ export const setCountryThunk = createAsyncThunk(
     const resolvedCode = country?.code ?? countryCode;
     const resolvedCurrency = currency ?? country?.currency ?? DEFAULT_CURRENCY;
 
-    localStorage.setItem("selectedCountryCode", resolvedCode);
-    localStorage.setItem("preferredCurrency", resolvedCurrency);
+    persist(resolvedCode, resolvedCurrency);
 
     if (userId) {
       await updateCountryPreference(userId, resolvedCode, resolvedCurrency).catch(console.error);
@@ -59,6 +71,7 @@ const countrySlice = createSlice({
     initFromLocalStorage(state) {
       state.selectedCountryCode = readLocal("selectedCountryCode", DEFAULT_COUNTRY);
       state.preferredCurrency = readLocal("preferredCurrency", DEFAULT_CURRENCY);
+      persist(state.selectedCountryCode, state.preferredCurrency);
     },
     syncFromProfile(
       state,
@@ -66,12 +79,11 @@ const countrySlice = createSlice({
     ) {
       if (action.payload.selectedCountryCode) {
         state.selectedCountryCode = action.payload.selectedCountryCode;
-        localStorage.setItem("selectedCountryCode", action.payload.selectedCountryCode);
       }
       if (action.payload.preferredCurrency) {
         state.preferredCurrency = action.payload.preferredCurrency;
-        localStorage.setItem("preferredCurrency", action.payload.preferredCurrency);
       }
+      persist(state.selectedCountryCode, state.preferredCurrency);
     },
   },
   extraReducers: (builder) => {
@@ -89,16 +101,11 @@ const countrySlice = createSlice({
         if (matched) {
           if (state.selectedCountryCode !== matched.code) {
             state.selectedCountryCode = matched.code;
-            if (typeof window !== "undefined") {
-              localStorage.setItem("selectedCountryCode", matched.code);
-            }
           }
           if (state.preferredCurrency !== matched.currency) {
             state.preferredCurrency = matched.currency;
-            if (typeof window !== "undefined") {
-              localStorage.setItem("preferredCurrency", matched.currency);
-            }
           }
+          persist(state.selectedCountryCode, state.preferredCurrency);
         }
       })
       .addCase(fetchCountriesThunk.rejected, (state) => {
@@ -107,6 +114,7 @@ const countrySlice = createSlice({
       .addCase(setCountryThunk.fulfilled, (state, action) => {
         state.selectedCountryCode = action.payload.countryCode;
         state.preferredCurrency = action.payload.currency;
+        persist(state.selectedCountryCode, state.preferredCurrency);
       });
   },
 });

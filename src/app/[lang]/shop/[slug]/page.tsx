@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ProductDetailClient from "@/features/product/components/ProductDetailClient";
@@ -26,6 +27,20 @@ const AVAILABILITY_MAP: Record<string, "InStock" | "OutOfStock" | "PreOrder"> = 
   PREORDER: "PreOrder",
 };
 
+async function getCountryFromCookies(): Promise<{ countryCode?: string; currency?: string }> {
+  try {
+    const store = await cookies();
+    const countryCode = store.get("selectedCountryCode")?.value;
+    const currency = store.get("preferredCurrency")?.value;
+    return {
+      countryCode: countryCode ? decodeURIComponent(countryCode) : undefined,
+      currency: currency ? decodeURIComponent(currency) : undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
 function truncate(text: string, max = 160): string {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
@@ -39,7 +54,12 @@ export async function generateMetadata({
   const lang = getSafeLang(rawLang);
 
   try {
-    const product = await getProductBySlug(slug, { lang });
+    const cookiePrefs = await getCountryFromCookies();
+    const product = await getProductBySlug(slug, {
+      lang,
+      countryCode: cookiePrefs.countryCode,
+      currency: cookiePrefs.currency,
+    });
     const primary =
       [...product.media].sort((a, b) => a.orderIndex - b.orderIndex)[0]?.url ??
       product.media[0]?.url;
@@ -103,7 +123,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const lang = getSafeLang(rawLang);
 
   try {
-    const product = await getProductBySlug(slug, { lang });
+    const { countryCode, currency } = await getCountryFromCookies();
+    const product = await getProductBySlug(slug, { lang, countryCode, currency });
     const sortedMedia = [...product.media].sort(
       (a, b) => a.orderIndex - b.orderIndex
     );
