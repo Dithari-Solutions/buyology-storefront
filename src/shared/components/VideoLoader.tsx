@@ -5,15 +5,33 @@ import Image from "next/image";
 
 interface VideoLoaderProps {
   className?: string;
+  /** "fade" = simple opacity (default). "slide" = enters from right, exits to left. */
+  variant?: "fade" | "slide";
 }
 
-export default function VideoLoader({ className = "" }: VideoLoaderProps) {
+const VARIANTS = {
+  fade: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const },
+  },
+  slide: {
+    initial: { x: "100%", opacity: 0.85 },
+    animate: { x: 0, opacity: 1 },
+    exit: { x: "-100%", opacity: 0.85 },
+    transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const },
+  },
+};
+
+export default function VideoLoader({ className = "", variant = "fade" }: VideoLoaderProps) {
+  const v = VARIANTS[variant];
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+      initial={v.initial}
+      animate={v.animate}
+      exit={v.exit}
+      transition={v.transition}
       className={`fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden ${className}`}
       aria-busy="true"
       aria-live="polite"

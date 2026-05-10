@@ -8,6 +8,7 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "@/shared/i18n";
 import HtmlLangDir from "@/shared/components/HtmlLangDir";
 import IntroScreen from "@/shared/components/IntroScreen";
+import PageTransition from "@/shared/components/PageTransition";
 import SignupGate from "@/shared/components/SignupGate";
 import { tryRestoreSession } from "@/shared/lib/tokenManager";
 import { initFromLocalStorage, fetchCountriesThunk, setCountryThunk } from "@/features/country/store/countrySlice";
@@ -102,6 +103,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <IntroScreen />
+      <PageTransition />
       <SignupGate />
       {children}
     </>

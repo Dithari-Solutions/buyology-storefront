@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import VideoLoader from "@/shared/components/VideoLoader";
 
 const INTRO_STORAGE_KEY = "buyology_intro_seen";
-const INTRO_DURATION_MS = 3200;
+const INTRO_DURATION_MS = 6500;
 
 export default function IntroScreen() {
   const [mounted, setMounted] = useState(false);
