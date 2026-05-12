@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
+import AlertModal from "@/shared/components/AlertModal";
 import ShippingStep from "./ShippingStep";
 import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
@@ -376,62 +377,33 @@ export default function CheckoutPage() {
             <main className="w-[90%] mx-auto py-8 md:py-12">
                 <StepIndicator current={step} />
 
-                {/* Incomplete profile banner */}
-                {profile && !profile.paymentReady && (
-                    <div className="mb-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 flex items-start gap-3">
-                        <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                            <line x1="12" y1="9" x2="12" y2="13" />
-                            <line x1="12" y1="17" x2="12.01" y2="17" />
-                        </svg>
-                        <div className="flex-1">
-                            <p className="text-[13px] font-semibold text-yellow-800">
-                                Complete your profile before checkout
-                            </p>
-                            {profile.missingFields.length > 0 && (
-                                <p className="text-[12px] text-yellow-700 mt-0.5">
-                                    Missing: {profile.missingFields.join(", ")}
-                                </p>
-                            )}
-                            <a
-                                href={`/${lang}/profile`}
-                                className="mt-1 inline-block text-[12px] font-bold text-yellow-700 hover:text-yellow-900 underline"
-                            >
-                                Go to Profile →
-                            </a>
-                        </div>
-                    </div>
-                )}
+                <AlertModal
+                    open={Boolean(profile && !profile.paymentReady)}
+                    onClose={() => {}}
+                    severity="warning"
+                    title={t("payment.profile.incompleteTitle", { defaultValue: "Complete your profile" })}
+                    message={
+                        (profile?.missingFields?.length ?? 0) > 0
+                            ? `Missing: ${profile?.missingFields.join(", ")}`
+                            : t("payment.profile.incompleteMessage", { defaultValue: "You need to complete your profile before checkout." })
+                    }
+                    primaryAction={{
+                        label: t("payment.profile.goToProfile", { defaultValue: "Go to Profile" }),
+                        onClick: () => { window.location.href = `/${lang}/profile`; },
+                    }}
+                />
 
-                {/* Payment error banner */}
-                {paymentError && (
-                    <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
-                        <svg
-                            className="flex-shrink-0 mt-0.5"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#ef4444"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                        </svg>
-                        <div className="flex-1">
-                            <p className="text-[13px] font-semibold text-red-700">{paymentError}</p>
-                            <button
-                                onClick={handleRetry}
-                                className="mt-1 text-[12px] font-bold text-red-600 hover:text-red-800 underline cursor-pointer"
-                            >
-                                {t("payment.error.retry", { defaultValue: "Try again" })}
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <AlertModal
+                    open={Boolean(paymentError)}
+                    onClose={handleRetry}
+                    severity="error"
+                    title={t("payment.error.title", { defaultValue: "Payment error" })}
+                    message={paymentError ?? ""}
+                    primaryAction={{
+                        label: t("payment.error.retry", { defaultValue: "Try again" }),
+                        onClick: handleRetry,
+                    }}
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 items-start">
                     {/* Left column */}

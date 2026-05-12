@@ -9,7 +9,7 @@ import ProductDetailImage from "./ProductDetailImage";
 import ProductFeaturesBadges from "./ProductFeaturesBadges";
 import ProductReviews from "./ProductReviews";
 import ProductQA from "./ProductQA";
-import { addItem } from "@/features/cart/store/cartSlice";
+import { addItem, addToCartThunk } from "@/features/cart/store/cartSlice";
 import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
 import { getProductBySlug, type ApiProduct, type ApiSpec, type ApiSpecOption } from "../services/productService";
@@ -188,9 +188,8 @@ export default function ProductDetailClient({ product: initialProduct, images: i
       .join(" / ");
   }
 
-  function handleAddToCart() {
-    dispatch(addItem({
-      id: `cart-${product.id}-${Date.now()}`,
+  function buildCartDisplayMeta() {
+    return {
       productId: product.id,
       title: product.title,
       imageUrl: images[0] ?? "",
@@ -203,7 +202,31 @@ export default function ProductDetailClient({ product: initialProduct, images: i
           : 0,
       quantity: 1,
       savedForLater: false,
+    };
+  }
+
+  async function persistToBackendCart(): Promise<boolean> {
+    if (!userId) return false;
+    const storeId = product.storeId ?? product.storeOptions?.[0]?.storeId ?? "";
+    if (!storeId) return false;
+    const tempId = `cart-${product.id}-${Date.now()}`;
+    const result = await dispatch(addToCartThunk({
+      userId,
+      payload: { storeId, productId: product.id, quantity: 1 },
+      displayMeta: buildCartDisplayMeta(),
+      tempId,
     }));
+    return !addToCartThunk.rejected.match(result);
+  }
+
+  async function handleAddToCart() {
+    const ok = await persistToBackendCart();
+    if (!ok) {
+      dispatch(addItem({
+        id: `cart-${product.id}-${Date.now()}`,
+        ...buildCartDisplayMeta(),
+      }));
+    }
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   }
@@ -242,22 +265,9 @@ export default function ProductDetailClient({ product: initialProduct, images: i
     setTimeout(() => setFavBounce(false), 400);
   }
 
-  function handleBuyNow() {
-    dispatch(addItem({
-      id: `buy-${product.id}-${Date.now()}`,
-      productId: product.id,
-      title: product.title,
-      imageUrl: images[0] ?? "",
-      variant: { color: selectedColor, storage: getVariantLabel() },
-      price: totalPrice,
-      originalPrice: product.basePrice ?? 0,
-      discountPercent:
-        hasDiscount && (product.basePrice ?? 0) > 0
-          ? Math.round((((product.basePrice ?? 0) - (product.effectivePrice ?? 0)) / (product.basePrice ?? 0)) * 100)
-          : 0,
-      quantity: 1,
-      savedForLater: false,
-    }));
+  async function handleBuyNow() {
+    const ok = await persistToBackendCart();
+    if (!ok) return;
     router.push(`/${lang}/checkout`);
   }
 

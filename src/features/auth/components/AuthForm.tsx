@@ -10,6 +10,7 @@ import LockIcon from "@/assets/icons/lock.png";
 import EmailIcon from "@/assets/icons/email.png";
 import EyeIcon from "@/assets/icons/eye-visible.png";
 import ClosedEye from "@/assets/icons/eye-close.png";
+import AlertModal from "@/shared/components/AlertModal";
 import AuthToggler from "@/features/auth/components/AuthToggler";
 import SocialButtons from "@/features/auth/components/SocialButtons";
 import { signup, signin } from "@/features/auth/services/auth.api";
@@ -282,10 +283,12 @@ export default function AuthForm() {
                     )}
                 </AnimatePresence>
 
-                {/* API error (wrong credentials, server error, etc.) */}
-                {apiError && (
-                    <p className="text-red-500 text-[13px] text-center -mt-1">{apiError}</p>
-                )}
+                <AlertModal
+                    open={Boolean(apiError)}
+                    onClose={() => setApiError(null)}
+                    severity="error"
+                    message={apiError ?? ""}
+                />
 
                 {/* Submit */}
                 <button

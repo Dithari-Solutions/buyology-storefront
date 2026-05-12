@@ -98,7 +98,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
         if (!id || viewedRef.current.has(id)) return;
         viewedRef.current.add(id);
         recordStoryView(id)
-            .then(() => setViewCount((c) => c + 1))
+            .then((res) => setViewCount(res.viewCount))
             .catch(() => {
                 // best-effort; allow retry next mount
                 viewedRef.current.delete(id);

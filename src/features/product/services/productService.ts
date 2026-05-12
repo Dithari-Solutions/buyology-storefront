@@ -109,6 +109,15 @@ export async function getProductBySlug(slug: string, params: ProductQueryParams 
   return getProductById(match.id, params);
 }
 
+export async function getPopularForYou(productIds: string[], params: ProductQueryParams = {}): Promise<ApiProduct[]> {
+  if (!productIds || productIds.length === 0) return [];
+  const baseParams = buildParams(params);
+  const search = new URLSearchParams(baseParams);
+  productIds.forEach((id) => search.append("productIds", id));
+  const { data } = await apiClient.get<{ data: ApiProduct[] }>(`/api/product/popular-for-you?${search.toString()}`);
+  return data.data ?? [];
+}
+
 export async function getSuperDealProducts(params: ProductQueryParams = {}): Promise<ApiProduct[]> {
   const { data } = await apiClient.get<{ data: ApiProduct[] }>("/api/product/super-deals", {
     params: buildParams(params),

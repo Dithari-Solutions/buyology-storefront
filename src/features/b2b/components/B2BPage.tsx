@@ -1,19 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-
-// ─── Tier data shape ───────────────────────────────────────────────────────────
-interface Tier {
-    label: string;
-    min: number;
-    max: number | null;
-    discount: number | null;
-    badge: string | null;
-}
 
 // ─── Icon components ───────────────────────────────────────────────────────────
 function IconTag() {
@@ -88,113 +79,16 @@ const BENEFIT_ICONS: Record<string, React.ReactNode> = {
     shield: <IconShield />,
 };
 
-const TIER_COLORS = [
-    { bg: "#F7F7F7", border: "#E5E5E5", text: "#666" },
-    { bg: "#FFF8EC", border: "#FBBB14", text: "#8B6200" },
-    { bg: "#F0FAFA", border: "#22C9C9", text: "#117A7A" },
-    { bg: "#F6F4FF", border: "#402F75", text: "#402F75" },
-    { bg: "#FFF3FF", border: "#9B59B6", text: "#7D3C98" },
-    { bg: "#F0F9FF", border: "#3B82F6", text: "#1D4ED8" },
-];
-
-// ─── Savings Calculator ────────────────────────────────────────────────────────
-function SavingsCalculator({ tiers, onQuantityChange }: { tiers: Tier[]; onQuantityChange?: (qty: string) => void }) {
-    const { t } = useTranslation("b2b");
-    const [qty, setQty] = useState("");
-
-    const quantity = parseInt(qty, 10);
-    const activeTier = isNaN(quantity) || quantity < 1
-        ? null
-        : tiers.find((tier) =>
-            quantity >= tier.min && (tier.max === null || quantity <= tier.max)
-        ) ?? null;
-
-    const isCustom = activeTier?.discount === null;
-
-    return (
-        <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-gray-100">
-            <div className="mb-6">
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#402F75] bg-[#EDE9FF] px-3 py-[5px] rounded-full mb-3">
-                    📊 {t("calculator.title")}
-                </span>
-                <p className="text-gray-500 text-[13px]">{t("calculator.subtitle")}</p>
-            </div>
-
-            <div className="mb-6">
-                <label className="block text-[13px] font-semibold text-gray-700 mb-2">
-                    {t("calculator.label")}
-                </label>
-                <input
-                    type="number"
-                    min="1"
-                    value={qty}
-                    onChange={(e) => { setQty(e.target.value); onQuantityChange?.(e.target.value); }}
-                    placeholder={t("calculator.placeholder")}
-                    className="w-full max-w-[200px] border border-gray-200 rounded-[12px] px-4 py-3 text-[14px] font-semibold text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
-                />
-            </div>
-
-            <AnimatePresence>
-                {activeTier && (
-                    <motion.div
-                        key={activeTier.label}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                        className="rounded-[16px] p-5 border-2"
-                        style={{
-                            backgroundColor: TIER_COLORS[tiers.indexOf(activeTier)]?.bg ?? "#F6F4FF",
-                            borderColor: TIER_COLORS[tiers.indexOf(activeTier)]?.border ?? "#402F75",
-                        }}
-                    >
-                        {isCustom ? (
-                            <p className="text-[14px] font-semibold text-gray-700">
-                                {t("calculator.contactForQuote")}
-                            </p>
-                        ) : (
-                            <div className="grid grid-cols-3 gap-4">
-                                <div>
-                                    <p className="text-[11px] text-gray-500 mb-1">{t("calculator.yourTier")}</p>
-                                    <p className="text-[18px] font-bold text-gray-900">{activeTier.label}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[11px] text-gray-500 mb-1">{t("calculator.discount")}</p>
-                                    <p className="text-[18px] font-bold text-[#402F75]">{activeTier.discount}%</p>
-                                </div>
-                                <div>
-                                    <p className="text-[11px] text-gray-500 mb-1">{t("calculator.estimatedSaving")}</p>
-                                    <p className="text-[14px] font-bold text-[#FBBB14]">
-                                        {activeTier.discount}% {t("calculator.perUnit")}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-}
-
 const B2B_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ─── Inquiry Form ──────────────────────────────────────────────────────────────
-function InquiryForm({ initialQuantity }: { initialQuantity?: string }) {
+function InquiryForm() {
     const { t } = useTranslation("b2b");
     const [formState, setFormState] = useState<"idle" | "sending" | "success" | "error">("idle");
     const [fields, setFields] = useState({
-        company: "", contact: "", email: "", phone: "", quantity: initialQuantity ?? "", message: "",
+        company: "", contact: "", email: "", phone: "", quantity: "", message: "",
     });
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-    // Sync calculator quantity into the form whenever it changes
-    useEffect(() => {
-        if (initialQuantity !== undefined && initialQuantity !== "") {
-            setFields(f => ({ ...f, quantity: initialQuantity }));
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialQuantity]);
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         setFields((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -391,9 +285,7 @@ export default function B2BPage() {
     const params = useParams();
     const router = useRouter();
     const lang = (params?.lang as Lang) ?? "en";
-    const [calculatorQty, setCalculatorQty] = useState("");
 
-    const tiers = t("tiers.tiers", { returnObjects: true }) as Tier[];
     const benefits = t("benefits.items", { returnObjects: true }) as {
         icon: string; title: string; description: string;
     }[];
@@ -521,18 +413,6 @@ export default function B2BPage() {
                 </motion.div>
             </section>
 
-            {/* ── Savings Calculator ───────────────────────────────────────── */}
-            <section className="mb-[64px]">
-                <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-60px" }}
-                    transition={{ duration: 0.65, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                >
-                    <SavingsCalculator tiers={tiers} onQuantityChange={setCalculatorQty} />
-                </motion.div>
-            </section>
-
             {/* ── Benefits ─────────────────────────────────────────────────── */}
             <section className="mb-[64px]">
                 <motion.div
@@ -638,7 +518,7 @@ export default function B2BPage() {
                         </h2>
                         <p className="text-gray-500 text-[14px]">{t("form.subtitle")}</p>
                     </div>
-                    <InquiryForm initialQuantity={calculatorQty} />
+                    <InquiryForm />
                 </motion.div>
             </section>
 

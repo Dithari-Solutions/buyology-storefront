@@ -31,6 +31,10 @@ export interface StoryLikeResponse {
     likeCount: number;
 }
 
+export interface StoryViewResponseData {
+    viewCount: number;
+}
+
 export const getStories = async (
     language: AppLanguage = "AZ"
 ): Promise<StorySummaryResponse[]> => {
@@ -46,8 +50,13 @@ export const getStories = async (
     return data.data;
 };
 
-export const recordStoryView = async (storyId: string): Promise<void> => {
-    await apiClient.post(`/api/story/${storyId}/view`);
+export const recordStoryView = async (
+    storyId: string
+): Promise<StoryViewResponseData> => {
+    const { data } = await apiClient.post<ApiResponse<StoryViewResponseData>>(
+        `/api/story/${storyId}/view`
+    );
+    return data.data;
 };
 
 export const likeStory = async (storyId: string): Promise<StoryLikeResponse> => {

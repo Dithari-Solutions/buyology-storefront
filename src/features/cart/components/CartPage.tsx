@@ -10,6 +10,7 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import CartItems from "./CartItems";
 import OrderSummary from "./OrderSummary";
+import PopularForYou from "./PopularForYou";
 import { selectCartItems, selectSavedItems, selectCartLoading, fetchCartThunk, fetchCartProductsThunk } from "../store/cartSlice";
 import type { ApiCartResponse } from "../types";
 
@@ -85,10 +86,13 @@ export default function CartPage() {
                 {!isLoading && !hasContent ? (
                     <EmptyCartState lang={lang} />
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 items-start">
-                        <CartItems />
-                        <OrderSummary />
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 items-start">
+                            <CartItems />
+                            <OrderSummary />
+                        </div>
+                        <PopularForYou />
+                    </>
                 )}
             </main>
             <Footer />

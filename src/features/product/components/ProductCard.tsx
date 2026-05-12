@@ -15,6 +15,7 @@ import { addToCartThunk, clearCart, clearCartThunk } from "@/features/cart/store
 import { useId, useState, useEffect, useRef } from "react";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import ProccessorIcon from "@/assets/icons/proccessor.png";
+import AlertModal from "@/shared/components/AlertModal";
 import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import LoginPromptModal from "@/features/auth/components/LoginPromptModal";
 
@@ -348,16 +349,12 @@ export default function ProductCard({
         document.body
       )}
 
-      {/* Add-to-cart generic error toast */}
-      {mounted && addToCartError && createPortal(
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[99999] flex items-center gap-3 bg-gray-900 text-white text-[13px] font-semibold px-5 py-3 rounded-full shadow-xl pointer-events-none">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          {addToCartError}
-        </div>,
-        document.body
-      )}
+      <AlertModal
+        open={Boolean(addToCartError)}
+        onClose={() => setAddToCartError(null)}
+        severity="error"
+        message={addToCartError ?? ""}
+      />
 
       {/* Portal: full card clone flies to the header fav icon */}
       {mounted && createPortal(

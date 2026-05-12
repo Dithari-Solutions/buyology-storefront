@@ -87,20 +87,38 @@ export default function SuperDeals() {
         });
     };
 
+    // Only reposition once scrolling has come to a rest. Performing the jump
+    // mid-animation (the previous implementation) caused the smooth-scroll
+    // engine to fight the manual scrollLeft write and produced the visible
+    // glitches the user reported. We debounce on the scroll event to detect
+    // "scroll end" instead of mutating during animation.
+    const scrollEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     const handleScroll = () => {
         const el = sliderRef.current;
-        if (!el || products.length === 0 || isJumping.current) return;
-        const oneSetWidth = el.scrollWidth / 3;
-        if (el.scrollLeft < oneSetWidth * 0.25) {
-            isJumping.current = true;
-            el.scrollLeft += oneSetWidth;
-            isJumping.current = false;
-        } else if (el.scrollLeft > oneSetWidth * 2 - oneSetWidth * 0.25) {
-            isJumping.current = true;
-            el.scrollLeft -= oneSetWidth;
-            isJumping.current = false;
-        }
+        if (!el || products.length === 0) return;
+        if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
+        scrollEndTimer.current = setTimeout(() => {
+            if (!el || products.length === 0 || isJumping.current) return;
+            const oneSetWidth = el.scrollWidth / 3;
+            const left = el.scrollLeft;
+            if (left < oneSetWidth * 0.5) {
+                isJumping.current = true;
+                el.scrollTo({ left: left + oneSetWidth, behavior: "auto" });
+                requestAnimationFrame(() => { isJumping.current = false; });
+            } else if (left > oneSetWidth * 1.5) {
+                isJumping.current = true;
+                el.scrollTo({ left: left - oneSetWidth, behavior: "auto" });
+                requestAnimationFrame(() => { isJumping.current = false; });
+            }
+        }, 120);
     };
+
+    useEffect(() => {
+        return () => {
+            if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
+        };
+    }, []);
 
     // Triple the items for infinite loop
     const displayItems = products.length > 0
@@ -176,7 +194,8 @@ export default function SuperDeals() {
                     style={{
                         scrollbarWidth: "none",
                         msOverflowStyle: "none",
-                        scrollSnapType: "x mandatory",
+                        scrollBehavior: "smooth",
+                        overscrollBehaviorX: "contain",
                     }}
                 >
                     {displayItems.map((product, i) => {
@@ -186,7 +205,6 @@ export default function SuperDeals() {
                             <div
                                 key={`set${setIdx}-item${itemIdx}-${product.id}`}
                                 className="flex-shrink-0"
-                                style={{ scrollSnapAlign: "start" }}
                             >
                                 <SuperDealsCard product={product} />
                             </div>
