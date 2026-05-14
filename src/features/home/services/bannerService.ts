@@ -26,7 +26,7 @@ const LANG_PARAM: Record<Lang, string> = {
 
 export async function getBanners(lang: Lang = "en"): Promise<ApiBanner[]> {
   const res = await apiClient.get<ApiResponse<ApiBanner[]>>("/api/banner", {
-    params: { language: LANG_PARAM[lang] },
+    params: { language: LANG_PARAM[lang], platform: "WEB" },
   });
   return res.data?.data ?? [];
 }
