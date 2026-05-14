@@ -22,6 +22,24 @@ export interface AppleSigninRequest {
   lastName?: string;
 }
 
+export interface GoogleSigninRequest {
+  code?: string;
+  redirectUri?: string;
+  idToken?: string;
+}
+
+export interface FacebookSigninRequest {
+  code?: string;
+  redirectUri?: string;
+  accessToken?: string;
+}
+
+export interface SnapchatSigninRequest {
+  code: string;
+  codeVerifier: string;
+  redirectUri?: string;
+}
+
 // ── Response DTOs ─────────────────────────────────────────────────────────────
 
 export interface SignInResponse {

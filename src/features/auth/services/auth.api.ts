@@ -6,6 +6,9 @@ import type {
   SignInResponse,
   SignUpRequest,
   AppleSigninRequest,
+  GoogleSigninRequest,
+  FacebookSigninRequest,
+  SnapchatSigninRequest,
 } from "@/features/auth/types";
 
 type HttpError = Error & { status?: number };
@@ -82,6 +85,45 @@ export async function signin(payload: SignInRequest): Promise<ApiResponse<SignIn
 export async function appleSignin(payload: AppleSigninRequest): Promise<ApiResponse<SignInResponse>> {
   try {
     const { data } = await apiClient.post<ApiResponse<any>>("/auth/apple/callback", payload, {
+      withCredentials: true,
+    });
+    return normalizeResponse<SignInResponse>(data);
+  } catch (error) {
+    return errorResponse<SignInResponse>(error);
+  }
+}
+
+// ── Google Sign In ────────────────────────────────────────────────────────────
+
+export async function googleSignin(payload: GoogleSigninRequest): Promise<ApiResponse<SignInResponse>> {
+  try {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/google/callback", payload, {
+      withCredentials: true,
+    });
+    return normalizeResponse<SignInResponse>(data);
+  } catch (error) {
+    return errorResponse<SignInResponse>(error);
+  }
+}
+
+// ── Facebook Sign In ──────────────────────────────────────────────────────────
+
+export async function facebookSignin(payload: FacebookSigninRequest): Promise<ApiResponse<SignInResponse>> {
+  try {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/facebook/callback", payload, {
+      withCredentials: true,
+    });
+    return normalizeResponse<SignInResponse>(data);
+  } catch (error) {
+    return errorResponse<SignInResponse>(error);
+  }
+}
+
+// ── Snapchat Sign In ──────────────────────────────────────────────────────────
+
+export async function snapchatSignin(payload: SnapchatSigninRequest): Promise<ApiResponse<SignInResponse>> {
+  try {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/snapchat/callback", payload, {
       withCredentials: true,
     });
     return normalizeResponse<SignInResponse>(data);

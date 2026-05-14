@@ -1,34 +1,40 @@
+"use client";
+
 import Image from "next/image"
 import AppleLogo from "@/assets/icons/AppleLogo.png"
 import GoogleLogo from "@/assets/icons/GoogleLogo.png"
 import SnapChatLogo from "@/assets/icons/SnapChatLogo.png"
 import FaceBookLogo from "@/assets/icons/FaceBookLogo.png"
 import { useAppleSignin } from "@/shared/hooks/useAppleSignin"
+import { useSocialSignin } from "@/shared/hooks/useSocialSignin"
 
-const socials = [
-    { src: GoogleLogo,   alt: "Google",   label: "Google" },
-    { src: AppleLogo,    alt: "Apple",    label: "Apple", provider: "apple" },
-    { src: FaceBookLogo, alt: "Facebook", label: "Facebook" },
-    { src: SnapChatLogo, alt: "Snapchat", label: "Snapchat" },
+type Provider = "google" | "apple" | "facebook" | "snapchat";
+
+const socials: { src: typeof GoogleLogo; alt: string; label: string; provider: Provider }[] = [
+    { src: GoogleLogo,   alt: "Google",   label: "Google",   provider: "google" },
+    { src: AppleLogo,    alt: "Apple",    label: "Apple",    provider: "apple" },
+    { src: FaceBookLogo, alt: "Facebook", label: "Facebook", provider: "facebook" },
+    { src: SnapChatLogo, alt: "Snapchat", label: "Snapchat", provider: "snapchat" },
 ];
 
 export default function SocialButtons({ onError }: { onError?: (msg: string | null) => void }) {
     const { handleAppleSignin } = useAppleSignin();
+    const { handleGoogleSignin, handleFacebookSignin, handleSnapchatSignin } = useSocialSignin();
 
-    const handleClick = async (provider?: string) => {
+    const runners: Record<Provider, () => Promise<void>> = {
+        google: handleGoogleSignin,
+        apple: handleAppleSignin,
+        facebook: handleFacebookSignin,
+        snapchat: handleSnapchatSignin,
+    };
+
+    const handleClick = async (provider: Provider) => {
         if (onError) onError(null);
-        if (provider === "apple") {
-            try {
-                await handleAppleSignin();
-            } catch (err) {
-                const message = err instanceof Error ? err.message : "Apple Sign In failed";
-                if (onError) onError(message);
-            }
-        } else {
-            // Other providers to be implemented
-            if (process.env.NODE_ENV !== "production") {
-                console.warn(`${provider} login not implemented yet`);
-            }
+        try {
+            await runners[provider]();
+        } catch (err) {
+            const message = err instanceof Error ? err.message : `${provider} Sign In failed`;
+            if (onError) onError(message);
         }
     };
 
