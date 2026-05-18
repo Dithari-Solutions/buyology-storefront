@@ -28,6 +28,14 @@ const nextConfig: NextConfig = {
   // gate first paint. (Backed by `critters`.)
   experimental: {
     optimizeCss: true,
+    // Reduce hydration cost on huge component graphs by tree-shaking these
+    // packages at import-time rather than waiting for SWC to do it later.
+    optimizePackageImports: [
+      "framer-motion",
+      "react-icons",
+      "i18next",
+      "react-i18next",
+    ],
   },
 
   images: {

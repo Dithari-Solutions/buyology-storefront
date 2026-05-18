@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ScrollReveal from "@/shared/components/ScrollReveal";
@@ -6,14 +7,18 @@ import { makeStaticMetadata } from "@/shared/seo/staticMeta";
 export const generateMetadata = makeStaticMetadata("home", { canonical: null });
 import Banner from "@/features/home/components/Banner";
 import Stories from "@/features/story/components/Stories";
-import Features from "@/features/home/components/features/Features";
-import SuperDeals from "@/features/home/components/superDeals/SuperDeals";
-import LimitedStock from "@/features/home/components/limitedStock/LimitedStock";
 import MarqueeStrip from "@/features/home/components/MarqueeStrip";
 import PopularCategories from "@/features/home/components/PopularCategories";
-import TrustStats from "@/features/home/components/TrustStats";
-import Newsletter from "@/features/home/components/Newsletter";
-import QuickDeliveryBanner from "@/features/home/components/QuickDeliveryBanner";
+
+// Below-the-fold sections — code-split out of the initial hydration bundle.
+// Keeping ssr: true preserves SEO; the route still streams them on the server,
+// but the client-JS for each lives in its own chunk and hydrates lazily.
+const QuickDeliveryBanner = dynamic(() => import("@/features/home/components/QuickDeliveryBanner"));
+const LimitedStock = dynamic(() => import("@/features/home/components/limitedStock/LimitedStock"));
+const SuperDeals = dynamic(() => import("@/features/home/components/superDeals/SuperDeals"));
+const Features = dynamic(() => import("@/features/home/components/features/Features"));
+const TrustStats = dynamic(() => import("@/features/home/components/TrustStats"));
+const Newsletter = dynamic(() => import("@/features/home/components/Newsletter"));
 
 export default function Home() {
   return (
