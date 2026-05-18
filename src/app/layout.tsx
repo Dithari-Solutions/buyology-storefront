@@ -3,7 +3,7 @@ import Script from "next/script";
 import { headers } from "next/headers";
 import Providers from "@/shared/components/Providers";
 import "./globals.css";
-import AiBotButton from "@/shared/components/AiBotButton";
+import AiBotButtonLazy from "@/shared/components/AiBotButtonLazy";
 import {
   SITE_NAME,
   SITE_URL,
@@ -128,16 +128,17 @@ export default async function RootLayout({
       <head>
         <Script
           src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
-          strategy="beforeInteractive"
+          strategy="lazyOnload"
         />
-        <link rel="preconnect" href="https://eu2.contabostorage.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://api-dev.dithari.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api-dev.dithari.com" />
         <link rel="dns-prefetch" href="https://eu2.contabostorage.com" />
         <JsonLd data={organizationJsonLd()} />
         <JsonLd data={websiteJsonLd(lang)} />
       </head>
       <body className="antialiased bg-[#F7F7F7]">
         <Providers>{children}</Providers>
-        <AiBotButton />
+        <AiBotButtonLazy />
       </body>
     </html>
   );

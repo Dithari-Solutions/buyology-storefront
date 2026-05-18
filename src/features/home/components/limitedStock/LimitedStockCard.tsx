@@ -73,6 +73,7 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
                             alt={product.title}
                             width={280}
                             height={280}
+                            sizes="(max-width: 640px) 180px, (max-width: 768px) 230px, 280px"
                             className="w-[180px] sm:w-[230px] md:w-[280px] object-contain drop-shadow-2xl"
                         />
                     ) : (

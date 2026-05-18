@@ -24,7 +24,15 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
 
+  // Inline critical CSS so the render-blocking stylesheet chunk doesn't
+  // gate first paint. (Backed by `critters`.)
+  experimental: {
+    optimizeCss: true,
+  },
+
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       {
         protocol: "http",

@@ -148,6 +148,7 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                         alt={product.title}
                         width={150}
                         height={130}
+                        sizes="(max-width: 640px) 100px, (max-width: 768px) 120px, 145px"
                         className="object-contain w-[100px] sm:w-[120px] md:w-[145px] relative z-10"
                     />
                 ) : (

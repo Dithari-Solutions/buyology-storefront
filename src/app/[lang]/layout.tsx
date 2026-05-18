@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import LangSync from "@/shared/components/LangSync";
 import AuthBgVector from "@/assets/vectors/auth-bg-vector.png";
 import { SITE_META, getSafeLang } from "@/shared/seo/config";
@@ -48,20 +49,23 @@ export default async function LangLayout({
       <div className="fixed inset-0 pointer-events-none select-none z-0" aria-hidden="true">
 
         {/* Bottom-left accent */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={AuthBgVector.src}
+        <Image
+          src={AuthBgVector}
           alt=""
-          className="absolute bottom-0 left-0 w-[320px] sm:w-[440px] md:w-[580px] lg:w-[660px]"
+          aria-hidden="true"
+          priority
+          sizes="(max-width: 640px) 320px, (max-width: 768px) 440px, (max-width: 1024px) 580px, 660px"
+          className="absolute bottom-0 left-0 w-[320px] sm:w-[440px] md:w-[580px] lg:w-[660px] h-auto"
           style={{ opacity: 0.45, mixBlendMode: "multiply" }}
         />
 
         {/* Top-right accent — mirrored */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={AuthBgVector.src}
+        <Image
+          src={AuthBgVector}
           alt=""
-          className="absolute top-0 right-0 w-[320px] sm:w-[440px] md:w-[580px] lg:w-[660px]"
+          aria-hidden="true"
+          sizes="(max-width: 640px) 320px, (max-width: 768px) 440px, (max-width: 1024px) 580px, 660px"
+          className="absolute top-0 right-0 w-[320px] sm:w-[440px] md:w-[580px] lg:w-[660px] h-auto"
           style={{ opacity: 0.4, mixBlendMode: "multiply", transform: "rotate(180deg)" }}
         />
       </div>

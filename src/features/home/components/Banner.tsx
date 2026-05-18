@@ -240,7 +240,11 @@ export default function Banner() {
                             <img
                                 src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
                                 alt={t("appStore")}
-                                className="w-[88px] sm:w-[108px] md:w-[128px]"
+                                width={128}
+                                height={42}
+                                loading="lazy"
+                                decoding="async"
+                                className="w-[88px] sm:w-[108px] md:w-[128px] h-auto"
                             />
                         </a>
                         <a
@@ -252,7 +256,11 @@ export default function Banner() {
                             <img
                                 src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
                                 alt={t("googlePlay")}
-                                className="w-[88px] sm:w-[108px] md:w-[128px]"
+                                width={128}
+                                height={42}
+                                loading="lazy"
+                                decoding="async"
+                                className="w-[88px] sm:w-[108px] md:w-[128px] h-auto"
                             />
                         </a>
                     </div>
