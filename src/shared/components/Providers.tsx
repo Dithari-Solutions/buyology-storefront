@@ -13,7 +13,7 @@ import SignupGate from "@/shared/components/SignupGate";
 import { tryRestoreSession } from "@/shared/lib/tokenManager";
 import { initFromLocalStorage, fetchCountriesThunk, setCountryThunk } from "@/features/country/store/countrySlice";
 import { findCountryByAlias } from "@/features/country/lib/match";
-import { requestLocationThunk, selectDetectedCountryCode } from "@/features/location/store/locationSlice";
+import { requestLocationThunk, detectCountryByIPThunk, selectDetectedCountryCode } from "@/features/location/store/locationSlice";
 import GeolocationRationale from "@/features/location/components/GeolocationRationale";
 import type { AppDispatch, RootState } from "@/store";
 
@@ -61,46 +61,25 @@ function GeolocationInitializer() {
   // Tracks whether a lang-based default was already applied
   const langAppliedRef = useRef(false);
 
-  // Step 1 — kick off geolocation on mount and poll every minute so the
-  // detected country stays fresh as the user moves. The first call also
-  // surfaces a small rationale toast so users understand why we ask.
+  // Step 1 — auto-detect country from IP via our cached server-side route.
+  // This needs NO browser permission and won't trigger any prompt. Precise
+  // geolocation is gated behind an explicit user action (the rationale toast
+  // exposes the "Use my location" button).
   useEffect(() => {
-    const alreadyGranted =
-      typeof navigator !== "undefined" &&
-      // permissions API isn't on every browser, hence the guard
-      "permissions" in navigator;
-
-    const shouldShowRationale = (): boolean => {
-      if (typeof window === "undefined") return false;
-      if (window.localStorage.getItem("geolocationRationaleDismissed") === "1") return false;
-      return true;
-    };
-
-    const start = async () => {
-      if (alreadyGranted) {
-        try {
-          const status = await (navigator.permissions as Permissions).query({
-            name: "geolocation" as PermissionName,
-          });
-          // Only show the rationale if the user hasn't decided yet.
-          if (status.state === "prompt" && shouldShowRationale()) {
-            setRationaleVisible(true);
-          }
-        } catch {
-          if (shouldShowRationale()) setRationaleVisible(true);
-        }
-      } else if (shouldShowRationale()) {
-        setRationaleVisible(true);
-      }
-      dispatch(requestLocationThunk());
-    };
-
-    start();
-    const id = setInterval(() => {
-      dispatch(requestLocationThunk());
-    }, 60_000);
-    return () => clearInterval(id);
+    dispatch(detectCountryByIPThunk());
+    if (typeof window === "undefined") return;
+    const dismissed = window.localStorage.getItem("geolocationRationaleDismissed") === "1";
+    if (!dismissed) {
+      // Slight delay so the toast doesn't fight with first paint.
+      const id = window.setTimeout(() => setRationaleVisible(true), 1500);
+      return () => window.clearTimeout(id);
+    }
   }, [dispatch]);
+
+  const handleAllowPreciseLocation = () => {
+    setRationaleVisible(false);
+    dispatch(requestLocationThunk());
+  };
 
   // Step 1b — apply lang-based country default once countries are loaded, if no saved preference.
   // Waits for the countries list so currency resolves correctly (e.g. AZN not AED).
@@ -129,7 +108,13 @@ function GeolocationInitializer() {
     dispatch(setCountryThunk({ countryCode: matched.code, userId }));
   }, [detectedCountryCode, countries, dispatch, userId]);
 
-  return <GeolocationRationale visible={rationaleVisible} />;
+  return (
+    <GeolocationRationale
+      visible={rationaleVisible}
+      onAllow={handleAllowPreciseLocation}
+      onDismiss={() => setRationaleVisible(false)}
+    />
+  );
 }
 
 function AppShell({ children }: { children: React.ReactNode }) {

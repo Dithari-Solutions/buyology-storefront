@@ -39,7 +39,7 @@ export default function FeatureCard({ id, title, description, bg, variant = "nor
                             src={bg}
                             alt=""
                             fill
-                            sizes="(max-width: 768px) 95vw, (max-width: 1280px) 45vw, 30vw"
+                            sizes="(max-width: 768px) 391px, (max-width: 1280px) 45vw, 30vw"
                             className="object-cover"
                             placeholder="blur"
                         />

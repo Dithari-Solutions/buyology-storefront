@@ -10,6 +10,7 @@
 import axios from "axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const SESSION_HINT_KEY = "hasRefreshSession";
 
 let _accessToken: string | null = null;
 let _refreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -18,21 +19,64 @@ export function getAccessToken(): string | null {
   return _accessToken;
 }
 
+function _hasSessionHint(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(SESSION_HINT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function _setSessionHint(on: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (on) window.localStorage.setItem(SESSION_HINT_KEY, "1");
+    else window.localStorage.removeItem(SESSION_HINT_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 /**
  * Called once on app startup. Attempts a silent token refresh using the
- * HttpOnly refresh-token cookie. If the cookie is missing or expired,
- * it silently does nothing (user stays logged out).
+ * HttpOnly refresh-token cookie — but only if a "hasRefreshSession" hint
+ * exists in localStorage (set on previous signin). Without the hint we
+ * skip the call entirely, which avoids the spurious 401 console error and
+ * a wasted network round-trip on logged-out page loads.
  */
 export async function tryRestoreSession(): Promise<void> {
+  if (typeof window !== "undefined" && !_hasSessionHint()) {
+    // No prior signin recorded — stay logged out without hitting the API.
+    import("@/store").then(({ store }) =>
+      import("@/features/auth/store/authSlice").then(({ setAuthRestored }) => {
+        store.dispatch(setAuthRestored());
+      })
+    );
+    return;
+  }
   try {
     const res = await axios.post(`${BASE_URL}/auth/refresh`, undefined, {
       withCredentials: true,
+      // Treat anything <500 as a non-throw so 401 doesn't pollute the console.
+      validateStatus: (s) => s >= 200 && s < 500,
     });
-    const d: { accessToken: string; expiresIn: number } =
-      res.data?.data ?? res.data;
-    setTokens(d.accessToken, d.expiresIn);
+    if (res.status >= 200 && res.status < 300) {
+      const d: { accessToken: string; expiresIn: number } =
+        res.data?.data ?? res.data;
+      setTokens(d.accessToken, d.expiresIn);
+      return;
+    }
+    // Hint is stale (cookie expired/revoked) — clear it so we won't try again.
+    _setSessionHint(false);
+    if (typeof window !== "undefined") {
+      import("@/store").then(({ store }) =>
+        import("@/features/auth/store/authSlice").then(({ setAuthRestored }) => {
+          store.dispatch(setAuthRestored());
+        })
+      );
+    }
   } catch {
-    // No valid refresh token — stay logged out
     if (typeof window !== "undefined") {
       import("@/store").then(({ store }) =>
         import("@/features/auth/store/authSlice").then(({ setAuthRestored }) => {
@@ -78,6 +122,7 @@ export function getUidFromAccessToken(): string | null {
 export function setTokens(accessToken: string, expiresIn: number): void {
   _accessToken = accessToken;
   _scheduleRefresh(expiresIn);
+  _setSessionHint(true);
 
   const userId = _extractUserIdFromJwt(accessToken);
 
@@ -98,6 +143,7 @@ export function setTokens(accessToken: string, expiresIn: number): void {
  */
 export function clearTokens(): void {
   _accessToken = null;
+  _setSessionHint(false);
   if (_refreshTimer) {
     clearTimeout(_refreshTimer);
     _refreshTimer = null;

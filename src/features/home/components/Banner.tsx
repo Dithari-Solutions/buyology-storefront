@@ -230,21 +230,20 @@ export default function Banner() {
                     </div>
 
                     {/* App store badges */}
-                    <div className="flex flex-col items-end gap-1.5">
+                    <div className="flex flex-col items-end gap-2.5">
                         <a
                             href="#"
                             aria-label={t("appStore")}
                             className="transition-transform hover:scale-105"
                         >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                            <Image
+                                src="/app-store-badge.svg"
                                 alt={t("appStore")}
                                 width={128}
                                 height={42}
                                 loading="lazy"
-                                decoding="async"
-                                className="w-[88px] sm:w-[108px] md:w-[128px] h-auto"
+                                unoptimized
+                                className="w-[88px] sm:w-[108px] md:w-[128px] h-auto min-h-[44px]"
                             />
                         </a>
                         <a
@@ -252,15 +251,14 @@ export default function Banner() {
                             aria-label={t("googlePlay")}
                             className="transition-transform hover:scale-105"
                         >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+                            <Image
+                                src="/google-play-badge.svg"
                                 alt={t("googlePlay")}
                                 width={128}
                                 height={42}
                                 loading="lazy"
-                                decoding="async"
-                                className="w-[88px] sm:w-[108px] md:w-[128px] h-auto"
+                                unoptimized
+                                className="w-[88px] sm:w-[108px] md:w-[128px] h-auto min-h-[44px]"
                             />
                         </a>
                     </div>
@@ -279,9 +277,12 @@ export default function Banner() {
                             >
                                 <span
                                     aria-hidden="true"
-                                    className={`block h-1.5 rounded-full transition-all ${
-                                        i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/40"
+                                    className={`block h-1.5 w-6 rounded-full origin-left transition-transform duration-300 ease-out will-change-transform ${
+                                        i === activeIndex ? "bg-white" : "bg-white/40"
                                     }`}
+                                    style={{
+                                        transform: i === activeIndex ? "scaleX(1)" : "scaleX(0.25)",
+                                    }}
                                 />
                             </button>
                         ))}
