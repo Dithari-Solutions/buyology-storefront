@@ -29,8 +29,11 @@ export default function Footer() {
                 src={AuthVector}
                 alt=""
                 aria-hidden="true"
-                className="absolute bottom-0 right-0 pointer-events-none select-none z-0"
-                style={{ width: "500px", height: "auto" }}
+                width={500}
+                height={338}
+                sizes="500px"
+                className="absolute bottom-0 right-0 pointer-events-none select-none z-0 w-[500px] h-auto"
+                style={{ aspectRatio: "851 / 575" }}
             />
             <div className="relative z-10 flex flex-col md:flex-row items-start justify-between w-full gap-8 md:gap-4">
                 <div className="w-full md:w-[calc(100%/3-10px)]">
