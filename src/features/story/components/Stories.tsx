@@ -69,10 +69,11 @@ function StoryItem({
                         src={story.thumbnailUrl}
                         alt={story.title}
                         fill
+                        sizes="88px"
+                        loading="lazy"
                         className={`object-cover transition-opacity duration-300 ${
                             imageLoaded ? "opacity-100" : "opacity-0"
                         }`}
-                        unoptimized
                         onLoad={() => setImageLoaded(true)}
                     />
                 </div>

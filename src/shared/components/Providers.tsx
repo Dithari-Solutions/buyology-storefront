@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Provider } from "react-redux";
 import { store } from "@/store";
@@ -14,6 +14,7 @@ import { tryRestoreSession } from "@/shared/lib/tokenManager";
 import { initFromLocalStorage, fetchCountriesThunk, setCountryThunk } from "@/features/country/store/countrySlice";
 import { findCountryByAlias } from "@/features/country/lib/match";
 import { requestLocationThunk, selectDetectedCountryCode } from "@/features/location/store/locationSlice";
+import GeolocationRationale from "@/features/location/components/GeolocationRationale";
 import type { AppDispatch, RootState } from "@/store";
 
 function AuthInitializer() {
@@ -43,6 +44,7 @@ const LANG_DEFAULT_COUNTRY: Record<string, string> = { az: "AZ" };
 function GeolocationInitializer() {
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.auth.userId);
+  const [rationaleVisible, setRationaleVisible] = useState(false);
 
   // Countries list — needed to resolve currency when setting country
   const countries = useSelector((state: RootState) => state.country.countries);
@@ -60,9 +62,40 @@ function GeolocationInitializer() {
   const langAppliedRef = useRef(false);
 
   // Step 1 — kick off geolocation on mount and poll every minute so the
-  // detected country stays fresh as the user moves.
+  // detected country stays fresh as the user moves. The first call also
+  // surfaces a small rationale toast so users understand why we ask.
   useEffect(() => {
-    dispatch(requestLocationThunk());
+    const alreadyGranted =
+      typeof navigator !== "undefined" &&
+      // permissions API isn't on every browser, hence the guard
+      "permissions" in navigator;
+
+    const shouldShowRationale = (): boolean => {
+      if (typeof window === "undefined") return false;
+      if (window.localStorage.getItem("geolocationRationaleDismissed") === "1") return false;
+      return true;
+    };
+
+    const start = async () => {
+      if (alreadyGranted) {
+        try {
+          const status = await (navigator.permissions as Permissions).query({
+            name: "geolocation" as PermissionName,
+          });
+          // Only show the rationale if the user hasn't decided yet.
+          if (status.state === "prompt" && shouldShowRationale()) {
+            setRationaleVisible(true);
+          }
+        } catch {
+          if (shouldShowRationale()) setRationaleVisible(true);
+        }
+      } else if (shouldShowRationale()) {
+        setRationaleVisible(true);
+      }
+      dispatch(requestLocationThunk());
+    };
+
+    start();
     const id = setInterval(() => {
       dispatch(requestLocationThunk());
     }, 60_000);
@@ -96,7 +129,7 @@ function GeolocationInitializer() {
     dispatch(setCountryThunk({ countryCode: matched.code, userId }));
   }, [detectedCountryCode, countries, dispatch, userId]);
 
-  return null;
+  return <GeolocationRationale visible={rationaleVisible} />;
 }
 
 function AppShell({ children }: { children: React.ReactNode }) {

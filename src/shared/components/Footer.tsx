@@ -94,7 +94,7 @@ export default function Footer() {
 
             <div className="relative z-10">
                 <div>
-                    <p className="text-gray-100 opacity-40 text-[14px] md:text-[18px] text-center">{t("copyright")}</p>
+                    <p className="text-white/85 text-[14px] md:text-[18px] text-center">{t("copyright")}</p>
                 </div>
             </div>
         </footer>

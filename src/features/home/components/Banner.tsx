@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -55,7 +56,7 @@ export default function Banner() {
     ];
 
     const currentBanner = banners[activeIndex];
-    const backgroundUrl = currentBanner?.backgroundImageUrl ?? BannerBg.src;
+    const remoteBackground = currentBanner?.backgroundImageUrl ?? null;
     const overlayText = currentBanner?.text ?? null;
     const buttonLabel = currentBanner?.buttonLabel ?? null;
     const buttonUrl = currentBanner?.buttonUrl ?? null;
@@ -81,16 +82,30 @@ export default function Banner() {
 
     return (
         <section className="relative w-[95%] md:w-[90%] mt-3 md:mt-6 overflow-hidden rounded-3xl">
-            {/* Background image */}
-            <div
-                className="absolute inset-0 transition-[background-image] duration-700"
-                style={{
-                    backgroundImage: `url(${backgroundUrl})`,
-                    backgroundPosition: "center",
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                }}
-            />
+            {/* Background image — uses next/image for automatic AVIF/WebP and LCP priority */}
+            <div className="absolute inset-0">
+                {remoteBackground ? (
+                    <Image
+                        key={remoteBackground}
+                        src={remoteBackground}
+                        alt=""
+                        fill
+                        priority
+                        sizes="(max-width: 768px) 95vw, 90vw"
+                        className="object-cover transition-opacity duration-700"
+                    />
+                ) : (
+                    <Image
+                        src={BannerBg}
+                        alt=""
+                        fill
+                        priority
+                        sizes="(max-width: 768px) 95vw, 90vw"
+                        placeholder="blur"
+                        className="object-cover transition-opacity duration-700"
+                    />
+                )}
+            </div>
 
             {/* Left-to-right dark gradient for text legibility */}
             <div
@@ -245,16 +260,22 @@ export default function Banner() {
 
                 {/* Pagination dots when multiple banners */}
                 {banners.length > 1 && (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-20">
                         {banners.map((_, i) => (
                             <button
                                 key={i}
+                                type="button"
                                 aria-label={`Banner ${i + 1}`}
                                 onClick={() => setActiveIndex(i)}
-                                className={`h-1.5 rounded-full transition-all ${
-                                    i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/40"
-                                }`}
-                            />
+                                className="relative w-11 h-11 flex items-center justify-center cursor-pointer"
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className={`block h-1.5 rounded-full transition-all ${
+                                        i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/40"
+                                    }`}
+                                />
+                            </button>
                         ))}
                     </div>
                 )}

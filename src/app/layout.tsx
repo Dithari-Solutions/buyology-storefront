@@ -130,8 +130,8 @@ export default async function RootLayout({
           src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
           strategy="beforeInteractive"
         />
-        <link rel="preconnect" href="https://api-dev.dithari.com" />
-        <link rel="dns-prefetch" href="https://api-dev.dithari.com" />
+        <link rel="preconnect" href="https://eu2.contabostorage.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://eu2.contabostorage.com" />
         <JsonLd data={organizationJsonLd()} />
         <JsonLd data={websiteJsonLd(lang)} />
       </head>

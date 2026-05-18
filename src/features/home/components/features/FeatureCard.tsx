@@ -1,4 +1,4 @@
-import { StaticImageData } from "next/image";
+import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
 import FeatureCardBackground from "./FeatureCardBackground";
 
@@ -34,15 +34,16 @@ export default function FeatureCard({ id, title, description, bg, variant = "nor
                 <FeatureCardBackground id={id} />
                 {/* Original PNG faded over for thematic imagery (if provided) */}
                 {bg && (
-                    <div
-                        className="absolute inset-0 mix-blend-overlay opacity-55 transition-opacity duration-500 group-hover:opacity-75"
-                        style={{
-                            backgroundImage: `url(${bg.src})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                            backgroundRepeat: "no-repeat",
-                        }}
-                    />
+                    <div className="absolute inset-0 mix-blend-overlay opacity-55 transition-opacity duration-500 group-hover:opacity-75">
+                        <Image
+                            src={bg}
+                            alt=""
+                            fill
+                            sizes="(max-width: 768px) 95vw, (max-width: 1280px) 45vw, 30vw"
+                            className="object-cover"
+                            placeholder="blur"
+                        />
+                    </div>
                 )}
             </div>
 

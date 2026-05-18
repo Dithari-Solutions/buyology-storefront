@@ -199,6 +199,9 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                         {/* Fav button */}
                         <motion.button
                             onClick={handleFav}
+                            type="button"
+                            aria-label={isFav ? t("superDeals.removeFromFavorites", { defaultValue: "Remove from favorites" }) : t("superDeals.addToFavorites", { defaultValue: "Add to favorites" })}
+                            aria-pressed={isFav}
                             animate={favBounce ? { scale: [1, 1.45, 0.85, 1.1, 1] } : { scale: 1 }}
                             transition={{ duration: 0.4, ease: "easeOut" }}
                             className={`cursor-pointer border rounded-full bg-white hover:shadow-md transition-shadow p-[5px] sm:p-[7px] ${isFav ? "border-[#FBBB14]" : "border-gray-200"}`}
@@ -220,6 +223,8 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                         <div className="relative">
                             <motion.button
                                 onClick={handleAddToCart}
+                                type="button"
+                                aria-label={t("superDeals.addToCart")}
                                 animate={added
                                     ? { scale: [1, 0.88, 1.06, 1], transition: { duration: 0.35, ease: "easeOut" } }
                                     : { scale: 1 }
