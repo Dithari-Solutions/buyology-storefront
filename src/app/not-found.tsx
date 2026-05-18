@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { setLanguage } from "@/store/languageSlice";
-import i18n from "@/shared/i18n";
+import { switchLanguage } from "@/shared/i18n";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
@@ -33,7 +33,7 @@ export default function NotFound() {
 
     useEffect(() => {
         dispatch(setLanguage(lang));
-        i18n.changeLanguage(lang);
+        switchLanguage(lang).catch(() => {});
     }, [lang, dispatch]);
 
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";

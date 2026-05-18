@@ -11,14 +11,36 @@ import MarqueeStrip from "@/features/home/components/MarqueeStrip";
 import PopularCategories from "@/features/home/components/PopularCategories";
 
 // Below-the-fold sections — code-split out of the initial hydration bundle.
-// Keeping ssr: true preserves SEO; the route still streams them on the server,
-// but the client-JS for each lives in its own chunk and hydrates lazily.
-const QuickDeliveryBanner = dynamic(() => import("@/features/home/components/QuickDeliveryBanner"));
-const LimitedStock = dynamic(() => import("@/features/home/components/limitedStock/LimitedStock"));
-const SuperDeals = dynamic(() => import("@/features/home/components/superDeals/SuperDeals"));
-const Features = dynamic(() => import("@/features/home/components/features/Features"));
-const TrustStats = dynamic(() => import("@/features/home/components/TrustStats"));
-const Newsletter = dynamic(() => import("@/features/home/components/Newsletter"));
+// Each placeholder reserves vertical space so the layout doesn't shift when
+// the chunk arrives.
+const skel = (h: string) => (
+  <div className={`w-[95%] md:w-[90%] ${h} rounded-2xl bg-gray-100 animate-pulse my-3 md:my-4`} />
+);
+
+const QuickDeliveryBanner = dynamic(
+  () => import("@/features/home/components/QuickDeliveryBanner"),
+  { loading: () => skel("h-[180px] md:h-[220px]") }
+);
+const LimitedStock = dynamic(
+  () => import("@/features/home/components/limitedStock/LimitedStock"),
+  { loading: () => skel("h-[340px] md:h-[420px]") }
+);
+const SuperDeals = dynamic(
+  () => import("@/features/home/components/superDeals/SuperDeals"),
+  { loading: () => skel("h-[480px] md:h-[520px]") }
+);
+const Features = dynamic(
+  () => import("@/features/home/components/features/Features"),
+  { loading: () => skel("h-[520px] md:h-[600px]") }
+);
+const TrustStats = dynamic(
+  () => import("@/features/home/components/TrustStats"),
+  { loading: () => skel("h-[180px] md:h-[220px]") }
+);
+const Newsletter = dynamic(
+  () => import("@/features/home/components/Newsletter"),
+  { loading: () => skel("h-[260px] md:h-[300px]") }
+);
 
 export default function Home() {
   return (
