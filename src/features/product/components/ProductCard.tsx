@@ -420,7 +420,7 @@ export default function ProductCard({
       <div
         ref={cardRef}
         onClick={() => router.push(href)}
-        className={`p-[10px] xl:p-[14px] bg-white rounded-[20px] w-full border border-[#FBBB14] cursor-pointer hover:shadow-md transition-shadow${isList ? ' flex flex-row gap-[16px] xl:gap-[24px]' : ''}`}
+        className={`p-[10px] xl:p-[14px] bg-white rounded-[20px] w-full border border-[#FBBB14] cursor-pointer hover:shadow-md transition-shadow${isList ? ' flex flex-row gap-[16px] xl:gap-[24px]' : ' h-full flex flex-col'}`}
       >
 
         {/* ── Image container ── */}
@@ -457,7 +457,7 @@ export default function ProductCard({
         </div>
 
         {/* ── Details ── */}
-        <div className={`flex flex-col${isList ? ' flex-1 justify-between py-[4px] min-w-0' : ' gap-[10px] xl:gap-[14px]'}`}>
+        <div className={`flex flex-col${isList ? ' flex-1 justify-between py-[4px] min-w-0' : ' gap-[10px] xl:gap-[14px] flex-1 min-h-0'}`}>
 
           {/* Title + Rating */}
           <div className="flex items-start justify-between gap-[8px]">
@@ -547,7 +547,7 @@ export default function ProductCard({
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-gray-100" />
+          <div className={`h-px bg-gray-100${isList ? '' : ' mt-auto'}`} />
 
           {/* Price + Actions */}
           <div className="flex items-end justify-between gap-[8px]">
