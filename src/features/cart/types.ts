@@ -53,6 +53,10 @@ export interface CartState {
     promo: PromoState;
     /** Delivery fee returned by the backend — 0 until cart is loaded */
     shippingFee: number;
+    /** Free-shipping threshold in the cart's display currency (subtotal ≥ this ⇒ delivery free) */
+    freeShippingThreshold: number | null;
+    /** True when the cart subtotal qualifies for free shipping */
+    qualifiesForFreeShipping: boolean;
     /** API cart UUID */
     cartId: string | null;
     /** ISO 3166-1 alpha-3 — null until first item is added */
@@ -118,6 +122,12 @@ export interface ApiCartResponse {
     totalPrice: number;
     /** Delivery fee computed by the backend — always display this value, never hardcode */
     shippingFee: number | null;
+    /** Backend-converted free-shipping threshold in the cart currency */
+    freeShippingThreshold?: number | null;
+    /** Backend-converted current delivery fee in the cart currency (0 if cart qualifies) */
+    deliveryFee?: number | null;
+    /** True when the cart subtotal qualifies for free shipping */
+    qualifiesForFreeShipping?: boolean | null;
     /** ISO 3166-1 alpha-3 — null until first item is added */
     countryCode: string | null;
     /** ISO 4217 currency code — null until first item is added */

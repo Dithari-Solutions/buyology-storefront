@@ -22,6 +22,8 @@ const initialState: CartState = {
     selectedIds: [],
     promo: { code: "", discount: 0, applied: false, error: null, message: null },
     shippingFee: 0,
+    freeShippingThreshold: null,
+    qualifiesForFreeShipping: false,
     cartId: null,
     countryCode: null,
     currency: null,
@@ -233,6 +235,8 @@ const cartSlice = createSlice({
             state.currency = null;
             state.cartId = null;
             state.shippingFee = 0;
+            state.freeShippingThreshold = null;
+            state.qualifiesForFreeShipping = false;
         },
 
         removePromo(state) {
@@ -276,7 +280,9 @@ const cartSlice = createSlice({
             state.cartId = apiCart.id;
             state.countryCode = apiCart.countryCode;
             state.currency = apiCart.currency;
-            state.shippingFee = apiCart.shippingFee ?? 0;
+            state.shippingFee = apiCart.deliveryFee ?? apiCart.shippingFee ?? 0;
+            state.freeShippingThreshold = apiCart.freeShippingThreshold ?? null;
+            state.qualifiesForFreeShipping = apiCart.qualifiesForFreeShipping ?? false;
             state.items = mergeApiItems(state.items, apiCart.items);
             state.selectedIds = state.items.map((i) => i.id);
             state.loading.cart = false;
@@ -332,7 +338,9 @@ const cartSlice = createSlice({
             state.cartId = result.id;
             state.countryCode = result.countryCode;
             state.currency = result.currency;
-            state.shippingFee = result.shippingFee ?? 0;
+            state.shippingFee = result.deliveryFee ?? result.shippingFee ?? 0;
+            state.freeShippingThreshold = result.freeShippingThreshold ?? null;
+            state.qualifiesForFreeShipping = result.qualifiesForFreeShipping ?? false;
             const { payload: addPayload } = action.meta.arg as AddToCartThunkArg;
             const apiItem = result.items.find((i) => i.productId === addPayload.productId);
             if (!apiItem) return;
@@ -432,6 +440,10 @@ export const selectCartCurrency = (state: RootState) => state.cart.currency;
 export const selectCartCountryCode = (state: RootState) => state.cart.countryCode;
 
 export const selectCartShippingFee = (state: RootState) => state.cart.shippingFee;
+
+export const selectFreeShippingThreshold = (state: RootState) => state.cart.freeShippingThreshold;
+
+export const selectQualifiesForFreeShipping = (state: RootState) => state.cart.qualifiesForFreeShipping;
 
 export const selectCartTotals = createSelector(
     selectCartItems,

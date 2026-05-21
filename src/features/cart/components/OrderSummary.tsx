@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-import { applyPromoThunk, removePromo, selectCartTotals, selectPromo, selectCartCurrency, selectCartLoading } from "../store/cartSlice";
+import { applyPromoThunk, removePromo, selectCartTotals, selectPromo, selectCartCurrency, selectCartLoading, selectFreeShippingThreshold, selectQualifiesForFreeShipping } from "../store/cartSlice";
 
 // ── Benefit icon helpers ──────────────────────────────────────────────────────
 
@@ -59,6 +59,11 @@ export default function OrderSummary() {
     const promo = useSelector(selectPromo);
     const currency = useSelector(selectCartCurrency) ?? "$";
     const loading = useSelector(selectCartLoading);
+    const freeShippingThreshold = useSelector(selectFreeShippingThreshold);
+    const qualifiesForFreeShipping = useSelector(selectQualifiesForFreeShipping);
+    const amountToFreeShipping = freeShippingThreshold != null
+        ? Math.max(0, freeShippingThreshold - totals.subtotal)
+        : 0;
 
     const [promoInput, setPromoInput] = useState(promo.applied ? promo.code : "");
 
@@ -145,6 +150,26 @@ export default function OrderSummary() {
                 </span>
             </div>
             <p className="text-[11px] text-gray-400 text-end mt-1">{t("orderSummary.includingVat")}</p>
+
+            {/* ── Free-shipping progress hint ── */}
+            {freeShippingThreshold != null && (
+                qualifiesForFreeShipping ? (
+                    <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+                        <p className="text-[13px] text-green-700 font-medium">
+                            You qualify for free delivery!
+                        </p>
+                    </div>
+                ) : (
+                    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                        <p className="text-[13px] text-amber-800 font-medium">
+                            Add {currency} {amountToFreeShipping.toFixed(2)} more for free delivery
+                        </p>
+                        <p className="text-[12px] text-amber-700 mt-0.5">
+                            Free shipping on orders over {currency} {freeShippingThreshold.toFixed(2)}.
+                        </p>
+                    </div>
+                )
+            )}
 
             {/* ── CTA ── */}
             <Link href={checkoutHref}>
