@@ -47,10 +47,11 @@ export default function PopularForYou() {
             <h2 className="text-xl font-bold text-gray-900 mb-4">
                 {t("popularForYou.title", { defaultValue: "Popular for you" })}
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
                 {products.map((p) => (
+                    <div key={p.id} className="h-full w-full flex">
+                        <div className="w-full h-full flex flex-col [&>*]:w-full [&>*]:h-full">
                     <ProductCard
-                        key={p.id}
                         productId={p.id}
                         storeId={p.storeId ?? undefined}
                         slugs={{ en: p.slug, az: p.slug, ar: p.slug }}
@@ -66,6 +67,8 @@ export default function PopularForYou() {
                         storeOptions={p.storeOptions}
                         availableInSelectedCountry={p.availableInSelectedCountry}
                     />
+                        </div>
+                    </div>
                 ))}
             </div>
         </section>

@@ -76,7 +76,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
     }
 
     return (
-        <div className="relative flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 md:p-5 bg-white rounded-2xl border border-[#FBBB14] shadow-sm hover:shadow-md transition-shadow">
+        <div className="relative w-full h-full flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 md:p-5 bg-white rounded-2xl border border-[#FBBB14] shadow-sm hover:shadow-md transition-shadow overflow-hidden min-h-[200px] sm:min-h-[180px] md:min-h-[170px]">
 
             {/* ── Checkbox ── */}
             <div className="pt-1 flex-shrink-0">
@@ -125,16 +125,16 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
             </div>
 
             {/* ── Info Block ── */}
-            <div className="flex-1 min-w-0 flex flex-col gap-2">
+            <div className="flex-1 min-w-0 flex flex-col gap-2 justify-between">
 
                 {/* Title + Price */}
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-3 min-w-0">
                     {productHref ? (
-                        <Link href={productHref} className="font-bold text-[15px] sm:text-[17px] md:text-[20px] text-gray-900 leading-snug hover:text-[#402F75] transition-colors line-clamp-2 pe-14 sm:pe-0">
+                        <Link href={productHref} className="font-bold text-[15px] sm:text-[17px] md:text-[20px] text-gray-900 leading-snug hover:text-[#402F75] transition-colors line-clamp-2 pe-14 sm:pe-0 min-w-0 break-words">
                             {item.title}
                         </Link>
                     ) : (
-                        <h3 className="font-bold text-[15px] sm:text-[17px] md:text-[20px] text-gray-900 leading-snug line-clamp-2 pe-14 sm:pe-0">{item.title}</h3>
+                        <h3 className="font-bold text-[15px] sm:text-[17px] md:text-[20px] text-gray-900 leading-snug line-clamp-2 pe-14 sm:pe-0 min-w-0 break-words">{item.title}</h3>
                     )}
                     <div className="flex sm:flex-col items-baseline sm:items-end gap-2 sm:gap-0.5 flex-shrink-0">
                         <span className="text-[#402F75] font-bold text-[16px] sm:text-[18px] md:text-[20px] whitespace-nowrap">
@@ -148,25 +148,18 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                     </div>
                 </div>
 
-                {/* Short description — hide on the smallest screens to keep card compact */}
-                {item.description && (
-                    <p className="hidden sm:block text-[13px] text-gray-500 leading-snug line-clamp-2">
-                        {item.description.length > 110 ? `${item.description.slice(0, 110).trimEnd()}...` : item.description}
-                    </p>
-                )}
-
-                {/* Variant tags */}
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-gray-500">
-                    <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5">
+                {/* Variant tags — single row, no overflow */}
+                <div className="flex gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-gray-500 overflow-hidden">
+                    <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5 truncate max-w-[50%]">
                         {t("cartItems.color")}: <strong className="text-gray-700">{item.variant.color}</strong>
                     </span>
-                    <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5">
+                    <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5 truncate max-w-[50%]">
                         {t("cartItems.storage")}: <strong className="text-gray-700">{item.variant.storage}</strong>
                     </span>
                 </div>
 
                 {/* Qty + Subtotal + Actions */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-1">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3">
 
                     {/* Qty + Subtotal */}
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap">

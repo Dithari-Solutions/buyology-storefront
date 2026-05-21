@@ -9,7 +9,7 @@ import CartItem from "./CartItem";
 
 function CartItemSkeleton() {
     return (
-        <div className="flex items-start gap-3 p-4 sm:p-5 bg-white rounded-2xl border border-[#FBBB14] shadow-sm animate-pulse">
+        <div className="flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 md:p-5 bg-white rounded-2xl border border-[#FBBB14] shadow-sm animate-pulse min-h-[200px] sm:min-h-[180px] md:min-h-[170px] overflow-hidden">
             {/* Checkbox skeleton */}
             <div className="pt-1 flex-shrink-0">
                 <div className="w-4 h-4 bg-gray-200 rounded"></div>
