@@ -102,10 +102,10 @@ export default function OrderSummary() {
     }
 
     return (
-        <aside className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:sticky lg:top-6 self-start">
+        <aside className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 md:p-6 lg:sticky lg:top-6 self-start w-full">
 
             {/* ── Heading ── */}
-            <h2 className="text-[18px] font-bold text-gray-900 mb-5">
+            <h2 className="text-[16px] sm:text-[18px] font-bold text-gray-900 mb-4 sm:mb-5">
                 {t("orderSummary.heading")}
             </h2>
 
@@ -143,9 +143,9 @@ export default function OrderSummary() {
             <div className="h-px bg-gray-100 my-4" />
 
             {/* ── Total ── */}
-            <div className="flex items-end justify-between">
-                <span className="text-[17px] font-bold text-gray-900">{t("orderSummary.total")}</span>
-                <span className="text-[26px] font-bold text-[#402F75] leading-none">
+            <div className="flex items-end justify-between gap-3">
+                <span className="text-[15px] sm:text-[17px] font-bold text-gray-900">{t("orderSummary.total")}</span>
+                <span className="text-[22px] sm:text-[26px] font-bold text-[#402F75] leading-none whitespace-nowrap">
                     {currency} {totals.total.toFixed(2)}
                 </span>
             </div>

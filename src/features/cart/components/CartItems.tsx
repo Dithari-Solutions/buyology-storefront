@@ -86,9 +86,9 @@ export default function CartItems() {
         <div className="flex flex-col gap-6">
 
             {/* ── Active Cart Section ── */}
-            <section className="bg-white p-[20px] rounded-[20px]">
-                <div className="flex items-center justify-between mb-4 gap-3">
-                    <h2 className="text-[18px] font-bold text-gray-900">
+            <section className="bg-white p-3 sm:p-4 md:p-[20px] rounded-2xl md:rounded-[20px]">
+                <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2 sm:gap-3 flex-wrap">
+                    <h2 className="text-[16px] sm:text-[18px] font-bold text-gray-900">
                         {t("cartItems.heading")}{" "}
                         <span className="text-gray-400 font-normal">
                             ({loading.cart || loading.products ? "..." : cartItems.length})
@@ -150,8 +150,8 @@ export default function CartItems() {
 
             {/* ── Saved for Later Section ── */}
             {savedItems.length > 0 && (
-                <section className="bg-white p-[20px] rounded-[20px]">
-                    <h2 className="text-[18px] font-bold text-gray-900 mb-4">
+                <section className="bg-white p-3 sm:p-4 md:p-[20px] rounded-2xl md:rounded-[20px]">
+                    <h2 className="text-[16px] sm:text-[18px] font-bold text-gray-900 mb-3 sm:mb-4">
                         {t("savedForLater.heading")}{" "}
                         <span className="text-gray-400 font-normal">({savedItems.length})</span>
                     </h2>

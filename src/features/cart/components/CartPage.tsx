@@ -82,12 +82,12 @@ export default function CartPage() {
     return (
         <>
             <Header />
-            <main className="w-[90%] mx-auto py-8 md:py-12">
+            <main className="w-[95%] sm:w-[92%] lg:w-[90%] max-w-[1400px] mx-auto py-6 sm:py-8 md:py-12">
                 {!isLoading && !hasContent ? (
                     <EmptyCartState lang={lang} />
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 items-start">
+                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px] gap-4 sm:gap-6 items-start">
                             <CartItems />
                             <OrderSummary />
                         </div>
