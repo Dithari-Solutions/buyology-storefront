@@ -62,14 +62,14 @@ export default function ProductSpecs({ specs, keyFeatures }: ProductSpecsProps) 
                     {specs.map((spec) => (
                         <div
                             key={spec.iconKey}
-                            className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 px-5 py-4"
+                            className="group flex items-center gap-4 bg-white rounded-2xl border border-gray-100 px-5 py-4 transition-all hover:border-[#402F75]/25 hover:shadow-sm"
                         >
-                            <div className="w-11 h-11 rounded-full bg-[#EDE9FF] flex items-center justify-center flex-shrink-0">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#EDE9FF] to-[#F6F4FF] ring-1 ring-[#402F75]/5 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105">
                                 {SPEC_ICONS[spec.iconKey]}
                             </div>
-                            <div className="flex flex-col gap-0.5">
-                                <span className="text-xs text-gray-400">{spec.label}</span>
-                                <span className="text-sm font-bold text-gray-900">{spec.value}</span>
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                                <span className="text-[11px] font-medium uppercase tracking-wide text-gray-400">{spec.label}</span>
+                                <span className="text-[15px] font-bold text-gray-900 truncate">{spec.value}</span>
                             </div>
                         </div>
                     ))}
@@ -82,16 +82,24 @@ export default function ProductSpecs({ specs, keyFeatures }: ProductSpecsProps) 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-1">
                     <ul className="flex flex-col gap-2.5">
                         {leftFeatures.map((feature, i) => (
-                            <li key={i} className="flex items-start gap-2.5 text-sm text-gray-500">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#FBBB14] flex-shrink-0 mt-[7px]" />
+                            <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
+                                <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#FBBB14]/15">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#C8920A" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </span>
                                 {feature}
                             </li>
                         ))}
                     </ul>
                     <ul className="flex flex-col gap-2.5">
                         {rightFeatures.map((feature, i) => (
-                            <li key={i} className="flex items-start gap-2.5 text-sm text-gray-500">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#FBBB14] flex-shrink-0 mt-[7px]" />
+                            <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
+                                <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#FBBB14]/15">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#C8920A" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </span>
                                 {feature}
                             </li>
                         ))}

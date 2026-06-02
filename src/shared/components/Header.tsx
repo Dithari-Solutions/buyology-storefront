@@ -80,14 +80,14 @@ function MobileIconBtn({ href, children, badge }: { href: string; children: Reac
 }
 
 const TRENDING_SEARCHES = [
-    { label: "iPhone 16 Pro", icon: "📱" },
-    { label: "MacBook Pro M4", icon: "💻" },
-    { label: "Samsung Galaxy S25", icon: "📱" },
-    { label: "AirPods Pro", icon: "🎧" },
-    { label: "iPad Air", icon: "📲" },
-    { label: "Sony WH-1000XM5", icon: "🎧" },
-    { label: "PlayStation 5", icon: "🎮" },
-    { label: "Xiaomi 14", icon: "📱" },
+    "iPhone 16 Pro",
+    "MacBook Pro M4",
+    "Samsung Galaxy S25",
+    "AirPods Pro",
+    "iPad Air",
+    "Sony WH-1000XM5",
+    "PlayStation 5",
+    "Xiaomi 14",
 ];
 
 /* ── Full-screen search overlay ── */
@@ -123,7 +123,7 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
     }, [onClose]);
 
     const filtered = query.trim()
-        ? TRENDING_SEARCHES.filter(s => s.label.toLowerCase().includes(query.toLowerCase()))
+        ? TRENDING_SEARCHES.filter(s => s.toLowerCase().includes(query.toLowerCase()))
         : TRENDING_SEARCHES;
 
     const handleSearch = (q: string) => {
@@ -239,16 +239,19 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
                                     <motion.div className="flex flex-wrap gap-2">
                                         {filtered.map((item, i) => (
                                             <motion.button
-                                                key={item.label}
+                                                key={item}
                                                 initial={{ opacity: 0, scale: 0.85, y: 8 }}
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.85 }}
                                                 transition={{ delay: i * 0.04, type: "spring", stiffness: 400, damping: 25 }}
-                                                onClick={() => handleSearch(item.label)}
+                                                onClick={() => handleSearch(item)}
                                                 className="flex items-center gap-2 bg-white/8 hover:bg-[#FBBB14]/15 border border-white/12 hover:border-[#FBBB14]/40 rounded-full px-4 py-2 text-white/70 hover:text-white text-[13px] font-medium transition-all duration-200 cursor-pointer group"
                                             >
-                                                <span className="text-[14px] group-hover:scale-110 transition-transform duration-150">{item.icon}</span>
-                                                {item.label}
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/40 group-hover:text-[#FBBB14] transition-colors duration-150">
+                                                    <circle cx="11" cy="11" r="8" />
+                                                    <path d="M21 21l-4.35-4.35" />
+                                                </svg>
+                                                {item}
                                             </motion.button>
                                         ))}
                                     </motion.div>

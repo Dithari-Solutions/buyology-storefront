@@ -139,23 +139,49 @@ export default function MembershipDashboard() {
 }
 
 function NoMembershipState({ lang }: { lang: string }) {
+    const perks = [
+        { label: "AED 5,000 wallet credit" },
+        { label: "Priority support" },
+        { label: "Exclusive B2B pricing" },
+    ];
     return (
-        <div className="bg-white rounded-[20px] p-10 shadow-sm flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-[#EDE9FF] flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <div className="relative overflow-hidden rounded-[20px] border border-gray-100 bg-gradient-to-b from-[#F8F6FF] to-white p-8 sm:p-10 shadow-sm flex flex-col items-center text-center gap-5">
+            <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[260px] h-[260px] rounded-full bg-[#402F75]/[0.06] blur-3xl" />
+
+            <div className="relative w-[78px] h-[78px] rounded-[22px] bg-white shadow-sm ring-1 ring-[#402F75]/10 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-[22px] bg-gradient-to-br from-[#EDE9FF] to-[#F6F4FF]" />
+                <svg className="relative" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                 </svg>
+                <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#FBBB14] ring-2 ring-white flex items-center justify-center">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                </span>
             </div>
-            <div>
-                <h3 className="text-[16px] font-bold text-gray-800 mb-1">No B2B Membership</h3>
-                <p className="text-gray-400 text-[13px] max-w-xs mx-auto">
-                    Apply for B2B Premium Membership and unlock AED 5,000 wallet credit, priority support, and exclusive benefits.
+
+            <div className="relative">
+                <h3 className="text-[17px] font-bold text-gray-900 mb-1">Unlock B2B Premium</h3>
+                <p className="text-gray-500 text-[13px] max-w-xs mx-auto">
+                    Apply for B2B Premium Membership and start enjoying members-only perks.
                 </p>
             </div>
+
+            <div className="relative flex flex-wrap items-center justify-center gap-2">
+                {perks.map((perk) => (
+                    <span key={perk.label} className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FBBB14" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        {perk.label}
+                    </span>
+                ))}
+            </div>
+
             <Link
                 href={`/${lang}/b2b/apply`}
-                className="rounded-[14px] bg-[#402F75] px-8 py-3 text-sm font-semibold text-white hover:bg-[#352565] transition-colors"
+                className="relative rounded-[14px] bg-[#402F75] px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#352565] transition-colors"
             >
                 Apply Now
             </Link>
@@ -241,7 +267,15 @@ function WalletPanel({ wallet, transactions, loading }: {
                         <div className="w-6 h-6 border-2 border-[#402F75] border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : transactions.length === 0 ? (
-                    <p className="text-[13px] text-gray-400 text-center py-6">No transactions yet.</p>
+                    <div className="flex flex-col items-center gap-2 py-8 text-center">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F4F2FB] text-[#402F75]">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 7h16M4 12h16M4 17h10" />
+                            </svg>
+                        </span>
+                        <p className="text-[13px] font-medium text-gray-500">No transactions yet</p>
+                        <p className="text-[12px] text-gray-400">Your wallet activity will show up here.</p>
+                    </div>
                 ) : (
                     <ul className="divide-y divide-gray-100">
                         {transactions.map((tx) => (

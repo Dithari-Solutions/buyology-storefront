@@ -130,8 +130,11 @@ export default function SuperDeals() {
             {/* Header */}
             <div className="flex items-end justify-between mb-5 md:mb-8">
                 <div>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#A86C00] bg-[#FFF7DC] border border-[#FBBB14]/50 px-3 py-[5px] rounded-full mb-2.5">
-                        ⚡ {t("superDeals.flashSale")}
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#A86C00] bg-[#FFF7DC] border border-[#FBBB14]/50 px-3 py-[5px] rounded-full mb-2.5">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                            <path d="M13 2L4.09 12.97H11L10 22L20.91 11.03H14L13 2Z" />
+                        </svg>
+                        {t("superDeals.flashSale")}
                     </span>
                     <h2 className="text-[22px] sm:text-[26px] md:text-[32px] font-extrabold leading-tight text-gray-900">
                         {t("superDeals.title")}
