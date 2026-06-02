@@ -355,14 +355,16 @@ export default function B2BPage() {
                     </div>
                     <div className="flex flex-wrap gap-2.5">
                         {[
-                            { label: "AED 5,000 Wallet Credit", icon: "💳" },
-                            { label: "Digital Membership Card", icon: "🪪" },
-                            { label: "Priority Support", icon: "⭐" },
-                            { label: "Exclusive B2B Pricing", icon: "🏷️" },
-                        ].map((pill) => (
-                            <span key={pill.label} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur border border-white text-[12px] font-semibold text-[#402F75] shadow-sm">
-                                <span>{pill.icon}</span>
-                                {pill.label}
+                            "AED 5,000 Wallet Credit",
+                            "Digital Membership Card",
+                            "Priority Support",
+                            "Exclusive B2B Pricing",
+                        ].map((label) => (
+                            <span key={label} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur border border-white text-[12px] font-semibold text-[#402F75] shadow-sm">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FBBB14" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                {label}
                             </span>
                         ))}
                     </div>
@@ -423,7 +425,7 @@ export default function B2BPage() {
                     className="mb-8"
                 >
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#402F75] bg-[#EDE9FF] px-3 py-[5px] rounded-full mb-3">
-                        ✨ {t("benefits.title")}
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FBBB14]" /> {t("benefits.title")}
                     </span>
                     <h2 className="text-[24px] sm:text-[28px] font-bold text-gray-900 mb-2">
                         {t("benefits.title")}
@@ -464,7 +466,7 @@ export default function B2BPage() {
                     className="mb-8"
                 >
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#402F75] bg-[#EDE9FF] px-3 py-[5px] rounded-full mb-3">
-                        🔄 {t("howItWorks.title")}
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FBBB14]" /> {t("howItWorks.title")}
                     </span>
                     <h2 className="text-[24px] sm:text-[28px] font-bold text-gray-900 mb-2">
                         {t("howItWorks.title")}
@@ -511,7 +513,7 @@ export default function B2BPage() {
                 >
                     <div className="mb-8">
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#402F75] bg-[#EDE9FF] px-3 py-[5px] rounded-full mb-3">
-                            📋 {t("form.title")}
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#FBBB14]" /> {t("form.title")}
                         </span>
                         <h2 className="text-[24px] sm:text-[28px] font-bold text-gray-900 mb-2">
                             {t("form.title")}
@@ -532,7 +534,7 @@ export default function B2BPage() {
                     className="mb-6"
                 >
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#402F75] bg-[#EDE9FF] px-3 py-[5px] rounded-full mb-3">
-                        ❓ {t("faq.title")}
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FBBB14]" /> {t("faq.title")}
                     </span>
                     <h2 className="text-[24px] sm:text-[28px] font-bold text-gray-900">
                         {t("faq.title")}
