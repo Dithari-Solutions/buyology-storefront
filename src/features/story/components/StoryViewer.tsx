@@ -35,6 +35,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
     const [imageLoaded, setImageLoaded] = useState(false);
     const [progress, setProgress] = useState(0);
     const viewedRef = useRef<Set<string>>(new Set());
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     // Entrance / exit animation state
     const [visible, setVisible] = useState(false);
@@ -43,12 +44,24 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
     const story = stories[currentStoryIndex];
     const mediaItems = [...story.media].sort((a, b) => a.orderIndex - b.orderIndex);
     const currentMedia = mediaItems[currentMediaIndex];
+    const isVideo = currentMedia?.mediaType === "VIDEO";
 
     // Trigger entrance animation after first paint
     useEffect(() => {
         const t = setTimeout(() => setVisible(true), 16);
         return () => clearTimeout(t);
     }, []);
+
+    // Safety net for video: if the element already has data buffered by the time
+    // this runs (events can fire before React attaches their listeners), reveal it
+    // so it doesn't stay invisible behind the loading spinner.
+    useEffect(() => {
+        if (!isVideo) return;
+        const v = videoRef.current;
+        if (v && v.readyState >= 2) {
+            setImageLoaded(true);
+        }
+    }, [isVideo, currentStoryIndex, currentMediaIndex]);
 
     const handleClose = useCallback(() => {
         setClosing(true);
@@ -129,9 +142,10 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
         }
     }, [isAuthenticated, likeBusy, liked, story, router, lang]);
 
-    // Auto-advance timer
+    // Auto-advance timer (images only — videos advance via onEnded and
+    // report their own progress through onTimeUpdate)
     useEffect(() => {
-        if (!imageLoaded) return;
+        if (!imageLoaded || isVideo) return;
         const duration = 5000;
         const interval = 50;
         let elapsed = 0;
@@ -144,7 +158,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
             }
         }, interval);
         return () => clearInterval(timer);
-    }, [imageLoaded, currentStoryIndex, currentMediaIndex, goNext]);
+    }, [imageLoaded, isVideo, currentStoryIndex, currentMediaIndex, goNext]);
 
     // Keyboard navigation
     useEffect(() => {
@@ -206,19 +220,53 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                             />
                         </div>
                     )}
-                    <Image
-                        key={`${currentStoryIndex}-${currentMediaIndex}`}
-                        src={currentMedia.url}
-                        alt={story.title}
-                        fill
-                        className="object-cover"
-                        style={{
-                            opacity: imageLoaded ? 1 : 0,
-                            transition: "opacity 0.35s ease",
-                        }}
-                        unoptimized
-                        onLoad={() => setImageLoaded(true)}
-                    />
+                    {isVideo ? (
+                        <video
+                            key={`${currentStoryIndex}-${currentMediaIndex}`}
+                            ref={videoRef}
+                            src={currentMedia.url}
+                            poster={currentMedia.thumbnailUrl ?? undefined}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            style={{
+                                opacity: imageLoaded ? 1 : 0,
+                                transition: "opacity 0.35s ease",
+                            }}
+                            autoPlay
+                            muted
+                            playsInline
+                            preload="auto"
+                            // Reveal the video as soon as any of these fire. Relying on a
+                            // single loadeddata event is fragile: with autoplay it can be
+                            // missed (or fire before React attaches the listener), leaving
+                            // the video stuck at opacity 0 behind the spinner forever.
+                            onLoadedMetadata={() => setImageLoaded(true)}
+                            onLoadedData={() => setImageLoaded(true)}
+                            onCanPlay={() => setImageLoaded(true)}
+                            onPlaying={() => setImageLoaded(true)}
+                            // If the video can't load, don't spin forever — reveal/skip it.
+                            onError={() => setImageLoaded(true)}
+                            onTimeUpdate={() => {
+                                const v = videoRef.current;
+                                if (!v || !v.duration) return;
+                                setProgress((v.currentTime / v.duration) * 100);
+                            }}
+                            onEnded={goNext}
+                        />
+                    ) : (
+                        <Image
+                            key={`${currentStoryIndex}-${currentMediaIndex}`}
+                            src={currentMedia.url}
+                            alt={story.title}
+                            fill
+                            className="object-cover"
+                            style={{
+                                opacity: imageLoaded ? 1 : 0,
+                                transition: "opacity 0.35s ease",
+                            }}
+                            unoptimized
+                            onLoad={() => setImageLoaded(true)}
+                        />
+                    )}
 
                     {/* Bottom gradient overlay */}
                     <div
