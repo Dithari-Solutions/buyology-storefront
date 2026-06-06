@@ -30,12 +30,17 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [liked, setLiked] = useState(stories[initialIndex]?.likedByMe ?? false);
     const [likeCount, setLikeCount] = useState(stories[initialIndex]?.likeCount ?? 0);
-    const [viewCount, setViewCount] = useState(stories[initialIndex]?.viewCount ?? 0);
     const [likeBusy, setLikeBusy] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [progress, setProgress] = useState(0);
     const viewedRef = useRef<Set<string>>(new Set());
     const videoRef = useRef<HTMLVideoElement>(null);
+
+    // Press-and-hold to pause. `pausedRef` lets the running interval read the
+    // latest value without re-creating (which would reset elapsed progress).
+    const pausedRef = useRef(false);
+    const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const didHoldRef = useRef(false);
 
     // Entrance / exit animation state
     const [visible, setVisible] = useState(false);
@@ -79,7 +84,6 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
             setCurrentMediaIndex(0);
             setLiked(stories[nextIndex]?.likedByMe ?? false);
             setLikeCount(stories[nextIndex]?.likeCount ?? 0);
-            setViewCount(stories[nextIndex]?.viewCount ?? 0);
             setImageLoaded(false);
             setProgress(0);
         } else {
@@ -99,7 +103,6 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
             setCurrentMediaIndex(prevMediaLength - 1);
             setLiked(stories[prevIndex]?.likedByMe ?? false);
             setLikeCount(stories[prevIndex]?.likeCount ?? 0);
-            setViewCount(stories[prevIndex]?.viewCount ?? 0);
             setImageLoaded(false);
             setProgress(0);
         }
@@ -111,7 +114,6 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
         if (!id || viewedRef.current.has(id)) return;
         viewedRef.current.add(id);
         recordStoryView(id)
-            .then((res) => setViewCount(res.viewCount))
             .catch(() => {
                 // best-effort; allow retry next mount
                 viewedRef.current.delete(id);
@@ -150,6 +152,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
         const interval = 50;
         let elapsed = 0;
         const timer = setInterval(() => {
+            if (pausedRef.current) return;
             elapsed += interval;
             setProgress((elapsed / duration) * 100);
             if (elapsed >= duration) {
@@ -159,6 +162,28 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
         }, interval);
         return () => clearInterval(timer);
     }, [imageLoaded, isVideo, currentStoryIndex, currentMediaIndex, goNext]);
+
+    // Press-and-hold handlers: holding pauses (image timer + video playback),
+    // releasing resumes. A short tap doesn't trigger a hold so navigation works.
+    const startHold = useCallback(() => {
+        didHoldRef.current = false;
+        holdTimerRef.current = setTimeout(() => {
+            didHoldRef.current = true;
+            pausedRef.current = true;
+            videoRef.current?.pause();
+        }, 200);
+    }, []);
+
+    const endHold = useCallback(() => {
+        if (holdTimerRef.current) {
+            clearTimeout(holdTimerRef.current);
+            holdTimerRef.current = null;
+        }
+        if (pausedRef.current) {
+            pausedRef.current = false;
+            videoRef.current?.play().catch(() => {});
+        }
+    }, []);
 
     // Keyboard navigation
     useEffect(() => {
@@ -359,23 +384,37 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                     </button>
                 </div>
 
-                {/* ── Navigation tap zones ── */}
-                <div className="absolute inset-0 flex z-[15] pointer-events-none">
+                {/* ── Navigation tap zones (tap = navigate, hold = pause) ── */}
+                <div className="absolute inset-0 flex z-[15]">
                     <div
-                        className="w-1/3 h-full cursor-pointer pointer-events-auto"
-                        onClick={goPrev}
+                        className="w-1/3 h-full cursor-pointer"
+                        onPointerDown={startHold}
+                        onPointerUp={endHold}
+                        onPointerLeave={endHold}
+                        onPointerCancel={endHold}
+                        onClick={() => { if (!didHoldRef.current) goPrev(); }}
                     />
-                    <div className="w-1/3 h-full" />
                     <div
-                        className="w-1/3 h-full cursor-pointer pointer-events-auto"
-                        onClick={goNext}
+                        className="w-1/3 h-full"
+                        onPointerDown={startHold}
+                        onPointerUp={endHold}
+                        onPointerLeave={endHold}
+                        onPointerCancel={endHold}
+                    />
+                    <div
+                        className="w-1/3 h-full cursor-pointer"
+                        onPointerDown={startHold}
+                        onPointerUp={endHold}
+                        onPointerLeave={endHold}
+                        onPointerCancel={endHold}
+                        onClick={() => { if (!didHoldRef.current) goNext(); }}
                     />
                 </div>
 
                 {/* ── Bottom actions ── */}
                 <div className="absolute bottom-6 inset-x-4 flex items-center justify-center z-20">
                     <div
-                        className="flex items-center gap-6 px-8 py-3 rounded-full"
+                        className="flex items-center gap-4 px-4 py-1.5 rounded-full"
                         style={{
                             backgroundColor: "rgba(255,255,255,0.12)",
                             backdropFilter: "blur(16px)",
@@ -386,12 +425,12 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                         <button
                             onClick={handleLike}
                             disabled={likeBusy}
-                            className="flex flex-col items-center gap-1 hover:scale-110 transition-transform disabled:opacity-70"
+                            className="flex items-center gap-1.5 hover:scale-110 transition-transform disabled:opacity-70"
                             style={{ color: liked ? "#ef4444" : "white" }}
                         >
                             <svg
-                                width="24"
-                                height="24"
+                                width="20"
+                                height="20"
                                 viewBox="0 0 24 24"
                                 fill={liked ? "#ef4444" : "none"}
                                 stroke="currentColor"
@@ -405,36 +444,27 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                             >
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                             </svg>
-                            <span className="text-[10px] font-medium text-white/80">
+                            <span className="text-[11px] font-medium text-white/80">
                                 {likeCount > 0 ? likeCount : liked ? "Liked" : "Like"}
                             </span>
                         </button>
 
-                        {/* Views */}
-                        <div className="flex flex-col items-center gap-1 text-white/80">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            <span className="text-[10px] font-medium">{viewCount}</span>
-                        </div>
-
                         {/* Divider */}
-                        <div className="w-px h-7" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
+                        <div className="w-px h-5" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
 
                         {/* Share */}
                         <button
                             onClick={handleShare}
-                            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform"
+                            className="flex items-center gap-1.5 text-white hover:scale-110 transition-transform"
                         >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="18" cy="5" r="3" />
                                 <circle cx="6" cy="12" r="3" />
                                 <circle cx="18" cy="19" r="3" />
                                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
                                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                             </svg>
-                            <span className="text-[10px] font-medium text-white/80">Share</span>
+                            <span className="text-[11px] font-medium text-white/80">Share</span>
                         </button>
                     </div>
                 </div>
