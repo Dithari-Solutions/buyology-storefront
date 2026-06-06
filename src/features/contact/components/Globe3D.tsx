@@ -70,8 +70,31 @@ interface Props {
     size?: number;
 }
 
-export default function Globe3D({ selectedId, onSelect, size = 360 }: Props) {
+// Responsive globe size: scales with the viewport, capped so it stays
+// proportionate on very large screens. Falls back to a sensible default on SSR.
+function computeGlobeSize(): number {
+    if (typeof window === "undefined") return 520;
+    const vw = window.innerWidth;
+    if (vw < 480) return Math.min(vw - 48, 360);
+    if (vw < 768) return 440;
+    if (vw < 1280) return 520;
+    return 600;
+}
+
+export default function Globe3D({ selectedId, onSelect, size }: Props) {
     const [features, setFeatures] = useState<CountryFeature[] | null>(null);
+    const [autoSize, setAutoSize] = useState<number>(() => computeGlobeSize());
+
+    // Recompute on resize when no explicit size is provided
+    useEffect(() => {
+        if (size) return;
+        const onResize = () => setAutoSize(computeGlobeSize());
+        onResize();
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, [size]);
+
+    const globeSize = size ?? autoSize;
     const globeRef = useRef<{ pointOfView: (coords: { lat: number; lng: number; altitude: number }, ms: number) => void; controls: () => { autoRotate: boolean; autoRotateSpeed: number; enableZoom: boolean } } | null>(null);
 
     useEffect(() => {
@@ -113,7 +136,7 @@ export default function Globe3D({ selectedId, onSelect, size = 360 }: Props) {
     const polygonsData = useMemo(() => features ?? [], [features]);
 
     return (
-        <div className="relative" style={{ width: size, height: size }}>
+        <div className="relative" style={{ width: globeSize, height: globeSize }}>
             {/* Soft glow shadow */}
             <div
                 aria-hidden
@@ -141,8 +164,8 @@ export default function Globe3D({ selectedId, onSelect, size = 360 }: Props) {
                 <ReactGlobe
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ref={globeRef as any}
-                    width={size}
-                    height={size}
+                    width={globeSize}
+                    height={globeSize}
                     backgroundColor="rgba(0,0,0,0)"
                     showAtmosphere
                     atmosphereColor="#FBBB14"

@@ -29,7 +29,6 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
     const [currentStoryIndex, setCurrentStoryIndex] = useState(initialIndex);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [liked, setLiked] = useState(stories[initialIndex]?.likedByMe ?? false);
-    const [likeCount, setLikeCount] = useState(stories[initialIndex]?.likeCount ?? 0);
     const [likeBusy, setLikeBusy] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -83,7 +82,6 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
             setCurrentStoryIndex(nextIndex);
             setCurrentMediaIndex(0);
             setLiked(stories[nextIndex]?.likedByMe ?? false);
-            setLikeCount(stories[nextIndex]?.likeCount ?? 0);
             setImageLoaded(false);
             setProgress(0);
         } else {
@@ -102,7 +100,6 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
             setCurrentStoryIndex(prevIndex);
             setCurrentMediaIndex(prevMediaLength - 1);
             setLiked(stories[prevIndex]?.likedByMe ?? false);
-            setLikeCount(stories[prevIndex]?.likeCount ?? 0);
             setImageLoaded(false);
             setProgress(0);
         }
@@ -130,15 +127,12 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
         const nextLiked = !liked;
         // optimistic
         setLiked(nextLiked);
-        setLikeCount((c) => c + (nextLiked ? 1 : -1));
         try {
             const res = nextLiked ? await likeStory(story.id) : await unlikeStory(story.id);
             setLiked(res.liked);
-            setLikeCount(res.likeCount);
         } catch {
             // revert
             setLiked(!nextLiked);
-            setLikeCount((c) => c + (nextLiked ? -1 : 1));
         } finally {
             setLikeBusy(false);
         }
@@ -426,13 +420,13 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                             onClick={handleLike}
                             disabled={likeBusy}
                             className="flex items-center gap-1.5 hover:scale-110 transition-transform disabled:opacity-70"
-                            style={{ color: liked ? "#ef4444" : "white" }}
+                            style={{ color: liked ? "#FBBB14" : "white" }}
                         >
                             <svg
                                 width="20"
                                 height="20"
                                 viewBox="0 0 24 24"
-                                fill={liked ? "#ef4444" : "none"}
+                                fill={liked ? "#FBBB14" : "none"}
                                 stroke="currentColor"
                                 strokeWidth="2"
                                 strokeLinecap="round"
@@ -445,7 +439,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                             </svg>
                             <span className="text-[11px] font-medium text-white/80">
-                                {likeCount > 0 ? likeCount : liked ? "Liked" : "Like"}
+                                {liked ? "Liked" : "Like"}
                             </span>
                         </button>
 
