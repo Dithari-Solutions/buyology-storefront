@@ -93,25 +93,23 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
     useEffect(() => {
         if (!userId) return;
         let cancelled = false;
-        b2bAccountApi.getMyWallet(userId).then((w) => {
+        // Request the wallet already converted into the order's currency so B2B credit
+        // works in any branch (the backend also converts the actual deduction).
+        b2bAccountApi.getMyWallet(userId, (currency ?? "AED").toUpperCase()).then((w) => {
             if (!cancelled) setWallet(w);
         });
         return () => { cancelled = true; };
-    }, [userId]);
+    }, [userId, currency]);
 
     const orderCcy = (currency ?? "AED").toUpperCase();
-    const walletCcy = wallet?.currency.toUpperCase();
-    const sameCurrency = walletCcy != null && walletCcy === orderCcy;
 
     // Reason the credit option may be unusable. Render the option but disable it
     // with a clear message instead of hiding it, so B2B users always see why
-    // they can't pay with credit on this particular order.
+    // they can't pay with credit on this particular order. The wallet is fetched in
+    // the order currency, so there is no longer a currency-mismatch block.
     const creditDisabledReason: string | null = (() => {
         if (!wallet) return null; // no wallet at all → not a B2B member, hide entirely
         if (wallet.balance <= 0) return "Wallet balance is empty.";
-        if (!sameCurrency) {
-            return `Wallet (${wallet.currency}) doesn't match order currency (${orderCcy}).`;
-        }
         if (wallet.minOrderAmount != null && orderTotal < wallet.minOrderAmount) {
             return `Minimum order of ${wallet.minOrderAmount.toLocaleString(undefined, {
                 minimumFractionDigits: 2, maximumFractionDigits: 2,

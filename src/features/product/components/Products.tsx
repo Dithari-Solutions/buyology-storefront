@@ -342,6 +342,12 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
             const processor = getSpecValue(product, 'processor');
             const displayPrice = product.storePrice ?? product.effectivePrice ?? 0;
             const displayCurrency = product.currency ?? currency;
+            // Original (pre-discount) price comes from the store-scoped originalPrice
+            // (set by the backend only when discounted). discount = amount off.
+            const original = product.originalPrice ?? null;
+            const discountAmount = original != null && original > displayPrice
+              ? original - displayPrice
+              : 0;
             return (
               <ProductCard
                 key={product.id}
@@ -352,8 +358,8 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 title={product.title}
                 description={product.description}
                 price={displayPrice}
-                originalPrice={product.basePrice ?? 0}
-                discount={product.discountValue ?? 0}
+                originalPrice={original ?? 0}
+                discount={discountAmount}
                 currency={displayCurrency}
                 processor={processor || undefined}
                 ram={ram ? `${ram} RAM` : undefined}

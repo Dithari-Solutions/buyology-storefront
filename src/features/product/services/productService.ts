@@ -53,13 +53,17 @@ export interface ApiProduct {
   updatedAt: string;
   // Country-scoped pricing (present when countryCode param is passed)
   storeId?: string | null;
+  /** Effective (discounted) price already converted to the display currency. */
   storePrice?: number | null;
+  /** Pre-discount price (struck-through). Present only when the item is discounted. */
+  originalPrice?: number | null;
   currency?: string | null;
   availableInSelectedCountry?: boolean | null;
   expressDelivery?: boolean | null;
   storeOptions?: Array<{
     storeId: string;
     storePrice: number;
+    originalPrice?: number | null;
     currency: string;
     expressDelivery: boolean | null;
   }> | null;

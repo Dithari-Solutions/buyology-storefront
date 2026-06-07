@@ -39,7 +39,8 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
     const imageUrl = getPrimaryImage(product.media);
     const specs = extractSpecs(product);
     const effectivePrice = product.storePrice ?? product.effectivePrice ?? 0;
-    const basePrice = product.basePrice ?? effectivePrice;
+    // Store-scoped pre-discount price from the backend (present only when discounted).
+    const basePrice = product.originalPrice ?? product.basePrice ?? effectivePrice;
     const savings = Math.max(0, basePrice - effectivePrice);
     const currencyCode = product.currency ?? "USD";
     const formatPrice = (amount: number): string => {
@@ -55,9 +56,7 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
         }
     };
     const discountPercent =
-        product.discountType === "PERCENTAGE" && product.discountValue
-            ? Math.round(product.discountValue)
-            : basePrice > 0 && savings > 0
+        basePrice > 0 && savings > 0
             ? Math.round((savings / basePrice) * 100)
             : 0;
 

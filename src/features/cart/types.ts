@@ -108,6 +108,9 @@ export interface ApiCartItem {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
+    /** Pre-discount unit/total price for strike-through display. Null when not discounted. */
+    originalUnitPrice?: number | null;
+    originalTotalPrice?: number | null;
     /** true = store is within ~30-min delivery radius of the user */
     quickDelivery: boolean;
     selectedSpecs: ApiSpecSelection[];

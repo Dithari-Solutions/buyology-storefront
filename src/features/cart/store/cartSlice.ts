@@ -47,8 +47,11 @@ function mergeApiItems(existing: CartItemMeta[], apiItems: ApiCartItem[]): CartI
             imageUrl: match?.imageUrl ?? "",
             variant: match?.variant ?? { color: "", storage: "" },
             price: apiItem.unitPrice,
-            originalPrice: match?.originalPrice ?? apiItem.unitPrice,
-            discountPercent: match?.discountPercent ?? 0,
+            // Prefer the backend's pre-discount price; fall back to any existing meta.
+            originalPrice: apiItem.originalUnitPrice ?? match?.originalPrice ?? apiItem.unitPrice,
+            discountPercent: apiItem.originalUnitPrice && apiItem.originalUnitPrice > apiItem.unitPrice
+                ? Math.round(((apiItem.originalUnitPrice - apiItem.unitPrice) / apiItem.originalUnitPrice) * 100)
+                : (match?.discountPercent ?? 0),
             quantity: apiItem.quantity,
             quickDelivery: apiItem.quickDelivery,
             savedForLater: false,
@@ -352,6 +355,10 @@ const cartSlice = createSlice({
                     cartItemId: apiItem.id,
                     quantity: apiItem.quantity,
                     price: apiItem.unitPrice,
+                    originalPrice: apiItem.originalUnitPrice ?? state.items[idx].originalPrice ?? apiItem.unitPrice,
+                    discountPercent: apiItem.originalUnitPrice && apiItem.originalUnitPrice > apiItem.unitPrice
+                        ? Math.round(((apiItem.originalUnitPrice - apiItem.unitPrice) / apiItem.originalUnitPrice) * 100)
+                        : state.items[idx].discountPercent,
                     pending: false,
                 };
                 const selIdx = state.selectedIds.indexOf(tempId);

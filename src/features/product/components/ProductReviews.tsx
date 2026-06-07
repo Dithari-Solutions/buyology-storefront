@@ -354,6 +354,19 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
 
+  // (Re)load the first page of reviews + stats. Reused on mount and after a
+  // successful submit so a new review appears immediately (no page reload).
+  const reloadReviews = useCallback(async () => {
+    const [reviewData, statsData] = await Promise.all([
+      getProductReviews(productId, 0, PAGE_SIZE),
+      getReviewStats(productId),
+    ]);
+    setReviews(reviewData);
+    setStats(statsData);
+    setHasMore(reviewData.length === PAGE_SIZE);
+    setPage(0);
+  }, [productId]);
+
   // Fetch initial data
   useEffect(() => {
     let cancelled = false;
@@ -446,6 +459,9 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       setSelectedFiles([]);
       previewUrls.forEach((u) => URL.revokeObjectURL(u));
       setPreviewUrls([]);
+      // Refresh the list + stats so the new review shows without a page reload.
+      // (Website reviews are auto-approved, so it appears immediately.)
+      try { await reloadReviews(); } catch { /* keep success state even if refresh fails */ }
     } catch (err: unknown) {
       // Server-side 400 mirrors client validation — show the same inline error
       const status = (err as { status?: number })?.status;

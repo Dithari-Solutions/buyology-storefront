@@ -172,8 +172,14 @@ export default function ProductDetailClient({ product: initialProduct, images: i
 
   const unitPrice = product.storePrice ?? product.effectivePrice ?? 0;
   const totalPrice = unitPrice + additionalPrice;
-  const hasDiscount = !!product.discountValue && product.discountValue > 0;
-  const savings = hasDiscount ? (product.basePrice ?? 0) - (product.effectivePrice ?? 0) : 0;
+  // Discount is store-scoped: the backend sends originalPrice only when discounted.
+  const originalUnitPrice = product.originalPrice ?? null;
+  const hasDiscount = originalUnitPrice != null && originalUnitPrice > unitPrice;
+  const savings = hasDiscount ? originalUnitPrice - unitPrice : 0;
+  const discountPercent = hasDiscount && originalUnitPrice > 0
+    ? Math.round((savings / originalUnitPrice) * 100)
+    : 0;
+  const originalTotalPrice = hasDiscount ? originalUnitPrice + additionalPrice : 0;
   const inStock = product.availabilityStatus === "IN_STOCK";
   const isOutOfStock = product.availabilityStatus === "OUT_OF_STOCK";
   const unavailableInCountry = product.availableInSelectedCountry === false;
@@ -195,11 +201,8 @@ export default function ProductDetailClient({ product: initialProduct, images: i
       imageUrl: images[0] ?? "",
       variant: { color: selectedColor, storage: getVariantLabel() },
       price: totalPrice,
-      originalPrice: product.basePrice ?? 0,
-      discountPercent:
-        hasDiscount && (product.basePrice ?? 0) > 0
-          ? Math.round((((product.basePrice ?? 0) - (product.effectivePrice ?? 0)) / (product.basePrice ?? 0)) * 100)
-          : 0,
+      originalPrice: originalTotalPrice,
+      discountPercent,
       quantity: 1,
       savedForLater: false,
     };
@@ -249,8 +252,8 @@ export default function ProductDetailClient({ product: initialProduct, images: i
           id: product.id,
           title: product.title,
           price: totalPrice,
-          originalPrice: product.basePrice ?? 0,
-          discount: product.discountValue ?? 0,
+          originalPrice: originalTotalPrice,
+          discount: savings,
           rating: 0,
           inStock: true,
           category: product.categoryId,
@@ -385,14 +388,14 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                     ⏳ {t("details.badges.limited")}
                   </motion.span>
                 )}
-                {hasDiscount && product.discountType === "PERCENTAGE" && product.discountValue && (
+                {hasDiscount && discountPercent > 0 && (
                   <motion.span
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.4 }}
                     className="inline-flex items-center gap-1 text-sm font-extrabold text-white bg-gradient-to-br from-[#402F75] to-purple-600 px-3 py-2 rounded-2xl uppercase tracking-wider shadow-lg shadow-purple-300/40"
                   >
-                    -{product.discountValue}%
+                    -{discountPercent}%
                   </motion.span>
                 )}
               </div>
@@ -530,7 +533,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                   </span>
                   {hasDiscount && (
                     <span className="text-lg text-white/50 line-through font-medium mb-1">
-                      {formatPrice(product.basePrice ?? 0, product.currency)}
+                      {formatPrice(originalTotalPrice, product.currency)}
                     </span>
                   )}
                 </div>
@@ -538,9 +541,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                   <div className="relative mt-2 flex items-center gap-2 flex-wrap">
                     <span className="inline-flex items-center bg-[#FBBB14] text-gray-900 text-xs font-bold px-2.5 py-1 rounded-full">
                       {t("details.price.save")} {formatPrice(savings, product.currency)}
-                      {product.discountType === "PERCENTAGE" && product.discountValue
-                        ? ` (${product.discountValue}%)`
-                        : ""}
+                      {discountPercent > 0 ? ` (${discountPercent}%)` : ""}
                     </span>
                     {additionalPrice > 0 && (
                       <span className="text-xs text-white/80 font-semibold">

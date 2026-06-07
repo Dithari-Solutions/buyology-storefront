@@ -95,7 +95,12 @@ export const b2bAccountApi = {
     return res.data.data;
   },
 
-  async getMyWallet(userId: string): Promise<{
+  async getMyWallet(
+    userId: string,
+    /** Order/branch currency. The backend converts the balance, credit limit and
+     *  minimum order into this currency so B2B credit is usable in any branch. */
+    currency?: string,
+  ): Promise<{
     balance: number;
     currency: string;
     creditLimit?: number;
@@ -112,7 +117,9 @@ export const b2bAccountApi = {
           countryCode?: string;
           minOrderAmount?: number;
         }>
-      >(`/api/membership/wallet`, { params: { userId } });
+      >(`/api/membership/wallet`, {
+        params: currency ? { userId, currency } : { userId },
+      });
       return res.data.data ?? null;
     } catch {
       return null;
