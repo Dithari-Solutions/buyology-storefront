@@ -5,9 +5,13 @@ import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import type { UserProfile } from "../types";
-import { updateProfile, uploadAvatar } from "../services/profile.api";
+import { updateProfile, uploadAvatar, sendPhoneOtp, verifyPhone } from "../services/profile.api";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import MembershipBadge from "./MembershipBadge";
+
+/** Strip spaces/dashes so the value matches the backend E.164 pattern. */
+const normalizePhone = (raw: string) => raw.replace(/[\s\-()]/g, "");
+const isE164 = (raw: string) => /^\+[1-9]\d{6,14}$/.test(normalizePhone(raw));
 
 interface Props {
     profile: UserProfile | null;
@@ -26,6 +30,14 @@ interface FormErrors {
     firstName?: string;
     lastName?: string;
     phoneNumber?: string;
+}
+
+function extractMessage(err: unknown, fallback: string): string {
+    return (
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        (err instanceof Error ? err.message : "") ||
+        fallback
+    );
 }
 
 function validateProfileForm(form: EditForm): FormErrors {
@@ -123,6 +135,44 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
         }
     }
 
+    // ── Phone verification (Twilio Verify) ──────────────────────────────────
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpCode, setOtpCode] = useState("");
+    const [otpSending, setOtpSending] = useState(false);
+    const [otpVerifying, setOtpVerifying] = useState(false);
+    const [otpError, setOtpError] = useState<string | null>(null);
+
+    async function handleSendPhoneOtp() {
+        if (!userId || !profile?.phoneNumber) return;
+        setOtpError(null);
+        setOtpSending(true);
+        try {
+            await sendPhoneOtp(userId, normalizePhone(profile.phoneNumber));
+            setOtpSent(true);
+        } catch (err) {
+            setOtpError(extractMessage(err, "Failed to send code. Please try again."));
+        } finally {
+            setOtpSending(false);
+        }
+    }
+
+    async function handleVerifyPhone() {
+        if (!userId || !profile?.phoneNumber) return;
+        if (!otpCode.trim()) { setOtpError("Enter the verification code."); return; }
+        setOtpError(null);
+        setOtpVerifying(true);
+        try {
+            const updated = await verifyPhone(userId, normalizePhone(profile.phoneNumber), otpCode.trim());
+            onProfileUpdate(updated);
+            setOtpSent(false);
+            setOtpCode("");
+        } catch (err) {
+            setOtpError(extractMessage(err, "Invalid or expired code."));
+        } finally {
+            setOtpVerifying(false);
+        }
+    }
+
     const avatarSrc = getImageUrl(profile?.avatarUrl);
     const displayName = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "—";
 
@@ -130,6 +180,7 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
         firstName: t("personalInfo.firstName"),
         lastName: t("personalInfo.lastName"),
         phoneNumber: t("personalInfo.phone"),
+        phoneVerification: "Phone verification",
         deliveryAddress: t("deliveryAddress.heading"),
     };
 
@@ -404,6 +455,66 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                     </div>
                 </div>
             </div>
+
+            {/* Phone verification (Twilio Verify) */}
+            {!isEditing && profile?.phoneNumber && (
+                profile.phoneVerified ? (
+                    <div className="mt-6 bg-green-50 border border-green-200 rounded-[12px] px-4 py-3 flex items-center gap-2">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <p className="text-[13px] font-semibold text-green-700">Phone number verified</p>
+                    </div>
+                ) : (
+                    <div className="mt-6 bg-amber-50 border border-amber-200 rounded-[14px] px-4 py-4">
+                        <p className="text-[13px] font-semibold text-amber-800 mb-1">Verify your phone number</p>
+                        <p className="text-[12px] text-amber-700 mb-3">
+                            A verified phone number is required to complete checkout.
+                        </p>
+                        {!isE164(profile.phoneNumber) ? (
+                            <p className="text-[12px] text-amber-700">
+                                Please edit your phone number into international format (e.g. +971501234567) and save before verifying.
+                            </p>
+                        ) : !otpSent ? (
+                            <button
+                                type="button"
+                                onClick={handleSendPhoneOtp}
+                                disabled={otpSending}
+                                className="rounded-lg bg-[#402F75] px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#2e2156] disabled:opacity-50"
+                            >
+                                {otpSending ? "Sending…" : "Send verification code"}
+                            </button>
+                        ) : (
+                            <div className="flex flex-wrap items-center gap-2">
+                                <input
+                                    value={otpCode}
+                                    onChange={(e) => { setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 10)); setOtpError(null); }}
+                                    placeholder="Enter code"
+                                    inputMode="numeric"
+                                    className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-[13px] tracking-widest outline-none focus:border-[#402F75]"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleVerifyPhone}
+                                    disabled={otpVerifying}
+                                    className="rounded-lg bg-[#402F75] px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#2e2156] disabled:opacity-50"
+                                >
+                                    {otpVerifying ? "Checking…" : "Confirm"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSendPhoneOtp}
+                                    disabled={otpSending}
+                                    className="text-[12px] font-medium text-gray-500 underline disabled:opacity-50"
+                                >
+                                    {otpSending ? "Sending…" : "Resend"}
+                                </button>
+                            </div>
+                        )}
+                        {otpError && <p className="mt-2 text-[11px] font-medium text-red-500">{otpError}</p>}
+                    </div>
+                )
+            )}
 
             <div className="mt-6 bg-[#EDE9FF] rounded-[12px] px-4 py-3 flex items-start gap-3">
                 <svg className="flex-shrink-0 mt-0.5" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -5,6 +5,11 @@ import { useRouter, useParams } from "next/navigation";
 import { isSuspicious, validateEmail } from "@/features/auth/validation";
 import { supplierApi } from "../../services/supplier.api";
 import { COLORS } from "@/shared/styles/variables";
+import ContactVerification from "@/shared/components/ContactVerification";
+
+/** Strip spaces/dashes so the value matches the backend E.164 pattern. */
+const normalizePhone = (raw: string) => raw.replace(/[\s\-()]/g, "");
+const isE164 = (raw: string) => /^\+[1-9]\d{6,14}$/.test(normalizePhone(raw));
 
 const SELLER_TYPES = [
   { value: "REGISTERED_BUSINESS", label: "Registered Business" },
@@ -42,6 +47,14 @@ export default function Step1AboutContact() {
   // Application state
   const [verified, setVerified] = useState(false);
 
+  // Contact verification (email via SendGrid, phone via Twilio Verify).
+  // Both must be verified before the application can be created.
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+
+  const emailValid = !validateEmail(form.email);
+  const phoneValid = isE164(form.phoneNumber);
+
   function validate() {
     const e: Record<string, string> = {};
     if (!form.fullName.trim()) e.fullName = "Required";
@@ -49,9 +62,11 @@ export default function Step1AboutContact() {
     if (!form.sellerType) e.sellerType = "Required";
     const emailErr = validateEmail(form.email);
     if (emailErr) e.email = "Valid email required";
-    
+    if (!form.phoneNumber.trim()) e.phoneNumber = "Required";
+    else if (!phoneValid) e.phoneNumber = "Use international format, e.g. +971501234567";
+
     // preferredContact is now optional
-    
+
     if (form.businessName && isSuspicious(form.businessName)) e.businessName = "Invalid input";
     if (form.city && isSuspicious(form.city)) e.city = "Invalid input";
     return e;
@@ -60,6 +75,10 @@ export default function Step1AboutContact() {
   async function handleSubmit() {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
+    if (!emailVerified || !phoneVerified) {
+      setErrors({ general: "Please verify your email and phone number before continuing." });
+      return;
+    }
     setErrors({});
     setLoading(true);
     try {
@@ -70,18 +89,17 @@ export default function Step1AboutContact() {
         country: form.country || undefined,
         city: form.city || undefined,
         email: form.email,
-        phoneNumber: form.phoneNumber || undefined,
+        phoneNumber: normalizePhone(form.phoneNumber),
         preferredContact: form.preferredContact || null,
       });
-      
+
       const appId = res.data?.data;
       sessionStorage.setItem("supplier_applicationId", appId);
       sessionStorage.setItem("supplier_step1", JSON.stringify(form));
-      
-      // Bypassing OTP as per new requirements
+
       setVerified(true);
-      
-      // Transition directly to Step 2
+
+      // Transition to Step 2
       router.push(`/${lang}/become-a-supplier/step-2`);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -165,19 +183,36 @@ export default function Step1AboutContact() {
           <input
             type="email"
             value={form.email}
-            onChange={field("email")}
+            onChange={(e) => { setForm((f) => ({ ...f, email: e.target.value })); setEmailVerified(false); }}
             className={inputClass(!!errors.email)}
             placeholder="you@example.com"
           />
           {errors.email && <p className="text-red-500 text-[11px] mt-1 ms-1 font-medium">{errors.email}</p>}
+          <ContactVerification
+            channel="email"
+            value={form.email.trim()}
+            verified={emailVerified}
+            onVerified={() => setEmailVerified(true)}
+            disabled={!emailValid}
+            accent={COLORS.secondary}
+          />
         </div>
         <div>
-          <label className={labelClass}>Phone Number</label>
+          <label className={labelClass}>Phone Number *</label>
           <input
             value={form.phoneNumber}
-            onChange={field("phoneNumber")}
-            className={inputClass(false)}
-            placeholder="+971 50 000 0000"
+            onChange={(e) => { setForm((f) => ({ ...f, phoneNumber: e.target.value })); setPhoneVerified(false); }}
+            className={inputClass(!!errors.phoneNumber)}
+            placeholder="+971501234567"
+          />
+          {errors.phoneNumber && <p className="text-red-500 text-[11px] mt-1 ms-1 font-medium">{errors.phoneNumber}</p>}
+          <ContactVerification
+            channel="phone"
+            value={normalizePhone(form.phoneNumber)}
+            verified={phoneVerified}
+            onVerified={() => setPhoneVerified(true)}
+            disabled={!phoneValid}
+            accent={COLORS.secondary}
           />
         </div>
         <div>
@@ -201,14 +236,21 @@ export default function Step1AboutContact() {
       )}
 
       {!verified && (
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full py-3.5 rounded-xl text-white font-bold text-[15px] transition-all duration-200 shadow-lg shadow-yellow-100 disabled:opacity-50 active:scale-[0.98]"
-          style={{ backgroundColor: COLORS.secondary }}
-        >
-          {loading ? "Processing…" : "Save & Continue"}
-        </button>
+        <>
+          {(!emailVerified || !phoneVerified) && (
+            <p className="text-[12px] text-gray-500 text-center">
+              Verify your email and phone number to continue.
+            </p>
+          )}
+          <button
+            onClick={handleSubmit}
+            disabled={loading || !emailVerified || !phoneVerified}
+            className="w-full py-3.5 rounded-xl text-white font-bold text-[15px] transition-all duration-200 shadow-lg shadow-yellow-100 disabled:opacity-50 active:scale-[0.98]"
+            style={{ backgroundColor: COLORS.secondary }}
+          >
+            {loading ? "Processing…" : "Save & Continue"}
+          </button>
+        </>
       )}
 
       {verified && (

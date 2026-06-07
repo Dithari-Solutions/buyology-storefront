@@ -8,6 +8,7 @@ export interface UserProfile {
     firstName: string | null;
     lastName: string | null;
     phoneNumber: string | null;
+    phoneVerified: boolean;
     dateOfBirth: string | null;
     avatarUrl: string | null;
     paymentReady: boolean;

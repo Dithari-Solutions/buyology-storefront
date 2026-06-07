@@ -13,6 +13,18 @@ export async function updateProfile(userId: string, payload: UpdateProfilePayloa
     return unwrap(await apiClient.patch(`/api/users/${userId}/profile`, payload));
 }
 
+/** Sends an SMS verification code (Twilio Verify) to the given E.164 number. */
+export async function sendPhoneOtp(userId: string, phoneNumber: string): Promise<void> {
+    await apiClient.post(`/api/users/${userId}/profile/phone/send-otp`, { phoneNumber });
+}
+
+/** Confirms the SMS code and returns the refreshed profile with phoneVerified=true. */
+export async function verifyPhone(userId: string, phoneNumber: string, code: string): Promise<UserProfile> {
+    return unwrap(
+        await apiClient.post(`/api/users/${userId}/profile/phone/verify`, { phoneNumber, code })
+    );
+}
+
 export async function uploadAvatar(userId: string, file: File): Promise<UserProfile> {
     const formData = new FormData();
     formData.append("avatar", file);

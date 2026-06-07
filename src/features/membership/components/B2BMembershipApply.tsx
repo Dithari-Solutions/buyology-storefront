@@ -5,8 +5,13 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { submitApplication } from "../services/membership.api";
 import { BUSINESS_NEEDS_OPTIONS, type MembershipApplicationRequest } from "../types";
+import ContactVerification from "@/shared/components/ContactVerification";
 
 type Step = 1 | 2 | 3;
+
+/** Strip spaces/dashes so the value matches the backend E.164 pattern. */
+const normalizePhone = (raw: string) => raw.replace(/[\s\-()]/g, "");
+const isE164 = (raw: string) => /^\+[1-9]\d{6,14}$/.test(normalizePhone(raw));
 
 const INDUSTRIES = [
     "Information Technology",
@@ -27,6 +32,11 @@ export default function B2BMembershipApply() {
     const [submitted, setSubmitted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
+
+    // Contact verification (email via SendGrid, phone via Twilio Verify).
+    // Both must be verified before the application can be submitted.
+    const [emailVerified, setEmailVerified] = useState(false);
+    const [phoneVerified, setPhoneVerified] = useState(false);
 
     const [form, setForm] = useState<MembershipApplicationRequest>({
         companyName: "",
@@ -70,6 +80,9 @@ export default function B2BMembershipApply() {
             if (!form.contactDesignation.trim()) return "Designation is required";
             if (!form.contactEmail.trim() || !/\S+@\S+\.\S+/.test(form.contactEmail)) return "Valid email is required";
             if (!form.contactMobile.trim()) return "Mobile number is required";
+            if (!isE164(form.contactMobile)) return "Use international format, e.g. +971501234567";
+            if (!emailVerified) return "Please verify your email address";
+            if (!phoneVerified) return "Please verify your mobile number";
         }
         if (step === 3) {
             if (!form.termsAccepted) return "You must accept the Terms & Conditions";
@@ -90,7 +103,10 @@ export default function B2BMembershipApply() {
         setError("");
         setSubmitting(true);
         try {
-            await submitApplication(form, userId ?? undefined);
+            await submitApplication(
+                { ...form, contactMobile: normalizePhone(form.contactMobile) },
+                userId ?? undefined
+            );
             setSubmitted(true);
         } catch (e: unknown) {
             setError((e as Error).message ?? "Submission failed. Please try again.");
@@ -199,12 +215,28 @@ export default function B2BMembershipApply() {
                                 placeholder="IT Manager" className={inputCls} />
                         </Field>
                         <Field label="Email *">
-                            <input type="email" value={form.contactEmail} onChange={(e) => set("contactEmail", e.target.value)}
+                            <input type="email" value={form.contactEmail}
+                                onChange={(e) => { set("contactEmail", e.target.value); setEmailVerified(false); }}
                                 placeholder="john@acme.com" className={inputCls} />
+                            <ContactVerification
+                                channel="email"
+                                value={form.contactEmail.trim()}
+                                verified={emailVerified}
+                                onVerified={() => setEmailVerified(true)}
+                                disabled={!/\S+@\S+\.\S+/.test(form.contactEmail)}
+                            />
                         </Field>
                         <Field label="Mobile Number *">
-                            <input value={form.contactMobile} onChange={(e) => set("contactMobile", e.target.value)}
-                                placeholder="+971 50 000 0000" className={inputCls} />
+                            <input value={form.contactMobile}
+                                onChange={(e) => { set("contactMobile", e.target.value); setPhoneVerified(false); }}
+                                placeholder="+971501234567" className={inputCls} />
+                            <ContactVerification
+                                channel="phone"
+                                value={normalizePhone(form.contactMobile)}
+                                verified={phoneVerified}
+                                onVerified={() => setPhoneVerified(true)}
+                                disabled={!isE164(form.contactMobile)}
+                            />
                         </Field>
                     </div>
                 )}
