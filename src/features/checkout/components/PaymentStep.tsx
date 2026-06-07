@@ -79,7 +79,8 @@ interface PaymentStepProps {
 
 export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceOrder, isSubmitting, userId, currency }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
-    const [selected, setSelected] = useState<PaymentMethod>("card");
+    // Payment method for the amount due (B2B credit is a separate modifier, not a method).
+    const [selected, setSelected] = useState<Exclude<PaymentMethod, "credit">>("card");
     const totals = useSelector(selectCartTotals);
     const cartItems = useSelector((state: RootState) => state.cart.items);
     const orderTotal = totals.total;
@@ -89,6 +90,11 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
         currency: string;
         minOrderAmount?: number;
     } | null>(null);
+
+    // B2B credit application (separate from the payment method)
+    const [useCredit, setUseCredit] = useState(false);
+    const [creditMode, setCreditMode] = useState<"full" | "custom">("full");
+    const [customCredit, setCustomCredit] = useState("");
 
     useEffect(() => {
         if (!userId) return;
@@ -103,10 +109,7 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
 
     const orderCcy = (currency ?? "AED").toUpperCase();
 
-    // Reason the credit option may be unusable. Render the option but disable it
-    // with a clear message instead of hiding it, so B2B users always see why
-    // they can't pay with credit on this particular order. The wallet is fetched in
-    // the order currency, so there is no longer a currency-mismatch block.
+    // Reason the credit panel may be unusable.
     const creditDisabledReason: string | null = (() => {
         if (!wallet) return null; // no wallet at all → not a B2B member, hide entirely
         if (wallet.balance <= 0) return "Wallet balance is empty.";
@@ -119,16 +122,22 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
     })();
     const creditEligible = !!wallet && wallet.balance > 0 && creditDisabledReason === null;
 
-    // If the user picked credit but conditions changed, fall back to card.
+    // If credit becomes ineligible, turn the toggle off.
     useEffect(() => {
-        if (selected === "credit" && !creditEligible) setSelected("card");
-    }, [creditEligible, selected]);
+        if (useCredit && !creditEligible) setUseCredit(false);
+    }, [creditEligible, useCredit]);
 
-    // Amount of wallet credit applied when "credit" is the chosen method.
-    const creditApplied = selected === "credit" && creditEligible && wallet
-        ? Math.min(wallet.balance, orderTotal)
-        : 0;
+    // Most credit that can apply to this order (can't exceed balance or total).
+    const maxCredit = wallet ? Math.min(wallet.balance, orderTotal) : 0;
+    const creditApplied = (() => {
+        if (!useCredit || !creditEligible) return 0;
+        if (creditMode === "full") return maxCredit;
+        const typed = parseFloat(customCredit);
+        if (!Number.isFinite(typed) || typed <= 0) return 0;
+        return Math.min(typed, maxCredit);
+    })();
     const newTotal = Math.max(0, orderTotal - creditApplied);
+    const fullyCovered = creditApplied > 0 && newTotal <= 0.0001;
 
     const hasQuickDeliveryItems = cartItems.some((i) => i.quickDelivery);
     const expressUnavailable = hasQuickDeliveryItems && deliveryMethod === "REGULAR";
@@ -136,7 +145,7 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
     const countryName = COUNTRY_NAMES[shipping.country] ?? shipping.country;
 
     const PAYMENT_OPTIONS: {
-        id: PaymentMethod;
+        id: Exclude<PaymentMethod, "credit">;
         label: string;
         description: string;
         badge: React.ReactNode;
@@ -154,34 +163,18 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
         {
             id: "tabby",
             label: t("payment.tabby.label"),
-            description: t("payment.tabby.description", { amount: (orderTotal / 4).toFixed(2) }),
+            description: t("payment.tabby.description", { amount: (newTotal / 4).toFixed(2) }),
             badge: <TabbyBadge />,
-            detail: t("payment.tabby.detail", { amount: (orderTotal / 4).toFixed(2) }),
+            detail: t("payment.tabby.detail", { amount: (newTotal / 4).toFixed(2) }),
         },
         {
             id: "tamara",
             label: t("payment.tamara.label"),
-            description: t("payment.tamara.description", { amount: (orderTotal / 3).toFixed(2) }),
+            description: t("payment.tamara.description", { amount: (newTotal / 3).toFixed(2) }),
             badge: <TamaraBadge />,
-            detail: t("payment.tamara.detail", { amount: (orderTotal / 3).toFixed(2) }),
+            detail: t("payment.tamara.detail", { amount: (newTotal / 3).toFixed(2) }),
         },
     ];
-
-    // Always show the credit option when the user has a wallet at all — disable
-    // it (with a reason) when not eligible. Hide entirely only for non-B2B users.
-    if (wallet) {
-        PAYMENT_OPTIONS.push({
-            id: "credit",
-            label: "Pay with B2B credit",
-            description: `Available balance: ${wallet.balance.toLocaleString()} ${wallet.currency}`,
-            badge: <CreditBadge />,
-            detail: creditEligible
-                ? `${creditApplied.toFixed(2)} ${wallet.currency} will be deducted from your wallet automatically.`
-                : undefined,
-            disabled: !creditEligible,
-            disabledReason: creditDisabledReason ?? undefined,
-        });
-    }
 
     return (
         <div className="flex flex-col gap-4">
@@ -249,15 +242,95 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                 </div>
             </div>
 
-            {/* Payment method */}
+            {/* B2B credit — applied as a discount on the amount due, not a payment method */}
+            {wallet && (
+                <div className="bg-white rounded-2xl shadow-sm border border-[#FBBB14]/40 p-6">
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                        <h2 className="text-[16px] font-bold text-gray-900 flex items-center gap-2">
+                            <CreditBadge />
+                            B2B Credit
+                        </h2>
+                        <span className="text-[12px] text-gray-500">
+                            Available: <strong>{wallet.balance.toLocaleString()} {wallet.currency}</strong>
+                        </span>
+                    </div>
+
+                    {!creditEligible ? (
+                        <p className="text-[12px] text-amber-700 font-medium">
+                            {creditDisabledReason ?? "B2B credit is not available for this order."}
+                        </p>
+                    ) : (
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-2.5 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={useCredit}
+                                    onChange={(e) => setUseCredit(e.target.checked)}
+                                    className="w-4 h-4 accent-[#402F75]"
+                                />
+                                <span className="text-[13px] font-semibold text-gray-800">Apply my B2B credit to this order</span>
+                            </label>
+
+                            {useCredit && (
+                                <div className="pl-6 space-y-2.5">
+                                    <label className="flex items-center gap-2.5 cursor-pointer">
+                                        <input type="radio" name="creditMode" checked={creditMode === "full"} onChange={() => setCreditMode("full")} className="w-4 h-4 accent-[#402F75]" />
+                                        <span className="text-[13px] text-gray-700">
+                                            Use full credit (<strong>{maxCredit.toFixed(2)} {orderCcy}</strong>)
+                                        </span>
+                                    </label>
+                                    <label className="flex items-center gap-2.5 cursor-pointer">
+                                        <input type="radio" name="creditMode" checked={creditMode === "custom"} onChange={() => setCreditMode("custom")} className="w-4 h-4 accent-[#402F75]" />
+                                        <span className="text-[13px] text-gray-700">Use a specific amount</span>
+                                    </label>
+                                    {creditMode === "custom" && (
+                                        <div className="pl-6">
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    max={maxCredit}
+                                                    step="0.01"
+                                                    value={customCredit}
+                                                    onChange={(e) => setCustomCredit(e.target.value)}
+                                                    placeholder={`0.00 – ${maxCredit.toFixed(2)}`}
+                                                    className="w-40 rounded-lg border border-gray-200 px-3 py-2 text-[13px] focus:border-[#402F75] focus:outline-none"
+                                                />
+                                                <span className="text-[12px] text-gray-500">{orderCcy}</span>
+                                            </div>
+                                            {parseFloat(customCredit) > maxCredit && (
+                                                <p className="text-[11px] text-amber-700 mt-1">Capped at {maxCredit.toFixed(2)} {orderCcy} (your usable credit).</p>
+                                            )}
+                                        </div>
+                                    )}
+                                    <p className="text-[12px] text-[#402F75] font-medium">
+                                        {creditApplied.toFixed(2)} {orderCcy} credit applied · {newTotal.toFixed(2)} {orderCcy} due now
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Payment method (for the amount due after any credit) */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-[16px] font-bold text-gray-900 mb-5 flex items-center gap-2">
+                <h2 className="text-[16px] font-bold text-gray-900 mb-1 flex items-center gap-2">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
                         <line x1="1" y1="10" x2="23" y2="10" />
                     </svg>
                     {t("payment.heading")}
                 </h2>
+                {fullyCovered ? (
+                    <p className="text-[12px] text-green-700 font-medium mb-4">
+                        Your B2B credit covers the full order — no card payment needed.
+                    </p>
+                ) : (
+                    <p className="text-[12px] text-gray-500 mb-4">
+                        Pay the remaining <strong>{newTotal.toFixed(2)} {orderCcy}</strong> with:
+                    </p>
+                )}
 
                 <div className="flex flex-col gap-3">
                     {PAYMENT_OPTIONS.map((option) => {
@@ -326,7 +399,7 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
             </div>
 
             {/* Order summary with credit applied */}
-            {selected === "credit" && creditApplied > 0 && (
+            {creditApplied > 0 && (
                 <div className="rounded-2xl border border-[#402F75]/30 bg-[#FAF8FF] p-5 space-y-1.5 text-[13px]">
                     <div className="flex justify-between text-gray-700">
                         <span>Cart total</span>

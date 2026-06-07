@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
@@ -150,8 +151,10 @@ function OrderConfirmed({ lang }: { lang: string }) {
 export default function CheckoutPage() {
     const { t } = useTranslation("checkout");
     const dispatch = useDispatch();
+    const router = useRouter();
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const authRestored = useSelector((state: RootState) => state.auth.isRestored);
     const cartId = useSelector((state: RootState) => state.cart.cartId);
     const cartCurrency = useSelector((state: RootState) => state.cart.currency) ?? "AED";
     const totals = useSelector(selectCartTotals);
@@ -180,6 +183,11 @@ export default function CheckoutPage() {
     // and go straight to initiatePayment with the existing orderId.
     const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
     const [pendingShippingFee, setPendingShippingFee] = useState<number | null>(null);
+
+    // ── Auth guard: redirect to sign-in once auth state is known and absent ────
+    useEffect(() => {
+        if (authRestored && !userId) router.push(`/${lang}/auth`);
+    }, [authRestored, userId, lang, router]);
 
     // ── Load profile + addresses on mount ─────────────────────────────────────
 

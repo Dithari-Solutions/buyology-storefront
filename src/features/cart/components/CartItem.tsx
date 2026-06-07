@@ -31,7 +31,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
     const selectedIds = useSelector(selectSelectedIds);
     const userId = useSelector((state: RootState) => state.auth.userId);
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
-    const currency = useSelector(selectCartCurrency) ?? "$";
+    const currency = useSelector(selectCartCurrency) ?? "AED";
     const isSelected = selectedIds.includes(item.id);
 
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";

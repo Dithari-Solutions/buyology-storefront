@@ -57,7 +57,7 @@ export default function OrderSummary() {
 
     const totals = useSelector(selectCartTotals);
     const promo = useSelector(selectPromo);
-    const currency = useSelector(selectCartCurrency) ?? "$";
+    const currency = useSelector(selectCartCurrency) ?? "AED";
     const loading = useSelector(selectCartLoading);
     const freeShippingThreshold = useSelector(selectFreeShippingThreshold);
     const qualifiesForFreeShipping = useSelector(selectQualifiesForFreeShipping);

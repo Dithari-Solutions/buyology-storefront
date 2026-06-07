@@ -7,6 +7,7 @@ import type { RootState } from "@/store";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import { getOrders } from "../services/orders.api";
+import { repayOrder } from "@/features/checkout/services/payment.api";
 import type { OrderSummary, OrderStatus, DeliveryMethod } from "../types";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -149,6 +150,28 @@ function OrderCard({ order, lang }: { order: OrderSummary; lang: string }) {
     const shortId = order.id.slice(-8).toUpperCase();
     const tone = STATUS_TONE[order.status];
     const isActive = ACTIVE_STATUSES.includes(order.status) && order.status !== "PENDING_PAYMENT";
+    const isPendingPayment = order.status === "PENDING_PAYMENT";
+    const [repaying, setRepaying] = useState(false);
+    const [repayError, setRepayError] = useState<string | null>(null);
+
+    async function handleRepay(e: React.MouseEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        setRepaying(true);
+        setRepayError(null);
+        try {
+            const res = await repayOrder(order.id, {
+                methodType: "CARD",
+                redirectionUrl: `${window.location.origin}/${lang}/payment/callback?orderId=${order.id}`,
+            });
+            // Persist the tx id so the callback can confirm the payment (mirrors checkout).
+            sessionStorage.setItem("buyology_pending_tx_id", res.transactionId);
+            window.location.href = res.checkoutUrl;
+        } catch (err) {
+            setRepayError(err instanceof Error ? err.message : "Could not start payment. Please try again.");
+            setRepaying(false);
+        }
+    }
 
     const placedDate = new Date(order.createdAt).toLocaleDateString("en-GB", {
         day: "2-digit", month: "short", year: "numeric",
@@ -209,6 +232,24 @@ function OrderCard({ order, lang }: { order: OrderSummary; lang: string }) {
                 </div>
 
                 {isActive && <OrderProgress status={order.status} />}
+
+                {isPendingPayment && (
+                    <div className="mt-3 flex flex-col gap-1.5">
+                        <button
+                            onClick={handleRepay}
+                            disabled={repaying}
+                            className="inline-flex w-fit items-center gap-1.5 rounded-xl bg-[#FBBB14] px-4 py-2 text-[12px] font-bold text-gray-900 transition-all hover:bg-[#f0b000] disabled:opacity-60 cursor-pointer"
+                        >
+                            {repaying ? "Starting payment…" : "Pay now"}
+                            {!repaying && (
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            )}
+                        </button>
+                        {repayError && <p className="text-[11px] font-medium text-red-600">{repayError}</p>}
+                    </div>
+                )}
             </div>
         </a>
     );

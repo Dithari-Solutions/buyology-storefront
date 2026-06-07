@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
-import { getTransaction } from "../services/payment.api";
+import { getTransaction, getTransactionsByOrder } from "../services/payment.api";
 import { clearCart } from "@/features/cart/store/cartSlice";
 import { clearCartApi } from "@/features/cart/services/cart.api";
 
@@ -90,10 +90,31 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
         const txIdFromSession = typeof window !== "undefined" ? sessionStorage.getItem(PENDING_TX_KEY) : null;
         
         const transactionId = txIdFromUrl || txIdFromSession;
+        const orderIdFromUrl = searchParams.get("orderId");
 
         if (transactionId) {
             sessionStorage.removeItem(PENDING_TX_KEY);
             pollTransactionStatus(transactionId);
+        } else if (orderIdFromUrl) {
+            // Recovery: the tx id was lost (new tab, mobile redirect) but we have the
+            // order — resolve the latest transaction for it and confirm by that.
+            sessionStorage.removeItem(PENDING_TX_KEY);
+            setOrderId(orderIdFromUrl);
+            getTransactionsByOrder(orderIdFromUrl)
+                .then((txs) => {
+                    if (!txs.length) {
+                        setStatus("error");
+                        setErrorMessage(t("payment.error.invalid_session", { defaultValue: "Invalid payment session." }));
+                        return;
+                    }
+                    const success = txs.find((x) => x.status === "SUCCESS");
+                    const latest = success ?? txs[txs.length - 1];
+                    pollTransactionStatus(latest.id);
+                })
+                .catch(() => {
+                    setStatus("error");
+                    setErrorMessage(t("payment.error.invalid_session", { defaultValue: "Invalid payment session." }));
+                });
         } else {
             setStatus("error");
             setErrorMessage(t("payment.error.invalid_session", { defaultValue: "Invalid payment session." }));
