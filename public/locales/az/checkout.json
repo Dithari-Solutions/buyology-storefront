@@ -28,7 +28,7 @@
     },
     "cta": {
         "continueToPayment": "Ödənişə Keç",
-        "placeOrder": "Sifarişi Tamamla · ${{total}}",
+        "placeOrder": "Sifarişi Tamamla · {{currency}} {{total}}",
         "processing": "Emal edilir..."
     },
     "shippingTo": "Çatdırılma ünvanı",
@@ -42,13 +42,13 @@
         },
         "tabby": {
             "label": "4 faizsiz taksitlə ödə",
-            "description": "Alışınızı aylıq ${{amount}} olmaqla 4 hissəyə bölün",
-            "detail": "Faiz yoxdur, komissiya yoxdur. $20–$4000 aralığındakı sifarişlər üçün mövcuddur. Bu gün ${{amount}} ödəyin, qalanını 3 ayda ödəyin."
+            "description": "Alışınızı aylıq {{currency}} {{amount}} olmaqla 4 hissəyə bölün",
+            "detail": "Faiz yoxdur, komissiya yoxdur. $20–$4000 aralığındakı sifarişlər üçün mövcuddur. Bu gün {{currency}} {{amount}} ödəyin, qalanını 3 ayda ödəyin."
         },
         "tamara": {
             "label": "3 hissəyə böl və ya gələn ay ödə",
-            "description": "Aylıq ${{amount}} olmaqla 3 hissəyə bölün və ya tam məbləği gələn ay ödəyin",
-            "detail": "$3.000-a qədər sifarişlər üçün mövcuddur. Hər ay ${{amount}} ödəyin, cəmi 3 ay."
+            "description": "Aylıq {{currency}} {{amount}} olmaqla 3 hissəyə bölün və ya tam məbləği gələn ay ödəyin",
+            "detail": "$3.000-a qədər sifarişlər üçün mövcuddur. Hər ay {{currency}} {{amount}} ödəyin, cəmi 3 ay."
         },
         "paymob": {
             "label": "Təhlükəsiz Ödəniş",

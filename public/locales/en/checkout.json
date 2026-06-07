@@ -28,7 +28,7 @@
     },
     "cta": {
         "continueToPayment": "Continue to Payment",
-        "placeOrder": "Place Order · ${{total}}",
+        "placeOrder": "Place Order · {{currency}} {{total}}",
         "processing": "Processing..."
     },
     "shippingTo": "Shipping to",
@@ -42,13 +42,13 @@
         },
         "tabby": {
             "label": "Pay in 4 interest-free installments",
-            "description": "Split your purchase into 4 easy monthly payments of ${{amount}}",
-            "detail": "No interest, No fees. Available for orders from $20–$4000. Pay ${{amount}} today, rest over 3 months."
+            "description": "Split your purchase into 4 easy monthly payments of {{currency}} {{amount}}",
+            "detail": "No interest, No fees. Available for orders from $20–$4000. Pay {{currency}} {{amount}} today, rest over 3 months."
         },
         "tamara": {
             "label": "Split in 3 or Pay Next Month",
-            "description": "Split into 3 payments of ${{amount}} or pay the full amount next month",
-            "detail": "Available for orders up to $3,000. Pay ${{amount}} every month for 3 months."
+            "description": "Split into 3 payments of {{currency}} {{amount}} or pay the full amount next month",
+            "detail": "Available for orders up to $3,000. Pay {{currency}} {{amount}} every month for 3 months."
         },
         "paymob": {
             "label": "Secure Checkout",

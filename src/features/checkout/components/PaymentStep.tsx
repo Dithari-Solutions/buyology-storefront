@@ -163,16 +163,16 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
         {
             id: "tabby",
             label: t("payment.tabby.label"),
-            description: t("payment.tabby.description", { amount: (newTotal / 4).toFixed(2) }),
+            description: t("payment.tabby.description", { amount: (newTotal / 4).toFixed(2), currency: orderCcy }),
             badge: <TabbyBadge />,
-            detail: t("payment.tabby.detail", { amount: (newTotal / 4).toFixed(2) }),
+            detail: t("payment.tabby.detail", { amount: (newTotal / 4).toFixed(2), currency: orderCcy }),
         },
         {
             id: "tamara",
             label: t("payment.tamara.label"),
-            description: t("payment.tamara.description", { amount: (newTotal / 3).toFixed(2) }),
+            description: t("payment.tamara.description", { amount: (newTotal / 3).toFixed(2), currency: orderCcy }),
             badge: <TamaraBadge />,
-            detail: t("payment.tamara.detail", { amount: (newTotal / 3).toFixed(2) }),
+            detail: t("payment.tamara.detail", { amount: (newTotal / 3).toFixed(2), currency: orderCcy }),
         },
     ];
 
@@ -432,7 +432,7 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                     </>
                 ) : (
                     <>
-                        {t("cta.placeOrder", { total: newTotal.toFixed(2) })}
+                        {t("cta.placeOrder", { total: newTotal.toFixed(2), currency: orderCcy })}
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7" />
                         </svg>
