@@ -189,7 +189,9 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
       );
       fetchPromise = hasActiveFilters
         ? searchProducts({ ...base, ...activeFilters, specs: activeFilters!.specs })
-        : getProducts(base);
+        // Backend paginates /api/product (default 60). The grid paginates
+        // client-side, so request the full catalog (backend is batch-loaded → fast).
+        : getProducts({ ...base, size: 1000 });
     }
     
     fetchPromise.then(setProducts).catch(console.error).finally(() => setLoading(false));

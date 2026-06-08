@@ -81,14 +81,18 @@ export interface ProductQueryParams {
   currency?: string;
   lat?: number;
   lng?: number;
+  page?: number;
+  size?: number;
 }
 
-function buildParams({ lang = "en", countryCode, currency, lat, lng }: ProductQueryParams) {
+function buildParams({ lang = "en", countryCode, currency, lat, lng, page, size }: ProductQueryParams) {
   const params: Record<string, string> = { lang: LANG_PARAM[lang] };
   if (countryCode) params.countryCode = countryCode;
   if (currency) params.currency = currency;
   if (lat != null) params.lat = String(lat);
   if (lng != null) params.lng = String(lng);
+  if (page != null) params.page = String(page);
+  if (size != null) params.size = String(size);
   return params;
 }
 
