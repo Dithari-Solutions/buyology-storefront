@@ -15,6 +15,12 @@ import {
 } from "@/shared/seo/config";
 import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/shared/seo/JsonLd";
 
+// Preconnect/dns-prefetch to the configured API host (not a hardcoded dev host),
+// so prod points at the prod API. Falls back to dev only if the env var is unset.
+const API_ORIGIN = (
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-dev.dithari.com"
+).replace(/\/$/, "");
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -130,8 +136,8 @@ export default async function RootLayout({
           src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
           strategy="lazyOnload"
         />
-        <link rel="preconnect" href="https://api-dev.dithari.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://api-dev.dithari.com" />
+        <link rel="preconnect" href={API_ORIGIN} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href={API_ORIGIN} />
         <link rel="dns-prefetch" href="https://eu2.contabostorage.com" />
         <JsonLd data={organizationJsonLd()} />
         <JsonLd data={websiteJsonLd(lang)} />

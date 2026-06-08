@@ -75,6 +75,14 @@ const nextConfig: NextConfig = {
         hostname: "api-dev.dithari.com",
         pathname: "/**",
       },
+      // Production API image host. VERIFY this matches the real prod API domain
+      // (and that prod serves product/story images from it rather than the
+      // Contabo public URL above) or next/image will throw "hostname not configured".
+      {
+        protocol: "https",
+        hostname: "api.buyology.online",
+        pathname: "/**",
+      },
     ],
   },
 

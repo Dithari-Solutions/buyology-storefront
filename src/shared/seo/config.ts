@@ -3,7 +3,7 @@ import { PATH_SLUGS } from "@/config/pathSlugs";
 
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://buyology.com";
+  "https://buyology.online";
 
 export const SITE_NAME = "Buyology";
 

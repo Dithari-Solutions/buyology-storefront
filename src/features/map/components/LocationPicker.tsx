@@ -4,7 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-const TILES = "http://5.189.132.250:8090";
+// Tile host must be configured via env. HTTPS is REQUIRED in production — the
+// site CSP sets `upgrade-insecure-requests`, so an http:// tile server is
+// rewritten to https and fails if it can't serve TLS. Set NEXT_PUBLIC_TILE_URL
+// to an HTTPS tile endpoint before launch.
+const TILES = process.env.NEXT_PUBLIC_TILE_URL ?? "http://5.189.132.250:8090";
 
 interface LocationPickerProps {
     initialCoords?: { lat: number; lng: number };

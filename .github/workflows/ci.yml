@@ -1,10 +1,8 @@
 name: CI
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  # Disabled auto-runs: frontends are built/deployed manually. Run by hand if needed.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}

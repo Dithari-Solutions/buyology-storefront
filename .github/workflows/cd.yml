@@ -1,8 +1,9 @@
 name: CD – Deploy to VPS
 
 on:
-  push:
-    branches: [main]
+  # Disabled: frontends are deployed manually (git clone + npm build + PM2 on the
+  # app servers). Kept for reference; run by hand via the Actions tab if ever needed.
+  workflow_dispatch:
 
 concurrency:
   group: cd-${{ github.ref }}
