@@ -5,6 +5,7 @@
 // error screen. Kept dependency-light (no i18n/redux) so it renders even when
 // app providers themselves are what failed.
 import { useEffect } from "react";
+import { recoverFromChunkError } from "@/shared/lib/chunkError";
 
 export default function Error({
   error,
@@ -14,6 +15,9 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Stale-deploy chunk error → reload to the current build instead of showing
+    // the fallback.
+    if (recoverFromChunkError(error)) return;
     // Surface to the browser console / any error-tracking hook.
     console.error("[app-error]", error);
   }, [error]);

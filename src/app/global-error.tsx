@@ -4,6 +4,7 @@
 // route-segment error.tsx cannot help). It REPLACES the root layout, so it must
 // render its own <html>/<body>. Kept minimal and self-contained on purpose.
 import { useEffect } from "react";
+import { recoverFromChunkError } from "@/shared/lib/chunkError";
 
 export default function GlobalError({
   error,
@@ -13,6 +14,9 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Stale-deploy chunk error → reload to the current build instead of stranding
+    // the user on the error screen.
+    if (recoverFromChunkError(error)) return;
     console.error("[global-error]", error);
   }, [error]);
 

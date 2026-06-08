@@ -92,7 +92,8 @@ const nextConfig: NextConfig = {
     // Apple/Google badges) but locks down frame-ancestors and base-uri.
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appleid.cdn-apple.com",
+      // static.cloudflareinsights.com → the Web Analytics beacon Cloudflare injects.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appleid.cdn-apple.com https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https: http:",
       "font-src 'self' data:",
