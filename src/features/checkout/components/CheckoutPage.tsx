@@ -17,6 +17,7 @@ import { b2bAccountApi } from "@/features/b2b/account/api";
 import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee } from "@/features/cart/store/cartSlice";
 import { checkoutCart } from "@/features/cart/services/cart.api";
 import { createOrder } from "@/features/orders/services/orders.api";
+import { getCredentialIdFromAccessToken } from "@/shared/lib/tokenManager";
 import { selectUserCoords } from "@/features/location/store/locationSlice";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
 import {
@@ -281,8 +282,13 @@ export default function CheckoutPage() {
                 finalShippingFee = checkedOutCart.shippingFee ?? shippingFee;
                 dispatch(setShippingFee(finalShippingFee));
 
-                // Step 2 — Create order (cart must be CHECKED_OUT)
-                const order = await createOrder(userId, {
+                // Step 2 — Create order (cart must be CHECKED_OUT).
+                // X-Auth-Credential-Id must be the auth_credentials.id (JWT sub) the
+                // cart is keyed by — NOT userId (users.id / uid), or the backend
+                // rejects it as "Cart does not belong to the authenticated user".
+                const authCredentialId = getCredentialIdFromAccessToken();
+                if (!authCredentialId) throw new Error("Your session expired. Please sign in again.");
+                const order = await createOrder(authCredentialId, {
                     cartId,
                     addressId: shippingData.addressId,
                     deliveryMethod,
