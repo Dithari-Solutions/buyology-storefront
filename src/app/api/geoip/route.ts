@@ -10,6 +10,9 @@ export const runtime = "edge";
 // Cache-Control "private".
 
 function pickIp(req: NextRequest): string | null {
+    // Cloudflare's real client IP (most reliable behind the CF proxy).
+    const cf = req.headers.get("cf-connecting-ip");
+    if (cf) return cf.trim();
     const xff = req.headers.get("x-forwarded-for");
     if (xff) return xff.split(",")[0].trim();
     const real = req.headers.get("x-real-ip");
@@ -18,6 +21,17 @@ function pickIp(req: NextRequest): string | null {
 }
 
 export async function GET(req: NextRequest) {
+    // Prefer Cloudflare's edge-resolved country (CF-IPCountry): derived from the
+    // TRUE client IP at the CF edge, so it isn't fooled by proxy/PoP IPs the way
+    // an ipapi.co lookup on a forwarded IP can be. "XX"/"T1" = unknown/Tor.
+    const cfCountry = req.headers.get("cf-ipcountry");
+    if (cfCountry && cfCountry !== "XX" && cfCountry !== "T1") {
+        return NextResponse.json(
+            { countryCode: cfCountry.toUpperCase() },
+            { headers: { "Cache-Control": "private, max-age=86400" } }
+        );
+    }
+
     const ip = pickIp(req);
     const target = ip
         ? `https://ipapi.co/${encodeURIComponent(ip)}/json/`
