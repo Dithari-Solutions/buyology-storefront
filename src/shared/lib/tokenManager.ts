@@ -95,10 +95,12 @@ function _extractUserIdFromJwt(token: string): string | null {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     // Backend mints JWTs with `sub` = auth_credentials.id and `uid` = users.id.
-    // Redux's `userId` feeds path-variable APIs that expect auth_credentials.id
-    // (cart, addresses, profile, country-preference, etc.). Endpoints that need
-    // the actual users.id (e.g. /api/membership/card) read `uid` themselves.
-    return payload.sub ?? payload.userId ?? payload.id ?? null;
+    // The authenticated PRINCIPAL on the backend is users.id (uid), and every
+    // user-scoped endpoint (/api/users/{userId}/** — addresses, profile, cart,
+    // country-preference, etc.) checks ownership against that principal via
+    // requireSelf(). So Redux's `userId` MUST be `uid`; using `sub` here makes
+    // requireSelf compare auth_credentials.id against users.id → 403.
+    return payload.uid ?? payload.sub ?? payload.userId ?? payload.id ?? null;
   } catch {
     return null;
   }
