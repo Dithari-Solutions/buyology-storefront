@@ -32,6 +32,7 @@ export default function CheckoutSummary() {
                                     src={item.imageUrl}
                                     alt={item.title}
                                     fill
+                                    unoptimized
                                     className="object-cover"
                                     sizes="56px"
                                 />

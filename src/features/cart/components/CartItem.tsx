@@ -104,6 +104,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                             src={item.imageUrl || MacPro14}
                             alt={item.title}
                             fill
+                            unoptimized={!!item.imageUrl}
                             className="object-contain p-2"
                             sizes="110px"
                         />
@@ -113,6 +114,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                         src={item.imageUrl || MacPro14}
                         alt={item.title}
                         fill
+                        unoptimized={!!item.imageUrl}
                         className="object-contain p-2"
                         sizes="110px"
                     />

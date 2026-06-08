@@ -258,7 +258,7 @@ function ReviewItem({
           {review.media.map((m) => (
             <div key={m.id} className="w-[100px] h-[75px] rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
               {m.mediaType === "IMAGE" ? (
-                <Image src={m.url} alt="Review image" width={100} height={75} className="object-cover w-full h-full" />
+                <Image src={m.url} alt="Review image" width={100} height={75} unoptimized className="object-cover w-full h-full" />
               ) : (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">

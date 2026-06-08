@@ -91,6 +91,7 @@ export default function Banner() {
                         alt=""
                         fill
                         priority
+                        unoptimized
                         sizes="(max-width: 768px) 95vw, 90vw"
                         className="object-cover transition-opacity duration-700"
                     />

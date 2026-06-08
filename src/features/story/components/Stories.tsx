@@ -71,6 +71,7 @@ function StoryItem({
                         fill
                         sizes="88px"
                         loading="lazy"
+                        unoptimized
                         className={`object-cover transition-opacity duration-300 ${
                             imageLoaded ? "opacity-100" : "opacity-0"
                         }`}
