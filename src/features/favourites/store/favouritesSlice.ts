@@ -14,8 +14,8 @@ const initialState: FavouritesState = {
 /** Fetch the user's favourites list and enrich each entry with full product data. */
 export const fetchFavouritesThunk = createAsyncThunk(
     "favourites/fetch",
-    async (userId: string) => {
-        const list = await getFavourites(userId);
+    async (_userId?: string) => {
+        const list = await getFavourites();
 
         const settled = await Promise.allSettled(
             list.items.map((item) => getProductById(item.productId, {}))
@@ -70,7 +70,7 @@ export const addToFavouritesThunk = createAsyncThunk(
         { rejectWithValue }
     ) => {
         try {
-            await addFavourite(arg.userId, arg.productId);
+            await addFavourite(arg.productId);
         } catch (err: unknown) {
             // 409 = already favourited — treat as success, keep the optimistic add
             const axiosErr = err as { response?: { status?: number } };
@@ -89,7 +89,7 @@ export const removeFromFavouritesThunk = createAsyncThunk(
         { rejectWithValue }
     ) => {
         try {
-            await removeFavourite(arg.userId, arg.productId);
+            await removeFavourite(arg.productId);
         } catch {
             return rejectWithValue(arg.productId);
         }

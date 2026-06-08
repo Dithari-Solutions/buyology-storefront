@@ -121,6 +121,22 @@ export function getUidFromAccessToken(): string | null {
   }
 }
 
+/**
+ * Extracts the `sub` claim (auth_credentials.id) from the current access token.
+ * Use for endpoints whose path key is the auth-credential id rather than the
+ * users.id principal — specifically /api/cart/{id}/** and /api/favorites/{id}/**.
+ * Redux's `userId` holds `uid` (users.id) and MUST NOT be used for those paths.
+ */
+export function getCredentialIdFromAccessToken(): string | null {
+  if (!_accessToken) return null;
+  try {
+    const payload = JSON.parse(atob(_accessToken.split(".")[1]));
+    return (payload.sub as string | undefined) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function setTokens(accessToken: string, expiresIn: number): void {
   _accessToken = accessToken;
   _scheduleRefresh(expiresIn);

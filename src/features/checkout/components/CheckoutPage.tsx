@@ -210,7 +210,7 @@ export default function CheckoutPage() {
         // Use stored Redux coords if available; otherwise fall back to browser API
         const fetchWithCoords = (coords?: { lat: number; lng: number }) => {
             import("@/features/cart/services/cart.api").then(({ getCart }) => {
-                getCart(userId, coords).then((cart) => {
+                getCart(coords).then((cart) => {
                     if (cart.shippingFee != null) {
                         dispatch(setShippingFee(cart.shippingFee));
                     }
@@ -277,7 +277,7 @@ export default function CheckoutPage() {
                 // ── First attempt: checkout cart then create order ──
 
                 // Step 1 — Checkout the cart (ACTIVE → CHECKED_OUT)
-                const checkedOutCart = await checkoutCart(userId);
+                const checkedOutCart = await checkoutCart();
                 finalShippingFee = checkedOutCart.shippingFee ?? shippingFee;
                 dispatch(setShippingFee(finalShippingFee));
 

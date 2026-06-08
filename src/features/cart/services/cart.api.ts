@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiClient } from "@/shared/lib/apiClient";
+import { getCredentialIdFromAccessToken } from "@/shared/lib/tokenManager";
 import type { AddToCartPayload, ApiCartResponse } from "../types";
 
 interface ApiEnvelope<T> {
@@ -16,22 +17,32 @@ export class CountryRestrictionError extends Error {
     }
 }
 
+/**
+ * The cart is keyed by auth_credentials.id (the JWT `sub`), NOT users.id. We read it
+ * from the token here so callers can never pass the wrong id (e.g. Redux `userId`,
+ * which holds `uid`/users.id and would 400 with "Auth credential not found").
+ */
+function credentialId(): string {
+    const id = getCredentialIdFromAccessToken();
+    if (!id) throw new Error("Not authenticated");
+    return id;
+}
+
 export async function getCart(
-    authCredentialId: string,
     coords?: { lat: number; lng: number }
 ): Promise<ApiCartResponse> {
     const params = coords ? `?lat=${coords.lat}&lng=${coords.lng}` : "";
     const { data } = await apiClient.get<ApiEnvelope<ApiCartResponse>>(
-        `/api/cart/${authCredentialId}${params}`
+        `/api/cart/${credentialId()}${params}`
     );
     if (!data.data) throw new Error(data.message);
     return data.data;
 }
 
-export async function addItemToCart(authCredentialId: string, payload: AddToCartPayload): Promise<ApiCartResponse> {
+export async function addItemToCart(payload: AddToCartPayload): Promise<ApiCartResponse> {
     try {
         const { data } = await apiClient.post<ApiEnvelope<ApiCartResponse>>(
-            `/api/cart/${authCredentialId}/items`,
+            `/api/cart/${credentialId()}/items`,
             payload
         );
         if (!data.data) throw new Error(data.message);
@@ -45,32 +56,31 @@ export async function addItemToCart(authCredentialId: string, payload: AddToCart
 }
 
 export async function updateCartItemQuantity(
-    authCredentialId: string,
     cartItemId: string,
     quantity: number
 ): Promise<ApiCartResponse | null> {
     const { data } = await apiClient.patch<ApiEnvelope<ApiCartResponse>>(
-        `/api/cart/${authCredentialId}/items/${cartItemId}`,
+        `/api/cart/${credentialId()}/items/${cartItemId}`,
         { quantity }
     );
     return data?.data ?? null;
 }
 
-export async function removeCartItem(authCredentialId: string, cartItemId: string): Promise<ApiCartResponse> {
+export async function removeCartItem(cartItemId: string): Promise<ApiCartResponse> {
     const { data } = await apiClient.delete<ApiEnvelope<ApiCartResponse>>(
-        `/api/cart/${authCredentialId}/items/${cartItemId}`
+        `/api/cart/${credentialId()}/items/${cartItemId}`
     );
     if (!data.data) throw new Error(data.message);
     return data.data;
 }
 
-export async function clearCartApi(authCredentialId: string): Promise<void> {
-    await apiClient.delete(`/api/cart/${authCredentialId}`);
+export async function clearCartApi(): Promise<void> {
+    await apiClient.delete(`/api/cart/${credentialId()}`);
 }
 
-export async function checkoutCart(authCredentialId: string): Promise<ApiCartResponse> {
+export async function checkoutCart(): Promise<ApiCartResponse> {
     const { data } = await apiClient.post<ApiEnvelope<ApiCartResponse>>(
-        `/api/cart/${authCredentialId}/checkout`
+        `/api/cart/${credentialId()}/checkout`
     );
     if (!data.data) throw new Error(data.message);
     return data.data;

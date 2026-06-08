@@ -276,7 +276,7 @@ export default function ProductCard({
       onClick={handleToggleFavourite}
       animate={favBounce ? { scale: [1, 1.45, 0.85, 1.1, 1] } : { scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`cursor-pointer border rounded-full bg-white hover:shadow-md transition-shadow ${
+      className={`cursor-pointer border rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.18)] hover:shadow-md transition-shadow ${
         size === 'sm' ? "p-[7px]" : "p-[8px]"
       } ${isFav ? "border-[#FBBB14]" : "border-gray-200"}`}
     >
@@ -440,8 +440,8 @@ export default function ProductCard({
                 className="absolute inset-0 bg-[#F6F4FF]"
                 style={{ clipPath: `url(#${clipId})` }}
               />
-              {/* Grid-view fav button */}
-              <div className="absolute top-[10px] right-[10px] z-10">
+              {/* Grid-view fav button — z-20 keeps it above full-bleed images (z-10) */}
+              <div className="absolute top-[10px] right-[10px] z-20">
                 <FavButton size="md" />
               </div>
             </>

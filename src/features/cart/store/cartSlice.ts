@@ -62,13 +62,14 @@ function mergeApiItems(existing: CartItemMeta[], apiItems: ApiCartItem[]): CartI
 // ── Async Thunks ──────────────────────────────────────────────────────────────
 
 export interface FetchCartThunkArg {
-    authCredentialId: string;
+    /** @deprecated unused — the cart id is read from the access token */
+    authCredentialId?: string;
     coords?: { lat: number; lng: number };
 }
 
 export const fetchCartThunk = createAsyncThunk(
     "cart/fetchCart",
-    async ({ authCredentialId, coords }: FetchCartThunkArg) => getCart(authCredentialId, coords)
+    async ({ coords }: FetchCartThunkArg) => getCart(coords)
 );
 
 export interface AddToCartThunkArg {
@@ -82,7 +83,7 @@ export const addToCartThunk = createAsyncThunk(
     "cart/addToCart",
     async (arg: AddToCartThunkArg, { rejectWithValue }) => {
         try {
-            const result = await addItemToCart(arg.userId, arg.payload);
+            const result = await addItemToCart(arg.payload);
             return { result, tempId: arg.tempId };
         } catch (err) {
             if (err instanceof CountryRestrictionError) {
@@ -102,7 +103,7 @@ export interface RemoveItemThunkArg {
 export const removeItemThunk = createAsyncThunk(
     "cart/removeItemAsync",
     async (arg: RemoveItemThunkArg) => {
-        await removeCartItem(arg.userId, arg.cartItemId);
+        await removeCartItem(arg.cartItemId);
     }
 );
 
@@ -118,7 +119,7 @@ export const updateQuantityThunk = createAsyncThunk(
     "cart/updateQuantityAsync",
     async (arg: UpdateQuantityThunkArg, { rejectWithValue }) => {
         try {
-            const result = await updateCartItemQuantity(arg.userId, arg.cartItemId, arg.quantity);
+            const result = await updateCartItemQuantity(arg.cartItemId, arg.quantity);
             return { result, localId: arg.localId, quantity: arg.quantity };
         } catch {
             return rejectWithValue({ localId: arg.localId, previousQuantity: arg.previousQuantity });
@@ -128,8 +129,8 @@ export const updateQuantityThunk = createAsyncThunk(
 
 export const clearCartThunk = createAsyncThunk(
     "cart/clearCartAsync",
-    async (userId: string) => {
-        await clearCartApi(userId);
+    async (_userId?: string) => {
+        await clearCartApi();
     }
 );
 

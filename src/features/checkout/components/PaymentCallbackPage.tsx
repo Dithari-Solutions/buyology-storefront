@@ -44,7 +44,7 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                 setOrderId(tx.appOrderId);
 
                 if (tx.status === "SUCCESS") {
-                    if (userId) clearCartApi(userId).catch(() => {});
+                    if (userId) clearCartApi().catch(() => {});
                     dispatch(clearCart());
                     setStatus("success");
                     // Automatically redirect to order detail after a short delay
