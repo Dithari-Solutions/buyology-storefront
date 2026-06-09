@@ -96,6 +96,9 @@ const nextConfig: NextConfig = {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appleid.cdn-apple.com https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https: http:",
+      // Story videos are served cross-origin (Contabo / api.buyology.online); without
+      // an explicit media-src they fall back to default-src 'self' and get blocked.
+      "media-src 'self' blob: data: https: http:",
       "font-src 'self' data:",
       "connect-src 'self' https: wss:",
       "frame-src https://appleid.apple.com",
