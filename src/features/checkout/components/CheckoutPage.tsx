@@ -14,7 +14,7 @@ import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment } from "../services/payment.api";
 import { b2bAccountApi } from "@/features/b2b/account/api";
-import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee } from "@/features/cart/store/cartSlice";
+import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee, selectPromo } from "@/features/cart/store/cartSlice";
 import { checkoutCart } from "@/features/cart/services/cart.api";
 import { createOrder } from "@/features/orders/services/orders.api";
 import { getCredentialIdFromAccessToken } from "@/shared/lib/tokenManager";
@@ -161,6 +161,7 @@ export default function CheckoutPage() {
     const totals = useSelector(selectCartTotals);
     const cartItems = useSelector(selectCartItems);
     const shippingFee = useSelector(selectCartShippingFee);
+    const promo = useSelector(selectPromo);
     const userCoords = useSelector(selectUserCoords);
 
     const [step, setStep] = useState<CheckoutStep>("shipping");
@@ -293,7 +294,10 @@ export default function CheckoutPage() {
                     addressId: shippingData.addressId,
                     deliveryMethod,
                     shippingFee: finalShippingFee,
-                    couponCode: undefined,
+                    // Forward the applied promo so the backend applies the discount to the
+                    // order total (and records usage). Without it the order total stays at
+                    // full price and payment fails the amount-match check.
+                    couponCode: promo.applied && promo.code ? promo.code : undefined,
                 });
                 orderId = order.id;
 
