@@ -4,10 +4,12 @@ import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
+import { useSelector } from "react-redux";
 import LimitedStockCard from "./LimitedStockCard";
 import arrowLeft from "@/assets/icons/Arrow-left.png";
 import { getLimitedStockProducts } from "@/features/product/services/productService";
 import type { ApiProduct } from "@/features/product/services/productService";
+import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
 import type { Lang } from "@/config/pathSlugs";
 
 function LimitedStockSkeleton() {
@@ -36,17 +38,19 @@ export default function LimitedStock() {
     const { t } = useTranslation("home");
     const params = useParams();
     const lang = (params?.lang as Lang) ?? "en";
+    const countryCode = useSelector(selectSelectedCountryCode);
+    const currency = useSelector(selectPreferredCurrency);
     const sliderRef = useRef<HTMLDivElement>(null);
     const [products, setProducts] = useState<ApiProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const isJumping = useRef(false);
 
     useEffect(() => {
-        getLimitedStockProducts({ lang })
+        getLimitedStockProducts({ lang, countryCode: countryCode ?? undefined, currency: currency ?? undefined })
             .then(setProducts)
             .catch(() => {})
             .finally(() => setLoading(false));
-    }, [lang]);
+    }, [lang, countryCode, currency]);
 
     // Jump to middle set so looping works in both directions
     useEffect(() => {

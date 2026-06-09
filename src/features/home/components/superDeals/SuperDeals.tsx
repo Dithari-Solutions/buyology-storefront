@@ -5,10 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
+import { useSelector } from "react-redux";
 import SuperDealsCard from "./SuperDealsCard";
 import arrowLeft from "@/assets/icons/Arrow-left.png";
 import { getSuperDealProducts } from "@/features/product/services/productService";
 import type { ApiProduct } from "@/features/product/services/productService";
+import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 function SuperDealsSkeleton() {
@@ -39,6 +41,8 @@ export default function SuperDeals() {
     const { t } = useTranslation("home");
     const params = useParams();
     const lang = (params?.lang as Lang) ?? "en";
+    const countryCode = useSelector(selectSelectedCountryCode);
+    const currency = useSelector(selectPreferredCurrency);
     const sliderRef = useRef<HTMLDivElement>(null);
     const [products, setProducts] = useState<ApiProduct[]>([]);
     const [loading, setLoading] = useState(true);
@@ -50,7 +54,7 @@ export default function SuperDeals() {
         let cancelled = false;
         setLoading(true);
         setError(null);
-        getSuperDealProducts({ lang })
+        getSuperDealProducts({ lang, countryCode: countryCode ?? undefined, currency: currency ?? undefined })
             .then((data) => {
                 if (cancelled) return;
                 setProducts(Array.isArray(data) ? data : []);
@@ -67,7 +71,7 @@ export default function SuperDeals() {
         return () => {
             cancelled = true;
         };
-    }, [lang, reloadTick]);
+    }, [lang, reloadTick, countryCode, currency]);
 
     // Jump to the middle set on initial render so looping works in both directions
     useEffect(() => {
