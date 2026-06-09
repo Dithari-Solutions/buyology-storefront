@@ -107,7 +107,7 @@ export default function Stories() {
                 className="w-[95%] md:w-[90%] overflow-x-auto py-5"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-                <div className="flex items-center gap-5 md:gap-0 w-max md:w-full md:justify-between">
+                <div className="flex items-center gap-5 md:gap-8 w-max md:w-full md:justify-center">
                     {Array.from({ length: 8 }).map((_, i) => (
                         <SkeletonItem key={i} />
                     ))}
@@ -125,8 +125,8 @@ export default function Stories() {
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
                 {/* w-max lets items overflow on mobile (enabling the slider).
-                    md:w-full + md:justify-between spreads them fully on desktop. */}
-                <div className="flex items-center gap-5 md:gap-0 w-max md:w-full md:justify-between">
+                    md:justify-center centers them with a gap on desktop. */}
+                <div className="flex items-center gap-5 md:gap-8 w-max md:w-full md:justify-center">
                     {stories.map((story, i) => (
                         <StoryItem
                             key={story.id}
