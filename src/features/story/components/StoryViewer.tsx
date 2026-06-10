@@ -32,6 +32,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
     const [likeBusy, setLikeBusy] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [muted, setMuted] = useState(false);
     const viewedRef = useRef<Set<string>>(new Set());
     const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -65,6 +66,21 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
         if (v && v.readyState >= 2) {
             setImageLoaded(true);
         }
+    }, [isVideo, currentStoryIndex, currentMediaIndex]);
+
+    // Play with sound. The viewer opens from a tap (user gesture), so unmuted
+    // playback is normally allowed; if the browser still blocks it, fall back to
+    // muted so the video plays anyway — the user can unmute with the button.
+    useEffect(() => {
+        if (!isVideo) return;
+        const v = videoRef.current;
+        if (!v) return;
+        v.muted = false;
+        v.play().catch(() => {
+            v.muted = true;
+            setMuted(true);
+            v.play().catch(() => {});
+        });
     }, [isVideo, currentStoryIndex, currentMediaIndex]);
 
     const handleClose = useCallback(() => {
@@ -251,7 +267,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                                 transition: "opacity 0.35s ease",
                             }}
                             autoPlay
-                            muted
+                            muted={muted}
                             playsInline
                             preload="auto"
                             // Reveal the video as soon as any of these fire. Relying on a
@@ -365,17 +381,45 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
                         </div>
                     </div>
 
-                    {/* Close button */}
-                    <button
-                        onClick={handleClose}
-                        className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110"
-                        style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
+                    {/* Mute toggle (videos only) + Close button */}
+                    <div className="flex items-center gap-2">
+                        {isVideo && (
+                            <button
+                                onClick={() => {
+                                    const next = !muted;
+                                    setMuted(next);
+                                    const v = videoRef.current;
+                                    if (v) { v.muted = next; if (!next) v.play().catch(() => {}); }
+                                }}
+                                className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110"
+                                style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                                aria-label={muted ? "Unmute" : "Mute"}
+                            >
+                                {muted ? (
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                        <line x1="23" y1="9" x2="17" y2="15" />
+                                        <line x1="17" y1="9" x2="23" y2="15" />
+                                    </svg>
+                                ) : (
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                                    </svg>
+                                )}
+                            </button>
+                        )}
+                        <button
+                            onClick={handleClose}
+                            className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110"
+                            style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 {/* ── Navigation tap zones (tap = navigate, hold = pause) ── */}

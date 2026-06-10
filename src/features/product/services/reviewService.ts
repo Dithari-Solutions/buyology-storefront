@@ -72,6 +72,22 @@ export async function getProductReviews(
   return data.data ?? [];
 }
 
+/**
+ * Reviews written by a user. Keyed by `users.id` (the Redux `auth.userId`), NOT the
+ * auth-credential id. Used for the profile "reviews" stat.
+ */
+export async function getUserReviews(
+  userId: string,
+  page = 0,
+  size = 100
+): Promise<ReviewResponse[]> {
+  const { data } = await apiClient.get<{ data: ReviewResponse[] }>(
+    `/api/reviews/user/${userId}`,
+    { params: { page, size } }
+  );
+  return data.data ?? [];
+}
+
 export async function getReviewStats(productId: string): Promise<ReviewStats> {
   const { data } = await apiClient.get<{ data: ReviewStats }>(
     `/api/reviews/product/${productId}/stats`

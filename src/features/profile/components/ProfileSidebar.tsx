@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,9 @@ import StatusPopup from "@/features/auth/components/StatusPopup";
 import { logout } from "@/features/auth/services/auth.api";
 import { clearTokens } from "@/shared/lib/tokenManager";
 import { getImageUrl } from "@/shared/utils/imageUrl";
+import { getOrders } from "@/features/orders/services/orders.api";
+import { getFavourites } from "@/features/favourites/services/favourites.api";
+import { getUserReviews } from "@/features/product/services/reviewService";
 import type { UserProfile } from "../types";
 import MembershipBadge from "./MembershipBadge";
 
@@ -22,13 +25,13 @@ interface Props {
     profile?: UserProfile | null;
 }
 
-const mockUser = {
-    orders: 5,
-    reviews: 12,
-    wishlist: 8,
-    points: 2450,
-    orderBadge: 5,
-};
+interface UserStats {
+    orders: number;
+    reviews: number;
+    wishlist: number;
+    /** No loyalty/points backend yet — always 0 until one exists. */
+    points: number;
+}
 
 export default function ProfileSidebar({ activeSection, onSectionChange, profile }: Props) {
     const { t } = useTranslation("profile");
@@ -36,6 +39,29 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
     const router = useRouter();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [stats, setStats] = useState<UserStats>({ orders: 0, reviews: 0, wishlist: 0, points: 0 });
+
+    const userId = profile?.userId;
+
+    useEffect(() => {
+        let cancelled = false;
+        Promise.allSettled([
+            getOrders(0, 1),
+            getFavourites(),
+            userId ? getUserReviews(userId) : Promise.resolve([]),
+        ]).then(([ordersRes, favRes, reviewsRes]) => {
+            if (cancelled) return;
+            setStats({
+                orders: ordersRes.status === "fulfilled" ? ordersRes.value.totalElements : 0,
+                wishlist: favRes.status === "fulfilled" ? favRes.value.total : 0,
+                reviews: reviewsRes.status === "fulfilled" ? reviewsRes.value.length : 0,
+                points: 0,
+            });
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
 
     const cartSlug = PATH_SLUGS["cart"]?.[lang] ?? "cart";
     const favSlug = PATH_SLUGS["favourites"]?.[lang] ?? "favourites";
@@ -79,7 +105,7 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
                     <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
             ),
-            badge: mockUser.orderBadge,
+            badge: stats.orders,
         },
         {
             key: "settings",
@@ -130,10 +156,10 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 gap-2 mt-4 w-full">
                     {[
-                        { value: mockUser.orders, label: t("sidebar.orders") },
-                        { value: mockUser.reviews, label: t("sidebar.reviews") },
-                        { value: mockUser.wishlist, label: t("sidebar.wishlist") },
-                        { value: mockUser.points.toLocaleString(), label: t("sidebar.points") },
+                        { value: stats.orders, label: t("sidebar.orders") },
+                        { value: stats.reviews, label: t("sidebar.reviews") },
+                        { value: stats.wishlist, label: t("sidebar.wishlist") },
+                        { value: stats.points.toLocaleString(), label: t("sidebar.points") },
                     ].map(({ value, label }) => (
                         <div key={label} className="bg-[#F7F7F7] rounded-[12px] p-3">
                             <p className="font-bold text-[16px] text-gray-800">{value}</p>

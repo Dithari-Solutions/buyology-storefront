@@ -11,6 +11,22 @@ interface ApiEnvelope<T> {
     data: T;
 }
 
+export interface PublicRefundSettings {
+    returnWindowDays: number;
+    enabled: boolean;
+}
+
+/**
+ * Public storefront read of the return/refund policy. The product page uses
+ * `returnWindowDays` to show "{n}-Day Returns" (return window == refund window).
+ */
+export async function getRefundSettings(): Promise<PublicRefundSettings> {
+    const { data } = await apiClient.get<ApiEnvelope<PublicRefundSettings>>(
+        "/api/refund-settings",
+    );
+    return data.data;
+}
+
 export async function listMyRefunds(
     page = 0,
     size = 50,

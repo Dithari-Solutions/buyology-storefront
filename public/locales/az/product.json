@@ -46,8 +46,10 @@
       "secure": "Təhlükəsiz",
       "checkout": "Ödəniş",
       "thirtyDay": "30 Gün",
+      "dayCount": "{{days}} Gün",
       "returns": "Geri qaytarma",
       "official": "Rəsmi",
+      "oneYear": "1 İl",
       "warranty": "Zəmanət"
     },
     "whyBuy": "Niyə Bizdən Alasınız",

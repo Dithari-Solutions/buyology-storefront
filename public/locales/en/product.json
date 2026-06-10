@@ -46,8 +46,10 @@
       "secure": "Secure",
       "checkout": "Checkout",
       "thirtyDay": "30-Day",
+      "dayCount": "{{days}}-Day",
       "returns": "Returns",
       "official": "Official",
+      "oneYear": "1-Year",
       "warranty": "Warranty"
     },
     "whyBuy": "Why Buy From Us",

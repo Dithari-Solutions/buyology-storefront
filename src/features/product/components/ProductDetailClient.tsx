@@ -13,6 +13,7 @@ import { addItem, addToCartThunk } from "@/features/cart/store/cartSlice";
 import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
 import { getProductBySlug, type ApiProduct, type ApiSpec, type ApiSpecOption } from "../services/productService";
+import { getRefundSettings } from "@/features/refund/services/refundService";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import type { AppDispatch, RootState } from "@/store";
 import type { Lang } from "@/config/pathSlugs";
@@ -130,6 +131,22 @@ export default function ProductDetailClient({ product: initialProduct, images: i
 
   const [product, setProduct] = useState<ApiProduct>(initialProduct);
   const [images, setImages] = useState<string[]>(initialImages);
+  // Return/refund window (days) from store settings — drives the "{n}-Day Returns" badge.
+  const [returnWindowDays, setReturnWindowDays] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getRefundSettings()
+      .then((s) => {
+        if (!cancelled) setReturnWindowDays(s.enabled ? s.returnWindowDays : null);
+      })
+      .catch(() => {
+        // leave null — the badge falls back to a static label
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -693,8 +710,14 @@ export default function ProductDetailClient({ product: initialProduct, images: i
               <div className="grid grid-cols-3 gap-2 pt-2">
                 {[
                   { icon: "🔒", title: t("details.trust.secure"), sub: t("details.trust.checkout") },
-                  { icon: "↩", title: t("details.trust.thirtyDay"), sub: t("details.trust.returns") },
-                  { icon: "✓", title: t("details.trust.official"), sub: t("details.trust.warranty") },
+                  {
+                    icon: "↩",
+                    title: returnWindowDays != null
+                      ? t("details.trust.dayCount", { days: returnWindowDays })
+                      : t("details.trust.thirtyDay"),
+                    sub: t("details.trust.returns"),
+                  },
+                  { icon: "✓", title: t("details.trust.oneYear"), sub: t("details.trust.warranty") },
                 ].map(({ icon, title, sub }) => (
                   <div key={title} className="flex flex-col items-center gap-0.5 rounded-xl bg-gray-50 border border-gray-100 px-3 py-3 text-center">
                     <span className="text-lg">{icon}</span>

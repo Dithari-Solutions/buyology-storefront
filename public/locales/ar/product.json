@@ -46,8 +46,10 @@
       "secure": "آمن",
       "checkout": "الدفع",
       "thirtyDay": "30 يومًا",
+      "dayCount": "{{days}} يوم",
       "returns": "إرجاع",
       "official": "رسمي",
+      "oneYear": "سنة واحدة",
       "warranty": "ضمان"
     },
     "whyBuy": "لماذا تشتري منا",
