@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
+import GuestPrompt from "@/shared/components/GuestPrompt";
 import ProfileSidebar, { type Section } from "./ProfileSidebar";
 import ProfileInfo from "./ProfileInfo";
 import DeliveryAddress from "./DeliveryAddress";
@@ -16,6 +17,7 @@ import { getProfile } from "../services/profile.api";
 export default function ProfilePage() {
     const { t } = useTranslation("profile");
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const authRestored = useSelector((state: RootState) => state.auth.isRestored);
     const [activeSection, setActiveSection] = useState<Section>("profile");
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -37,6 +39,28 @@ export default function ProfilePage() {
         settings: { title: t("settings.title"), subtitle: t("settings.subtitle") },
         membership: { title: "B2B Membership", subtitle: "Manage your B2B membership, wallet, and digital card" },
     };
+
+    // Not signed in → prompt to sign in / create account.
+    if (authRestored && !userId) {
+        return (
+            <>
+                <Header />
+                <main className="w-[90%] mx-auto min-h-[60vh] flex flex-col py-8 md:py-12">
+                    <GuestPrompt
+                        icon={
+                            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        }
+                        title={t("guest.title", { defaultValue: "Sign in to your account" })}
+                        subtitle={t("guest.subtitle", { defaultValue: "Sign in or create an account to manage your profile, addresses, and orders." })}
+                    />
+                </main>
+                <Footer />
+            </>
+        );
+    }
 
     return (
         <>

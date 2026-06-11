@@ -8,6 +8,7 @@ import type { AppDispatch, RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
+import GuestPrompt from "@/shared/components/GuestPrompt";
 import CartItems from "./CartItems";
 import OrderSummary from "./OrderSummary";
 import PopularForYou from "./PopularForYou";
@@ -60,6 +61,7 @@ export default function CartPage() {
     const dispatch = useDispatch<AppDispatch>();
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const authRestored = useSelector((state: RootState) => state.auth.isRestored);
 
     const cartItems = useSelector(selectCartItems);
     const savedItems = useSelector(selectSavedItems);
@@ -95,6 +97,29 @@ export default function CartPage() {
 
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
     const cartCount = cartItems.length;
+
+    // Not signed in → prompt to sign in / create account.
+    if (authRestored && !userId) {
+        return (
+            <>
+                <Header />
+                <main className="w-[90%] mx-auto min-h-[60vh] flex flex-col py-8 md:py-12">
+                    <GuestPrompt
+                        icon={
+                            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="9" cy="21" r="1" />
+                                <circle cx="20" cy="21" r="1" />
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                            </svg>
+                        }
+                        title={t("guest.title", { defaultValue: "Your cart is waiting" })}
+                        subtitle={t("guest.subtitle", { defaultValue: "Sign in or create an account to view your cart and check out." })}
+                    />
+                </main>
+                <Footer />
+            </>
+        );
+    }
 
     return (
         <>
