@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 
-// One moving column per letter — the letters live inside the bars and travel with them.
+// One column per letter — the letters live inside the bars and travel with them.
 const WORD = "BUYOLOGY";
 const LETTERS = WORD.split(""); // 8 letters → 8 columns
 // Alternating wordmark colours: white, yellow, white, yellow, …
@@ -12,16 +12,17 @@ const letterColor = (i: number) => (i % 2 === 0 ? "#ffffff" : "#FFBE12");
 interface PreloaderProps {
     /** Called once the exit finishes (ignored when loop=true). */
     onComplete?: () => void;
-    /** Shorter hold, no wave — for client-side route transitions. */
+    /** Shorter hold — for client-side route transitions. */
     quick?: boolean;
     /** Repeat forever and never self-dismiss — for Suspense loading fallbacks. */
     loop?: boolean;
 }
 
 /**
- * Page-load / route-change preloader: purple columns sweep up carrying the BUYOLOGY
- * letters, hold, then sweep out — the letters move with their columns. Targets are queried
- * from the DOM (not an indexed ref array) so the React Compiler can't drop them.
+ * Page-load / route-change preloader. The purple columns COVER the screen from the very
+ * first frame (no transparent flash) — the letters fade/rise in, hold, then the columns
+ * sweep up to reveal the page beneath (letters riding with them). Targets are queried from
+ * the DOM so the React Compiler can't drop them.
  */
 export default function Preloader({ onComplete, quick = false, loop = false }: PreloaderProps) {
     const overlayRef = useRef<HTMLDivElement>(null);
@@ -31,14 +32,11 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
         if (!overlay) return;
 
         const cols = gsap.utils.toArray<HTMLElement>(overlay.querySelectorAll("[data-col]"));
+        const letters = gsap.utils.toArray<HTMLElement>(overlay.querySelectorAll("[data-letter]"));
         const wave = overlay.querySelector<HTMLElement>("[data-wave]");
         if (!cols.length) return;
 
-        const hold = quick ? 0.15 : 0.9;
-        const enterDur = quick ? 0.4 : 0.55;
-        const enterStagger = quick ? 0.04 : 0.08;
-        const exitDur = quick ? 0.4 : 0.5;
-        const exitStagger = quick ? 0.035 : 0.07;
+        const hold = quick ? 0.25 : 0.65;
 
         const tl = gsap.timeline(
             loop
@@ -51,20 +49,28 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
                 }
         );
 
-        // 1 — columns (with their letters) sweep up into view, staggered left→right
-        tl.fromTo(cols, { yPercent: 100 }, { yPercent: 0, stagger: enterStagger, duration: enterDur, ease: "power3.inOut" });
-
-        // 2 — reveal the wave accent (full mode only)
-        if (!quick && wave) {
-            tl.fromTo(wave, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, "-=0.15");
+        // Enter — letters rise + fade in on the solid cover
+        tl.fromTo(
+            letters,
+            { y: 28, opacity: 0 },
+            { y: 0, opacity: 1, stagger: 0.06, duration: 0.45, ease: "power3.out" }
+        );
+        if (wave) {
+            tl.fromTo(wave, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, "-=0.2");
         }
 
-        // 3 + 4 — hold (via the delay before exit), then sweep out; letters ride with their columns
-        if (!quick && wave) {
-            tl.to(wave, { opacity: 0, y: -12, duration: 0.3, ease: "power2.in" }, `+=${hold}`);
-            tl.to(cols, { yPercent: -100, stagger: { each: exitStagger, from: "end" }, duration: exitDur, ease: "power3.inOut" }, "<");
+        if (loop) {
+            // Cover stays put; letters pulse out then the timeline repeats.
+            tl.to(letters, { y: -28, opacity: 0, stagger: 0.05, duration: 0.4, ease: "power2.in" }, `+=${hold}`);
+            if (wave) tl.to(wave, { opacity: 0, duration: 0.3 }, "<");
         } else {
-            tl.to(cols, { yPercent: -100, stagger: { each: exitStagger, from: "end" }, duration: exitDur, ease: "power3.inOut" }, `+=${hold}`);
+            // Exit — columns sweep up to reveal the page, letters riding with them.
+            if (wave) tl.to(wave, { y: -14, opacity: 0, duration: 0.3, ease: "power2.in" }, `+=${hold}`);
+            tl.to(
+                cols,
+                { yPercent: -100, stagger: { each: 0.06, from: "start" }, duration: 0.55, ease: "power3.inOut" },
+                wave ? "<" : `+=${hold}`
+            );
         }
 
         return () => {
@@ -80,14 +86,12 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
                         key={i}
                         data-col
                         className="h-full flex items-center justify-center"
-                        style={{
-                            width: `${100 / LETTERS.length}%`,
-                            backgroundColor: "#402f75",
-                            // Start off-screen below so SSR/first paint matches the GSAP start (no static flash).
-                            transform: "translateY(100%)",
-                        }}
+                        // No initial transform → the columns tile the screen with solid #402f75
+                        // from the first paint (SSR included), so the page never shows through.
+                        style={{ width: `${100 / LETTERS.length}%`, backgroundColor: "#402f75" }}
                     >
                         <span
+                            data-letter
                             style={{
                                 fontFamily: "Raleway, system-ui, sans-serif",
                                 color: letterColor(i),
@@ -95,6 +99,7 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
                                 fontWeight: 700,
                                 letterSpacing: "0.04em",
                                 lineHeight: 1,
+                                opacity: 0, // hidden until GSAP fades it in (no flash before JS)
                                 marginTop: quick ? "0" : "-6%",
                             }}
                         >
