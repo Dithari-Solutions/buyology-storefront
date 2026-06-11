@@ -2,8 +2,10 @@
 
 import { useId, useState } from "react";
 import Image from "next/image";
+import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { COLORS } from "@/shared/styles/variables";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import CartIcon from "@/assets/icons/cart.png";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,6 +29,10 @@ function extractSpecs(product: ApiProduct): string[] {
 
 export default function SuperDealsCard({ product }: { product: ApiProduct }) {
     const { t } = useTranslation("home");
+    const router = useRouter();
+    const params = useParams();
+    const lang = (params?.lang as Lang) ?? "en";
+    const detailHref = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${product.slug}`;
     const id = useId();
     const clipId = `superDealClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
 
@@ -118,7 +124,12 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
     }
 
     return (
-        <div className="relative w-[300px] sm:w-[420px] md:w-[560px] h-[230px] sm:h-[260px] md:h-[290px] p-[10px] bg-white rounded-[20px] border border-[#FBBB14] flex flex-row gap-[12px] md:gap-[16px] cursor-pointer hover:shadow-md transition-shadow">
+        <div
+            onClick={() => router.push(detailHref)}
+            role="link"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter") router.push(detailHref); }}
+            className="relative w-[300px] sm:w-[420px] md:w-[560px] h-[230px] sm:h-[260px] md:h-[290px] p-[10px] bg-white rounded-[20px] border border-[#FBBB14] flex flex-row gap-[12px] md:gap-[16px] cursor-pointer hover:shadow-md transition-shadow">
 
             {/* Image section */}
             <div className="relative overflow-hidden rounded-[14px] flex items-center justify-center w-[120px] sm:w-[150px] md:w-[185px] flex-shrink-0 h-full">

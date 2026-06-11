@@ -44,6 +44,9 @@ export default function LimitedStock() {
     const [products, setProducts] = useState<ApiProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const isJumping = useRef(false);
+    // Only loop when one set of products overflows — otherwise a single product would
+    // render as three identical cards.
+    const [enableLoop, setEnableLoop] = useState(false);
 
     useEffect(() => {
         getLimitedStockProducts({ lang, countryCode: countryCode ?? undefined, currency: currency ?? undefined })
@@ -52,14 +55,36 @@ export default function LimitedStock() {
             .finally(() => setLoading(false));
     }, [lang, countryCode, currency]);
 
-    // Jump to middle set so looping works in both directions
+    // Enable looping only when the first set overflows the row (and there are ≥2 products).
     useEffect(() => {
-        if (!sliderRef.current || products.length === 0) return;
+        const el = sliderRef.current;
+        if (!el) { setEnableLoop(false); return; }
+        const measure = () => {
+            if (!el || products.length === 0) { setEnableLoop(false); return; }
+            const kids = Array.from(el.children) as HTMLElement[];
+            const firstSet = kids.slice(0, products.length);
+            if (firstSet.length === 0) return;
+            const first = firstSet[0];
+            const last = firstSet[firstSet.length - 1];
+            const oneSetWidth = last.offsetLeft + last.offsetWidth - first.offsetLeft;
+            setEnableLoop(products.length >= 2 && oneSetWidth > el.clientWidth + 4);
+        };
+        const raf = requestAnimationFrame(measure);
+        window.addEventListener("resize", measure);
+        return () => {
+            cancelAnimationFrame(raf);
+            window.removeEventListener("resize", measure);
+        };
+    }, [products]);
+
+    // When looping, start in the middle set so it can scroll both ways.
+    useEffect(() => {
+        if (!sliderRef.current || products.length === 0 || !enableLoop) return;
         const el = sliderRef.current;
         requestAnimationFrame(() => {
             el.scrollLeft = el.scrollWidth / 3;
         });
-    }, [products]);
+    }, [products, enableLoop]);
 
     const scroll = (direction: "left" | "right") => {
         if (!sliderRef.current) return;
@@ -71,7 +96,7 @@ export default function LimitedStock() {
 
     const handleScroll = () => {
         const el = sliderRef.current;
-        if (!el || products.length === 0 || isJumping.current) return;
+        if (!el || products.length === 0 || isJumping.current || !enableLoop) return;
         const oneSetWidth = el.scrollWidth / 3;
         if (el.scrollLeft < oneSetWidth * 0.25) {
             isJumping.current = true;
@@ -84,9 +109,9 @@ export default function LimitedStock() {
         }
     };
 
-    const displayItems = products.length > 0
+    const displayItems = enableLoop && products.length > 0
         ? [...products, ...products, ...products]
-        : [];
+        : products;
 
     return (
         <section className="mt-[50px] w-[95%] md:w-[90%]">

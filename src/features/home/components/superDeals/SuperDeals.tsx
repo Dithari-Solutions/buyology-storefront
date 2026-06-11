@@ -49,6 +49,9 @@ export default function SuperDeals() {
     const [error, setError] = useState<string | null>(null);
     const [reloadTick, setReloadTick] = useState(0);
     const isJumping = useRef(false);
+    // Only loop (and triplicate) when one set of products actually overflows the row —
+    // otherwise a single product would render as three identical cards.
+    const [enableLoop, setEnableLoop] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -73,14 +76,37 @@ export default function SuperDeals() {
         };
     }, [lang, reloadTick, countryCode, currency]);
 
-    // Jump to the middle set on initial render so looping works in both directions
+    // Measure the FIRST set's width (independent of how many sets are rendered) and only
+    // enable looping when it overflows and there are at least 2 products. Re-check on resize.
     useEffect(() => {
-        if (!sliderRef.current || products.length === 0) return;
+        const el = sliderRef.current;
+        if (!el) { setEnableLoop(false); return; }
+        const measure = () => {
+            if (!el || products.length === 0) { setEnableLoop(false); return; }
+            const kids = Array.from(el.children) as HTMLElement[];
+            const firstSet = kids.slice(0, products.length);
+            if (firstSet.length === 0) return;
+            const first = firstSet[0];
+            const last = firstSet[firstSet.length - 1];
+            const oneSetWidth = last.offsetLeft + last.offsetWidth - first.offsetLeft;
+            setEnableLoop(products.length >= 2 && oneSetWidth > el.clientWidth + 4);
+        };
+        const raf = requestAnimationFrame(measure);
+        window.addEventListener("resize", measure);
+        return () => {
+            cancelAnimationFrame(raf);
+            window.removeEventListener("resize", measure);
+        };
+    }, [products]);
+
+    // When looping, start in the middle set so it can scroll both ways.
+    useEffect(() => {
+        if (!sliderRef.current || products.length === 0 || !enableLoop) return;
         const el = sliderRef.current;
         requestAnimationFrame(() => {
             el.scrollLeft = el.scrollWidth / 3;
         });
-    }, [products]);
+    }, [products, enableLoop]);
 
     const scroll = (direction: "left" | "right") => {
         if (!sliderRef.current) return;
@@ -100,7 +126,7 @@ export default function SuperDeals() {
 
     const handleScroll = () => {
         const el = sliderRef.current;
-        if (!el || products.length === 0) return;
+        if (!el || products.length === 0 || !enableLoop) return;
         if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
         scrollEndTimer.current = setTimeout(() => {
             if (!el || products.length === 0 || isJumping.current) return;
@@ -124,10 +150,11 @@ export default function SuperDeals() {
         };
     }, []);
 
-    // Triple the items for infinite loop
-    const displayItems = products.length > 0
+    // Triple the items only when looping is warranted (enough products to overflow);
+    // otherwise show the real products once — no duplicate cards.
+    const displayItems = enableLoop && products.length > 0
         ? [...products, ...products, ...products]
-        : [];
+        : products;
 
     return (
         <section className="w-[95%] md:w-[90%] mt-8 md:mt-14 mb-8 md:mb-14">
