@@ -67,20 +67,46 @@ export default async function LangLayout({
       {/* ─── Fixed background accent — covers Header, main and Footer ─── */}
       <div className="fixed inset-0 pointer-events-none select-none z-0" aria-hidden="true">
 
-        {/* Soft brand-colour gradient mesh — fills the empty canvas with subtle depth
-            (purple + gold glows in the corners/centre) behind the curve accents. */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: [
-              "radial-gradient(58vw 58vw at 10% 12%, rgba(64,47,117,0.07), transparent 60%)",
-              "radial-gradient(52vw 52vw at 90% 88%, rgba(251,187,20,0.08), transparent 60%)",
-              "radial-gradient(46vw 46vw at 82% 10%, rgba(64,47,117,0.05), transparent 55%)",
-              "radial-gradient(50vw 50vw at 16% 90%, rgba(251,187,20,0.06), transparent 55%)",
-              "radial-gradient(70vw 50vw at 50% 50%, rgba(64,47,117,0.025), transparent 70%)",
-            ].join(", "),
-          }}
-        />
+        {/* Animated aurora — drifting brand-colour orbs fill the canvas with depth and
+            movement (stunning on first view) while staying behind the content. */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="bg-orb"
+            style={{
+              top: "-12%", left: "-8%",
+              width: "clamp(420px, 48vw, 780px)", height: "clamp(420px, 48vw, 780px)",
+              background: "radial-gradient(circle, rgba(64,47,117,0.40), transparent 68%)",
+              animation: "bgOrbA 19s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="bg-orb"
+            style={{
+              bottom: "-14%", right: "-6%",
+              width: "clamp(380px, 44vw, 720px)", height: "clamp(380px, 44vw, 720px)",
+              background: "radial-gradient(circle, rgba(251,187,20,0.38), transparent 68%)",
+              animation: "bgOrbB 23s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="bg-orb"
+            style={{
+              top: "24%", right: "16%",
+              width: "clamp(320px, 38vw, 600px)", height: "clamp(320px, 38vw, 600px)",
+              background: "radial-gradient(circle, rgba(91,74,156,0.30), transparent 70%)",
+              animation: "bgOrbC 27s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="bg-orb"
+            style={{
+              bottom: "16%", left: "10%",
+              width: "clamp(300px, 34vw, 540px)", height: "clamp(300px, 34vw, 540px)",
+              background: "radial-gradient(circle, rgba(251,187,20,0.24), transparent 70%)",
+              animation: "bgOrbA 25s ease-in-out infinite reverse",
+            }}
+          />
+        </div>
 
         {/* Bottom-left accent */}
         <Image
@@ -91,7 +117,7 @@ export default async function LangLayout({
           fetchPriority="high"
           sizes="(max-width: 640px) 320px, (max-width: 768px) 440px, (max-width: 1024px) 580px, 660px"
           className="absolute bottom-0 left-0 w-[68vw] max-w-[860px] h-auto"
-          style={{ opacity: 0.45, mixBlendMode: "multiply", aspectRatio: "851 / 575" }}
+          style={{ opacity: 0.3, mixBlendMode: "multiply", aspectRatio: "851 / 575" }}
         />
 
         {/* Top-right accent — mirrored */}
@@ -102,7 +128,7 @@ export default async function LangLayout({
           priority
           sizes="(max-width: 640px) 320px, (max-width: 768px) 440px, (max-width: 1024px) 580px, 660px"
           className="absolute top-0 right-0 w-[68vw] max-w-[860px] h-auto"
-          style={{ opacity: 0.4, mixBlendMode: "multiply", transform: "rotate(180deg)", aspectRatio: "851 / 575" }}
+          style={{ opacity: 0.28, mixBlendMode: "multiply", transform: "rotate(180deg)", aspectRatio: "851 / 575" }}
         />
       </div>
 
