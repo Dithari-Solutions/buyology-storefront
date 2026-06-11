@@ -7,6 +7,7 @@ import { store } from "@/store";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/shared/i18n";
 import HtmlLangDir from "@/shared/components/HtmlLangDir";
+import AppIntro from "@/shared/components/AppIntro";
 import PageTransition from "@/shared/components/PageTransition";
 import SignupGate from "@/shared/components/SignupGate";
 import { tryRestoreSession } from "@/shared/lib/tokenManager";
@@ -119,7 +120,8 @@ function GeolocationInitializer() {
 function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* Intro animation now plays on every route change (PageTransition), not on page load/refresh. */}
+      {/* AppIntro = initial page load/refresh; PageTransition = client-side route changes. */}
+      <AppIntro />
       <PageTransition />
       <SignupGate />
       {children}

@@ -36,7 +36,7 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
         const wave = overlay.querySelector<HTMLElement>("[data-wave]");
         if (!cols.length) return;
 
-        const hold = quick ? 0.25 : 0.65;
+        const hold = quick ? 0.2 : 0.45;
 
         const tl = gsap.timeline(
             loop
@@ -53,22 +53,22 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
         tl.fromTo(
             letters,
             { y: 28, opacity: 0 },
-            { y: 0, opacity: 1, stagger: 0.06, duration: 0.45, ease: "power3.out" }
+            { y: 0, opacity: 1, stagger: 0.05, duration: 0.4, ease: "power3.out", force3D: true }
         );
         if (wave) {
-            tl.fromTo(wave, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, "-=0.2");
+            tl.fromTo(wave, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out", force3D: true }, "-=0.2");
         }
 
         if (loop) {
             // Cover stays put; letters pulse out then the timeline repeats.
-            tl.to(letters, { y: -28, opacity: 0, stagger: 0.05, duration: 0.4, ease: "power2.in" }, `+=${hold}`);
+            tl.to(letters, { y: -28, opacity: 0, stagger: 0.04, duration: 0.35, ease: "power2.in", force3D: true }, `+=${hold}`);
             if (wave) tl.to(wave, { opacity: 0, duration: 0.3 }, "<");
         } else {
             // Exit — columns sweep up to reveal the page, letters riding with them.
-            if (wave) tl.to(wave, { y: -14, opacity: 0, duration: 0.3, ease: "power2.in" }, `+=${hold}`);
+            if (wave) tl.to(wave, { y: -14, opacity: 0, duration: 0.3, ease: "power2.in", force3D: true }, `+=${hold}`);
             tl.to(
                 cols,
-                { yPercent: -100, stagger: { each: 0.06, from: "start" }, duration: 0.55, ease: "power3.inOut" },
+                { yPercent: -100, stagger: { each: 0.05, from: "start" }, duration: 0.5, ease: "power3.inOut", force3D: true },
                 wave ? "<" : `+=${hold}`
             );
         }
@@ -88,7 +88,7 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
                         className="h-full flex items-center justify-center"
                         // No initial transform → the columns tile the screen with solid #402f75
                         // from the first paint (SSR included), so the page never shows through.
-                        style={{ width: `${100 / LETTERS.length}%`, backgroundColor: "#402f75" }}
+                        style={{ width: `${100 / LETTERS.length}%`, backgroundColor: "#402f75", willChange: "transform" }}
                     >
                         <span
                             data-letter
@@ -101,6 +101,7 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
                                 lineHeight: 1,
                                 opacity: 0, // hidden until GSAP fades it in (no flash before JS)
                                 marginTop: quick ? "0" : "-6%",
+                                willChange: "transform, opacity",
                             }}
                         >
                             {ch}
