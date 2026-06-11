@@ -30,6 +30,7 @@ interface FormErrors {
     firstName?: string;
     lastName?: string;
     phoneNumber?: string;
+    dateOfBirth?: string;
 }
 
 function extractMessage(err: unknown, fallback: string): string {
@@ -47,6 +48,14 @@ function validateProfileForm(form: EditForm): FormErrors {
     if (!form.lastName.trim()) errors.lastName = "Last name is required.";
     else if (form.lastName.trim().length < 2) errors.lastName = "Last name must be at least 2 characters.";
     if (form.phoneNumber.trim() && !/^\+?[\d\s\-().]{7,20}$/.test(form.phoneNumber.trim())) errors.phoneNumber = "Enter a valid phone number.";
+    if (form.dateOfBirth) {
+        const dob = new Date(form.dateOfBirth);
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        if (Number.isNaN(dob.getTime())) errors.dateOfBirth = "Enter a valid date.";
+        else if (dob.getTime() > today.getTime()) errors.dateOfBirth = "Date of birth must be in the past.";
+        else if (dob.getFullYear() < 1900) errors.dateOfBirth = "Enter a valid date of birth.";
+    }
     return errors;
 }
 
@@ -374,9 +383,12 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                                     <input
                                         type="date"
                                         value={form.dateOfBirth}
+                                        max={new Date().toISOString().split("T")[0]}
+                                        min="1900-01-01"
                                         onChange={(e) => setForm((p) => ({ ...p, dateOfBirth: e.target.value }))}
-                                        className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors"
+                                        className={`w-full border rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors ${formErrors.dateOfBirth ? "border-red-400" : "border-gray-200"}`}
                                     />
+                                    {formErrors.dateOfBirth && <p className="text-[11px] text-red-500 mt-1">{formErrors.dateOfBirth}</p>}
                                 </div>
                             </div>
                         ) : (

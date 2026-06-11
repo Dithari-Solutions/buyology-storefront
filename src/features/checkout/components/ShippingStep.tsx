@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShippingFormData } from "../types";
 import type { Address, CreateAddressPayload, AddressLabel } from "@/features/profile/types";
@@ -73,6 +73,17 @@ export default function ShippingStep({
     const [email, setEmail] = useState(initialData?.email ?? profileEmail ?? "");
     const [emailError, setEmailError] = useState("");
     const [editContact, setEditContact] = useState(false);
+
+    // The profile loads asynchronously in the parent, so profileEmail is usually
+    // undefined on first render. Adopt it once it arrives (unless the user already
+    // typed an email) so the prefilled account email is used automatically and the
+    // "email is required" guard doesn't fire on Continue.
+    useEffect(() => {
+        if (profileEmail) {
+            setEmail((prev) => prev || profileEmail);
+            setEmailError("");
+        }
+    }, [profileEmail]);
 
     // Saved address selection
     const defaultAddr = savedAddresses.find((a) => a.isDefault) ?? savedAddresses[0] ?? null;
