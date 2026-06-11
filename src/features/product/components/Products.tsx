@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import ProductCard from './ProductCard';
 import { getProducts, searchProducts, searchProductsElastic, getPrimaryImage, type ApiProduct } from '../services/productService';
 import type { ActiveFilters } from './ProductFilter';
@@ -140,14 +141,20 @@ const FilterIcon = () => (
   </svg>
 );
 
-const SORT_OPTIONS = ['Most Popular', 'Newest', 'Price: Low to High', 'Price: High to Low', 'Top Rated'];
+const SORT_OPTIONS: { value: string; key: string; fallback: string }[] = [
+  { value: 'POPULAR', key: 'shop.sort.POPULAR', fallback: 'Most Popular' },
+  { value: 'NEWEST', key: 'shop.sort.NEWEST', fallback: 'Newest' },
+  { value: 'PRICE_ASC', key: 'shop.sort.PRICE_ASC', fallback: 'Price: Low to High' },
+  { value: 'PRICE_DESC', key: 'shop.sort.PRICE_DESC', fallback: 'Price: High to Low' },
+];
 const PER_PAGE = 12;
 
 function getSpecValue(product: ApiProduct, code: string): string {
   const spec = product.specs.find((s) => s.code === code);
   if (!spec || spec.options.length === 0) return '';
   const opt = spec.options[0];
-  return `${opt.value}${opt.unit}`;
+  // Never emit "undefined" when a spec has no unit.
+  return opt.unit ? `${opt.value} ${opt.unit}` : opt.value;
 }
 
 export default function Products({ onFilterToggle, filterOpen, activeFilters }: {
@@ -160,6 +167,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
   const searchParams = useSearchParams();
   const query = searchParams.get('q');
   const lang = (params?.lang as Lang) ?? 'en';
+  const { t } = useTranslation('product');
 
   const countryCode = useSelector(selectSelectedCountryCode);
   const currency = useSelector(selectPreferredCurrency);
@@ -169,7 +177,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'grid' | 'list'>('grid');
-  const [sort, setSort] = useState('Most Popular');
+  const [sort, setSort] = useState('POPULAR');
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -185,17 +193,24 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
       const hasActiveFilters = activeFilters && (
         activeFilters.minPrice != null || activeFilters.maxPrice != null ||
         activeFilters.condition || activeFilters.categoryId || activeFilters.brandId ||
-        activeFilters.availabilityStatus || Object.values(activeFilters.specs ?? {}).some(Boolean)
+        activeFilters.availabilityStatus ||
+        Object.values(activeFilters.specs ?? {}).some((v) => v && v.length > 0)
       );
       fetchPromise = hasActiveFilters
-        ? searchProducts({ ...base, ...activeFilters, specs: activeFilters!.specs })
+        ? searchProducts({ ...base, ...activeFilters, specs: activeFilters!.specs, sort })
         // Backend paginates /api/product (default 60). The grid paginates
         // client-side, so request the full catalog (backend is batch-loaded → fast).
-        : getProducts({ ...base, size: 1000 });
+        : getProducts({ ...base, size: 1000, sort });
     }
-    
-    fetchPromise.then(setProducts).catch(console.error).finally(() => setLoading(false));
-  }, [lang, countryCode, currency, coords, activeFilters, query]);
+
+    fetchPromise
+      .then((items) =>
+        // Hide products not available in the selected country (no "browse only" in lists).
+        setProducts(countryCode ? items.filter((p) => p.availableInSelectedCountry !== false) : items)
+      )
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [lang, countryCode, currency, coords, activeFilters, query, sort]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PER_PAGE));
   const startItem = products.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
@@ -212,7 +227,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <p className="text-[14px] font-medium text-[#402F75]">
-              Search results for: <span className="font-bold">&ldquo;{query}&rdquo;</span>
+              {t('shop.products.searchResults', { defaultValue: 'Search results for' })}: <span className="font-bold">&ldquo;{query}&rdquo;</span>
             </p>
           </div>
           <button
@@ -233,11 +248,14 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
         <div className="flex items-center gap-[10px] flex-wrap">
           <p className="text-[13px] text-gray-500">
             {loading ? (
-              'Loading products…'
+              t('shop.products.loading', { defaultValue: 'Loading products…' })
             ) : (
               <>
-                Showing <span className="font-medium text-gray-800">{startItem}–{endItem}</span> of{' '}
-                <span className="font-medium text-gray-800">{products.length}</span> products
+                {t('shop.products.showing', { defaultValue: 'Showing' })}{' '}
+                <span className="font-medium text-gray-800">{startItem}–{endItem}</span>{' '}
+                {t('shop.products.of', { defaultValue: 'of' })}{' '}
+                <span className="font-medium text-gray-800">{products.length}</span>{' '}
+                {t('shop.products.items', { defaultValue: 'products' })}
               </>
             )}
           </p>
@@ -255,7 +273,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
             className="md:hidden flex items-center gap-[6px] border border-gray-200 rounded-[10px] px-[12px] py-[7px] text-[13px] font-medium text-gray-700 hover:border-gray-300 transition-colors bg-white"
           >
             <FilterIcon />
-            Filters
+            {t('shop.filters.title', { defaultValue: 'Filters' })}
             {filterOpen && (
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path d="M2 7L5 4L8 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -271,8 +289,10 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 onClick={() => setSortOpen((v) => !v)}
                 className="flex items-center gap-[8px] border border-gray-200 rounded-[10px] px-[14px] py-[7px] text-[13px] font-medium text-gray-700 hover:border-gray-300 transition-colors bg-white"
               >
-                <span className="hidden sm:inline">{sort}</span>
-                <span className="sm:hidden">Sort</span>
+                <span className="hidden sm:inline">
+                  {(() => { const o = SORT_OPTIONS.find((s) => s.value === sort); return o ? t(o.key, { defaultValue: o.fallback }) : ''; })()}
+                </span>
+                <span className="sm:hidden">{t('shop.sort.label', { defaultValue: 'Sort' })}</span>
                 <svg
                   width="12"
                   height="12"
@@ -288,11 +308,11 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 <div className="absolute end-0 top-[calc(100%+6px)] z-20 bg-white border border-gray-100 rounded-[12px] shadow-lg py-[6px] min-w-[180px]">
                   {SORT_OPTIONS.map((option) => (
                     <button
-                      key={option}
-                      onClick={() => { setSort(option); setSortOpen(false); }}
-                      className={`w-full text-start px-[14px] py-[8px] text-[13px] hover:bg-gray-50 transition-colors ${sort === option ? 'font-semibold text-[#402F75]' : 'text-gray-700'}`}
+                      key={option.value}
+                      onClick={() => { setSort(option.value); setSortOpen(false); }}
+                      className={`w-full text-start px-[14px] py-[8px] text-[13px] hover:bg-gray-50 transition-colors ${sort === option.value ? 'font-semibold text-[#402F75]' : 'text-gray-700'}`}
                     >
-                      {option}
+                      {t(option.key, { defaultValue: option.fallback })}
                     </button>
                   ))}
                 </div>

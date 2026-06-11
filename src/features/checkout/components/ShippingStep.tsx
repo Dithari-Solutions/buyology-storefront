@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShippingFormData } from "../types";
 import type { Address, CreateAddressPayload, AddressLabel } from "@/features/profile/types";
+import { CheckIcon } from "@/shared/icons";
 import dynamic from "next/dynamic";
 
 const LocationPicker = dynamic(() => import("@/features/map/components/LocationPicker"), { ssr: false });
@@ -50,6 +51,9 @@ export interface ShippingStepProps {
     initialData?: ShippingFormData;
     savedAddresses: Address[];
     profilePhone?: string;
+    profileEmail?: string;
+    profileName?: string;
+    phoneVerified?: boolean;
     onSaveAddress: (payload: CreateAddressPayload) => Promise<Address>;
 }
 
@@ -58,13 +62,17 @@ export default function ShippingStep({
     initialData,
     savedAddresses,
     profilePhone,
+    profileEmail,
+    profileName,
+    phoneVerified,
     onSaveAddress,
 }: ShippingStepProps) {
     const { t } = useTranslation("checkout");
 
-    // Contact
-    const [email, setEmail] = useState(initialData?.email ?? "");
+    // Contact — prefilled from the user's profile (they confirm or edit).
+    const [email, setEmail] = useState(initialData?.email ?? profileEmail ?? "");
     const [emailError, setEmailError] = useState("");
+    const [editContact, setEditContact] = useState(false);
 
     // Saved address selection
     const defaultAddr = savedAddresses.find((a) => a.isDefault) ?? savedAddresses[0] ?? null;
@@ -182,19 +190,51 @@ export default function ShippingStep({
             {/* ── Contact ──────────────────────────────────────────────────── */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
                 <h2 className="text-[16px] font-bold text-gray-900 mb-5">{t("contact.heading")}</h2>
-                <div className="flex flex-col gap-1.5 max-w-sm">
-                    <label htmlFor="email" className="text-[13px] font-semibold text-gray-700">
-                        {t("contact.email")}<span className="text-red-400 ml-0.5">*</span>
-                    </label>
-                    <input
-                        id="email"
-                        type="email"
-                        placeholder={t("contact.emailPlaceholder")}
-                        value={email}
-                        onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
-                        className={emailError ? inpErr : inp}
-                    />
-                    {emailError && <p className="text-[11px] text-red-500 mt-0.5">{emailError}</p>}
+                <div className="flex flex-col gap-3 max-w-sm">
+                    {!editContact && (profileName || email || profilePhone) ? (
+                        // Prefilled from the profile — confirm or edit.
+                        <div className="rounded-xl border border-gray-200 p-4 flex flex-col gap-1.5">
+                            {profileName && <p className="text-[14px] font-semibold text-gray-900">{profileName}</p>}
+                            {email && <p className="text-[13px] text-gray-600 break-all">{email}</p>}
+                            {profilePhone && (
+                                <p className="text-[13px] text-gray-600 flex items-center gap-2 flex-wrap">
+                                    {profilePhone}
+                                    {phoneVerified ? (
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                                            <CheckIcon className="w-3 h-3" /> {t("contact.verified", { defaultValue: "Verified" })}
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                                            {t("contact.unverified", { defaultValue: "Not verified" })}
+                                        </span>
+                                    )}
+                                </p>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => setEditContact(true)}
+                                className="text-[12px] font-semibold text-[#402F75] hover:underline self-start mt-1"
+                            >
+                                {t("contact.edit", { defaultValue: "Edit" })}
+                            </button>
+                            {emailError && <p className="text-[11px] text-red-500">{emailError}</p>}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-1.5">
+                            <label htmlFor="email" className="text-[13px] font-semibold text-gray-700">
+                                {t("contact.email")}<span className="text-red-400 ml-0.5">*</span>
+                            </label>
+                            <input
+                                id="email"
+                                type="email"
+                                placeholder={t("contact.emailPlaceholder")}
+                                value={email}
+                                onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                                className={emailError ? inpErr : inp}
+                            />
+                            {emailError && <p className="text-[11px] text-red-500 mt-0.5">{emailError}</p>}
+                        </div>
+                    )}
                 </div>
             </div>
 

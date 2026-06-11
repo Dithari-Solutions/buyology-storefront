@@ -4,11 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-// Tile host must be configured via env. HTTPS is REQUIRED in production — the
-// site CSP sets `upgrade-insecure-requests`, so an http:// tile server is
-// rewritten to https and fails if it can't serve TLS. Set NEXT_PUBLIC_TILE_URL
-// to an HTTPS tile endpoint before launch.
-const TILES = process.env.NEXT_PUBLIC_TILE_URL ?? "http://5.189.132.250:8090";
+// Open-source CARTO raster basemap (OSM data, no API key for basemaps). HTTPS, so it
+// satisfies the site CSP's `upgrade-insecure-requests`. MapLibre round-robins the subdomains.
+const CARTO_TILES = [
+    "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+    "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+    "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+    "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+];
 
 interface LocationPickerProps {
     initialCoords?: { lat: number; lng: number };
@@ -35,9 +38,9 @@ export default function LocationPicker({ initialCoords, onChange }: LocationPick
                 sources: {
                     tiles: {
                         type: "raster",
-                        tiles: [`${TILES}/tile/{z}/{x}/{y}.png`],
+                        tiles: CARTO_TILES,
                         tileSize: 256,
-                        attribution: "© OpenStreetMap contributors",
+                        attribution: "© OpenStreetMap contributors, © CARTO",
                     },
                 },
                 layers: [{ id: "tiles", type: "raster", source: "tiles" }],

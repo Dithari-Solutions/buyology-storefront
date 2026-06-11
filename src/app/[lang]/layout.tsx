@@ -75,7 +75,7 @@ export default async function LangLayout({
           priority
           fetchPriority="high"
           sizes="(max-width: 640px) 320px, (max-width: 768px) 440px, (max-width: 1024px) 580px, 660px"
-          className="absolute bottom-0 left-0 w-[320px] sm:w-[440px] md:w-[580px] lg:w-[660px] h-auto"
+          className="absolute bottom-0 left-0 w-[68vw] max-w-[860px] h-auto"
           style={{ opacity: 0.45, mixBlendMode: "multiply", aspectRatio: "851 / 575" }}
         />
 
@@ -86,7 +86,7 @@ export default async function LangLayout({
           aria-hidden="true"
           priority
           sizes="(max-width: 640px) 320px, (max-width: 768px) 440px, (max-width: 1024px) 580px, 660px"
-          className="absolute top-0 right-0 w-[320px] sm:w-[440px] md:w-[580px] lg:w-[660px] h-auto"
+          className="absolute top-0 right-0 w-[68vw] max-w-[860px] h-auto"
           style={{ opacity: 0.4, mixBlendMode: "multiply", transform: "rotate(180deg)", aspectRatio: "851 / 575" }}
         />
       </div>

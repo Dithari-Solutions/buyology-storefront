@@ -6,11 +6,30 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import EmailIcon from "@/assets/icons/email.png";
+import { forgotPassword } from "@/features/auth/services/auth.api";
 
 export default function ForgotPasswordPage() {
     const [sent, setSent] = useState(false);
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const { t } = useTranslation("auth");
     const lang = usePathname().split("/")[1] || "en";
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setLoading(true);
+        const res = await forgotPassword(email.trim());
+        setLoading(false);
+        if (res.success) {
+            // Stash the email so the OTP step can verify + reset against it.
+            sessionStorage.setItem("reset_password_email", email.trim());
+            setSent(true);
+        } else {
+            setError(res.message || "Something went wrong. Please try again.");
+        }
+    };
 
     return (
         <div className="w-full max-w-md">
@@ -32,7 +51,7 @@ export default function ForgotPasswordPage() {
                             {t("forgotPassword.desc")}
                         </p>
 
-                        <form className="w-full flex flex-col gap-[14px]" onSubmit={(e) => { e.preventDefault(); setSent(true); }}>
+                        <form className="w-full flex flex-col gap-[14px]" onSubmit={handleSubmit}>
                             <div className="flex flex-col gap-[6px]">
                                 <label htmlFor="email" className="text-[13px] font-semibold text-gray-700">
                                     {t("authForm.emailLabel")}
@@ -42,6 +61,8 @@ export default function ForgotPasswordPage() {
                                     <input
                                         id="email"
                                         type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         placeholder={t("authForm.emailPlaceholder")}
                                         required
                                         className="border-none outline-none w-full text-[14px] bg-transparent text-gray-800 placeholder:text-gray-400"
@@ -49,11 +70,14 @@ export default function ForgotPasswordPage() {
                                 </div>
                             </div>
 
+                            {error && <p className="text-red-500 text-[12px] text-center">{error}</p>}
+
                             <button
                                 type="submit"
-                                className="mt-1 w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200"
+                                disabled={loading}
+                                className="mt-1 w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200 disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {t("forgotPassword.sendBtn")}
+                                {loading ? "..." : t("forgotPassword.sendBtn")}
                             </button>
                         </form>
                     </>

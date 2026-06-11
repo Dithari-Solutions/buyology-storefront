@@ -100,5 +100,55 @@
     "signIn": "Sign In",
     "createAccount": "Create Account",
     "successMsg": "Your question was submitted and is pending approval."
+  },
+  "shop": {
+    "filters": {
+      "title": "Filters",
+      "priceRange": "Price Range",
+      "condition": "Condition",
+      "category": "Category",
+      "subcategory": "Subcategory",
+      "brand": "Brand",
+      "availability": "Availability Status"
+    },
+    "condition": {
+      "NEW": "New",
+      "REFURBISHED": "Refurbished"
+    },
+    "availability": {
+      "IN_STOCK": "In Stock",
+      "OUT_OF_STOCK": "Out of Stock",
+      "PRE_ORDER": "Pre-Order"
+    },
+    "sort": {
+      "label": "Sort",
+      "POPULAR": "Most Popular",
+      "NEWEST": "Newest",
+      "PRICE_ASC": "Price: Low to High",
+      "PRICE_DESC": "Price: High to Low"
+    },
+    "products": {
+      "loading": "Loading products…",
+      "showing": "Showing",
+      "of": "of",
+      "items": "products",
+      "searchResults": "Search results for",
+      "allCategories": "All Categories"
+    }
+  },
+  "features": {
+    "delivery": {
+      "freeLabel": "Free Delivery",
+      "freeSub": "On all orders",
+      "feeLabel": "Delivery"
+    },
+    "warranty": {
+      "label": "1-Year Warranty",
+      "sub": "Official coverage"
+    },
+    "ships": {
+      "label": "Ships in 2–3 Days",
+      "sub": "Fast dispatch"
+    }
   }
 }

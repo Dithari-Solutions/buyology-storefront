@@ -56,7 +56,7 @@ export default function AuthText() {
             {/* Back Button */}
             <Link href="/">
                 <div className="inline-flex items-center gap-3 bg-white/15 hover:bg-white/20 border border-white/20 py-[10px] px-5 rounded-full cursor-pointer transition-all duration-200 w-fit">
-                    <Image src={ArrowLeftIcon} alt="Arrow Left" className="w-4 h-4" />
+                    <Image src={ArrowLeftIcon} alt="Arrow Left" className="w-4 h-4 brightness-0 invert" />
                     <span className="text-[13px] font-medium text-white">{t("backToWebsite")}</span>
                 </div>
             </Link>

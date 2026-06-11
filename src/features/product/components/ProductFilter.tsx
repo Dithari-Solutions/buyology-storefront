@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import FilterIcon from '@/assets/icons/filter.png';
 import {
   getProductFilters,
@@ -159,8 +160,8 @@ export interface ActiveFilters {
   categoryId?: string;
   brandId?: string;
   availabilityStatus?: string;
-  /** spec code → selected value */
-  specs: Record<string, string>;
+  /** spec code → selected values (multi-select) */
+  specs: Record<string, string[]>;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -170,6 +171,7 @@ export default function ProductFilter({ onFiltersChange }: {
 }) {
   const params = useParams();
   const lang = (params?.lang as Lang) ?? 'en';
+  const { t } = useTranslation('product');
   const countryCode = useSelector(selectSelectedCountryCode);
 
   const [filters, setFilters] = useState<ProductFilters | null>(null);
@@ -181,7 +183,7 @@ export default function ProductFilter({ onFiltersChange }: {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [brandId, setBrandId] = useState<string | null>(null);
   const [availability, setAvailability] = useState<string | null>(null);
-  const [specSelections, setSpecSelections] = useState<Record<string, string>>({});
+  const [specSelections, setSpecSelections] = useState<Record<string, string[]>>({});
 
   // Fetch filter options from API
   useEffect(() => {
@@ -189,9 +191,9 @@ export default function ProductFilter({ onFiltersChange }: {
     getProductFilters(lang, countryCode ?? undefined)
       .then(data => {
         setFilters(data);
-        const min = Math.floor(data.priceRange.min);
+        // Price range always starts at 0 (not the cheapest product's price).
         const max = Math.ceil(data.priceRange.max);
-        setPrice([min, max]);
+        setPrice([0, max]);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -200,7 +202,7 @@ export default function ProductFilter({ onFiltersChange }: {
   // Emit changes whenever any selection changes
   const emitChanges = useCallback((overrides: Partial<{
     price: [number, number]; condition: string | null; categoryId: string | null;
-    brandId: string | null; availability: string | null; specSelections: Record<string, string>;
+    brandId: string | null; availability: string | null; specSelections: Record<string, string[]>;
   }> = {}) => {
     if (!filters || !onFiltersChange) return;
     const p     = overrides.price          ?? price;
@@ -240,14 +242,21 @@ export default function ProductFilter({ onFiltersChange }: {
     setAvailability(next); emitChanges({ availability: next });
   };
   const handleSpec = (code: string, val: string) => {
-    const next = { ...specSelections, [code]: specSelections[code] === val ? '' : val };
+    const current = specSelections[code] ?? [];
+    const nextVals = current.includes(val) ? current.filter(v => v !== val) : [...current, val];
+    const next = { ...specSelections, [code]: nextVals };
     setSpecSelections(next); emitChanges({ specSelections: next });
   };
 
   const AVAILABILITY_LABELS: Record<string, string> = {
-    IN_STOCK: 'In Stock', OUT_OF_STOCK: 'Out of Stock', PRE_ORDER: 'Pre-Order',
+    IN_STOCK: t('shop.availability.IN_STOCK', { defaultValue: 'In Stock' }),
+    OUT_OF_STOCK: t('shop.availability.OUT_OF_STOCK', { defaultValue: 'Out of Stock' }),
+    PRE_ORDER: t('shop.availability.PRE_ORDER', { defaultValue: 'Pre-Order' }),
   };
-  const CONDITION_LABELS: Record<string, string> = { NEW: 'New', REFURBISHED: 'Refurbished' };
+  const CONDITION_LABELS: Record<string, string> = {
+    NEW: t('shop.condition.NEW', { defaultValue: 'New' }),
+    REFURBISHED: t('shop.condition.REFURBISHED', { defaultValue: 'Refurbished' }),
+  };
 
   // Separate root categories and subcategories
   const rootCategories = filters?.categories.filter(c => !c.parentId) ?? [];
@@ -265,26 +274,26 @@ export default function ProductFilter({ onFiltersChange }: {
 
   if (!filters) return null;
 
-  const priceMin = Math.floor(filters.priceRange.min);
+  const priceMin = 0;
   const priceMax = Math.ceil(filters.priceRange.max);
 
   return (
     <aside className="bg-white rounded-[20px] border border-[#FBBB14] p-[14px] w-full md:w-[280px] flex-shrink-0 flex flex-col gap-[10px]">
       <div className="flex items-center gap-[10px] px-[2px] pb-[4px]">
         <Image src={FilterIcon} alt="Filter" width={20} height={20} />
-        <h2 className="text-[18px] font-medium">Filters</h2>
+        <h2 className="text-[18px] font-medium">{t('shop.filters.title', { defaultValue: 'Filters' })}</h2>
       </div>
 
       {/* Price Range */}
       {priceMax > 0 && (
-        <FilterSection title="Price Range">
+        <FilterSection title={t('shop.filters.priceRange', { defaultValue: 'Price Range' })}>
           <PriceRange min={priceMin} max={priceMax} value={price} onChange={handlePrice} />
         </FilterSection>
       )}
 
       {/* Condition */}
       {filters.conditions.length > 0 && (
-        <FilterSection title="Condition">
+        <FilterSection title={t('shop.filters.condition', { defaultValue: 'Condition' })}>
           {filters.conditions.map(val => (
             <CheckboxItem key={val} label={CONDITION_LABELS[val] ?? val}
               checked={condition === val} onChange={() => handleCondition(val)} />
@@ -294,7 +303,7 @@ export default function ProductFilter({ onFiltersChange }: {
 
       {/* Category */}
       {rootCategories.length > 0 && (
-        <FilterSection title="Category">
+        <FilterSection title={t('shop.filters.category', { defaultValue: 'Category' })}>
           {rootCategories.map((cat: CategoryFilterOption) => (
             <CheckboxItem key={cat.id} label={cat.name}
               checked={categoryId === cat.id} onChange={() => handleCategory(cat.id)} />
@@ -304,7 +313,7 @@ export default function ProductFilter({ onFiltersChange }: {
 
       {/* Subcategory */}
       {subCategories.length > 0 && (
-        <FilterSection title="Subcategory">
+        <FilterSection title={t('shop.filters.subcategory', { defaultValue: 'Subcategory' })}>
           {subCategories.map((cat: CategoryFilterOption) => (
             <CheckboxItem key={cat.id} label={cat.name}
               checked={categoryId === cat.id} onChange={() => handleCategory(cat.id)} />
@@ -314,7 +323,7 @@ export default function ProductFilter({ onFiltersChange }: {
 
       {/* Brand */}
       {filters.brands.length > 0 && (
-        <FilterSection title="Brand">
+        <FilterSection title={t('shop.filters.brand', { defaultValue: 'Brand' })}>
           {filters.brands.map((b: BrandFilterOption) => (
             <CheckboxItem key={b.id} label={b.name}
               checked={brandId === b.id} onChange={() => handleBrand(b.id)} />
@@ -324,7 +333,7 @@ export default function ProductFilter({ onFiltersChange }: {
 
       {/* Availability */}
       {filters.availabilityStatuses.length > 0 && (
-        <FilterSection title="Availability Status">
+        <FilterSection title={t('shop.filters.availability', { defaultValue: 'Availability Status' })}>
           {filters.availabilityStatuses.map(val => (
             <CheckboxItem key={val} label={AVAILABILITY_LABELS[val] ?? val}
               checked={availability === val} onChange={() => handleAvailability(val)} />
@@ -332,13 +341,13 @@ export default function ProductFilter({ onFiltersChange }: {
         </FilterSection>
       )}
 
-      {/* Dynamic spec filters */}
+      {/* Dynamic spec filters — multi-select, value shown with its unit ("8 GB") */}
       {filters.specs.map((spec: SpecFilterOption) => (
         <FilterSection key={spec.code} title={spec.label} defaultOpen={spec.code === 'processor'}>
-          {spec.values.map(val => (
-            <CheckboxItem key={val} label={val}
-              checked={specSelections[spec.code] === val}
-              onChange={() => handleSpec(spec.code, val)} />
+          {spec.values.map(v => (
+            <CheckboxItem key={v.value} label={v.unit ? `${v.value} ${v.unit}` : v.value}
+              checked={(specSelections[spec.code] ?? []).includes(v.value)}
+              onChange={() => handleSpec(spec.code, v.value)} />
           ))}
         </FilterSection>
       ))}

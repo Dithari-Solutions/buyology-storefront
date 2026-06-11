@@ -1,4 +1,4 @@
-import Image, { StaticImageData } from "next/image";
+import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import FeatureCardBackground from "./FeatureCardBackground";
 
@@ -29,22 +29,11 @@ export default function FeatureCard({ id, title, description, bg, variant = "nor
 
     return (
         <Wrapper>
-            {/* Stunning generated background */}
+            {/* Pure CSS/SVG per-service themed background (gradient + glow + thematic icon).
+                The old faded PNG overlay was removed — it muddied these designs and some
+                services (Sell, Games) never had an image. */}
             <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-[1.04]">
                 <FeatureCardBackground id={id} />
-                {/* Original PNG faded over for thematic imagery (if provided) */}
-                {bg && (
-                    <div className="absolute inset-0 mix-blend-overlay opacity-55 transition-opacity duration-500 group-hover:opacity-75">
-                        <Image
-                            src={bg}
-                            alt=""
-                            fill
-                            sizes="(max-width: 768px) 391px, (max-width: 1280px) 45vw, 30vw"
-                            className="object-cover"
-                            placeholder="blur"
-                        />
-                    </div>
-                )}
             </div>
 
             {/* Glassmorphism content scrim */}

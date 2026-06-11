@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import ProductFilter, { type ActiveFilters } from '@/features/product/components/ProductFilter';
 import Products from '@/features/product/components/Products';
 import CategoryGrid from '@/features/product/components/CategoryGrid';
@@ -11,6 +12,7 @@ import Header from '@/shared/components/Header';
 const easing = [0.04, 0.62, 0.23, 0.98] as [number, number, number, number];
 
 export default function CatalogPage() {
+  const { t } = useTranslation('product');
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({ specs: {} });
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export default function CatalogPage() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                   <path d="M19 12H5M12 5l-7 7 7 7" />
                 </svg>
-                All Categories
+                {t('shop.products.allCategories', { defaultValue: 'All Categories' })}
               </button>
               <p className="text-[13px] text-gray-400 mb-4 font-medium">{selectedCategoryName}</p>
 

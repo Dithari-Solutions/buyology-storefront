@@ -302,15 +302,21 @@ export default function AuthForm() {
                 </button>
             </form>
 
-            <div className="flex items-center w-full my-5 gap-3">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-[12px] font-medium text-gray-400 whitespace-nowrap">
-                    {mode === "signIn" ? t("authForm.orSignInWith") : t("authForm.orSignUpWith")}
-                </span>
-                <div className="flex-1 h-px bg-gray-200" />
-            </div>
+            {/* Social logins are temporarily disabled (sign-in + sign-up). Re-enable by
+                removing the `false &&` guard below. */}
+            {false && (
+                <>
+                    <div className="flex items-center w-full my-5 gap-3">
+                        <div className="flex-1 h-px bg-gray-200" />
+                        <span className="text-[12px] font-medium text-gray-400 whitespace-nowrap">
+                            {mode === "signIn" ? t("authForm.orSignInWith") : t("authForm.orSignUpWith")}
+                        </span>
+                        <div className="flex-1 h-px bg-gray-200" />
+                    </div>
 
-            <SocialButtons onError={setApiError} />
+                    <SocialButtons onError={setApiError} />
+                </>
+            )}
 
             {/* Business / Supplier sign-up CTA */}
             <AnimatePresence initial={false}>

@@ -50,3 +50,7 @@ export async function addFavourite(productId: string): Promise<ApiFavoriteItem> 
 export async function removeFavourite(productId: string): Promise<void> {
     await apiClient.delete(`/api/favorites/${credentialId()}/products/${productId}`);
 }
+
+export async function clearFavouritesApi(): Promise<void> {
+    await apiClient.delete(`/api/favorites/${credentialId()}/all`);
+}

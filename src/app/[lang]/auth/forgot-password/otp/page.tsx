@@ -1,9 +1,9 @@
-import OtpForm from '@/features/auth/components/otp/OtpForm';
+import ResetPasswordForm from '@/features/auth/components/otp/ResetPasswordForm';
 
 export default function page() {
     return (
         <div className="w-full max-w-md">
-            <OtpForm />
+            <ResetPasswordForm />
         </div>
     )
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
-import type { RootState } from "@/store";
+import type { RootState, AppDispatch } from "@/store";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import AlertModal from "@/shared/components/AlertModal";
@@ -14,7 +14,7 @@ import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment } from "../services/payment.api";
 import { b2bAccountApi } from "@/features/b2b/account/api";
-import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee, selectPromo } from "@/features/cart/store/cartSlice";
+import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee, selectPromo, fetchCartThunk } from "@/features/cart/store/cartSlice";
 import { checkoutCart } from "@/features/cart/services/cart.api";
 import { createOrder } from "@/features/orders/services/orders.api";
 import { getCredentialIdFromAccessToken } from "@/shared/lib/tokenManager";
@@ -151,7 +151,7 @@ function OrderConfirmed({ lang }: { lang: string }) {
 
 export default function CheckoutPage() {
     const { t } = useTranslation("checkout");
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const router = useRouter();
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
@@ -205,34 +205,25 @@ export default function CheckoutPage() {
             });
     }, [userId]);
 
-    // ── Refetch cart with coords on mount to get accurate shippingFee ─────────
+    // ── Load the FULL cart (items + currency + shippingFee) into Redux on mount ──
+    // Previously this only refreshed shippingFee, so navigating straight to checkout
+    // left state.cart.items empty → totals showed "AED 0.00". fetchCartThunk loads
+    // the items + currency so selectCartTotals resolves the real total.
 
     useEffect(() => {
         if (!userId) return;
-        // Use stored Redux coords if available; otherwise fall back to browser API
-        const fetchWithCoords = (coords?: { lat: number; lng: number }) => {
-            import("@/features/cart/services/cart.api").then(({ getCart }) => {
-                getCart(coords).then((cart) => {
-                    if (cart.shippingFee != null) {
-                        dispatch(setShippingFee(cart.shippingFee));
-                    }
-                }).catch((err) => {
-                    if (process.env.NODE_ENV !== "production") {
-                        console.warn("Failed to refresh cart shipping fee:", err);
-                    }
-                });
-            });
+        const load = (coords?: { lat: number; lng: number }) => {
+            dispatch(fetchCartThunk({ coords }));
         };
-
         if (userCoords) {
-            fetchWithCoords(userCoords);
+            load(userCoords);
         } else if (typeof navigator !== "undefined" && navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (pos) => fetchWithCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-                () => fetchWithCoords()
+                (pos) => load({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                () => load()
             );
         } else {
-            fetchWithCoords();
+            load();
         }
     }, [userId, userCoords, dispatch]);
 
@@ -432,6 +423,9 @@ export default function CheckoutPage() {
                                 initialData={shippingData ?? undefined}
                                 savedAddresses={savedAddresses}
                                 profilePhone={profile?.phoneNumber ?? undefined}
+                                profileEmail={profile?.email ?? undefined}
+                                profileName={profile ? `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim() : undefined}
+                                phoneVerified={profile?.phoneVerified ?? undefined}
                                 onSaveAddress={handleSaveAddress}
                             />
                         )}

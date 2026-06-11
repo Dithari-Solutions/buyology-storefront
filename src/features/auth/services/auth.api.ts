@@ -65,6 +65,31 @@ export async function verifyOtp(payload: OtpVerifyRequest): Promise<ApiResponse<
   }
 }
 
+// ── Forgot Password — sends a reset OTP to the email ──────────────────────────
+export async function forgotPassword(email: string): Promise<ApiResponse<string>> {
+  try {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/forgot-password", { email });
+    return normalizeResponse<string>(data);
+  } catch (error) {
+    return errorResponse<string>(error);
+  }
+}
+
+// ── Reset Password — verifies the OTP and sets a new password ─────────────────
+export async function resetPassword(payload: {
+  email: string;
+  otpCode: string;
+  newPassword: string;
+  repeatPassword: string;
+}): Promise<ApiResponse<string>> {
+  try {
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/reset-password", payload);
+    return normalizeResponse<string>(data);
+  } catch (error) {
+    return errorResponse<string>(error);
+  }
+}
+
 // ── Sign In ───────────────────────────────────────────────────────────────────
 // 400 bad request | 401 invalid credentials
 // Must use withCredentials so the browser stores the HttpOnly refresh-token cookie.

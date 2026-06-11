@@ -201,7 +201,10 @@ export default function SuperDeals() {
                     style={{
                         scrollbarWidth: "none",
                         msOverflowStyle: "none",
-                        scrollBehavior: "smooth",
+                        // NOTE: no CSS `scroll-behavior: smooth` here — it would force the
+                        // instant infinite-loop reposition (scrollTo behavior:"auto") to
+                        // animate and fight the scroll engine, shuffling the slides. Arrow
+                        // clicks stay smooth via the explicit scrollBy({behavior:"smooth"}).
                         overscrollBehaviorX: "contain",
                     }}
                 >

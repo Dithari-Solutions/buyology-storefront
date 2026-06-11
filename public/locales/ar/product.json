@@ -100,5 +100,55 @@
     "signIn": "تسجيل الدخول",
     "createAccount": "إنشاء حساب",
     "successMsg": "تم إرسال سؤالك وهو في انتظار الموافقة."
+  },
+  "shop": {
+    "filters": {
+      "title": "عوامل التصفية",
+      "priceRange": "نطاق السعر",
+      "condition": "الحالة",
+      "category": "الفئة",
+      "subcategory": "الفئة الفرعية",
+      "brand": "العلامة التجارية",
+      "availability": "حالة التوفر"
+    },
+    "condition": {
+      "NEW": "جديد",
+      "REFURBISHED": "مُجدد"
+    },
+    "availability": {
+      "IN_STOCK": "متوفر",
+      "OUT_OF_STOCK": "غير متوفر",
+      "PRE_ORDER": "طلب مسبق"
+    },
+    "sort": {
+      "label": "ترتيب",
+      "POPULAR": "الأكثر شعبية",
+      "NEWEST": "الأحدث",
+      "PRICE_ASC": "السعر: من الأقل للأعلى",
+      "PRICE_DESC": "السعر: من الأعلى للأقل"
+    },
+    "products": {
+      "loading": "جارٍ تحميل المنتجات…",
+      "showing": "عرض",
+      "of": "من",
+      "items": "منتج",
+      "searchResults": "نتائج البحث عن",
+      "allCategories": "كل الفئات"
+    }
+  },
+  "features": {
+    "delivery": {
+      "freeLabel": "توصيل مجاني",
+      "freeSub": "على جميع الطلبات",
+      "feeLabel": "التوصيل"
+    },
+    "warranty": {
+      "label": "ضمان سنة واحدة",
+      "sub": "تغطية رسمية"
+    },
+    "ships": {
+      "label": "الشحن خلال 2–3 أيام",
+      "sub": "إرسال سريع"
+    }
   }
 }

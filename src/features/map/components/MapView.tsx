@@ -5,9 +5,14 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 // ── Config ────────────────────────────────────────────────────────────────────
-// Hosts must be configured via env vars; HTTPS is required in production.
+// OSRM (routing) is still self-hosted; the basemap uses open-source CARTO tiles.
 const OSRM = process.env.NEXT_PUBLIC_OSRM_URL ?? "http://5.189.132.250:5000";
-const TILES = process.env.NEXT_PUBLIC_TILE_URL ?? "http://5.189.132.250:8090";
+const CARTO_TILES = [
+    "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+    "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+    "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+    "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+];
 
 // Route endpoints [lng, lat]
 const ORIGIN: [number, number] = [49.8671, 40.4093];
@@ -161,9 +166,9 @@ export default function MapView() {
         sources: {
           tiles: {
             type: "raster",
-            tiles: [`${TILES}/tile/{z}/{x}/{y}.png`],
+            tiles: CARTO_TILES,
             tileSize: 256,
-            attribution: "© OpenStreetMap contributors",
+            attribution: "© OpenStreetMap contributors, © CARTO",
           },
         },
         layers: [{ id: "tiles", type: "raster", source: "tiles" }],

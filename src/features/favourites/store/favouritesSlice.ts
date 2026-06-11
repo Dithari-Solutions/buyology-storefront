@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 import type { FavouriteItemMeta, FavouritesState } from "../types";
-import { getFavourites, addFavourite, removeFavourite } from "../services/favourites.api";
+import { getFavourites, addFavourite, removeFavourite, clearFavouritesApi } from "../services/favourites.api";
 import { getProductById, getPrimaryImage } from "@/features/product/services/productService";
 
 const initialState: FavouritesState = {
@@ -96,6 +96,17 @@ export const removeFromFavouritesThunk = createAsyncThunk(
     }
 );
 
+export const clearAllFavouritesThunk = createAsyncThunk(
+    "favourites/clearAll",
+    async (_arg, { rejectWithValue }) => {
+        try {
+            await clearFavouritesApi();
+        } catch {
+            return rejectWithValue(null);
+        }
+    }
+);
+
 // ── Slice ────────────────────────────────────────────────────────────────────
 
 const favouritesSlice = createSlice({
@@ -136,6 +147,11 @@ const favouritesSlice = createSlice({
         // removeFromFavouritesThunk — optimistic remove on pending
         builder.addCase(removeFromFavouritesThunk.pending, (state, action) => {
             state.items = state.items.filter((i) => i.id !== action.meta.arg.productId);
+        });
+
+        // clearAllFavouritesThunk — optimistic clear on pending
+        builder.addCase(clearAllFavouritesThunk.pending, (state) => {
+            state.items = [];
         });
     },
 });

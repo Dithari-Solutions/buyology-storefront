@@ -102,11 +102,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     icons: {
       icon: [
-        { url: "/favicon.ico" },
-        { url: "/logo.png", type: "image/png" },
+        { url: "/buyology-logo.png", type: "image/png" },
       ],
-      shortcut: "/favicon.ico",
-      apple: "/logo.png",
+      shortcut: "/buyology-logo.png",
+      apple: "/buyology-logo.png",
     },
     manifest: "/manifest.webmanifest",
     category: "shopping",

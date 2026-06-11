@@ -458,47 +458,39 @@ export default function ContactPage() {
             {/* ── globe + country selector ─────────────────────────────────── */}
             <section className="w-full flex flex-col items-center mt-4 md:mt-8">
                 <div className="w-[95%] md:w-[90%] flex flex-col items-center">
-                    {/* top row: dropdown ←  globe  → tagline */}
-                    <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
-                        {/* country dropdown */}
-                        <ScrollReveal direction="left" delay={0.1}>
-                            <div className="relative">
-                                <select
-                                    value={selectedId}
-                                    onChange={(e) => setSelectedId(e.target.value as CountryId)}
-                                    className="appearance-none bg-white border border-gray-200 rounded-2xl ps-4 pe-10 py-3 text-[14px] font-semibold text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/12 transition-all shadow-sm cursor-pointer"
-                                >
-                                    {COUNTRIES.map((c) => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.flagEmoji}  {t(c.nameKey)}
-                                        </option>
-                                    ))}
-                                </select>
-                                <span className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="6 9 12 15 18 9" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </ScrollReveal>
+                    {/* tagline (dropdown removed — selection now lives under the globe) */}
+                    <ScrollReveal delay={0.1}>
+                        <div className="flex items-center gap-2 text-[13px] text-gray-400 font-medium mb-6">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FBBB14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="2" y1="12" x2="22" y2="12" />
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                            </svg>
+                            {t("globe.chooseYourSide")}
+                        </div>
+                    </ScrollReveal>
 
-                        {/* tagline */}
-                        <ScrollReveal direction="right" delay={0.1}>
-                            <div className="flex items-center gap-2 text-[13px] text-gray-400 font-medium">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FBBB14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <line x1="2" y1="12" x2="22" y2="12" />
-                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                                </svg>
-                                {t("globe.chooseYourSide")}
-                            </div>
-                        </ScrollReveal>
-                    </div>
-
-                    {/* globe */}
-                    <ScrollReveal delay={0.15}>
+                    {/* globe — overflow-visible so it isn't clipped */}
+                    <ScrollReveal delay={0.15} className="overflow-visible">
                         <Globe3D selectedId={selectedId} onSelect={setSelectedId} />
                     </ScrollReveal>
+
+                    {/* country quick-select pills — directly under the globe */}
+                    <div className="flex flex-wrap gap-2 mt-6 justify-center">
+                        {COUNTRIES.map((c) => (
+                            <button
+                                key={c.id}
+                                onClick={() => setSelectedId(c.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-semibold transition-all ${
+                                    c.id === selectedId ? "text-white shadow-md" : "bg-white text-gray-600 hover:bg-gray-50 shadow-sm"
+                                }`}
+                                style={c.id === selectedId ? { backgroundColor: "#402F75" } : {}}
+                            >
+                                <span>{c.flagEmoji}</span>
+                                <span>{t(c.nameKey)}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </section>
 
@@ -606,31 +598,6 @@ export default function ContactPage() {
                             </motion.div>
                         </motion.div>
                     </AnimatePresence>
-
-                    {/* country quick-select pills */}
-                    <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                        {COUNTRIES.map((c) => (
-                            <motion.button
-                                key={c.id}
-                                onClick={() => setSelectedId(c.id)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-semibold transition-all ${
-                                    c.id === selectedId
-                                        ? "text-white shadow-md"
-                                        : "bg-white text-gray-600 hover:bg-gray-50 shadow-sm"
-                                }`}
-                                style={
-                                    c.id === selectedId
-                                        ? { backgroundColor: "#402F75" }
-                                        : {}
-                                }
-                            >
-                                <span>{c.flagEmoji}</span>
-                                <span>{t(c.nameKey)}</span>
-                            </motion.button>
-                        ))}
-                    </div>
                 </div>
             </section>
 

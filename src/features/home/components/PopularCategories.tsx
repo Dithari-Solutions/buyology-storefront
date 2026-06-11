@@ -118,9 +118,6 @@ export default function PopularCategories() {
                             <p className="font-semibold text-[13px] sm:text-[14px] text-gray-800">
                                 {t(`categories.${cat.key}.name`)}
                             </p>
-                            <p className="text-[12px] text-gray-700 mt-0.5">
-                                {t(`categories.${cat.key}.count`)}
-                            </p>
                         </div>
                     </Link>
                 ))}

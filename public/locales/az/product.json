@@ -100,5 +100,55 @@
     "signIn": "Daxil ol",
     "createAccount": "Hesab yarat",
     "successMsg": "Sualınız göndərildi və təsdiq gözləyir."
+  },
+  "shop": {
+    "filters": {
+      "title": "Filtrlər",
+      "priceRange": "Qiymət aralığı",
+      "condition": "Vəziyyət",
+      "category": "Kateqoriya",
+      "subcategory": "Alt kateqoriya",
+      "brand": "Brend",
+      "availability": "Mövcudluq statusu"
+    },
+    "condition": {
+      "NEW": "Yeni",
+      "REFURBISHED": "Təmir olunmuş"
+    },
+    "availability": {
+      "IN_STOCK": "Stokda var",
+      "OUT_OF_STOCK": "Stokda yoxdur",
+      "PRE_ORDER": "Ön sifariş"
+    },
+    "sort": {
+      "label": "Sırala",
+      "POPULAR": "Ən populyar",
+      "NEWEST": "Ən yeni",
+      "PRICE_ASC": "Qiymət: ucuzdan bahaya",
+      "PRICE_DESC": "Qiymət: bahadan ucuza"
+    },
+    "products": {
+      "loading": "Məhsullar yüklənir…",
+      "showing": "Göstərilir",
+      "of": "/",
+      "items": "məhsul",
+      "searchResults": "Axtarış nəticələri",
+      "allCategories": "Bütün kateqoriyalar"
+    }
+  },
+  "features": {
+    "delivery": {
+      "freeLabel": "Pulsuz çatdırılma",
+      "freeSub": "Bütün sifarişlərə",
+      "feeLabel": "Çatdırılma"
+    },
+    "warranty": {
+      "label": "1 illik zəmanət",
+      "sub": "Rəsmi təminat"
+    },
+    "ships": {
+      "label": "2–3 gündə göndərilir",
+      "sub": "Sürətli göndərmə"
+    }
   }
 }

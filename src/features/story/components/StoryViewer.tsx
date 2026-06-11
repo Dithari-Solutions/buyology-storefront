@@ -211,11 +211,14 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
     }, [handleClose, goNext, goPrev]);
 
     const handleShare = async () => {
-        const shareData = { title: story.title, url: window.location.href };
+        // Share a deep link to THIS story, not the current page URL.
+        const shareLang = window.location.pathname.split("/")[1] || "en";
+        const url = `${window.location.origin}/${shareLang}/story/${story.id}`;
+        const shareData = { title: story.title, url };
         if (navigator.share) {
             try { await navigator.share(shareData); } catch { /* cancelled */ }
         } else {
-            await navigator.clipboard.writeText(window.location.href);
+            await navigator.clipboard.writeText(url);
         }
     };
 

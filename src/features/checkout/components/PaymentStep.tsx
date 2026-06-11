@@ -5,37 +5,25 @@ import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { selectCartTotals } from "@/features/cart/store/cartSlice";
+import Image from "next/image";
 import { b2bAccountApi } from "@/features/b2b/account/api";
+import PaymobLogo from "@/assets/payments/paymob.png";
+import TabbyLogo from "@/assets/payments/tabby.png";
+import TamaraLogo from "@/assets/payments/tamara.png";
 import type { ShippingFormData, PaymentMethod } from "../types";
 
-// ── Brand Badge Components ────────────────────────────────────────────────────
+// ── Brand Badge Components — official provider logos ──────────────────────────
 
 function PaymobCardBadge() {
-    return (
-        <span className="inline-flex items-center gap-1 bg-[#402F75] text-white text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wide">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                <line x1="1" y1="10" x2="23" y2="10" />
-            </svg>
-            paymob
-        </span>
-    );
+    return <Image src={PaymobLogo} alt="Paymob" className="h-5 w-auto object-contain" />;
 }
 
 function TabbyBadge() {
-    return (
-        <span className="inline-flex items-center bg-[#3DBFA0] text-white text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wide">
-            tabby
-        </span>
-    );
+    return <Image src={TabbyLogo} alt="Tabby" className="h-5 w-auto object-contain" />;
 }
 
 function TamaraBadge() {
-    return (
-        <span className="inline-flex items-center bg-[#00B69B] text-white text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wide">
-            tamara
-        </span>
-    );
+    return <Image src={TamaraLogo} alt="Tamara" className="h-5 w-auto object-contain" />;
 }
 
 function CreditBadge() {

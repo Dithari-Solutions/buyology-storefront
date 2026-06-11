@@ -7,6 +7,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import ProductDetailImage from "./ProductDetailImage";
 import ProductFeaturesBadges from "./ProductFeaturesBadges";
+import { FlameIcon, HourglassIcon, BoltIcon, AlertIcon, LockIcon, ReturnIcon, CheckIcon } from "@/shared/icons";
 import ProductReviews from "./ProductReviews";
 import ProductQA from "./ProductQA";
 import { addItem, addToCartThunk } from "@/features/cart/store/cartSlice";
@@ -392,7 +393,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                     transition={{ delay: 0.2 }}
                     className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-red-300/40"
                   >
-                    🔥 {t("details.badges.superDeal")}
+                    <FlameIcon className="w-3.5 h-3.5" />{t("details.badges.superDeal")}
                   </motion.span>
                 )}
                 {product.isLimitedStock && (
@@ -402,7 +403,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                     transition={{ delay: 0.3 }}
                     className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-orange-300/40"
                   >
-                    ⏳ {t("details.badges.limited")}
+                    <HourglassIcon className="w-3.5 h-3.5" />{t("details.badges.limited")}
                   </motion.span>
                 )}
                 {hasDiscount && discountPercent > 0 && (
@@ -495,7 +496,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                 )}
                 {product.expressDelivery && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                    ⚡ {t("details.badges.express")}
+                    <BoltIcon className="w-3.5 h-3.5" />{t("details.badges.express")}
                   </span>
                 )}
               </div>
@@ -535,7 +536,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
 
               {unavailableInCountry && (
                 <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  <span>⚠️</span>
+                  <AlertIcon className="w-4 h-4 flex-shrink-0" />
                   <span>{t("details.unavailableNotice")}</span>
                 </div>
               )}
@@ -709,18 +710,18 @@ export default function ProductDetailClient({ product: initialProduct, images: i
               {/* Trust signals */}
               <div className="grid grid-cols-3 gap-2 pt-2">
                 {[
-                  { icon: "🔒", title: t("details.trust.secure"), sub: t("details.trust.checkout") },
+                  { icon: <LockIcon className="w-5 h-5 text-[#402F75]" />, title: t("details.trust.secure"), sub: t("details.trust.checkout") },
                   {
-                    icon: "↩",
+                    icon: <ReturnIcon className="w-5 h-5 text-[#402F75]" />,
                     title: returnWindowDays != null
                       ? t("details.trust.dayCount", { days: returnWindowDays })
                       : t("details.trust.thirtyDay"),
                     sub: t("details.trust.returns"),
                   },
-                  { icon: "✓", title: t("details.trust.oneYear"), sub: t("details.trust.warranty") },
+                  { icon: <CheckIcon className="w-5 h-5 text-[#402F75]" />, title: t("details.trust.oneYear"), sub: t("details.trust.warranty") },
                 ].map(({ icon, title, sub }) => (
                   <div key={title} className="flex flex-col items-center gap-0.5 rounded-xl bg-gray-50 border border-gray-100 px-3 py-3 text-center">
-                    <span className="text-lg">{icon}</span>
+                    {icon}
                     <span className="text-[11px] font-bold text-gray-900">{title}</span>
                     <span className="text-[10px] text-gray-500">{sub}</span>
                   </div>
@@ -766,7 +767,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
             <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-[#FBBB14]/20 blur-2xl" />
             <div className="relative">
               <h3 className="text-lg font-bold mb-4">{t("details.whyBuy")}</h3>
-              <ProductFeaturesBadges />
+              <ProductFeaturesBadges freeDelivery={product.freeDelivery} deliveryFee={product.deliveryFee} currency={product.currency} />
             </div>
           </div>
         </motion.section>
@@ -798,7 +799,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{t("details.stores.store")}</span>
                     {store.expressDelivery && (
-                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">⚡ {t("details.badges.express")}</span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full"><BoltIcon className="w-3 h-3" />{t("details.badges.express")}</span>
                     )}
                   </div>
                   <span className="block text-xs font-mono text-gray-600 truncate mb-3">{store.storeId}</span>

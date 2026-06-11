@@ -18,7 +18,7 @@ import {
     selectCartCurrency,
 } from "../store/cartSlice";
 import type { CartItemMeta } from "../types";
-import MacPro14 from "@/assets/products/macpro14/1.png";
+import { BoltIcon } from "@/shared/icons";
 
 interface CartItemProps {
     item: CartItemMeta;
@@ -92,32 +92,21 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
             {/* ── Quick Delivery badge ── */}
             {item.quickDelivery && (
                 <span className="absolute top-2 end-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none flex items-center gap-1">
-                    ⚡ {t("cartItems.quickDelivery")}
+                    <BoltIcon className="w-3 h-3" /> {t("cartItems.quickDelivery")}
                 </span>
             )}
 
             {/* ── Image with discount badge ── */}
             <div className="relative w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] md:w-[110px] md:h-[110px] rounded-xl border border-[#FBBB14] flex-shrink-0 flex items-center justify-center overflow-hidden">
-                {productHref ? (
-                    <Link href={productHref} className="w-full h-full">
-                        <Image
-                            src={item.imageUrl || MacPro14}
-                            alt={item.title}
-                            fill
-                            unoptimized={!!item.imageUrl}
-                            className="object-contain p-2"
-                            sizes="110px"
-                        />
+                {/* Skeleton until the real product image resolves — no mock placeholder. */}
+                {!item.imageUrl ? (
+                    <div className="w-full h-full bg-gray-100 animate-pulse" />
+                ) : productHref ? (
+                    <Link href={productHref} className="w-full h-full block">
+                        <Image src={item.imageUrl} alt={item.title} fill unoptimized className="object-contain p-2" sizes="110px" />
                     </Link>
                 ) : (
-                    <Image
-                        src={item.imageUrl || MacPro14}
-                        alt={item.title}
-                        fill
-                        unoptimized={!!item.imageUrl}
-                        className="object-contain p-2"
-                        sizes="110px"
-                    />
+                    <Image src={item.imageUrl} alt={item.title} fill unoptimized className="object-contain p-2" sizes="110px" />
                 )}
                 {item.discountPercent > 0 && (
                     <span className="absolute top-1.5 start-1.5 bg-[#402F75] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none z-10">
@@ -150,15 +139,33 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                     </div>
                 </div>
 
-                {/* Variant tags — single row, no overflow */}
-                <div className="flex gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-gray-500 overflow-hidden">
-                    <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5 truncate max-w-[50%]">
-                        {t("cartItems.color")}: <strong className="text-gray-700">{item.variant.color}</strong>
-                    </span>
-                    <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5 truncate max-w-[50%]">
-                        {t("cartItems.storage")}: <strong className="text-gray-700">{item.variant.storage}</strong>
-                    </span>
-                </div>
+                {/* Selected specs — full set from the cart API (RAM, storage, color, …) */}
+                {item.selectedSpecs && item.selectedSpecs.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 text-[11px] sm:text-[12px] text-gray-500">
+                        {item.selectedSpecs.map((s) => (
+                            <span key={s.specOptionId} className="inline-flex items-center gap-1 bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5">
+                                {s.colorCode && (
+                                    <span className="w-3 h-3 rounded-full border border-gray-200 flex-shrink-0" style={{ backgroundColor: s.colorCode }} />
+                                )}
+                                {s.groupName ? `${s.groupName}: ` : ""}
+                                <strong className="text-gray-700">{s.unit ? `${s.value} ${s.unit}` : s.value}</strong>
+                            </span>
+                        ))}
+                    </div>
+                ) : (item.variant.color || item.variant.storage) ? (
+                    <div className="flex gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-gray-500 overflow-hidden">
+                        {item.variant.color && (
+                            <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5 truncate max-w-[50%]">
+                                {t("cartItems.color")}: <strong className="text-gray-700">{item.variant.color}</strong>
+                            </span>
+                        )}
+                        {item.variant.storage && (
+                            <span className="bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5 truncate max-w-[50%]">
+                                {t("cartItems.storage")}: <strong className="text-gray-700">{item.variant.storage}</strong>
+                            </span>
+                        )}
+                    </div>
+                ) : null}
 
                 {/* Qty + Subtotal + Actions */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3">

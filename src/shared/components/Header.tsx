@@ -378,8 +378,8 @@ export default function Header() {
                             onClick={() => setSearchOpen(true)}
                             className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 rounded-full h-[36px] px-4 transition-colors duration-200 cursor-pointer group"
                         >
-                            <Image src={SearchIcon} alt="search" width={15} className="opacity-70 group-hover:opacity-100 transition-opacity" />
-                            <span className="text-white/50 text-[13px] group-hover:text-white/70 transition-colors w-[100px] xl:w-[130px] text-start">
+                            <Image src={SearchIcon} alt="search" width={16} className="brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                            <span className="text-white/70 text-[13px] group-hover:text-white transition-colors w-[110px] xl:w-[150px] text-start whitespace-nowrap overflow-hidden text-ellipsis">
                                 {t("searchPlaceholder")}
                             </span>
                         </button>
@@ -419,7 +419,7 @@ export default function Header() {
                             className="flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
                             aria-label="Open search"
                         >
-                            <Image src={SearchIcon} alt="search" width={20} />
+                            <Image src={SearchIcon} alt="search" width={20} className="brightness-0 invert opacity-90" />
                         </button>
 
                         {isLoggedIn ? (
@@ -434,13 +434,7 @@ export default function Header() {
                                     <Image src={ProfileIcon} alt="profile" width={20} />
                                 </MobileIconBtn>
                             </>
-                        ) : (
-                            <Link href={`/${lang}/${authSlug}`}>
-                                <button className="bg-[#FBBB14] hover:bg-[#e5a800] rounded-full px-4 h-[32px] text-[12px] font-bold text-[#1a0f40] cursor-pointer transition-colors duration-200">
-                                    {t("loginButton")}
-                                </button>
-                            </Link>
-                        )}
+                        ) : null}
 
                         {/* Hamburger → X */}
                         <button
@@ -455,6 +449,17 @@ export default function Header() {
                             </div>
                         </button>
                     </div>
+
+                    {/* Mobile: full-width login row below the header bar (small screens, logged-out) */}
+                    {!isLoggedIn && (
+                        <div className="lg:hidden w-full mt-3">
+                            <Link href={`/${lang}/${authSlug}`} className="block">
+                                <button className="w-full bg-[#FBBB14] hover:bg-[#e5a800] rounded-full h-[40px] text-[13px] font-bold text-[#1a0f40] cursor-pointer transition-colors duration-200 shadow-sm">
+                                    {t("loginButton")}
+                                </button>
+                            </Link>
+                        </div>
+                    )}
 
                     {/* Mobile dropdown menu */}
                     <AnimatePresence>

@@ -22,6 +22,8 @@ export interface CartItemMeta {
     /** Product slug for linking to the product detail page */
     slug?: string;
     variant: CartItemVariant;
+    /** Full selected specs from the cart API (groupName + value + unit + color). */
+    selectedSpecs?: ApiSpecSelection[];
     price: number;
     originalPrice: number;
     discountPercent: number;
@@ -91,6 +93,8 @@ export interface AddToCartPayload {
 export interface ApiSpecSelection {
     specOptionId: string;
     groupCode: string;
+    /** Human-readable group label (e.g. "RAM") from the backend. */
+    groupName?: string | null;
     value: string;
     unit: string | null;
     additionalPrice: number;

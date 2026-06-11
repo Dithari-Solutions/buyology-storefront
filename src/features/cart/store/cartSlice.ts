@@ -46,6 +46,7 @@ function mergeApiItems(existing: CartItemMeta[], apiItems: ApiCartItem[]): CartI
             title: match?.title ?? apiItem.productSku,
             imageUrl: match?.imageUrl ?? "",
             variant: match?.variant ?? { color: "", storage: "" },
+            selectedSpecs: apiItem.selectedSpecs ?? [],
             price: apiItem.unitPrice,
             // Prefer the backend's pre-discount price; fall back to any existing meta.
             originalPrice: apiItem.originalUnitPrice ?? match?.originalPrice ?? apiItem.unitPrice,

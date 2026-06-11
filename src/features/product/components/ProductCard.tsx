@@ -8,6 +8,7 @@ import CartIcon from "@/assets/icons/cart.png";
 import StarIcon from "@/assets/icons/star.png";
 import StorageIcon from "@/assets/icons/storage.png";
 import MacPro13 from "@/assets/devices/macPro13.png";
+import { GlobeIcon, BoltIcon, TruckIcon } from "@/shared/icons";
 import { useRouter, useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
@@ -480,7 +481,7 @@ export default function ProductCard({
           {/* Browse-only badge */}
           {availableInSelectedCountry === false && (
             <span className="inline-flex items-center gap-[4px] self-start bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
-              🌐 Browse only — not available in your country
+              <GlobeIcon className="w-3 h-3" /> Browse only — not available in your country
             </span>
           )}
 
@@ -503,7 +504,7 @@ export default function ProductCard({
                           : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-gray-400'
                     }`}
                   >
-                    <span>{opt.expressDelivery ? '⚡ Express — under 30 min' : '🚢 Standard shipping'}</span>
+                    <span className="inline-flex items-center gap-1">{opt.expressDelivery ? <><BoltIcon className="w-3 h-3" />Express — under 30 min</> : <><TruckIcon className="w-3 h-3" />Standard shipping</>}</span>
                     <span className="font-bold">{formatPrice(opt.storePrice, opt.currency)}</span>
                   </button>
                 );
@@ -513,12 +514,12 @@ export default function ProductCard({
             <>
               {expressDelivery === true && (
                 <span className="inline-flex items-center gap-[4px] self-start bg-green-50 text-green-700 border border-green-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
-                  ⚡ Express — under 30 min
+                  <BoltIcon className="w-3 h-3" />Express — under 30 min
                 </span>
               )}
               {expressDelivery === false && (
                 <span className="inline-flex items-center gap-[4px] self-start bg-gray-50 text-gray-500 border border-gray-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
-                  🚢 Standard shipping
+                  <TruckIcon className="w-3 h-3" />Standard shipping
                 </span>
               )}
             </>
@@ -617,7 +618,7 @@ export default function ProductCard({
                           transition={{ duration: 0.2 }}
                           className="flex items-center gap-[5px]"
                         >
-                          🌐 Browse only
+                          <GlobeIcon className="w-3 h-3" />Browse only
                         </motion.span>
                       ) : added ? (
                         <motion.span

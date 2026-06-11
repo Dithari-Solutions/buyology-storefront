@@ -91,7 +91,7 @@
         "gamesDesc": "Play exciting games on our app and win tokens for your next purchase."
     },
     "limitedStock": {
-        "badge": "🔥 Limited Stock",
+        "badge": "Limited Stock",
         "onlyLeft": "Only 5 left",
         "productName": "MacBook Pro 13 A1708 (2017)",
         "headlineLine1": "Limited stock",
@@ -106,13 +106,13 @@
         ]
     },
     "quickDelivery": {
-        "label": "⚡ Quick Delivery",
+        "label": "Quick Delivery",
         "tagline": "Get it in 30 minutes",
         "description": "Order now and receive your items delivered straight to your door in under 30 minutes.",
         "cta": "Shop Now"
     },
     "superDeals": {
-        "flashSale": "⚡ Flash Sale",
+        "flashSale": "Flash Sale",
         "title": "Super Deals",
         "seeAll": "See all",
         "prev": "Previous",
@@ -120,5 +120,10 @@
         "addToCart": "Add to Cart",
         "save": "Save",
         "wishlist": "Wishlist"
+    },
+    "storyUnavailable": {
+        "title": "This story is no longer available",
+        "desc": "It may have expired or been removed. Check out what's new instead.",
+        "cta": "Go to homepage"
     }
 }

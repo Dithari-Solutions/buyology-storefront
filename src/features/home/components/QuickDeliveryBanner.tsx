@@ -3,6 +3,7 @@
 import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import { BoltIcon } from "@/shared/icons";
 
 export default function QuickDeliveryBanner() {
     const { t } = useTranslation("home");
@@ -44,6 +45,7 @@ export default function QuickDeliveryBanner() {
                         <div className="flex flex-col items-start">
                             {/* Badge */}
                             <span className="inline-flex items-center gap-1 bg-[#FBBB14] text-white text-[11px] font-bold px-3 py-[5px] rounded-full mb-2 shadow-md">
+                                <BoltIcon className="w-3 h-3" />
                                 {t("quickDelivery.label")}
                             </span>
                             <h2 className="text-[24px] sm:text-[28px] md:text-[34px] font-extrabold text-white leading-tight">

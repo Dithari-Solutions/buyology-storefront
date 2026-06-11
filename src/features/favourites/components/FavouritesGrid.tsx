@@ -1,25 +1,63 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { selectFavouriteItems, selectFavouritesLoading, clearFavourites } from "../store/favouritesSlice";
-import { FAVOURITE_CATEGORIES, type FavouriteCategory } from "../constants";
+import { useParams } from "next/navigation";
+import { selectFavouriteItems, selectFavouritesLoading, clearAllFavouritesThunk } from "../store/favouritesSlice";
+import { addItem } from "@/features/cart/store/cartSlice";
+import { getProductFilters } from "@/features/product/services/productService";
+import type { AppDispatch } from "@/store";
+import type { Lang } from "@/config/pathSlugs";
 import FavouriteCard from "./FavouriteCard";
 import FavouritesEmptyItems from "./FavouritesEmptyItems";
 import type { FavouriteItemMeta } from "../types";
 
 export default function FavouritesGrid() {
     const { t } = useTranslation("favourites");
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
+    const params = useParams();
+    const lang = (params?.lang as Lang) ?? "en";
     const items = useSelector(selectFavouriteItems);
     const loading = useSelector(selectFavouritesLoading);
-    const [activeCategory, setActiveCategory] = useState<FavouriteCategory>("all");
+    const [activeCategory, setActiveCategory] = useState<string>("all");
+
+    // Resolve category id → name so the filter tabs show real labels.
+    const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
+    useEffect(() => {
+        getProductFilters(lang)
+            .then((f) => {
+                const map: Record<string, string> = {};
+                f.categories.forEach((c) => { map[c.id] = c.name; });
+                setCategoryNames(map);
+            })
+            .catch(() => {});
+    }, [lang]);
+
+    // Category tabs derived from the categories actually present in the favourites.
+    const availableCategories = Array.from(new Set(items.map((i) => i.category).filter(Boolean)));
 
     const filteredItems: FavouriteItemMeta[] =
         activeCategory === "all"
             ? items
             : items.filter((i) => i.category === activeCategory);
+
+    const handleAddAllToCart = () => {
+        items.forEach((item, idx) => {
+            dispatch(addItem({
+                id: `cart-${item.id}-${Date.now()}-${idx}`,
+                productId: item.id,
+                title: item.title,
+                imageUrl: item.imageUrl ?? "",
+                variant: { color: "", storage: item.storage ?? "" },
+                price: item.price,
+                originalPrice: item.originalPrice,
+                discountPercent: item.originalPrice > 0 ? Math.round((item.discount / item.originalPrice) * 100) : 0,
+                quantity: 1,
+                savedForLater: false,
+            }));
+        });
+    };
 
     const inStockCount = items.filter((i) => i.inStock).length;
     const potentialSavings = items.reduce(
@@ -83,9 +121,9 @@ export default function FavouritesGrid() {
 
             {/* Filters + Actions toolbar */}
             <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px] flex flex-wrap items-center justify-between gap-[12px]">
-                {/* Category tabs */}
+                {/* Category tabs — derived from the categories present in the favourites */}
                 <div className="flex items-center gap-[8px] flex-wrap">
-                    {FAVOURITE_CATEGORIES.map((cat) => (
+                    {["all", ...availableCategories].map((cat) => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
@@ -95,7 +133,9 @@ export default function FavouritesGrid() {
                                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                             }`}
                         >
-                            {t(`filters.${cat}`)}
+                            {cat === "all"
+                                ? t("filters.all", { defaultValue: "All" })
+                                : (categoryNames[cat] ?? t("filters.category", { defaultValue: "Category" }))}
                         </button>
                     ))}
                 </div>
@@ -103,7 +143,7 @@ export default function FavouritesGrid() {
                 {/* Action buttons */}
                 <div className="flex items-center gap-[10px]">
                     <button
-                        onClick={() => {}}
+                        onClick={handleAddAllToCart}
                         className="flex items-center gap-[7px] bg-[#FBBB14] text-white rounded-[30px] px-[16px] py-[8px] text-[13px] font-bold hover:bg-[#f0b000] transition-colors cursor-pointer"
                     >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -114,7 +154,7 @@ export default function FavouritesGrid() {
                         {t("actions.addAllToCart")}
                     </button>
                     <button
-                        onClick={() => dispatch(clearFavourites())}
+                        onClick={() => dispatch(clearAllFavouritesThunk())}
                         className="flex items-center gap-[7px] border border-red-200 text-red-500 rounded-[30px] px-[16px] py-[8px] text-[13px] font-semibold hover:bg-red-50 transition-colors cursor-pointer"
                     >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

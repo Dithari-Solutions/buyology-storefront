@@ -60,6 +60,10 @@ export interface ApiProduct {
   currency?: string | null;
   availableInSelectedCountry?: boolean | null;
   expressDelivery?: boolean | null;
+  /** True when the product qualifies for free delivery (price ≥ 100-AED-equiv). */
+  freeDelivery?: boolean | null;
+  /** Delivery fee in the same currency as storePrice. 0 when freeDelivery. */
+  deliveryFee?: number | null;
   storeOptions?: Array<{
     storeId: string;
     storePrice: number;
@@ -83,9 +87,11 @@ export interface ProductQueryParams {
   lng?: number;
   page?: number;
   size?: number;
+  /** POPULAR | NEWEST | PRICE_ASC | PRICE_DESC */
+  sort?: string;
 }
 
-function buildParams({ lang = "en", countryCode, currency, lat, lng, page, size }: ProductQueryParams) {
+function buildParams({ lang = "en", countryCode, currency, lat, lng, page, size, sort }: ProductQueryParams) {
   const params: Record<string, string> = { lang: LANG_PARAM[lang] };
   if (countryCode) params.countryCode = countryCode;
   if (currency) params.currency = currency;
@@ -93,6 +99,7 @@ function buildParams({ lang = "en", countryCode, currency, lat, lng, page, size 
   if (lng != null) params.lng = String(lng);
   if (page != null) params.page = String(page);
   if (size != null) params.size = String(size);
+  if (sort) params.sort = sort;
   return params;
 }
 
@@ -148,47 +155,45 @@ export interface ProductSearchParams extends ProductQueryParams {
   touchableScreen?: string;
   operatingSystem?: string;
   keyboardLanguage?: string;
-  /** additional dynamic spec filters keyed by spec code */
-  specs?: Record<string, string>;
+  /** additional dynamic spec filters keyed by spec code — multi-select (array of values) */
+  specs?: Record<string, string[]>;
 }
 
 export async function searchProducts(params: ProductSearchParams = {}): Promise<ApiProduct[]> {
-  const { lang = 'en', countryCode, currency, lat, lng, specs, ...filterParams } = params;
-  const queryParams: Record<string, string> = { lang: LANG_PARAM[lang] };
-  if (countryCode) queryParams.countryCode = countryCode;
-  if (currency) queryParams.currency = currency;
-  if (lat != null) queryParams.lat = String(lat);
-  if (lng != null) queryParams.lng = String(lng);
+  const { lang = 'en', countryCode, currency, lat, lng, specs, sort, ...filterParams } = params;
+  // URLSearchParams so multi-select specs serialize as repeated keys (ram=8&ram=16),
+  // which Spring binds to List<String>. (axios' default array form uses ram[]=.)
+  const sp = new URLSearchParams();
+  sp.set('lang', LANG_PARAM[lang]);
+  if (countryCode) sp.set('countryCode', countryCode);
+  if (currency) sp.set('currency', currency);
+  if (lat != null) sp.set('lat', String(lat));
+  if (lng != null) sp.set('lng', String(lng));
+  if (sort) sp.set('sort', sort);
 
-  // Standard filter params
-  if (filterParams.query) queryParams.query = filterParams.query;
-  if (filterParams.condition) queryParams.condition = filterParams.condition;
-  if (filterParams.brandId) queryParams.brandId = filterParams.brandId;
-  if (filterParams.availabilityStatus) queryParams.availabilityStatus = filterParams.availabilityStatus;
-  if (filterParams.categoryId) queryParams.categoryId = filterParams.categoryId;
-  if (filterParams.minPrice != null) queryParams.minPrice = String(filterParams.minPrice);
-  if (filterParams.maxPrice != null) queryParams.maxPrice = String(filterParams.maxPrice);
-  if (filterParams.ram) queryParams.ram = filterParams.ram;
-  if (filterParams.storage) queryParams.storage = filterParams.storage;
-  if (filterParams.processor) queryParams.processor = filterParams.processor;
-  if (filterParams.screenSize) queryParams.screenSize = filterParams.screenSize;
-  if (filterParams.touchableScreen) queryParams.touchableScreen = filterParams.touchableScreen;
-  if (filterParams.operatingSystem) queryParams.operatingSystem = filterParams.operatingSystem;
-  if (filterParams.keyboardLanguage) queryParams.keyboardLanguage = filterParams.keyboardLanguage;
+  if (filterParams.query) sp.set('query', filterParams.query);
+  if (filterParams.condition) sp.set('condition', filterParams.condition);
+  if (filterParams.brandId) sp.set('brandId', filterParams.brandId);
+  if (filterParams.availabilityStatus) sp.set('availabilityStatus', filterParams.availabilityStatus);
+  if (filterParams.categoryId) sp.set('categoryId', filterParams.categoryId);
+  if (filterParams.minPrice != null) sp.set('minPrice', String(filterParams.minPrice));
+  if (filterParams.maxPrice != null) sp.set('maxPrice', String(filterParams.maxPrice));
 
-  // Dynamic spec filters (map to known query param names by code)
+  // Dynamic multi-select spec filters (map spec code → backend param name, repeated per value)
   if (specs) {
     const CODE_TO_PARAM: Record<string, string> = {
       ram: 'ram', storage: 'storage', processor: 'processor', screen_size: 'screenSize',
       touchable_screen: 'touchableScreen', operating_system: 'operatingSystem',
       keyboard_language: 'keyboardLanguage',
     };
-    for (const [code, val] of Object.entries(specs)) {
-      if (val && CODE_TO_PARAM[code]) queryParams[CODE_TO_PARAM[code]] = val;
+    for (const [code, vals] of Object.entries(specs)) {
+      const param = CODE_TO_PARAM[code];
+      if (!param || !vals) continue;
+      for (const v of vals) if (v) sp.append(param, v);
     }
   }
 
-  const { data } = await apiClient.get<{ data: ApiProduct[] }>('/api/product/search', { params: queryParams });
+  const { data } = await apiClient.get<{ data: ApiProduct[] }>(`/api/product/search?${sp.toString()}`);
   return data.data;
 }
 
@@ -228,10 +233,15 @@ export interface BrandFilterOption {
   name: string;
 }
 
+export interface SpecFilterValue {
+  value: string;
+  unit?: string | null;
+}
+
 export interface SpecFilterOption {
   code: string;
   label: string;
-  values: string[];
+  values: SpecFilterValue[];
 }
 
 export interface ProductFilters {

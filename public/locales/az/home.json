@@ -91,7 +91,7 @@
         "gamesDesc": "Tətbiqimizdə maraqlı oyunlar oynayın və növbəti alış-verişiniz üçün tokenlər qazanın."
     },
     "limitedStock": {
-        "badge": "🔥 Məhdud Stok",
+        "badge": "Məhdud Stok",
         "onlyLeft": "Cəmi 5 ədəd qaldı",
         "productName": "MacBook Pro 13 A1708 (2017)",
         "headlineLine1": "Məhdud stok",
@@ -106,13 +106,13 @@
         ]
     },
     "quickDelivery": {
-        "label": "⚡ Tez Çatdırılma",
+        "label": "Tez Çatdırılma",
         "tagline": "30 dəqiqə ərzində alın",
         "description": "İndi sifariş verin və məhsullarınız 30 dəqiqə ərzində qapınıza çatdırılsın.",
         "cta": "İndi Al"
     },
     "superDeals": {
-        "flashSale": "⚡ Flash Sale",
+        "flashSale": "Flash Sale",
         "title": "Super Endirimlər",
         "seeAll": "Hamısına bax",
         "prev": "Əvvəlki",
@@ -120,5 +120,10 @@
         "addToCart": "Səbətə əlavə et",
         "save": "Qənaət",
         "wishlist": "İstək siyahısı"
+    },
+    "storyUnavailable": {
+        "title": "Bu hekayə artıq mövcud deyil",
+        "desc": "Müddəti bitmiş və ya silinmiş ola bilər. Bunun əvəzinə yenilikləri yoxlayın.",
+        "cta": "Ana səhifəyə keç"
     }
 }
