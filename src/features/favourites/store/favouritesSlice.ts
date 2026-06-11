@@ -44,7 +44,10 @@ export const fetchFavouritesThunk = createAsyncThunk(
                 title: p.title,
                 description: p.description,
                 price: p.storePrice ?? p.effectivePrice ?? 0,
-                originalPrice: p.basePrice ?? 0,
+                // Country-scoped pre-discount price lives in `originalPrice` (same field the
+                // Super Deals card uses); fall back to the current price so no-discount items
+                // yield zero savings rather than a wrong value.
+                originalPrice: p.originalPrice ?? p.basePrice ?? p.storePrice ?? p.effectivePrice ?? 0,
                 discount: p.discountValue ?? 0,
                 currency: p.currency ?? undefined,
                 rating: Number(p.averageRating ?? 0),
