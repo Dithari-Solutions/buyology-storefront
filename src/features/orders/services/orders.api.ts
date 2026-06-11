@@ -36,6 +36,16 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail> {
     return data.data;
 }
 
+/** Cancel a still-cancellable order (paid & not yet out for delivery). Triggers an auto-refund + emails server-side. */
+export async function cancelOrder(orderId: string, reason?: string): Promise<OrderDetail> {
+    const { data } = await apiClient.post<ApiEnvelope<OrderDetail>>(
+        `/api/orders/${orderId}/cancel`,
+        reason ? { reason } : {}
+    );
+    if (!data.data) throw new Error(data.message ?? "Failed to cancel order.");
+    return data.data;
+}
+
 export async function getChatHistory(
     ecommerceOrderId: string,
     page = 0,

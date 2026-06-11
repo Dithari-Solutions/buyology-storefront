@@ -12,6 +12,7 @@ import Footer from "@/shared/components/Footer";
 import { getOrderDetail } from "../services/orders.api";
 import type { OrderDetail, OrderStatus, TrackingEvent } from "../types";
 import RefundCard from "@/features/refund/components/RefundCard";
+import CancelOrderCard from "./CancelOrderCard";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -289,6 +290,13 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                 orderStatus={order.status}
                                 deliveredAt={order.deliveredAt}
                                 orderCurrency={order.currency}
+                            />
+
+                            {/* Cancel order (shown only while still cancellable) */}
+                            <CancelOrderCard
+                                orderId={order.id}
+                                orderStatus={order.status}
+                                onCancelled={setOrder}
                             />
 
                             {/* Delivery address */}
