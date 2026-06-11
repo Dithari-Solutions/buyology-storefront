@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Preloader from "@/shared/components/Preloader";
 
-/** Plays the quick Buyology sweep on client-side route changes. */
+/** Plays the full Buyology intro on every client-side route change (not on refresh). */
 export default function PageTransition() {
   const pathname = usePathname();
   const previousPathnameRef = useRef<string | null>(null);
@@ -23,5 +23,5 @@ export default function PageTransition() {
   if (!active) return null;
 
   // key forces a fresh mount (and a fresh GSAP timeline) on each navigation.
-  return <Preloader key={pathname} quick onComplete={() => setActive(false)} />;
+  return <Preloader key={pathname} onComplete={() => setActive(false)} />;
 }
