@@ -601,7 +601,7 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
 
             {/* Danger zone — delete account (hidden while a deletion is already pending) */}
             {profile && !profile.pendingDeletion && (
-                <div className="mt-6 border border-red-100 rounded-[12px] px-4 py-4">
+                <div className="mt-6 bg-white border border-red-100 rounded-[12px] px-4 py-4 shadow-sm">
                     <p className="text-[13px] font-semibold text-red-700">{t("deletion.dangerTitle", { defaultValue: "Delete my account" })}</p>
                     <p className="text-[12px] text-gray-500 mt-1">
                         {t("deletion.dangerDesc", { defaultValue: "Your account stays recoverable for 30 days, then your personal data is permanently deleted." })}
