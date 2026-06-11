@@ -391,6 +391,8 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 storeOptions={product.storeOptions}
                 availableInSelectedCountry={product.availableInSelectedCountry}
                 rating={Number(product.averageRating ?? 0)}
+                isSuperDeal={product.isSuperDeal}
+                availabilityStatus={product.availabilityStatus}
               />
             );
           })}

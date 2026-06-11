@@ -67,6 +67,21 @@ export default async function LangLayout({
       {/* ─── Fixed background accent — covers Header, main and Footer ─── */}
       <div className="fixed inset-0 pointer-events-none select-none z-0" aria-hidden="true">
 
+        {/* Soft brand-colour gradient mesh — fills the empty canvas with subtle depth
+            (purple + gold glows in the corners/centre) behind the curve accents. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: [
+              "radial-gradient(58vw 58vw at 10% 12%, rgba(64,47,117,0.07), transparent 60%)",
+              "radial-gradient(52vw 52vw at 90% 88%, rgba(251,187,20,0.08), transparent 60%)",
+              "radial-gradient(46vw 46vw at 82% 10%, rgba(64,47,117,0.05), transparent 55%)",
+              "radial-gradient(50vw 50vw at 16% 90%, rgba(251,187,20,0.06), transparent 55%)",
+              "radial-gradient(70vw 50vw at 50% 50%, rgba(64,47,117,0.025), transparent 70%)",
+            ].join(", "),
+          }}
+        />
+
         {/* Bottom-left accent */}
         <Image
           src={AuthBgVector}

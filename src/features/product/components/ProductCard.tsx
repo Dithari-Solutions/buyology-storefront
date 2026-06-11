@@ -8,7 +8,7 @@ import CartIcon from "@/assets/icons/cart.png";
 import StarIcon from "@/assets/icons/star.png";
 import StorageIcon from "@/assets/icons/storage.png";
 import MacPro13 from "@/assets/devices/macPro13.png";
-import { GlobeIcon, BoltIcon, TruckIcon } from "@/shared/icons";
+import { GlobeIcon, BoltIcon, TruckIcon, FlameIcon, HourglassIcon } from "@/shared/icons";
 import { useRouter, useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,6 +48,10 @@ interface ProductCardProps {
   }> | null;
   /** null = no country context; false = not in user's country (browse only) */
   availableInSelectedCountry?: boolean | null;
+  /** Highlights the card with a "Special Offer" badge. */
+  isSuperDeal?: boolean;
+  /** Raw stock status (e.g. "LOW_STOCK") — drives the "Limited Stock" badge. */
+  availabilityStatus?: string;
 }
 
 function formatPrice(amount: number, currency: string): string {
@@ -95,6 +99,8 @@ export default function ProductCard({
   expressDelivery,
   storeOptions,
   availableInSelectedCountry,
+  isSuperDeal,
+  availabilityStatus,
 }: ProductCardProps) {
   const id = useId();
   const clipId = `productImageClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
@@ -426,6 +432,21 @@ export default function ProductCard({
 
         {/* ── Image container ── */}
         <div className={`relative overflow-hidden rounded-[20px] flex items-center justify-center${isList ? ' w-[180px] sm:w-[220px] xl:w-[260px] flex-shrink-0 min-h-[180px] xl:min-h-[200px]' : ' h-[200px] xl:h-[220px] 2xl:h-[240px] mb-[12px] xl:mb-[16px]'}`}>
+          {/* Special offer + limited stock badges (top-left) */}
+          {(isSuperDeal || availabilityStatus === "LOW_STOCK") && (
+            <div className="absolute top-[10px] left-[10px] z-20 flex flex-col items-start gap-[5px]">
+              {isSuperDeal && (
+                <span className="inline-flex items-center gap-[3px] bg-[#FBBB14] text-white text-[10px] font-bold px-[8px] py-[3px] rounded-full leading-tight shadow-sm">
+                  <FlameIcon className="w-3 h-3" /> Special Offer
+                </span>
+              )}
+              {availabilityStatus === "LOW_STOCK" && (
+                <span className="inline-flex items-center gap-[3px] bg-[#402F75] text-white text-[10px] font-bold px-[8px] py-[3px] rounded-full leading-tight shadow-sm">
+                  <HourglassIcon className="w-3 h-3" /> Limited Stock
+                </span>
+              )}
+            </div>
+          )}
           {isList ? (
             <div className="absolute inset-0 bg-[#F6F4FF]" />
           ) : (
