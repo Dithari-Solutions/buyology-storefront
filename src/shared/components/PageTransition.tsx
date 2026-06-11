@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Preloader from "@/shared/components/Preloader";
+import { loaderState } from "@/shared/components/loaderState";
 
 /**
  * Plays the Buyology intro over client-side navigations. It starts on the link CLICK
@@ -17,7 +18,8 @@ export default function PageTransition() {
   const [runId, setRunId] = useState(0);
 
   const start = useCallback(() => {
-    if (runningRef.current) return;
+    // Don't fire while the initial page-open intro is still playing (avoids a double).
+    if (!loaderState.introDone || runningRef.current) return;
     runningRef.current = true;
     setRunId((r) => r + 1);
     setActive(true);

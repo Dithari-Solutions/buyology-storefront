@@ -26,6 +26,22 @@ interface PreloaderProps {
  */
 export default function Preloader({ onComplete, quick = false, loop = false }: PreloaderProps) {
     const overlayRef = useRef<HTMLDivElement>(null);
+    // Keep the latest onComplete without re-running the timeline effect (a new inline
+    // callback each render would otherwise kill + restart the animation → it plays twice).
+    const onCompleteRef = useRef(onComplete);
+    onCompleteRef.current = onComplete;
+
+    // Lock page scroll while the loader is up — removes the scrollbar behind it.
+    useEffect(() => {
+        const prevBody = document.body.style.overflow;
+        const prevHtml = document.documentElement.style.overflow;
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = prevBody;
+            document.documentElement.style.overflow = prevHtml;
+        };
+    }, []);
 
     useEffect(() => {
         const overlay = overlayRef.current;
@@ -44,7 +60,7 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
                 : {
                     onComplete: () => {
                         overlay.style.display = "none";
-                        onComplete?.();
+                        onCompleteRef.current?.();
                     },
                 }
         );
@@ -76,7 +92,7 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
         return () => {
             tl.kill();
         };
-    }, [onComplete, quick, loop]);
+    }, [quick, loop]);
 
     return (
         <div ref={overlayRef} className="fixed inset-0 z-[9999] overflow-hidden" style={{ background: "transparent" }}>
@@ -88,7 +104,14 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
                         className="h-full flex items-center justify-center"
                         // No initial transform → the columns tile the screen with solid #402f75
                         // from the first paint (SSR included), so the page never shows through.
-                        style={{ width: `${100 / LETTERS.length}%`, backgroundColor: "#402f75", willChange: "transform" }}
+                        // The box-shadow bleeds 1px left/right to hide sub-pixel gaps between
+                        // columns at fractional widths (responsive — desktop and small screens).
+                        style={{
+                            width: `${100 / LETTERS.length}%`,
+                            backgroundColor: "#402f75",
+                            boxShadow: "1px 0 0 #402f75, -1px 0 0 #402f75",
+                            willChange: "transform",
+                        }}
                     >
                         <span
                             data-letter
