@@ -167,7 +167,7 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
                                     <div className="flex items-center justify-between gap-[6px] flex-shrink-0">
                                         <div>
                                             <p className="font-bold text-[13px] text-gray-900 truncate max-w-[120px]">{item.title}</p>
-                                            <p className="text-[#402F75] font-bold text-[17px] leading-tight">${item.price}</p>
+                                            <p className="text-[#402F75] font-bold text-[17px] leading-tight">{formatPrice(item.price)}</p>
                                         </div>
                                         <div className="flex items-center gap-[3px] bg-[#F6F4FF] rounded-full px-[7px] py-[3px] flex-shrink-0">
                                             <Image src={StarIcon} alt="star" width={11} height={11} />

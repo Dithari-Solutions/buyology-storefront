@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
 import { selectFavouriteItems, selectFavouritesLoading, clearAllFavouritesThunk } from "../store/favouritesSlice";
+import { selectPreferredCurrency } from "@/features/country/store/countrySlice";
 import { addItem } from "@/features/cart/store/cartSlice";
 import { getProductFilters } from "@/features/product/services/productService";
 import type { AppDispatch } from "@/store";
@@ -60,10 +61,28 @@ export default function FavouritesGrid() {
     };
 
     const inStockCount = items.filter((i) => i.inStock).length;
+    // Savings per item only count an actual discount (guard against originalPrice = 0,
+    // which previously subtracted the full price → wrong/negative totals).
     const potentialSavings = items.reduce(
-        (acc, i) => acc + (i.originalPrice - i.price),
+        (acc, i) => acc + Math.max(0, i.originalPrice - i.price),
         0
     );
+
+    // Show the savings in the detected country's currency (favourites now load in it),
+    // not a hardcoded "$".
+    const currencyCode = useSelector(selectPreferredCurrency) ?? items[0]?.currency ?? "USD";
+    const formatMoney = (amount: number): string => {
+        try {
+            return new Intl.NumberFormat(undefined, {
+                style: "currency",
+                currency: currencyCode,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+            }).format(amount);
+        } catch {
+            return `${currencyCode} ${amount.toFixed(2)}`;
+        }
+    };
 
     if (loading) {
         return (
@@ -113,7 +132,7 @@ export default function FavouritesGrid() {
                         </svg>
                     </div>
                     <div>
-                        <p className="text-[22px] font-bold text-[#FBBB14]">${potentialSavings}</p>
+                        <p className="text-[22px] font-bold text-[#FBBB14]">{formatMoney(potentialSavings)}</p>
                         <p className="text-[12px] text-gray-500">{t("stats.potentialSavings")}</p>
                     </div>
                 </div>

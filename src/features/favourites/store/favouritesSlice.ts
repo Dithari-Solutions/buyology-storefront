@@ -14,11 +14,17 @@ const initialState: FavouritesState = {
 /** Fetch the user's favourites list and enrich each entry with full product data. */
 export const fetchFavouritesThunk = createAsyncThunk(
     "favourites/fetch",
-    async (_userId?: string) => {
+    async (_userId: string | undefined, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+        // Fetch each product in the detected country's currency so favourites prices +
+        // savings are shown in that currency (not the backend's USD default).
+        const countryCode = state.country.selectedCountryCode ?? undefined;
+        const currency = state.country.preferredCurrency ?? undefined;
+
         const list = await getFavourites();
 
         const settled = await Promise.allSettled(
-            list.items.map((item) => getProductById(item.productId, {}))
+            list.items.map((item) => getProductById(item.productId, { countryCode, currency }))
         );
 
         const items: FavouriteItemMeta[] = [];
@@ -41,7 +47,7 @@ export const fetchFavouritesThunk = createAsyncThunk(
                 originalPrice: p.basePrice ?? 0,
                 discount: p.discountValue ?? 0,
                 currency: p.currency ?? undefined,
-                rating: 0,
+                rating: Number(p.averageRating ?? 0),
                 inStock: p.availabilityStatus === "IN_STOCK",
                 category: p.categoryId,
                 slugs: { en: p.slug, az: p.slug, ar: p.slug },
