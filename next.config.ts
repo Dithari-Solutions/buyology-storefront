@@ -19,15 +19,30 @@
 
 import type { NextConfig } from "next";
 import bundleAnalyzer from "@next/bundle-analyzer";
+import { execSync } from "node:child_process";
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
+// Pin the build ID to the git commit (overridable via NEXT_BUILD_ID). The app is served by
+// two servers behind the nginx LB; when each builds independently a random build ID makes
+// their HTML reference chunk/asset paths the other can't serve → ChunkLoadError. Tying the
+// build ID to the commit keeps independent builds of the same commit consistent.
+function resolveBuildId(): string | null {
+  if (process.env.NEXT_BUILD_ID) return process.env.NEXT_BUILD_ID;
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim();
+  } catch {
+    return null; // fall back to Next's default
+  }
+}
+
 const nextConfig: NextConfig = {
   // Produces a self-contained server in .next/standalone — required for Docker
   output: "standalone",
   reactCompiler: true,
+  generateBuildId: resolveBuildId,
 
   // Inline critical CSS so the render-blocking stylesheet chunk doesn't
   // gate first paint. (Backed by `critters`.)
