@@ -88,7 +88,10 @@ export default function Footer() {
                         <ul>
                             <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.aboutUs")}</Link></li>
                             <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${contactSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.contactSupport")}</Link></li>
-                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.privacyPolicy")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/privacy-policy`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.privacyPolicy")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/terms-conditions`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.termsConditions", { defaultValue: "Terms & Conditions" })}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/returns-refunds`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.returnsRefunds", { defaultValue: "Returns & Refunds" })}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/returns-refunds-b2b`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.returnsRefundsB2b", { defaultValue: "Returns & Refunds (B2B)" })}</Link></li>
                         </ul>
                     </div>
                 </div>

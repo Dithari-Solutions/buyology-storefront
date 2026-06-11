@@ -64,6 +64,10 @@ export interface ApiProduct {
   freeDelivery?: boolean | null;
   /** Delivery fee in the same currency as storePrice. 0 when freeDelivery. */
   deliveryFee?: number | null;
+  /** Average review rating (0–5) from approved reviews. */
+  averageRating?: number | null;
+  /** Number of approved reviews. */
+  totalReviews?: number | null;
   storeOptions?: Array<{
     storeId: string;
     storePrice: number;
@@ -255,10 +259,12 @@ export interface ProductFilters {
 
 export async function getProductFilters(
   lang: Lang = 'en',
-  countryCode?: string
+  countryCode?: string,
+  currency?: string
 ): Promise<ProductFilters> {
   const params: Record<string, string> = { lang: LANG_PARAM[lang] };
   if (countryCode) params.countryCode = countryCode;
+  if (currency) params.currency = currency;
   const { data } = await apiClient.get<{ data: ProductFilters }>('/api/product/filters', { params });
   return data.data;
 }

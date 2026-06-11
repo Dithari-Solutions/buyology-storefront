@@ -1,24 +1,27 @@
 {
-    "description": "Let's build something smart together — whether you're looking for your next device, exploring robotics, or interested in partnering with us, we're ready when you are.",
-    "shop": {
-        "heading": "Shop",
-        "new_arrivals": "New Arrivals",
-        "refurbished": "Refurbished",
-        "special_offer": "Special Offers",
-        "reviews": "Reviews"
-    },
-    "services": {
-        "heading": "Service",
-        "fixing": "Fixing & Repair",
-        "rental": "Rental Plans",
-        "sell": "Sell Your Device",
-        "maintenance": "Maintenance"
-    },
-    "company": {
-        "heading": "Company",
-        "aboutUs": "About Us",
-        "contactSupport": "Contact Support",
-        "privacyPolicy": "Privacy Policy"
-    },
-    "copyright": "© 2026 Buyology LLC. All rights reserved."
+  "description": "Let's build something smart together — whether you're looking for your next device, exploring robotics, or interested in partnering with us, we're ready when you are.",
+  "shop": {
+    "heading": "Shop",
+    "new_arrivals": "New Arrivals",
+    "refurbished": "Refurbished",
+    "special_offer": "Special Offers",
+    "reviews": "Reviews"
+  },
+  "services": {
+    "heading": "Service",
+    "fixing": "Fixing & Repair",
+    "rental": "Rental Plans",
+    "sell": "Sell Your Device",
+    "maintenance": "Maintenance"
+  },
+  "company": {
+    "heading": "Company",
+    "aboutUs": "About Us",
+    "contactSupport": "Contact Support",
+    "privacyPolicy": "Privacy Policy",
+    "termsConditions": "Terms & Conditions",
+    "returnsRefunds": "Returns & Refunds",
+    "returnsRefundsB2b": "Returns & Refunds (B2B)"
+  },
+  "copyright": "© 2026 Buyology LLC. All rights reserved."
 }

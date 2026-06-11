@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import type { UserProfile } from "../types";
-import { updateProfile, uploadAvatar, sendPhoneOtp, verifyPhone } from "../services/profile.api";
+import { updateProfile, uploadAvatar, sendPhoneOtp, verifyPhone, requestAccountDeletion, recoverAccount, getProfile } from "../services/profile.api";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import MembershipBadge from "./MembershipBadge";
 
@@ -69,6 +69,8 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [formErrors, setFormErrors] = useState<FormErrors>({});
+    const [deletionBusy, setDeletionBusy] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [form, setForm] = useState<EditForm>({
         firstName: "",
         lastName: "",
@@ -104,6 +106,33 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
         setIsEditing(false);
         setSaveError(null);
         setFormErrors({});
+    }
+
+    async function handleRequestDeletion() {
+        if (!userId) return;
+        setDeletionBusy(true);
+        try {
+            await requestAccountDeletion(userId);
+            onProfileUpdate(await getProfile(userId));
+            setShowDeleteConfirm(false);
+        } catch (err) {
+            setSaveError(err instanceof Error ? err.message : "Could not request account deletion.");
+        } finally {
+            setDeletionBusy(false);
+        }
+    }
+
+    async function handleRecover() {
+        if (!userId) return;
+        setDeletionBusy(true);
+        try {
+            await recoverAccount(userId);
+            onProfileUpdate(await getProfile(userId));
+        } catch (err) {
+            setSaveError(err instanceof Error ? err.message : "Could not recover your account.");
+        } finally {
+            setDeletionBusy(false);
+        }
     }
 
     async function handleSave() {
@@ -203,6 +232,41 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
 
     return (
         <>
+            {/* Account scheduled for deletion — countdown + recover */}
+            {profile?.pendingDeletion && (
+                <div className="mb-4 bg-red-50 border border-red-200 rounded-[14px] px-4 py-3.5 flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex items-start gap-3">
+                        <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        <div>
+                            <p className="text-[13px] font-semibold text-red-800">
+                                {t("deletion.scheduledTitle", { defaultValue: "Your account is scheduled for deletion" })}
+                            </p>
+                            <p className="text-[12px] text-red-700 mt-0.5">
+                                {(() => {
+                                    const ms = profile.deletionScheduledAt ? new Date(profile.deletionScheduledAt).getTime() - Date.now() : 0;
+                                    const days = Math.max(0, Math.ceil(ms / 86_400_000));
+                                    return t("deletion.countdown", {
+                                        count: days,
+                                        defaultValue: `${days} day${days === 1 ? "" : "s"} remaining before permanent deletion. Recover your account to cancel.`,
+                                    });
+                                })()}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleRecover}
+                        disabled={deletionBusy}
+                        className="text-[12px] font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 px-3.5 py-2 rounded-lg transition-colors"
+                    >
+                        {deletionBusy ? "..." : t("deletion.recover", { defaultValue: "Recover account" })}
+                    </button>
+                </div>
+            )}
+
             {/* Incomplete profile banner */}
             {profile && !profile.paymentReady && profile.missingFields.length > 0 && (
                 <div className="mb-4 bg-amber-50 border border-amber-200 rounded-[14px] px-4 py-3 flex items-start gap-3">
@@ -534,6 +598,42 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                 </svg>
                 <p className="text-[12px] text-[#402F75]">{t("personalInfo.privacyNote")}</p>
             </div>
+
+            {/* Danger zone — delete account (hidden while a deletion is already pending) */}
+            {profile && !profile.pendingDeletion && (
+                <div className="mt-6 border border-red-100 rounded-[12px] px-4 py-4">
+                    <p className="text-[13px] font-semibold text-red-700">{t("deletion.dangerTitle", { defaultValue: "Delete my account" })}</p>
+                    <p className="text-[12px] text-gray-500 mt-1">
+                        {t("deletion.dangerDesc", { defaultValue: "Your account stays recoverable for 30 days, then your personal data is permanently deleted." })}
+                    </p>
+                    {!showDeleteConfirm ? (
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="mt-3 text-[12px] font-semibold text-red-600 border border-red-300 hover:bg-red-50 px-3.5 py-2 rounded-lg transition-colors"
+                        >
+                            {t("deletion.deleteBtn", { defaultValue: "Delete my account" })}
+                        </button>
+                    ) : (
+                        <div className="mt-3 flex items-center gap-2 flex-wrap">
+                            <span className="text-[12px] text-gray-700">{t("deletion.confirmQuestion", { defaultValue: "Are you sure? This can be undone within 30 days." })}</span>
+                            <button
+                                onClick={handleRequestDeletion}
+                                disabled={deletionBusy}
+                                className="text-[12px] font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 px-3.5 py-2 rounded-lg transition-colors"
+                            >
+                                {deletionBusy ? "..." : t("deletion.confirmYes", { defaultValue: "Yes, delete" })}
+                            </button>
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                disabled={deletionBusy}
+                                className="text-[12px] font-semibold text-gray-600 hover:bg-gray-100 px-3.5 py-2 rounded-lg transition-colors"
+                            >
+                                {t("deletion.confirmCancel", { defaultValue: "Cancel" })}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
         </>
     );
 }

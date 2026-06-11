@@ -20,6 +20,10 @@ export interface UserProfile {
     roles?: string[];
     createdAt: string;
     updatedAt: string;
+    /** True when the account is scheduled for deletion (within the 30-day grace window). */
+    pendingDeletion?: boolean;
+    /** ISO timestamp when the account will be permanently deleted. */
+    deletionScheduledAt?: string | null;
 }
 
 export interface Address {

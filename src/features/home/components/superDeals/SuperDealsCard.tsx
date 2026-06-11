@@ -106,7 +106,7 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                         originalPrice: basePrice,
                         discount: savings,
                         currency: currencyCode,
-                        rating: 0,
+                        rating: Number(product.averageRating ?? 0),
                         inStock: product.availabilityStatus === "IN_STOCK",
                         category: product.categoryId,
                         slugs: { en: product.slug, az: product.slug, ar: product.slug },

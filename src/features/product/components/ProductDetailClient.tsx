@@ -508,7 +508,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
 
               {/* Rating + stock */}
               <div className="flex items-center gap-4 flex-wrap">
-                <StarRating rating={4.8} />
+                <StarRating rating={Number(product.averageRating ?? 0)} count={product.totalReviews ?? 0} />
                 <span className="w-px h-4 bg-gray-200" />
                 <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${
                   inStock ? "bg-green-50" : isOutOfStock ? "bg-red-50" : "bg-amber-50"

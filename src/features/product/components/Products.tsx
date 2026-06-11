@@ -390,6 +390,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 expressDelivery={product.expressDelivery}
                 storeOptions={product.storeOptions}
                 availableInSelectedCountry={product.availableInSelectedCountry}
+                rating={Number(product.averageRating ?? 0)}
               />
             );
           })}

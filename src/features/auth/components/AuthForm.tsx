@@ -44,6 +44,8 @@ export default function AuthForm() {
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [apiError, setApiError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [termsError, setTermsError] = useState(false);
 
     const emailAnim = useAnimation();
     const passwordAnim = useAnimation();
@@ -82,7 +84,14 @@ export default function AuthForm() {
 
         if (toShake.length) {
             setFieldErrors(errors);
+            if (isSignUp && !termsAccepted) setTermsError(true);
             await Promise.all(toShake.map((ctrl) => ctrl.start(SHAKE)));
+            return false;
+        }
+
+        // Sign-up requires accepting the Terms & Conditions + Privacy Policy.
+        if (isSignUp && !termsAccepted) {
+            setTermsError(true);
             return false;
         }
 
@@ -290,10 +299,39 @@ export default function AuthForm() {
                     message={apiError ?? ""}
                 />
 
+                {/* Terms & Conditions — required for sign-up */}
+                {mode === "signUp" && (
+                    <div className="mt-3">
+                        <label className="flex items-start gap-2.5 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={termsAccepted}
+                                onChange={(e) => { setTermsAccepted(e.target.checked); if (e.target.checked) setTermsError(false); }}
+                                className="mt-0.5 w-4 h-4 accent-[#FBBB14] cursor-pointer flex-shrink-0"
+                            />
+                            <span className="text-[12px] text-gray-600 leading-snug">
+                                {t("authForm.acceptPrefix", { defaultValue: "I accept the" })}{" "}
+                                <Link href={`/${lang}/terms-conditions`} target="_blank" className="text-[#402F75] font-semibold hover:underline">
+                                    {t("authForm.terms", { defaultValue: "Terms & Conditions" })}
+                                </Link>{" "}
+                                {t("authForm.and", { defaultValue: "and" })}{" "}
+                                <Link href={`/${lang}/privacy-policy`} target="_blank" className="text-[#402F75] font-semibold hover:underline">
+                                    {t("authForm.privacy", { defaultValue: "Privacy Policy" })}
+                                </Link>
+                            </span>
+                        </label>
+                        {termsError && (
+                            <p className="text-[11px] text-red-500 mt-1">
+                                {t("authForm.acceptRequired", { defaultValue: "You must accept the Terms & Conditions and Privacy Policy to continue." })}
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 {/* Submit */}
                 <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || (mode === "signUp" && !termsAccepted)}
                     className="mt-2 w-full py-[12px] rounded-[14px] bg-[#FBBB14] text-white font-bold text-[15px] cursor-pointer hover:bg-[#f0b000] active:scale-[0.98] transition-all duration-150 shadow-md shadow-yellow-200 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                     {isLoading

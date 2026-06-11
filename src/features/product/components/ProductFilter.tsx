@@ -14,7 +14,7 @@ import {
   type BrandFilterOption,
   type SpecFilterOption,
 } from '../services/productService';
-import { selectSelectedCountryCode } from '@/features/country/store/countrySlice';
+import { selectSelectedCountryCode, selectPreferredCurrency } from '@/features/country/store/countrySlice';
 import type { Lang } from '@/config/pathSlugs';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -173,6 +173,7 @@ export default function ProductFilter({ onFiltersChange }: {
   const lang = (params?.lang as Lang) ?? 'en';
   const { t } = useTranslation('product');
   const countryCode = useSelector(selectSelectedCountryCode);
+  const currency = useSelector(selectPreferredCurrency);
 
   const [filters, setFilters] = useState<ProductFilters | null>(null);
   const [loading, setLoading] = useState(true);
@@ -188,7 +189,7 @@ export default function ProductFilter({ onFiltersChange }: {
   // Fetch filter options from API
   useEffect(() => {
     setLoading(true);
-    getProductFilters(lang, countryCode ?? undefined)
+    getProductFilters(lang, countryCode ?? undefined, currency ?? undefined)
       .then(data => {
         setFilters(data);
         // Price range always starts at 0 (not the cheapest product's price).
@@ -197,7 +198,7 @@ export default function ProductFilter({ onFiltersChange }: {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [lang, countryCode]);
+  }, [lang, countryCode, currency]);
 
   // Emit changes whenever any selection changes
   const emitChanges = useCallback((overrides: Partial<{

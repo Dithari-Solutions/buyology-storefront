@@ -13,6 +13,16 @@ export async function updateProfile(userId: string, payload: UpdateProfilePayloa
     return unwrap(await apiClient.patch(`/api/users/${userId}/profile`, payload));
 }
 
+/** Schedules the account for deletion (soft-delete; permanent after a 30-day grace period). */
+export async function requestAccountDeletion(userId: string): Promise<void> {
+    await apiClient.post(`/api/users/${userId}/account/delete-request`);
+}
+
+/** Cancels a pending deletion and restores the account. */
+export async function recoverAccount(userId: string): Promise<void> {
+    await apiClient.post(`/api/users/${userId}/account/recover`);
+}
+
 /** Sends an SMS verification code (Twilio Verify) to the given E.164 number. */
 export async function sendPhoneOtp(userId: string, phoneNumber: string): Promise<void> {
     await apiClient.post(`/api/users/${userId}/profile/phone/send-otp`, { phoneNumber });
