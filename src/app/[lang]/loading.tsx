@@ -1,5 +1,5 @@
-import VideoLoader from "@/shared/components/VideoLoader";
+import Preloader from "@/shared/components/Preloader";
 
 export default function Loading() {
-  return <VideoLoader />;
+  return <Preloader loop />;
 }
