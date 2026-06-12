@@ -69,7 +69,7 @@ export default function LanguageSwitcher() {
         >
             <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-[30px] text-sm font-medium text-white transition-colors select-none cursor-pointer whitespace-nowrap"
+                className="flex items-center justify-center gap-1.5 h-[36px] px-3.5 rounded-full text-sm font-medium text-white bg-white/15 hover:bg-white/25 border border-white/20 transition-colors select-none cursor-pointer whitespace-nowrap"
             >
                 <TranslateIcon className="w-4 h-4 text-white flex-shrink-0" />
                 <span>{current.label}</span>
