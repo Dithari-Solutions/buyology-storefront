@@ -6,10 +6,23 @@ import { useRouter, usePathname } from "next/navigation";
 import { SLUG_TO_CANONICAL, PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 const LANGUAGES: { code: Lang; label: string }[] = [
-    { code: "en", label: "EN" },
-    { code: "az", label: "AZ" },
-    { code: "ar", label: "AR" },
+    { code: "en", label: "English" },
+    { code: "az", label: "Azərbaycan" },
+    { code: "ar", label: "العربية" },
 ];
+
+function TranslateIcon({ className }: { className?: string }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m5 8 6 6" />
+            <path d="m4 14 6-6 2-3" />
+            <path d="M2 5h12" />
+            <path d="M7 2h1" />
+            <path d="m22 22-5-10-5 10" />
+            <path d="M14 18h6" />
+        </svg>
+    );
+}
 
 export default function LanguageSwitcher() {
     const router = useRouter();
@@ -56,26 +69,16 @@ export default function LanguageSwitcher() {
         >
             <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-[30px] text-sm font-medium text-white transition-colors select-none cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-[30px] text-sm font-medium text-white transition-colors select-none cursor-pointer whitespace-nowrap"
             >
+                <TranslateIcon className="w-4 h-4 text-white flex-shrink-0" />
                 <span>{current.label}</span>
-                <svg
-                    className={`w-3.5 h-3.5 text-white transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`}
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                >
-                    <polyline points="2 4 6 8 10 4" />
-                </svg>
             </button>
 
             {/* pt-1.5 bridges the gap so onMouseLeave doesn't fire between button and list */}
             <div className="absolute end-0 top-full pt-1.5 z-50">
                 <div
-                    className={`w-20 bg-white border border-gray-200 rounded-[20px] shadow-md overflow-hidden origin-top transition-all duration-200 ${open
+                    className={`w-40 bg-white border border-gray-200 rounded-[20px] shadow-md overflow-hidden origin-top transition-all duration-200 ${open
                         ? "opacity-100 scale-y-100 translate-y-0 pointer-events-auto"
                         : "opacity-0 scale-y-75 -translate-y-1 pointer-events-none"
                         }`}
@@ -84,7 +87,7 @@ export default function LanguageSwitcher() {
                         <button
                             key={l.code}
                             onClick={() => select(l.code)}
-                            className={`w-full text-center px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer ${i !== 0 ? "border-t border-gray-200" : ""}`}
+                            className={`w-full text-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer whitespace-nowrap ${i !== 0 ? "border-t border-gray-200" : ""}`}
                         >
                             {l.label}
                         </button>
