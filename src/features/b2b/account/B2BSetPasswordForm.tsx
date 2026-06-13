@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 
 import { setTokens } from "@/shared/lib/tokenManager";
@@ -12,6 +12,8 @@ type Phase = "validating" | "form" | "submitting" | "success" | "expired" | "inv
 export default function B2BSetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const lang = (Array.isArray(params?.lang) ? params.lang[0] : params?.lang) || "en";
   const token = searchParams.get("token") ?? "";
 
   const [phase, setPhase] = useState<Phase>("validating");
@@ -77,7 +79,7 @@ export default function B2BSetPasswordForm() {
       });
       setTokens(result.accessToken, result.expiresIn);
       setPhase("success");
-      setTimeout(() => router.push("/b2b/account"), 1200);
+      setTimeout(() => router.push(`/${lang}/b2b/account`), 1200);
     } catch (err: unknown) {
       const message =
         (axios.isAxiosError(err) && (err.response?.data as { message?: string })?.message) ||
