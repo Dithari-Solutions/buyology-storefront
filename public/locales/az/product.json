@@ -58,7 +58,8 @@
       "store": "Mağaza"
     },
     "specs": {
-      "title": "Texniki Xüsusiyyətlər"
+      "title": "Texniki Xüsusiyyətlər",
+      "seeAll": "Bütün {{total}} xüsusiyyətə bax"
     }
   },
   "reviews": {

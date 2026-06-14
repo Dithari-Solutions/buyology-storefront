@@ -112,6 +112,9 @@ const CURRENCY_SYMBOL: Record<string, string> = {
   USD: "$", EUR: "€", GBP: "£", AZN: "₼", AED: "د.إ", SAR: "﷼", TRY: "₺",
 };
 
+// How many spec selectors to show under the price before collapsing to a "See all" link.
+const SPEC_PREVIEW_LIMIT = 4;
+
 function formatPrice(amount: number, currency?: string | null) {
   const symbol = currency ? (CURRENCY_SYMBOL[currency] ?? `${currency} `) : "$";
   return `${symbol}${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -181,6 +184,10 @@ export default function ProductDetailClient({ product: initialProduct, images: i
 
   function handleSelect(specId: string, optionId: string) {
     setSelectedOptions((prev) => ({ ...prev, [specId]: optionId }));
+  }
+
+  function scrollToSpecs() {
+    document.getElementById("technical-specs")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   const additionalPrice = product.specs.reduce((sum, spec) => {
@@ -620,10 +627,10 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                 </div>
               )}
 
-              {/* Spec selectors */}
+              {/* Spec selectors — preview only; full list lives in the Technical specs section below */}
               {product.specs.length > 0 && (
                 <div className="flex flex-col gap-5">
-                  {product.specs.map((spec) => (
+                  {product.specs.slice(0, SPEC_PREVIEW_LIMIT).map((spec) => (
                     <SpecSelector
                       key={spec.id}
                       spec={spec}
@@ -631,6 +638,18 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                       onSelect={(optionId) => handleSelect(spec.id, optionId)}
                     />
                   ))}
+                  {product.specs.length > SPEC_PREVIEW_LIMIT && (
+                    <button
+                      type="button"
+                      onClick={scrollToSpecs}
+                      className="self-start inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#402F75] hover:text-[#332560] transition-colors"
+                    >
+                      {t("details.specs.seeAll", { defaultValue: "See all {{total}} specs", total: product.specs.length })}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -815,11 +834,12 @@ export default function ProductDetailClient({ product: initialProduct, images: i
         {/* Technical specs */}
         {product.specs.length > 0 && (
           <motion.section
+            id="technical-specs"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5 }}
-            className="mt-10"
+            className="mt-10 scroll-mt-24"
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-300/40">

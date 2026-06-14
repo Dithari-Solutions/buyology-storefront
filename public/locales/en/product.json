@@ -58,7 +58,8 @@
       "store": "Store"
     },
     "specs": {
-      "title": "Technical Specifications"
+      "title": "Technical Specifications",
+      "seeAll": "See all {{total}} specs"
     }
   },
   "reviews": {
