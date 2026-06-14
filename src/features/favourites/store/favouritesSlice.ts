@@ -56,13 +56,13 @@ export const fetchFavouritesThunk = createAsyncThunk(
                 slugs: { en: p.slug, az: p.slug, ar: p.slug },
                 imageUrl: getPrimaryImage(p.media) || undefined,
                 ram: ramSpec?.options[0]
-                    ? `${ramSpec.options[0].value}${ramSpec.options[0].unit}`
+                    ? `${ramSpec.options[0].value}${ramSpec.options[0].unit ?? ""}`
                     : undefined,
                 storage: storageSpec?.options[0]
-                    ? `${storageSpec.options[0].value}${storageSpec.options[0].unit}`
+                    ? `${storageSpec.options[0].value}${storageSpec.options[0].unit ?? ""}`
                     : undefined,
                 processor: processorSpec?.options[0]
-                    ? `${processorSpec.options[0].value}${processorSpec.options[0].unit}`
+                    ? `${processorSpec.options[0].value}${processorSpec.options[0].unit ?? ""}`
                     : undefined,
             });
         });

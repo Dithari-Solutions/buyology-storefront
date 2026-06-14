@@ -53,8 +53,8 @@ export default function ProfilePage() {
                                 <circle cx="12" cy="7" r="4" />
                             </svg>
                         }
-                        title={t("guest.title", { defaultValue: "Sign in to your account" })}
-                        subtitle={t("guest.subtitle", { defaultValue: "Sign in or create an account to manage your profile, addresses, and orders." })}
+                        title={t("guest.title", { defaultValue: "Log in to access your profile" })}
+                        subtitle={t("guest.subtitle", { defaultValue: "Log in or create an account to manage your profile, addresses, and orders." })}
                     />
                 </main>
                 <Footer />

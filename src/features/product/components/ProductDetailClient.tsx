@@ -74,7 +74,7 @@ function SpecSelector({
         <span className="text-sm font-semibold text-gray-800">{spec.name}</span>
         {selected && (
           <span className="text-sm text-[#402F75] font-medium">
-            {selected.value} {selected.unit}
+            {selected.value}{selected.unit ? ` ${selected.unit}` : ""}
           </span>
         )}
       </div>
@@ -92,7 +92,7 @@ function SpecSelector({
                   : "bg-white text-gray-600 border-gray-200 hover:border-[#402F75]/40 hover:text-[#402F75]"
               }`}
             >
-              <span>{option.value} {option.unit}</span>
+              <span>{option.value}{option.unit ? ` ${option.unit}` : ""}</span>
               {hasExtra && (
                 <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
                   isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
@@ -213,7 +213,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
     return product.specs
       .map((spec) => {
         const opt = spec.options.find((o) => o.id === selectedOptions[spec.id]);
-        return opt ? `${opt.value}${opt.unit}` : null;
+        return opt ? (opt.unit ? `${opt.value}${opt.unit}` : opt.value) : null;
       })
       .filter(Boolean)
       .join(" / ");
@@ -284,8 +284,8 @@ export default function ProductDetailClient({ product: initialProduct, images: i
           category: product.categoryId,
           slugs,
           imageUrl: images[0] ?? undefined,
-          ram: ramOpt ? `${ramOpt.value}${ramOpt.unit}` : undefined,
-          storage: storOpt ? `${storOpt.value}${storOpt.unit}` : undefined,
+          ram: ramOpt ? (ramOpt.unit ? `${ramOpt.value}${ramOpt.unit}` : ramOpt.value) : undefined,
+          storage: storOpt ? (storOpt.unit ? `${storOpt.value}${storOpt.unit}` : storOpt.value) : undefined,
         },
       }));
     }
@@ -868,7 +868,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{spec.name}</span>
                       <span className="text-sm font-bold text-gray-900 truncate">
-                        {selected ? `${selected.value} ${selected.unit}` : "—"}
+                        {selected ? (selected.unit ? `${selected.value} ${selected.unit}` : selected.value) : "—"}
                       </span>
                     </div>
                   </div>

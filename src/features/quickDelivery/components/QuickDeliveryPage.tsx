@@ -72,7 +72,7 @@ function getSpecValue(product: ApiProduct, code: string): string {
     const spec = product.specs.find((s) => s.code === code);
     if (!spec || spec.options.length === 0) return "";
     const opt = spec.options[0];
-    return `${opt.value}${opt.unit}`;
+    return `${opt.value}${opt.unit ?? ""}`;
 }
 
 export default function QuickDeliveryPage() {

@@ -122,10 +122,12 @@ export async function getProductById(id: string, params: ProductQueryParams = {}
 }
 
 export async function getProductBySlug(slug: string, params: ProductQueryParams = {}): Promise<ApiProduct> {
-  const products = await getProducts(params);
-  const match = products.find((p) => p.slug === slug);
-  if (!match) throw new Error(`Product with slug "${slug}" not found`);
-  return getProductById(match.id, params);
+  // Resolve across languages on the backend: product slugs are per-language, so the slug in
+  // the URL may belong to a different language than the one being requested.
+  const { data } = await apiClient.get<{ data: ApiProduct }>("/api/product/by-slug", {
+    params: { ...buildParams(params), slug },
+  });
+  return data.data;
 }
 
 export async function getPopularForYou(productIds: string[], params: ProductQueryParams = {}): Promise<ApiProduct[]> {
@@ -273,6 +275,7 @@ export interface AllCategory {
   id: string;
   parentId: string | null;
   status: string;
+  icon?: string | null;
   name: string;
   slug: string;
 }
