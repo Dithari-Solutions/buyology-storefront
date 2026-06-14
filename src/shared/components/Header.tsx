@@ -18,6 +18,8 @@ import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { selectFavouriteItems } from "@/features/favourites/store/favouritesSlice";
 import { selectCartCount } from "@/features/cart/store/cartSlice";
 import type { RootState } from "@/store";
+import ShopNavItem from "./ShopNavItem";
+import { getAllCategories, type AllCategory } from "@/features/product/services/productService";
 
 const NAV_CANONICAL: Record<string, string> = {
     home: "",
@@ -290,6 +292,16 @@ export default function Header() {
     const favCount = useSelector(selectFavouriteItems).length;
     const cartCount = useSelector(selectCartCount);
 
+    // All categories for the "Shop" hover mega-menu (every category, even empty ones).
+    const [categories, setCategories] = useState<AllCategory[]>([]);
+    useEffect(() => {
+        let active = true;
+        getAllCategories(lang)
+            .then((c) => { if (active) setCategories(c); })
+            .catch(() => { /* menu just shows nothing */ });
+        return () => { active = false; };
+    }, [lang]);
+
     useEffect(() => {
         const sentinel = sentinelRef.current;
         if (!sentinel) return;
@@ -317,6 +329,7 @@ export default function Header() {
     const cartSlug    = PATH_SLUGS["cart"]?.      [lang] ?? "cart";
     const favSlug     = PATH_SLUGS["favourites"]?.[lang] ?? "favourites";
     const profileSlug = PATH_SLUGS["profile"]?.   [lang] ?? "profile";
+    const shopSlug    = PATH_SLUGS["shop"]?.      [lang] ?? "shop";
 
     return (
         <>
@@ -358,16 +371,27 @@ export default function Header() {
                     {/* Desktop nav links */}
                     <div className="hidden lg:block">
                         <ul className="flex items-center gap-1">
-                            {Object.entries(navItems).map(([key, label]) => (
-                                <li key={key}>
-                                    <Link
+                            {Object.entries(navItems).map(([key, label]) =>
+                                key === "shop" ? (
+                                    <ShopNavItem
+                                        key={key}
+                                        lang={lang}
+                                        label={label}
                                         href={navHref(key)}
-                                        className="text-white/80 hover:text-white text-[14px] font-medium px-3 py-2 rounded-full hover:bg-white/10 transition-all duration-200"
-                                    >
-                                        {label}
-                                    </Link>
-                                </li>
-                            ))}
+                                        shopSlug={shopSlug}
+                                        categories={categories}
+                                    />
+                                ) : (
+                                    <li key={key}>
+                                        <Link
+                                            href={navHref(key)}
+                                            className="text-white/80 hover:text-white text-[14px] font-medium px-3 py-2 rounded-full hover:bg-white/10 transition-all duration-200"
+                                        >
+                                            {label}
+                                        </Link>
+                                    </li>
+                                )
+                            )}
                         </ul>
                     </div>
 
@@ -483,6 +507,23 @@ export default function Header() {
                                                 >
                                                     {label}
                                                 </Link>
+                                                {key === "shop" && categories.filter((c) => !c.parentId && (c.status ? c.status.toUpperCase() === "ACTIVE" : true)).length > 0 && (
+                                                    <ul className="ml-3 mt-1 mb-1 flex flex-col gap-0.5 border-l border-white/15 pl-3">
+                                                        {categories
+                                                            .filter((c) => !c.parentId && (c.status ? c.status.toUpperCase() === "ACTIVE" : true))
+                                                            .map((c) => (
+                                                                <li key={c.id}>
+                                                                    <Link
+                                                                        href={`/${lang}/${shopSlug}?categoryId=${c.id}&categoryName=${encodeURIComponent(c.name)}`}
+                                                                        onClick={() => setMenuOpen(false)}
+                                                                        className="block text-white/65 hover:text-white text-[13px] px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all duration-200"
+                                                                    >
+                                                                        {c.name}
+                                                                    </Link>
+                                                                </li>
+                                                            ))}
+                                                    </ul>
+                                                )}
                                             </li>
                                         ))}
                                     </ul>

@@ -269,6 +269,25 @@ export async function getProductFilters(
   return data.data;
 }
 
+export interface AllCategory {
+  id: string;
+  parentId: string | null;
+  status: string;
+  name: string;
+  slug: string;
+}
+
+/**
+ * All categories (localized), independent of whether they currently have products —
+ * used by the header Shop menu. Unlike the filters endpoint, this returns the full set.
+ */
+export async function getAllCategories(lang: Lang = 'en'): Promise<AllCategory[]> {
+  const { data } = await apiClient.get<{ data: AllCategory[] }>('/api/category', {
+    params: { lang: LANG_PARAM[lang] },
+  });
+  return data.data ?? [];
+}
+
 export function getPrimaryImage(media: ApiProductMedia[]): string {
   const primary = media.find((m) => m.isPrimary) ?? media[0];
   return primary ? getImageUrl(primary.url) : "";

@@ -166,8 +166,9 @@ export interface ActiveFilters {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function ProductFilter({ onFiltersChange }: {
+export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   onFiltersChange?: (filters: ActiveFilters) => void;
+  initialCategoryId?: string | null;
 }) {
   const params = useParams();
   const lang = (params?.lang as Lang) ?? 'en';
@@ -181,7 +182,12 @@ export default function ProductFilter({ onFiltersChange }: {
   // Selection state
   const [price, setPrice] = useState<[number, number]>([0, 0]);
   const [condition, setCondition] = useState<string | null>(null);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(initialCategoryId ?? null);
+
+  // Keep the selected category in sync with the URL (e.g. picking another category from the header).
+  useEffect(() => {
+    setCategoryId(initialCategoryId ?? null);
+  }, [initialCategoryId]);
   const [brandId, setBrandId] = useState<string | null>(null);
   const [availability, setAvailability] = useState<string | null>(null);
   const [specSelections, setSpecSelections] = useState<Record<string, string[]>>({});
