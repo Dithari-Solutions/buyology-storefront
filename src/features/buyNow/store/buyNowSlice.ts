@@ -21,6 +21,8 @@ export interface BuyNowItem {
   currency: string;
   /** Display shipping estimate (0 when free). The real fee is recomputed server-side. */
   shippingFee: number;
+  /** Whether the product supports express delivery (drives EXPRESS vs REGULAR). */
+  quickDelivery?: boolean;
 }
 
 interface BuyNowState {

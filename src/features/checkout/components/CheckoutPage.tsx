@@ -175,8 +175,10 @@ export default function CheckoutPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
 
-    // Determine delivery method: EXPRESS if any item has quickDelivery AND coordinates are available, else REGULAR
-    const deliveryMethod = (cartItems.some((i) => i.quickDelivery) && shippingData?.latitude != null && shippingData?.longitude != null)
+    // Determine delivery method: EXPRESS if any item supports quickDelivery AND coordinates are
+    // available, else REGULAR. In Buy Now mode the single product's flag drives it (the cart is empty).
+    const hasExpressItem = isBuyNow ? (buyNowItem?.quickDelivery ?? false) : cartItems.some((i) => i.quickDelivery);
+    const deliveryMethod = (hasExpressItem && shippingData?.latitude != null && shippingData?.longitude != null)
         ? ("EXPRESS" as const)
         : ("REGULAR" as const);
 
@@ -191,7 +193,7 @@ export default function CheckoutPage() {
             quantity: buyNowItem.quantity,
             variant: { color: buyNowItem.color, storage: buyNowItem.storage },
             price: buyNowItem.price,
-            quickDelivery: false,
+            quickDelivery: buyNowItem.quickDelivery ?? false,
         }]
         : undefined;
     const summaryTotals = isBuyNow && buyNowItem
@@ -243,12 +245,14 @@ export default function CheckoutPage() {
     // the items + currency so selectCartTotals resolves the real total.
 
     // Buy Now: if the stashed item is missing (e.g. a refresh dropped it), there's
-    // nothing to check out — send the user back to keep things consistent.
+    // nothing to check out — send the user back. Skip once an order already exists
+    // (pendingOrderId), so clearing the item just before the payment redirect can't
+    // bounce a retry home.
     useEffect(() => {
-        if (isBuyNow && authRestored && userId && !buyNowItem) {
+        if (isBuyNow && authRestored && userId && !buyNowItem && !pendingOrderId) {
             router.push(`/${lang}`);
         }
-    }, [isBuyNow, authRestored, userId, buyNowItem, lang, router]);
+    }, [isBuyNow, authRestored, userId, buyNowItem, pendingOrderId, lang, router]);
 
     useEffect(() => {
         if (!userId) return;

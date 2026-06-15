@@ -322,6 +322,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
       originalPrice: hasDiscount ? originalTotalPrice : undefined,
       currency: product.currency ?? "USD",
       shippingFee: product.freeDelivery ? 0 : (product.deliveryFee ?? 0),
+      quickDelivery: product.expressDelivery ?? false,
     }));
     router.push(`/${lang}/checkout?buyNow=1`);
   }
