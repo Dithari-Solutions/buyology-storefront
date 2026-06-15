@@ -181,7 +181,9 @@ export async function searchProducts(params: ProductSearchParams = {}): Promise<
   if (lng != null) sp.set('lng', String(lng));
   if (sort) sp.set('sort', sort);
 
-  if (filterParams.query) sp.set('query', filterParams.query);
+  // Backend ProductFilterRequest binds the text search to `q` (not `query`); sending
+  // the wrong name silently drops the title filter and returns every product.
+  if (filterParams.query) sp.set('q', filterParams.query);
   if (filterParams.condition) sp.set('condition', filterParams.condition);
   if (filterParams.brandId) sp.set('brandId', filterParams.brandId);
   if (filterParams.brandIds) for (const id of filterParams.brandIds) if (id) sp.append('brandIds', id);
