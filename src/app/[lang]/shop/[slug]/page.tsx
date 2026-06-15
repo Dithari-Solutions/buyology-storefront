@@ -169,7 +169,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
         <JsonLd data={productLd} />
         <JsonLd data={breadcrumbLd} />
         <Header />
-        <main className="bg-gray-50 min-h-screen">
+        <main className="min-h-screen">
           <ProductDetailClient product={product} images={images} slug={slug} />
         </main>
         <Footer />
@@ -179,7 +179,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     return (
       <>
         <Header />
-        <main className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <main className="min-h-screen flex items-center justify-center">
           <p className="text-gray-500 text-[15px]">Product not found.</p>
         </main>
         <Footer />

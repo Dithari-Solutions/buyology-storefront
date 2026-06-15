@@ -7,7 +7,7 @@ export default function SupplierSubmittedPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow bg-[#F9FAFB] flex items-center justify-center py-20 px-4 relative overflow-hidden">
+      <main className="flex-grow flex items-center justify-center py-20 px-4 relative overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-purple-50/50 to-transparent pointer-events-none" />
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#FBBB14]/5 rounded-full blur-3xl pointer-events-none" />

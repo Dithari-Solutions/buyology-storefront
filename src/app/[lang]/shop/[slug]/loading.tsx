@@ -4,7 +4,7 @@
 // the product. Self-contained (no data deps) so it can paint right away.
 export default function ProductDetailLoading() {
   return (
-    <main className="bg-gray-50 min-h-screen animate-pulse">
+    <main className="min-h-screen animate-pulse">
       {/* Header placeholder bar (keeps layout from jumping when the real page swaps in) */}
       <div className="h-[64px] bg-white border-b border-gray-100" />
 
