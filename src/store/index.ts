@@ -5,6 +5,7 @@ import favouritesReducer from "@/features/favourites/store/favouritesSlice";
 import authReducer from "@/features/auth/store/authSlice";
 import countryReducer from "@/features/country/store/countrySlice";
 import locationReducer from "@/features/location/store/locationSlice";
+import buyNowReducer from "@/features/buyNow/store/buyNowSlice";
 
 export const store = configureStore({
     reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
         auth: authReducer,
         country: countryReducer,
         location: locationReducer,
+        buyNow: buyNowReducer,
     },
 });
 

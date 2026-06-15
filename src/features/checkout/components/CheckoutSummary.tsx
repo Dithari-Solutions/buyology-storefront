@@ -6,16 +6,35 @@ import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { selectCartItems, selectSelectedIds, selectCartTotals } from "@/features/cart/store/cartSlice";
 
-export default function CheckoutSummary() {
+interface SummaryItem {
+    id: string;
+    title: string;
+    imageUrl?: string;
+    quantity: number;
+    variant: { color?: string; storage?: string };
+    price: number;
+    quickDelivery?: boolean;
+}
+
+interface CheckoutSummaryProps {
+    /** When provided (Buy Now), the summary shows these instead of the cart. */
+    items?: SummaryItem[];
+    totals?: { subtotal: number; shipping: number; total: number; promoDiscount?: number };
+    currency?: string;
+}
+
+export default function CheckoutSummary({ items: itemsProp, totals: totalsProp, currency: currencyProp }: CheckoutSummaryProps = {}) {
     const { t } = useTranslation("checkout");
     const allItems = useSelector(selectCartItems);
     const selectedIds = useSelector(selectSelectedIds);
-    const totals = useSelector(selectCartTotals);
-    const currency = useSelector((state: RootState) => state.cart.currency) ?? "AED";
-    const hasExpressItem = allItems.some((i) => i.quickDelivery);
-    const deliveryEstimate = hasExpressItem ? "Within 30 minutes" : "2–3 business days";
+    const cartTotals = useSelector(selectCartTotals);
+    const cartCurrency = useSelector((state: RootState) => state.cart.currency) ?? "AED";
 
-    const items = allItems.filter((i) => selectedIds.includes(i.id));
+    const items: SummaryItem[] = itemsProp ?? allItems.filter((i) => selectedIds.includes(i.id));
+    const totals = totalsProp ?? cartTotals;
+    const currency = currencyProp ?? cartCurrency;
+    const hasExpressItem = items.some((i) => i.quickDelivery);
+    const deliveryEstimate = hasExpressItem ? "Within 30 minutes" : "2–3 business days";
 
     return (
         <aside className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:sticky lg:top-6 self-start">

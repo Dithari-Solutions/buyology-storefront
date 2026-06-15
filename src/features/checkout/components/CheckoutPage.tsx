@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState, AppDispatch } from "@/store";
@@ -16,7 +16,8 @@ import { initiatePayment } from "../services/payment.api";
 import { b2bAccountApi } from "@/features/b2b/account/api";
 import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee, selectPromo, fetchCartThunk } from "@/features/cart/store/cartSlice";
 import { checkoutCart } from "@/features/cart/services/cart.api";
-import { createOrder } from "@/features/orders/services/orders.api";
+import { createOrder, createBuyNowOrder } from "@/features/orders/services/orders.api";
+import { selectBuyNowItem, clearBuyNow } from "@/features/buyNow/store/buyNowSlice";
 import { getCredentialIdFromAccessToken } from "@/shared/lib/tokenManager";
 import { selectUserCoords } from "@/features/location/store/locationSlice";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
@@ -164,6 +165,11 @@ export default function CheckoutPage() {
     const promo = useSelector(selectPromo);
     const userCoords = useSelector(selectUserCoords);
 
+    // ── Buy Now mode: checkout a single product, never the cart ────────────────
+    const searchParams = useSearchParams();
+    const isBuyNow = searchParams.get("buyNow") === "1";
+    const buyNowItem = useSelector(selectBuyNowItem);
+
     const [step, setStep] = useState<CheckoutStep>("shipping");
     const [shippingData, setShippingData] = useState<ShippingFormData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -173,6 +179,29 @@ export default function CheckoutPage() {
     const deliveryMethod = (cartItems.some((i) => i.quickDelivery) && shippingData?.latitude != null && shippingData?.longitude != null)
         ? ("EXPRESS" as const)
         : ("REGULAR" as const);
+
+    // In Buy Now mode the summary/payment use the single product instead of the cart.
+    const buyNowSubtotal = buyNowItem ? buyNowItem.price * buyNowItem.quantity : 0;
+    const summaryCurrency = isBuyNow && buyNowItem ? buyNowItem.currency : cartCurrency;
+    const summaryItems = isBuyNow && buyNowItem
+        ? [{
+            id: "buynow",
+            title: buyNowItem.title,
+            imageUrl: buyNowItem.imageUrl,
+            quantity: buyNowItem.quantity,
+            variant: { color: buyNowItem.color, storage: buyNowItem.storage },
+            price: buyNowItem.price,
+            quickDelivery: false,
+        }]
+        : undefined;
+    const summaryTotals = isBuyNow && buyNowItem
+        ? {
+            subtotal: buyNowSubtotal,
+            shipping: buyNowItem.shippingFee,
+            promoDiscount: 0,
+            total: buyNowSubtotal + buyNowItem.shippingFee,
+        }
+        : undefined;
 
     // Profile + addresses state
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -185,6 +214,9 @@ export default function CheckoutPage() {
     // and go straight to initiatePayment with the existing orderId.
     const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
     const [pendingShippingFee, setPendingShippingFee] = useState<number | null>(null);
+    // Buy Now retry: the order's authoritative amount/currency to re-send to payment.
+    const [pendingAmount, setPendingAmount] = useState<number | null>(null);
+    const [pendingCurrency, setPendingCurrency] = useState<string | null>(null);
 
     // ── Auth guard: redirect to sign-in once auth state is known and absent ────
     useEffect(() => {
@@ -210,8 +242,17 @@ export default function CheckoutPage() {
     // left state.cart.items empty → totals showed "AED 0.00". fetchCartThunk loads
     // the items + currency so selectCartTotals resolves the real total.
 
+    // Buy Now: if the stashed item is missing (e.g. a refresh dropped it), there's
+    // nothing to check out — send the user back to keep things consistent.
+    useEffect(() => {
+        if (isBuyNow && authRestored && userId && !buyNowItem) {
+            router.push(`/${lang}`);
+        }
+    }, [isBuyNow, authRestored, userId, buyNowItem, lang, router]);
+
     useEffect(() => {
         if (!userId) return;
+        if (isBuyNow) return; // Buy Now never loads the cart
         const load = (coords?: { lat: number; lng: number }) => {
             dispatch(fetchCartThunk({ coords }));
         };
@@ -225,7 +266,7 @@ export default function CheckoutPage() {
         } else {
             load();
         }
-    }, [userId, userCoords, dispatch]);
+    }, [userId, userCoords, dispatch, isBuyNow]);
 
     // ── Save address from checkout ─────────────────────────────────────────────
 
@@ -256,16 +297,47 @@ export default function CheckoutPage() {
         setPaymentError(null);
 
         try {
-            if (!cartId) throw new Error("No active cart found. Please add items and try again.");
+            if (!isBuyNow && !cartId) throw new Error("No active cart found. Please add items and try again.");
             if (!shippingData.addressId) throw new Error("Please select a delivery address.");
 
             let finalShippingFee: number;
             let orderId: string;
+            let payAmount: number;
+            let payCurrency: string;
+            let payCartId: string | undefined;
 
             if (pendingOrderId && pendingShippingFee != null) {
                 // ── Retry path: order already created, skip checkout + order creation ──
                 finalShippingFee = pendingShippingFee;
                 orderId = pendingOrderId;
+                payAmount = isBuyNow && pendingAmount != null
+                    ? pendingAmount
+                    : parseFloat((totals.subtotal - totals.promoDiscount + finalShippingFee).toFixed(2));
+                payCurrency = isBuyNow && pendingCurrency ? pendingCurrency : cartCurrency;
+                payCartId = isBuyNow ? undefined : (cartId ?? undefined);
+            } else if (isBuyNow) {
+                // ── Buy Now: order ONLY this product (the backend builds a throwaway
+                // single-item cart, so the user's real cart is untouched). ──
+                if (!buyNowItem) throw new Error("Nothing to buy. Please try again.");
+                const authCredentialId = getCredentialIdFromAccessToken();
+                if (!authCredentialId) throw new Error("Your session expired. Please sign in again.");
+                const order = await createBuyNowOrder(authCredentialId, {
+                    productId: buyNowItem.productId,
+                    storeId: buyNowItem.storeId,
+                    quantity: buyNowItem.quantity,
+                    addressId: shippingData.addressId,
+                    deliveryMethod,
+                });
+                orderId = order.id;
+                finalShippingFee = order.shippingFee ?? 0;
+                // Use the order's authoritative amount/currency for payment.
+                payAmount = order.totalAmount;
+                payCurrency = order.currency;
+                payCartId = order.cartId ?? undefined;
+                setPendingOrderId(order.id);
+                setPendingShippingFee(finalShippingFee);
+                setPendingAmount(order.totalAmount);
+                setPendingCurrency(order.currency);
             } else {
                 // ── First attempt: checkout cart then create order ──
 
@@ -281,7 +353,7 @@ export default function CheckoutPage() {
                 const authCredentialId = getCredentialIdFromAccessToken();
                 if (!authCredentialId) throw new Error("Your session expired. Please sign in again.");
                 const order = await createOrder(authCredentialId, {
-                    cartId,
+                    cartId: cartId!,
                     addressId: shippingData.addressId,
                     deliveryMethod,
                     shippingFee: finalShippingFee,
@@ -291,6 +363,9 @@ export default function CheckoutPage() {
                     couponCode: promo.applied && promo.code ? promo.code : undefined,
                 });
                 orderId = order.id;
+                payAmount = parseFloat((totals.subtotal - totals.promoDiscount + finalShippingFee).toFixed(2));
+                payCurrency = cartCurrency;
+                payCartId = cartId ?? undefined;
 
                 // Persist so retries reuse the same order
                 setPendingOrderId(order.id);
@@ -329,13 +404,13 @@ export default function CheckoutPage() {
             // Step 3 — Initiate payment
             const result = await initiatePayment({
                 appOrderId: orderId,
-                cartId,
+                cartId: payCartId,
                 addressId: shippingData.addressId,
                 deliveryMethod,
                 shippingFee: finalShippingFee,
                 methodType: METHOD_MAP[paymentMethod],
-                amount: parseFloat((totals.subtotal - totals.promoDiscount + finalShippingFee).toFixed(2)),
-                currency: cartCurrency,
+                amount: payAmount,
+                currency: payCurrency,
                 customerId: userId,
                 customerEmail: profile?.email ?? shippingData.email,
                 customerPhone: shippingData.phone || undefined,
@@ -350,6 +425,7 @@ export default function CheckoutPage() {
 
             // All methods use Unified Checkout — store transactionId and redirect
             sessionStorage.setItem(PENDING_TX_KEY, result.transactionId);
+            if (isBuyNow) dispatch(clearBuyNow());
             window.location.href = result.checkoutUrl;
         } catch (err) {
             setPaymentError(
@@ -437,13 +513,18 @@ export default function CheckoutPage() {
                                 onPlaceOrder={handlePlaceOrder}
                                 isSubmitting={isSubmitting}
                                 userId={userId}
-                                currency={cartCurrency}
+                                currency={summaryCurrency}
+                                orderTotalOverride={isBuyNow && summaryTotals ? summaryTotals.total : undefined}
                             />
                         )}
                     </div>
 
                     {/* Right column */}
-                    <CheckoutSummary />
+                    <CheckoutSummary
+                        items={summaryItems}
+                        totals={summaryTotals}
+                        currency={isBuyNow ? summaryCurrency : undefined}
+                    />
                 </div>
             </main>
             <Footer />

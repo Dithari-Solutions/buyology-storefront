@@ -17,6 +17,7 @@ import { getProductBySlug, type ApiProduct, type ApiSpec, type ApiSpecOption } f
 import { getRefundSettings } from "@/features/refund/services/refundService";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
+import { setBuyNow } from "@/features/buyNow/store/buyNowSlice";
 import { getAccessToken } from "@/shared/lib/tokenManager";
 import type { AppDispatch, RootState } from "@/store";
 import type { Lang } from "@/config/pathSlugs";
@@ -303,15 +304,26 @@ export default function ProductDetailClient({ product: initialProduct, images: i
     setTimeout(() => setFavBounce(false), 400);
   }
 
-  async function handleBuyNow() {
+  function handleBuyNow() {
     if (!requireAuth()) return;
-    const ok = await persistToBackendCart();
-    if (!ok) {
-      // Session died mid-request → prompt sign-in rather than failing silently.
-      if (!getAccessToken()) openLoginPrompt();
-      return;
-    }
-    router.push(`/${lang}/checkout`);
+    // Buy Now checks out ONLY this product — never the cart. Stash it and hand
+    // off to a dedicated single-item checkout (?buyNow=1).
+    const storeId = product.storeId ?? product.storeOptions?.[0]?.storeId;
+    if (!storeId) return;
+    dispatch(setBuyNow({
+      productId: product.id,
+      storeId,
+      quantity: 1,
+      title: product.title,
+      imageUrl: images[0],
+      color: selectedColor || undefined,
+      storage: getVariantLabel() || undefined,
+      price: totalPrice,
+      originalPrice: hasDiscount ? originalTotalPrice : undefined,
+      currency: product.currency ?? "USD",
+      shippingFee: product.freeDelivery ? 0 : (product.deliveryFee ?? 0),
+    }));
+    router.push(`/${lang}/checkout?buyNow=1`);
   }
 
   const purchaseDisabled = isOutOfStock || unavailableInCountry;

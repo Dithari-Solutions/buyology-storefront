@@ -20,6 +20,34 @@ export async function createOrder(
     return data.data;
 }
 
+export interface BuyNowOrderPayload {
+    productId: string;
+    storeId: string;
+    quantity: number;
+    addressId: string;
+    deliveryMethod?: "REGULAR" | "EXPRESS";
+    shippingFee?: number;
+    couponCode?: string;
+}
+
+/**
+ * Place a "Buy Now" order for a single product, bypassing the cart. The backend
+ * builds a throwaway single-item cart and returns an order with authoritative
+ * subtotal/shipping/total/currency — use those for the payment amount.
+ */
+export async function createBuyNowOrder(
+    authCredentialId: string,
+    payload: BuyNowOrderPayload
+): Promise<OrderDetail> {
+    const { data } = await apiClient.post<ApiEnvelope<OrderDetail>>(
+        "/api/orders/buy-now",
+        payload,
+        { headers: { "X-Auth-Credential-Id": authCredentialId } }
+    );
+    if (!data.data) throw new Error(data.message ?? "Failed to create order.");
+    return data.data;
+}
+
 export async function getOrders(page = 0, size = 20): Promise<PaginatedOrders> {
     const { data } = await apiClient.get<ApiEnvelope<PaginatedOrders>>(
         `/api/orders?page=${page}&size=${size}`

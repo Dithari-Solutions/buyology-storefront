@@ -56,17 +56,19 @@ interface PaymentStepProps {
     userId?: string | null;
     /** Cart currency for the credit panel. */
     currency?: string;
+    /** When set (Buy Now), use this as the order total instead of the cart total. */
+    orderTotalOverride?: number;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceOrder, isSubmitting, userId, currency }: PaymentStepProps) {
+export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceOrder, isSubmitting, userId, currency, orderTotalOverride }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
     // Payment method for the amount due (B2B credit is a separate modifier, not a method).
     const [selected, setSelected] = useState<Exclude<PaymentMethod, "credit">>("card");
     const totals = useSelector(selectCartTotals);
     const cartItems = useSelector((state: RootState) => state.cart.items);
-    const orderTotal = totals.total;
+    const orderTotal = orderTotalOverride ?? totals.total;
 
     const [wallet, setWallet] = useState<{
         balance: number;
