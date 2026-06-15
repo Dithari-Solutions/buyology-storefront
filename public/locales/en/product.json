@@ -39,6 +39,7 @@
       "addedToCart": "Added to Cart!"
     },
     "unavailableNotice": "This product is not available in your selected country.",
+    "lowStock": "Hurry! Only {{count}} left — almost sold out.",
     "share": {
       "copied": "Copied!"
     },

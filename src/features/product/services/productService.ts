@@ -39,6 +39,8 @@ export interface ApiProduct {
   refurbGrade: string | null;
   isSuperDeal?: boolean;
   isLimitedStock?: boolean;
+  /** Admin-managed stock count; show an urgency message when 0 < stockQuantity < 5. */
+  stockQuantity?: number | null;
   brandId?: string | null;
   brandName?: string | null;
   productType: string;

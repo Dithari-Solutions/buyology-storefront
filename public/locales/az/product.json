@@ -39,6 +39,7 @@
       "addedToCart": "Səbətə Əlavə Edildi!"
     },
     "unavailableNotice": "Bu məhsul seçdiyiniz ölkədə mövcud deyil.",
+    "lowStock": "Tələsin! Cəmi {{count}} ədəd qaldı — demək olar ki, bitdi.",
     "share": {
       "copied": "Kopyalandı!"
     },

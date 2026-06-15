@@ -53,6 +53,8 @@ interface ProductCardProps {
   isSuperDeal?: boolean;
   /** Raw stock status (e.g. "LOW_STOCK") — drives the "Limited Stock" badge. */
   availabilityStatus?: string;
+  /** Admin-managed stock count — shows an "Only N left" badge when 0 < n < 5. */
+  stockQuantity?: number | null;
 }
 
 function formatPrice(amount: number, currency: string): string {
@@ -102,10 +104,12 @@ export default function ProductCard({
   availableInSelectedCountry,
   isSuperDeal,
   availabilityStatus,
+  stockQuantity,
 }: ProductCardProps) {
   const id = useId();
   const clipId = `productImageClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
   const isList = view === 'list';
+  const lowStock = typeof stockQuantity === "number" && stockQuantity > 0 && stockQuantity < 5;
 
   const router = useRouter();
   const params = useParams();
@@ -439,7 +443,7 @@ export default function ProductCard({
         {/* ── Image container ── */}
         <div className={`relative overflow-hidden rounded-[20px] flex items-center justify-center${isList ? ' w-[180px] sm:w-[220px] xl:w-[260px] flex-shrink-0 min-h-[180px] xl:min-h-[200px]' : ' h-[200px] xl:h-[220px] 2xl:h-[240px] mb-[12px] xl:mb-[16px]'}`}>
           {/* Special offer + limited stock badges (top-left) */}
-          {(isSuperDeal || availabilityStatus === "LOW_STOCK") && (
+          {(isSuperDeal || availabilityStatus === "LOW_STOCK" || lowStock) && (
             <div className="absolute top-[10px] left-[10px] z-20 flex flex-col items-start gap-[5px]">
               {isSuperDeal && (
                 <span className="inline-flex items-center gap-[3px] bg-[#FBBB14] text-white text-[10px] font-bold px-[8px] py-[3px] rounded-full leading-tight shadow-sm">
@@ -449,6 +453,11 @@ export default function ProductCard({
               {availabilityStatus === "LOW_STOCK" && (
                 <span className="inline-flex items-center gap-[3px] bg-[#402F75] text-white text-[10px] font-bold px-[8px] py-[3px] rounded-full leading-tight shadow-sm">
                   <HourglassIcon className="w-3 h-3" /> Limited Stock
+                </span>
+              )}
+              {lowStock && (
+                <span className="inline-flex items-center gap-[3px] bg-orange-500 text-white text-[10px] font-bold px-[8px] py-[3px] rounded-full leading-tight shadow-sm">
+                  <HourglassIcon className="w-3 h-3" /> Only {stockQuantity} left
                 </span>
               )}
             </div>

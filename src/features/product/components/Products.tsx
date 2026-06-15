@@ -393,6 +393,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 rating={Number(product.averageRating ?? 0)}
                 isSuperDeal={product.isSuperDeal}
                 availabilityStatus={product.availabilityStatus}
+                stockQuantity={product.stockQuantity}
               />
             );
           })}

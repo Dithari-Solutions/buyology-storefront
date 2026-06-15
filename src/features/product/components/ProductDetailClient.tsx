@@ -212,6 +212,8 @@ export default function ProductDetailClient({ product: initialProduct, images: i
   const inStock = product.availabilityStatus === "IN_STOCK";
   const isOutOfStock = product.availabilityStatus === "OUT_OF_STOCK";
   const unavailableInCountry = product.availableInSelectedCountry === false;
+  const stockQty = product.stockQuantity ?? 0;
+  const lowStock = stockQty > 0 && stockQty < 5;
 
   function getVariantLabel() {
     return product.specs
@@ -578,6 +580,13 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                 <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   <AlertIcon className="w-4 h-4 flex-shrink-0" />
                   <span>{t("details.unavailableNotice")}</span>
+                </div>
+              )}
+
+              {lowStock && (
+                <div className="flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-700">
+                  <HourglassIcon className="w-4 h-4 flex-shrink-0" />
+                  <span>{t("details.lowStock", { count: stockQty, defaultValue: "Hurry! Only {{count}} left — almost sold out." })}</span>
                 </div>
               )}
 
