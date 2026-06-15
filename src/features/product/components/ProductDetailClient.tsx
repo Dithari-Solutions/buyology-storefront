@@ -474,7 +474,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                 </motion.button>
               </div>
 
-              <div className="lg:sticky lg:top-24 w-full max-w-[760px] xl:max-w-[860px] mx-auto">
+              <div className="lg:sticky lg:top-24 w-full max-w-[800px] xl:max-w-[940px] mx-auto">
                 <ProductDetailImage
                   images={images}
                   badges={
@@ -518,7 +518,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
             </div>
 
             {/* Right — product info */}
-            <div className="lg:col-span-5 p-6 sm:p-10 flex flex-col gap-6">
+            <div className="lg:col-span-5 p-6 sm:p-10 xl:p-12 flex flex-col gap-6 w-full xl:max-w-[680px]">
               {/* Brand + category */}
               <div className="flex flex-wrap items-center gap-2">
                 {product.brandName && (
