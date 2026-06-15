@@ -48,7 +48,7 @@ function keyFromName(name: string): string {
 }
 
 /** Prefer the admin-assigned icon key; fall back to a name-keyword match, then a generic grid. */
-function CategoryIcon({ icon, name }: { icon?: string | null; name: string }) {
+export function CategoryIcon({ icon, name }: { icon?: string | null; name: string }) {
   const key = icon && ICON_KEYS.includes(icon) ? icon : keyFromName(name);
   return glyph(key);
 }

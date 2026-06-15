@@ -5,12 +5,12 @@ import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import Button from "@/shared/components/Button";
-import { addItem } from "@/features/cart/store/cartSlice";
 import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
+import { setBuyNow } from "@/features/buyNow/store/buyNowSlice";
 import type { AppDispatch } from "@/store";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { getPrimaryImage } from "@/features/product/services/productService";
-import type { Lang } from "@/config/pathSlugs";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 function extractSpecs(product: ApiProduct): string[] {
     return product.specs.slice(0, 5).map((group) => {
@@ -31,42 +31,48 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
     const specs = extractSpecs(product);
     const effectivePrice = product.effectivePrice ?? 0;
     const basePrice = product.basePrice ?? effectivePrice;
+    const detailHref = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${product.slug}`;
 
     function handleBuyNow() {
         if (!requireAuth()) return;
-        dispatch(addItem({
-            id: `buy-${product.id}-${Date.now()}`,
+        // Buy Now checks out ONLY this product (never the cart) via the dedicated
+        // single-item flow — same as the product detail page.
+        const storeId = product.storeId ?? product.storeOptions?.[0]?.storeId;
+        if (!storeId) return;
+        dispatch(setBuyNow({
             productId: product.id,
-            title: product.title,
-            imageUrl: imageUrl ?? "",
-            variant: { color: "", storage: "" },
-            price: effectivePrice,
-            originalPrice: basePrice,
-            discountPercent: basePrice > effectivePrice ? Math.round((1 - effectivePrice / basePrice) * 100) : 0,
+            storeId,
             quantity: 1,
-            savedForLater: false,
+            title: product.title,
+            imageUrl: imageUrl || undefined,
+            price: effectivePrice,
+            originalPrice: basePrice > effectivePrice ? basePrice : undefined,
+            currency: product.currency ?? "USD",
+            shippingFee: product.freeDelivery ? 0 : (product.deliveryFee ?? 0),
+            quickDelivery: product.expressDelivery ?? false,
         }));
-        router.push(`/${lang}/checkout`);
+        router.push(`/${lang}/checkout?buyNow=1`);
     }
 
     return (
         <>
         {loginGate}
         <div
-            className="relative rounded-[24px] w-full overflow-hidden flex-shrink-0"
+            onClick={() => router.push(detailHref)}
+            role="link"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter") router.push(detailHref); }}
+            className="relative rounded-[24px] w-full overflow-hidden flex-shrink-0 cursor-pointer"
             style={{ background: "linear-gradient(115deg, #EDE8FB 0%, #D9CFEF 25%, #B4A5D5 55%, #6B59A8 80%, #402F75 100%)" }}
         >
-            {/* Top badges */}
-            <div className="absolute top-4 start-4 sm:top-5 sm:start-6 flex gap-2 z-10">
-                <span className="flex items-center gap-1 bg-[#FBBB14] text-white text-[11px] font-bold px-3 py-[5px] rounded-full shadow-md">
-                    {t("limitedStock.badge")}
-                </span>
-                <span className="bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold px-3 py-[5px] rounded-full border border-white/30">
-                    {product.availabilityStatus === "LOW_STOCK"
-                        ? t("limitedStock.onlyLeft")
-                        : product.availabilityStatus}
-                </span>
-            </div>
+            {/* Low-stock badge only — no "Limited Stock"/status label here */}
+            {product.availabilityStatus === "LOW_STOCK" && (
+                <div className="absolute top-4 start-4 sm:top-5 sm:start-6 z-10">
+                    <span className="bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold px-3 py-[5px] rounded-full border border-white/30">
+                        {t("limitedStock.onlyLeft")}
+                    </span>
+                </div>
+            )}
 
             <div className="flex flex-col md:flex-row items-center justify-around px-6 sm:px-10 md:px-[60px] pt-16 pb-8 sm:pt-16 sm:pb-10 md:pt-[60px] md:pb-[50px] gap-6 md:gap-10">
 
@@ -124,7 +130,10 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
                                 )}
                             </div>
                         )}
-                        <Button title={t("limitedStock.buyNow")} onClick={handleBuyNow} />
+                        {/* Stop the card's navigate-to-detail click when buying. */}
+                        <span onClick={(e) => e.stopPropagation()}>
+                            <Button title={t("limitedStock.buyNow")} onClick={handleBuyNow} />
+                        </span>
                     </div>
                 </div>
             </div>

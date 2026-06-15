@@ -118,12 +118,6 @@ export default function LimitedStock() {
             {/* Header */}
             <div className="flex items-end justify-between mb-5 md:mb-6">
                 <div>
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-[#402F75] px-3 py-[5px] rounded-full mb-2.5">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
-                            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-                        </svg>
-                        {t("limitedStock.badge")}
-                    </span>
                     <h2 className="text-[22px] sm:text-[26px] md:text-[32px] font-extrabold leading-tight text-gray-900">
                         {t("limitedStock.title", { defaultValue: "Limited Stock" })}
                     </h2>
