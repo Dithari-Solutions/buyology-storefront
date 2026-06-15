@@ -116,7 +116,7 @@ export default function Preloader({ onComplete, quick = false, loop = false }: P
                         <span
                             data-letter
                             style={{
-                                fontFamily: "Raleway, system-ui, sans-serif",
+                                fontFamily: "var(--font-ibm-sans), system-ui, sans-serif",
                                 color: letterColor(i),
                                 fontSize: "clamp(1.1rem, 7vw, 3rem)",
                                 fontWeight: 700,

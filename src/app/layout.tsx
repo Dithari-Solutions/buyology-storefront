@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from "next/font/google";
 import Script from "next/script";
 import { headers } from "next/headers";
 import Providers from "@/shared/components/Providers";
@@ -15,6 +16,24 @@ import {
   getSafeLang,
 } from "@/shared/seo/config";
 import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/shared/seo/JsonLd";
+
+// Self-hosted via next/font/google (no CDN / @import). Latin (EN + AZ, incl.
+// ə ğ ı ş via latin-ext) → IBM Plex Sans; Arabic (AR) → IBM Plex Sans Arabic.
+// Distinct variable names so they can feed the existing Tailwind --font-sans
+// token without a self-referential loop.
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-ibm-sans",
+  display: "swap",
+});
+
+const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-ibm-arabic",
+  display: "swap",
+});
 
 // Preconnect/dns-prefetch to the configured API host (not a hardcoded dev host),
 // so prod points at the prod API. Falls back to dev only if the env var is unset.
@@ -127,10 +146,15 @@ export default async function RootLayout({
 }) {
   const headersList = await headers();
   const lang = getSafeLang(headersList.get("x-lang"));
-  const dir = lang === "ar" ? "rtl" : "ltr";
+  const isArabic = lang === "ar";
+  const dir = isArabic ? "rtl" : "ltr";
 
   return (
-    <html lang={lang} dir={dir}>
+    <html
+      lang={lang}
+      dir={dir}
+      className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable}`}
+    >
       <head>
         <Script
           src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
@@ -142,7 +166,14 @@ export default async function RootLayout({
         <JsonLd data={organizationJsonLd()} />
         <JsonLd data={websiteJsonLd(lang)} />
       </head>
-      <body className="antialiased bg-[#EAE4FF]">
+      <body
+        className="antialiased bg-[#EAE4FF]"
+        style={{
+          fontFamily: isArabic
+            ? "var(--font-ibm-arabic), system-ui, -apple-system, sans-serif"
+            : "var(--font-ibm-sans), var(--font-ibm-arabic), system-ui, -apple-system, sans-serif",
+        }}
+      >
         {/* Global branded SVG background (fixed, behind all content at z-index -1) */}
         <BrandBackground />
         <Providers>{children}</Providers>
