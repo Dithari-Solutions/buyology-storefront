@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { RootState } from "@/store";
 import { PATH_SLUGS } from "@/config/pathSlugs";
@@ -11,12 +11,25 @@ import type { Lang } from "@/config/pathSlugs";
 const GATE_DELAY_MS = 2 * 60 * 1000; // 2 minutes
 const SESSION_KEY = "buyology_signup_gate_shown";
 
+// All localized auth slugs ("auth" / "giris" / "duhul"). The gate must never
+// interrupt the sign-in / sign-up / forgot-password journeys.
+const AUTH_SLUGS = new Set(Object.values(PATH_SLUGS.auth));
+
+/** True when the current path is any auth route, e.g. /en/auth, /az/giris/forgot-password. */
+function isAuthRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+  const seg = pathname.split("/")[2]; // /[lang]/[slug]/...
+  return !!seg && AUTH_SLUGS.has(seg);
+}
+
 export default function SignupGate() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const authRestored = useSelector((state: RootState) => state.auth.isRestored);
   const lang = useSelector((state: RootState) => state.language.lang) as Lang;
 
   const router = useRouter();
+  const pathname = usePathname();
+  const onAuthRoute = isAuthRoute(pathname);
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -25,6 +38,13 @@ export default function SignupGate() {
     if (!authRestored) return;
     // Already authenticated — no gate needed
     if (isAuthenticated) {
+      setVisible(false);
+      return;
+    }
+    // Never gate on auth pages (sign-in, sign-up, forgot-password, OTP, reset).
+    // Depending on the boolean (not the raw pathname) means the timer is only
+    // (re)started when the user crosses the auth boundary, not on every nav.
+    if (onAuthRoute) {
       setVisible(false);
       return;
     }
@@ -44,7 +64,7 @@ export default function SignupGate() {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authRestored]);
+  }, [authRestored, onAuthRoute]);
 
   // Hide immediately if user authenticates while modal is open
   useEffect(() => {

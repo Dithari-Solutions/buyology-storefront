@@ -19,6 +19,7 @@ import ProccessorIcon from "@/assets/icons/proccessor.png";
 import AlertModal from "@/shared/components/AlertModal";
 import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import LoginPromptModal from "@/features/auth/components/LoginPromptModal";
+import { getAccessToken } from "@/shared/lib/tokenManager";
 
 interface ProductCardProps {
   view?: 'grid' | 'list';
@@ -248,6 +249,9 @@ export default function ProductCard({
         setCrossCountryError(
           "You can only purchase products from stores in your selected country. Go to Profile → Country Settings to change your home country."
         );
+      } else if (!getAccessToken()) {
+        // Session died mid-request (invalid/expired token) → prompt sign-in.
+        setShowLoginPrompt(true);
       } else {
         setAddToCartError("Couldn't add to cart. Please try again.");
         setTimeout(() => setAddToCartError(null), 4000);

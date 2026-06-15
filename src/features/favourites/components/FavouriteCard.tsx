@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { removeFromFavouritesThunk } from "../store/favouritesSlice";
 import { addItem } from "@/features/cart/store/cartSlice";
+import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
 import type { AppDispatch, RootState } from "@/store";
 import type { FavouriteItemMeta } from "../types";
 import RamIcon from "@/assets/icons/ram.png";
@@ -42,6 +43,7 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
     const dispatch = useDispatch<AppDispatch>();
     const { t } = useTranslation("favourites");
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const { requireAuth, loginGate } = useLoginGate();
 
     const lang = (params?.lang as Lang) ?? "en";
     const href = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${item.slugs[lang] ?? item.slugs.en}`;
@@ -76,6 +78,7 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
 
     function handleAddToCart(e: React.MouseEvent) {
         e.stopPropagation();
+        if (!requireAuth()) return;
         dispatch(addItem({
             id: `cart-${item.id}-${Date.now()}`,
             productId: item.id,
@@ -122,6 +125,7 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
 
     return (
         <>
+            {loginGate}
             {/* Portal: card ghost flies to the header cart icon */}
             {mounted && createPortal(
                 <AnimatePresence>

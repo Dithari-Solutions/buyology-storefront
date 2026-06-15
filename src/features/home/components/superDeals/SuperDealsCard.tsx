@@ -18,6 +18,7 @@ import {
     removeFromFavouritesThunk,
     selectIsFavourite,
 } from "@/features/favourites/store/favouritesSlice";
+import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
 
 function extractSpecs(product: ApiProduct): string[] {
     return product.specs.slice(0, 4).map((group) => {
@@ -38,6 +39,7 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
 
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const { requireAuth, loginGate } = useLoginGate();
     const isFav = useSelector((state: RootState) => selectIsFavourite(product.id)(state));
     const cartItems = useSelector(selectCartItems);
     const isInCart = cartItems.some((i) => i.productId === product.id);
@@ -71,6 +73,7 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
 
     function handleAddToCart(e: React.MouseEvent) {
         e.stopPropagation();
+        if (!requireAuth()) return;
         if (isInCart) return;
         dispatch(
             addItem({
@@ -94,7 +97,7 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
 
     function handleFav(e: React.MouseEvent) {
         e.stopPropagation();
-        if (!userId) return;
+        if (!requireAuth() || !userId) return;
         setFavBounce(true);
         setTimeout(() => setFavBounce(false), 400);
         if (isFav) {
@@ -124,6 +127,8 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
     }
 
     return (
+        <>
+        {loginGate}
         <div
             onClick={() => router.push(detailHref)}
             role="link"
@@ -280,5 +285,6 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                 </div>
             </div>
         </div>
+        </>
     );
 }

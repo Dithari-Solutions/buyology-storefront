@@ -16,6 +16,8 @@ import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/c
 import { getProductBySlug, type ApiProduct, type ApiSpec, type ApiSpecOption } from "../services/productService";
 import { getRefundSettings } from "@/features/refund/services/refundService";
 import { getImageUrl } from "@/shared/utils/imageUrl";
+import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
+import { getAccessToken } from "@/shared/lib/tokenManager";
 import type { AppDispatch, RootState } from "@/store";
 import type { Lang } from "@/config/pathSlugs";
 
@@ -173,6 +175,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
 
   const isFav = useSelector((state: RootState) => selectIsFavourite(product.id)(state));
   const userId = useSelector((state: RootState) => state.auth.userId);
+  const { requireAuth, openLoginPrompt, loginGate } = useLoginGate();
 
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
     () => Object.fromEntries(product.specs.map((s) => [s.id, s.options[0]?.id ?? ""]))
@@ -248,8 +251,15 @@ export default function ProductDetailClient({ product: initialProduct, images: i
   }
 
   async function handleAddToCart() {
+    if (!requireAuth()) return;
     const ok = await persistToBackendCart();
     if (!ok) {
+      // Backend rejected. If the session died mid-request (invalid/expired
+      // token), prompt to sign in instead of silently keeping a local-only item.
+      if (!getAccessToken()) {
+        openLoginPrompt();
+        return;
+      }
       dispatch(addItem({
         id: `cart-${product.id}-${Date.now()}`,
         ...buildCartDisplayMeta(),
@@ -260,7 +270,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
   }
 
   function handleToggleFavourite() {
-    if (!userId) return;
+    if (!requireAuth() || !userId) return;
     const slugs = { en: product.slug, az: product.slug, ar: product.slug };
     const ramSpec = product.specs.find((s) => s.code === "ram");
     const storageSpec = product.specs.find((s) => s.code === "storage");
@@ -294,8 +304,13 @@ export default function ProductDetailClient({ product: initialProduct, images: i
   }
 
   async function handleBuyNow() {
+    if (!requireAuth()) return;
     const ok = await persistToBackendCart();
-    if (!ok) return;
+    if (!ok) {
+      // Session died mid-request → prompt sign-in rather than failing silently.
+      if (!getAccessToken()) openLoginPrompt();
+      return;
+    }
     router.push(`/${lang}/checkout`);
   }
 
@@ -358,6 +373,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
 
   return (
     <div className="relative">
+      {loginGate}
       {/* Ambient background */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -left-24 w-[500px] h-[500px] rounded-full bg-[#402F75]/10 blur-3xl" />

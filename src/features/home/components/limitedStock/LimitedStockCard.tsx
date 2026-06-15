@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import Button from "@/shared/components/Button";
 import { addItem } from "@/features/cart/store/cartSlice";
+import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
 import type { AppDispatch } from "@/store";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { getPrimaryImage } from "@/features/product/services/productService";
@@ -25,12 +26,14 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
     const params = useParams();
     const lang = (params?.lang as Lang) ?? "en";
     const dispatch = useDispatch<AppDispatch>();
+    const { requireAuth, loginGate } = useLoginGate();
     const imageUrl = getPrimaryImage(product.media);
     const specs = extractSpecs(product);
     const effectivePrice = product.effectivePrice ?? 0;
     const basePrice = product.basePrice ?? effectivePrice;
 
     function handleBuyNow() {
+        if (!requireAuth()) return;
         dispatch(addItem({
             id: `buy-${product.id}-${Date.now()}`,
             productId: product.id,
@@ -47,6 +50,8 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
     }
 
     return (
+        <>
+        {loginGate}
         <div
             className="relative rounded-[24px] w-full overflow-hidden flex-shrink-0"
             style={{ background: "linear-gradient(115deg, #EDE8FB 0%, #D9CFEF 25%, #B4A5D5 55%, #6B59A8 80%, #402F75 100%)" }}
@@ -124,5 +129,6 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
                 </div>
             </div>
         </div>
+        </>
     );
 }
