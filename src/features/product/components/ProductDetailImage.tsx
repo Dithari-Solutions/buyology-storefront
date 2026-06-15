@@ -6,9 +6,11 @@ import Image from "next/image";
 
 interface ProductDetailImageProps {
     images: string[];
+    /** Promo badges (super deal / limited stock / discount) overlaid on the image. */
+    badges?: React.ReactNode;
 }
 
-export default function ProductDetailImage({ images }: ProductDetailImageProps) {
+export default function ProductDetailImage({ images, badges }: ProductDetailImageProps) {
     const [activeIndex, setActiveIndex] = useState(0);
 
     const handlePrev = () =>
@@ -48,8 +50,15 @@ export default function ProductDetailImage({ images }: ProductDetailImageProps) 
 
             {/* Main image */}
             <div className="relative flex-1 rounded-2xl bg-white border border-gray-100 overflow-hidden aspect-square flex items-center justify-center group">
-                {/* AI-generated image disclaimer */}
-                <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur-sm pointer-events-none select-none">
+                {/* Promo badges — flex row overlaid on the top-left of the image */}
+                {badges && (
+                    <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-20 flex flex-row flex-wrap items-center gap-1.5 sm:gap-2 max-w-[calc(100%-1.25rem)]">
+                        {badges}
+                    </div>
+                )}
+
+                {/* AI-generated image disclaimer (bottom-left so it clears the badges) */}
+                <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur-sm pointer-events-none select-none">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
                     </svg>

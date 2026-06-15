@@ -7,16 +7,11 @@ import type { RootState } from "@/store";
 import { selectCartTotals } from "@/features/cart/store/cartSlice";
 import Image from "next/image";
 import { b2bAccountApi } from "@/features/b2b/account/api";
-import PaymobLogo from "@/assets/payments/paymob.png";
 import TabbyLogo from "@/assets/payments/tabby.png";
 import TamaraLogo from "@/assets/payments/tamara.png";
 import type { ShippingFormData, PaymentMethod } from "../types";
 
 // ── Brand Badge Components — official provider logos ──────────────────────────
-
-function PaymobCardBadge() {
-    return <Image src={PaymobLogo} alt="Paymob" className="h-5 w-auto object-contain" />;
-}
 
 function TabbyBadge() {
     return <Image src={TabbyLogo} alt="Tabby" className="h-5 w-auto object-contain" />;
@@ -145,7 +140,7 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
             id: "card",
             label: t("payment.card.label"),
             description: t("payment.card.description"),
-            badge: <PaymobCardBadge />,
+            badge: null,
             detail: t("payment.card.detail"),
         },
         {

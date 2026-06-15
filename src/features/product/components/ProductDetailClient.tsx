@@ -407,40 +407,6 @@ export default function ProductDetailClient({ product: initialProduct, images: i
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             {/* Left — image gallery */}
             <div className="lg:col-span-7 relative bg-gradient-to-br from-[#F8F6FF] via-white to-[#FFF8E5] p-6 sm:p-10">
-              {/* Floating top-left badges */}
-              <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
-                {product.isSuperDeal && (
-                  <motion.span
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-red-300/40"
-                  >
-                    <FlameIcon className="w-3.5 h-3.5" />{t("details.badges.superDeal")}
-                  </motion.span>
-                )}
-                {product.isLimitedStock && (
-                  <motion.span
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-orange-300/40"
-                  >
-                    <HourglassIcon className="w-3.5 h-3.5" />{t("details.badges.limited")}
-                  </motion.span>
-                )}
-                {hasDiscount && discountPercent > 0 && (
-                  <motion.span
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="inline-flex items-center gap-1 text-sm font-extrabold text-white bg-gradient-to-br from-[#402F75] to-purple-600 px-3 py-2 rounded-2xl uppercase tracking-wider shadow-lg shadow-purple-300/40"
-                  >
-                    -{discountPercent}%
-                  </motion.span>
-                )}
-              </div>
-
               {/* Floating top-right actions */}
               <div className="absolute top-6 right-6 z-10 flex items-center gap-2">
                 <div className="relative">
@@ -494,7 +460,45 @@ export default function ProductDetailClient({ product: initialProduct, images: i
               </div>
 
               <div className="lg:sticky lg:top-24">
-                <ProductDetailImage images={images} />
+                <ProductDetailImage
+                  images={images}
+                  badges={
+                    product.isSuperDeal || product.isLimitedStock || (hasDiscount && discountPercent > 0) ? (
+                      <>
+                        {product.isSuperDeal && (
+                          <motion.span
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.15 }}
+                            className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] md:text-[11px] font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full uppercase tracking-wide shadow-lg shadow-red-300/40 whitespace-nowrap"
+                          >
+                            <FlameIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5" />{t("details.badges.superDeal")}
+                          </motion.span>
+                        )}
+                        {product.isLimitedStock && (
+                          <motion.span
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.22 }}
+                            className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] md:text-[11px] font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full uppercase tracking-wide shadow-lg shadow-orange-300/40 whitespace-nowrap"
+                          >
+                            <HourglassIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5" />{t("details.badges.limited")}
+                          </motion.span>
+                        )}
+                        {hasDiscount && discountPercent > 0 && (
+                          <motion.span
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.29 }}
+                            className="inline-flex items-center text-[10px] sm:text-[11px] md:text-xs font-extrabold text-white bg-gradient-to-br from-[#402F75] to-purple-600 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full shadow-lg shadow-purple-300/40 whitespace-nowrap"
+                          >
+                            -{discountPercent}%
+                          </motion.span>
+                        )}
+                      </>
+                    ) : null
+                  }
+                />
               </div>
             </div>
 
