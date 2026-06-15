@@ -1,12 +1,12 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { COLORS } from "@/shared/styles/variables";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import CartIcon from "@/assets/icons/cart.png";
+import { FlameIcon } from "@/shared/icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
@@ -34,8 +34,6 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
     const params = useParams();
     const lang = (params?.lang as Lang) ?? "en";
     const detailHref = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${product.slug}`;
-    const id = useId();
-    const clipId = `superDealClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
 
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.auth.userId);
@@ -134,28 +132,14 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
             role="link"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === "Enter") router.push(detailHref); }}
-            className="relative w-[300px] sm:w-[420px] md:w-[560px] h-[230px] sm:h-[260px] md:h-[290px] p-[10px] bg-white rounded-[20px] border border-[#FBBB14] flex flex-row gap-[12px] md:gap-[16px] cursor-pointer hover:shadow-md transition-shadow">
+            className="group relative w-[300px] sm:w-[420px] md:w-[560px] h-[230px] sm:h-[260px] md:h-[290px] p-[12px] md:p-[14px] bg-white rounded-[22px] border border-gray-100 flex flex-row gap-[14px] md:gap-[18px] cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-[0_20px_50px_-20px_rgba(64,47,117,0.4)]">
 
             {/* Image section */}
-            <div className="relative overflow-hidden rounded-[14px] flex items-center justify-center w-[120px] sm:w-[150px] md:w-[185px] flex-shrink-0 h-full">
-                <svg width="0" height="0" className="absolute">
-                    <defs>
-                        <clipPath id={clipId} clipPathUnits="objectBoundingBox">
-                            <path d="M 0,0 L 0.55,0 C 0.64,0 0.64,0.08 0.64,0.08 L 0.64,0.16 C 0.64,0.23 0.75,0.23 0.75,0.23 L 0.86,0.23 C 1,0.23 1,0.31 1,0.31 L 1,1 L 0,1 Z" />
-                        </clipPath>
-                    </defs>
-                </svg>
-                <div
-                    className="absolute inset-0 bg-[#F6F4FF]"
-                    style={{ clipPath: `url(#${clipId})` }}
-                />
+            <div className="relative overflow-hidden rounded-[16px] bg-gradient-to-br from-[#F4F1FF] via-white to-[#FFF7E8] flex items-center justify-center w-[120px] sm:w-[150px] md:w-[185px] flex-shrink-0 h-full">
                 {discountPercent > 0 && (
-                    <div
-                        className="absolute top-[6px] right-[6px] z-10 flex items-center justify-center w-[30px] h-[30px] sm:w-[38px] sm:h-[38px] md:w-[46px] md:h-[46px] rounded-full text-white text-[8px] sm:text-[10px] md:text-xs font-bold"
-                        style={{ backgroundColor: COLORS.primary }}
-                    >
-                        -{discountPercent}%
-                    </div>
+                    <span className="absolute top-[8px] left-[8px] z-10 inline-flex items-center gap-[3px] bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] sm:text-[11px] font-bold px-[8px] py-[4px] rounded-full leading-none shadow-[0_4px_12px_-2px_rgba(244,63,94,0.6)]">
+                        <FlameIcon className="w-3 h-3" /> -{discountPercent}%
+                    </span>
                 )}
                 {imageUrl ? (
                     <Image
@@ -165,26 +149,26 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                         height={130}
                         unoptimized
                         sizes="(max-width: 640px) 100px, (max-width: 768px) 120px, 145px"
-                        className="object-contain w-[100px] sm:w-[120px] md:w-[145px] relative z-10"
+                        className="object-contain w-[100px] sm:w-[120px] md:w-[145px] relative z-[1] transition-transform duration-500 ease-out group-hover:scale-110"
                     />
                 ) : (
-                    <div className="w-[100px] sm:w-[120px] md:w-[145px] h-[130px] bg-gray-200 rounded-lg relative z-10" />
+                    <div className="w-[100px] sm:w-[120px] md:w-[145px] h-[130px] bg-gray-200 rounded-lg relative z-[1]" />
                 )}
             </div>
 
             {/* Details section */}
-            <div className="flex flex-col justify-between flex-1 min-w-0 py-[4px]">
+            <div className="flex flex-col justify-between flex-1 min-w-0 py-[2px]">
 
                 {/* Title */}
-                <h3 className="font-bold text-[15px] md:text-[17px] leading-snug text-gray-900 truncate pr-2">
+                <h3 className="font-bold text-[15px] md:text-[18px] leading-snug text-gray-900 truncate pr-2 group-hover:text-[#402F75] transition-colors duration-200">
                     {product.title}
                 </h3>
 
                 {/* Specs grid */}
-                <div className="grid grid-cols-2 gap-[5px]">
+                <div className="grid grid-cols-2 gap-[6px]">
                     {specs.map((spec, i) => (
-                        <div key={i} className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px]">
-                            <span className="w-[4px] h-[4px] rounded-full bg-gray-400 flex-shrink-0" />
+                        <div key={i} className="flex items-center gap-[5px] bg-gray-50 rounded-[9px] px-[9px] py-[5px]">
+                            <span className="w-[4px] h-[4px] rounded-full bg-[#FBBB14] flex-shrink-0" />
                             <span className="text-[11px] text-gray-600 font-medium truncate">{spec}</span>
                         </div>
                     ))}
@@ -199,14 +183,9 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                     {/* Price block */}
                     <div className="flex flex-col gap-[2px]">
                         {savings > 0 && (
-                            <div className="flex items-center gap-[5px]">
-                                <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">
-                                    -{discountPercent}%
-                                </span>
-                                <span className="text-gray-400 line-through text-[12px]">{formatPrice(basePrice)}</span>
-                            </div>
+                            <span className="text-gray-400 line-through text-[12px] leading-none">{formatPrice(basePrice)}</span>
                         )}
-                        <span className="text-[17px] sm:text-[19px] md:text-[21px] text-[#402F75] font-bold leading-none">
+                        <span className="text-[18px] sm:text-[20px] md:text-[24px] text-[#402F75] font-extrabold leading-none tracking-tight">
                             {formatPrice(effectivePrice)}
                         </span>
                     </div>
@@ -221,7 +200,7 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                             aria-pressed={isFav}
                             animate={favBounce ? { scale: [1, 1.45, 0.85, 1.1, 1] } : { scale: 1 }}
                             transition={{ duration: 0.4, ease: "easeOut" }}
-                            className={`cursor-pointer border rounded-full bg-white hover:shadow-md transition-shadow p-[5px] sm:p-[7px] ${isFav ? "border-[#FBBB14]" : "border-gray-200"}`}
+                            className={`cursor-pointer border rounded-full bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105 active:scale-95 transition-all p-[6px] sm:p-[8px] shadow-[0_4px_12px_-2px_rgba(64,47,117,0.2)] ${isFav ? "border-[#FBBB14] bg-yellow-50/90" : "border-gray-100"}`}
                         >
                             <motion.svg
                                 width={14} height={14}
@@ -246,8 +225,8 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                                     ? { scale: [1, 0.88, 1.06, 1], transition: { duration: 0.35, ease: "easeOut" } }
                                     : { scale: 1 }
                                 }
-                                className={`flex items-center justify-center gap-[5px] rounded-[30px] cursor-pointer font-bold transition-colors duration-300 p-[7px] sm:py-[7px] sm:px-[10px] md:py-[8px] md:px-[12px] ${
-                                    added ? "bg-green-500 text-white" : "bg-[#FBBB14] text-white hover:bg-[#f0b000]"
+                                className={`flex items-center justify-center gap-[5px] rounded-full cursor-pointer font-bold transition-all duration-300 active:scale-95 p-[8px] sm:py-[8px] sm:px-[12px] md:py-[9px] md:px-[14px] ${
+                                    added ? "bg-green-500 text-white shadow-[0_6px_16px_-4px_rgba(34,197,94,0.6)]" : "bg-gradient-to-r from-[#FBBB14] to-amber-400 text-white shadow-[0_4px_12px_-2px_rgba(251,187,20,0.5)] hover:shadow-[0_8px_20px_-4px_rgba(251,187,20,0.7)]"
                                 }`}
                             >
                                 <AnimatePresence mode="wait" initial={false}>
