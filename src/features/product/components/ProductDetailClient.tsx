@@ -396,7 +396,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
         <div className="absolute top-[40%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-pink-200/20 blur-3xl" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
+      <div className="w-[99%] max-w-[1900px] mx-auto px-3 sm:px-5 lg:px-6 pt-6 pb-16">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-gray-500 mb-6 flex-wrap">
           <a href={`/${lang}`} className="hover:text-[#402F75] transition-colors">{t("details.breadcrumb.home")}</a>
@@ -474,7 +474,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
                 </motion.button>
               </div>
 
-              <div className="lg:sticky lg:top-24">
+              <div className="lg:sticky lg:top-24 w-full max-w-[760px] xl:max-w-[860px] mx-auto">
                 <ProductDetailImage
                   images={images}
                   badges={
