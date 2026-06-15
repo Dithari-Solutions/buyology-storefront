@@ -78,6 +78,7 @@ export default function AlertModal({
                         <div className="flex flex-col-reverse sm:flex-row gap-2 justify-center">
                             {secondaryAction && (
                                 <button
+                                    type="button"
                                     onClick={secondaryAction.onClick}
                                     className="px-4 py-2 rounded-full text-[13px] font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer"
                                 >
@@ -85,6 +86,7 @@ export default function AlertModal({
                                 </button>
                             )}
                             <button
+                                type="button"
                                 onClick={primaryAction?.onClick ?? onClose}
                                 className={`px-5 py-2 rounded-full text-[13px] font-semibold ${style.accent} hover:opacity-90 cursor-pointer`}
                             >
