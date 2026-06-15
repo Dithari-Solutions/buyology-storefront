@@ -4,10 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-import RentBg from "@/assets/features/rent-feat.png";
-import RepairBg from "@/assets/features/repair-feat.png";
-import BrandNewBg from "@/assets/features/brand-new-feat.png";
-import RefubishedBg from "@/assets/features/refurbished-feat.png";
 import FeatureCard from "./FeatureCard";
 
 export default function Features() {
@@ -19,8 +15,19 @@ export default function Features() {
     const sellSlug = PATH_SLUGS.sell?.[lang] ?? "sell";
     const gamesSlug = PATH_SLUGS.games?.[lang] ?? "games";
 
+    const cta = t("features.learnMore", { defaultValue: "Learn more" });
+
+    const services = [
+        { id: "rent", title: t("features.rent"), description: t("features.rentDesc"), href: `/${lang}/${rentSlug}` },
+        { id: "repair", title: t("features.repair"), description: t("features.repairDesc"), href: `/${lang}/${repairSlug}` },
+        { id: "brandNew", title: t("features.brandNew"), description: t("features.brandNewDesc"), href: `/${lang}/${shopSlug}?condition=NEW` },
+        { id: "refurbished", title: t("features.refurbished"), description: t("features.refurbishedDesc"), href: `/${lang}/${shopSlug}?condition=REFURBISHED` },
+        { id: "sell", title: t("features.sell"), description: t("features.sellDesc"), href: `/${lang}/${sellSlug}` },
+        { id: "games", title: t("features.games"), description: t("features.gamesDesc"), href: `/${lang}/${gamesSlug}` },
+    ];
+
     return (
-        <section className="flex flex-col items-center w-full ">
+        <section className="flex flex-col items-center w-full">
             {/* Header */}
             <div className="w-[95%] md:w-[90%] flex items-end justify-between mb-[20px] md:mb-[28px]">
                 <div>
@@ -37,85 +44,18 @@ export default function Features() {
                 </div>
             </div>
 
-            {/*
-                Bento grid layout:
-                Mobile (1 col): all cards stacked
-                sm (2 col):  [ Rent tall ] [ Repair  ]
-                             [ Rent tall ] [ BrandNew ]
-                             [    Refurbished wide    ]
-                lg (3 col):  [ Rent tall ] [ Repair   ] [ BrandNew  ]
-                             [ Rent tall ] [  Refurbished wide      ]
-            */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:grid-rows-[260px_260px_220px] lg:grid-rows-[240px_240px_200px] gap-4 w-[95%] md:w-[90%]">
-                {/* Tall card — spans both rows on sm+ */}
-                <div className="min-h-[220px] sm:row-span-2">
+            {/* Uniform grid of service cards — clean, equal-sized, row by row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 w-[95%] md:w-[90%]">
+                {services.map((s) => (
                     <FeatureCard
-                        id="rent"
-                        title={t("features.rent")}
-                        description={t("features.rentDesc")}
-                        bg={RentBg}
-                        variant="tall"
-                        href={`/${lang}/${rentSlug}`}
+                        key={s.id}
+                        id={s.id}
+                        title={s.title}
+                        description={s.description}
+                        href={s.href}
+                        cta={cta}
                     />
-                </div>
-
-                {/* Top-right: Repair */}
-                <div className="min-h-[220px]">
-                    <FeatureCard
-                        id="repair"
-                        title={t("features.repair")}
-                        description={t("features.repairDesc")}
-                        bg={RepairBg}
-                        variant="normal"
-                        href={`/${lang}/${repairSlug}`}
-                    />
-                </div>
-
-                {/* Brand New — 3rd col on lg, below Repair on sm */}
-                <div className="min-h-[220px]">
-                    <FeatureCard
-                        id="brandNew"
-                        title={t("features.brandNew")}
-                        description={t("features.brandNewDesc")}
-                        bg={BrandNewBg}
-                        variant="normal"
-                        href={`/${lang}/${shopSlug}?condition=NEW`}
-                    />
-                </div>
-
-                {/* Wide bottom card — spans 2 cols on lg, 1 col on sm */}
-                <div className="min-h-[220px] lg:col-span-2">
-                    <FeatureCard
-                        id="refurbished"
-                        title={t("features.refurbished")}
-                        description={t("features.refurbishedDesc")}
-                        bg={RefubishedBg}
-                        variant="wide"
-                        href={`/${lang}/${shopSlug}?condition=REFURBISHED`}
-                    />
-                </div>
-
-                {/* Sell — spans full width on all breakpoints */}
-                <div className="min-h-[200px] sm:col-span-2 lg:col-span-3">
-                    <FeatureCard
-                        id="sell"
-                        title={t("features.sell")}
-                        description={t("features.sellDesc")}
-                        variant="wide"
-                        href={`/${lang}/${sellSlug}`}
-                    />
-                </div>
-
-                {/* Games — Win Tokens */}
-                <div className="min-h-[200px] sm:col-span-2 lg:col-span-3">
-                    <FeatureCard
-                        id="games"
-                        title={t("features.games")}
-                        description={t("features.gamesDesc")}
-                        variant="wide"
-                        href={`/${lang}/${gamesSlug}`}
-                    />
-                </div>
+                ))}
             </div>
         </section>
     );

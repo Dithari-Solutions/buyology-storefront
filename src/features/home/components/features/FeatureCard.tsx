@@ -1,75 +1,94 @@
-import type { StaticImageData } from "next/image";
 import Link from "next/link";
-import FeatureCardBackground from "./FeatureCardBackground";
 
 interface FeatureCardProps {
     id: string;
     title: string;
     description: string;
-    bg?: StaticImageData;
-    variant?: "tall" | "wide" | "normal";
     href?: string;
+    cta?: string;
 }
 
-export default function FeatureCard({ id, title, description, bg, variant = "normal", href }: FeatureCardProps) {
-    const Wrapper = href
-        ? ({ children }: { children: React.ReactNode }) => (
-            <Link
-                href={href}
-                className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full block ring-1 ring-white/10 hover:ring-[#FBBB14]/40 shadow-lg shadow-[#1a0f3c]/30 hover:shadow-2xl hover:shadow-[#402F75]/40 transition-all duration-500"
+const iconProps = {
+    width: 26,
+    height: 26,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+};
+
+// Per-service light accent + simple line icon (clean, professional — no busy gradients).
+const SERVICE: Record<string, { bg: string; fg: string; icon: React.ReactNode }> = {
+    rent: {
+        bg: "#EDE9FF", fg: "#402F75",
+        icon: (<svg {...iconProps}><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01" /></svg>),
+    },
+    repair: {
+        bg: "#E5F2FF", fg: "#1a6fa8",
+        icon: (<svg {...iconProps}><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.7 2.7-2-2 2.7-2.7z" /></svg>),
+    },
+    brandNew: {
+        bg: "#FFF6DD", fg: "#bd8400",
+        icon: (<svg {...iconProps}><path d="M12 2.5l2.4 6.1L21 9l-5 4 1.6 6.5L12 16l-5.6 3.5L8 13 3 9l6.6-.4z" /></svg>),
+    },
+    refurbished: {
+        bg: "#E6F8EF", fg: "#1f9d57",
+        icon: (<svg {...iconProps}><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5" /></svg>),
+    },
+    sell: {
+        bg: "#FFEAEE", fg: "#dd3f5a",
+        icon: (<svg {...iconProps}><path d="M20.6 13.4 12 22l-9-9V3h10l8.6 8.6a2 2 0 0 1 0 2.8z" /><circle cx="7.5" cy="7.5" r="1.3" /></svg>),
+    },
+    games: {
+        bg: "#F4E8FF", fg: "#7c3aed",
+        icon: (<svg {...iconProps}><rect x="2" y="7" width="20" height="10" rx="5" /><path d="M7 12h2M8 11v2M15 11h.01M18 13h.01" /></svg>),
+    },
+    default: {
+        bg: "#EDE9FF", fg: "#402F75",
+        icon: (<svg {...iconProps}><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>),
+    },
+};
+
+export default function FeatureCard({ id, title, description, href, cta = "Learn more" }: FeatureCardProps) {
+    const s = SERVICE[id] ?? SERVICE.default;
+
+    const inner = (
+        <>
+            <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+                style={{ backgroundColor: s.bg, color: s.fg }}
             >
-                {children}
-            </Link>
-        )
-        : ({ children }: { children: React.ReactNode }) => (
-            <div className="relative overflow-hidden rounded-3xl cursor-pointer group w-full h-full ring-1 ring-white/10 hover:ring-[#FBBB14]/40 shadow-lg shadow-[#1a0f3c]/30 hover:shadow-2xl hover:shadow-[#402F75]/40 transition-all duration-500">
-                {children}
-            </div>
-        );
-
-    return (
-        <Wrapper>
-            {/* Pure CSS/SVG per-service themed background (gradient + glow + thematic icon).
-                The old faded PNG overlay was removed — it muddied these designs and some
-                services (Sell, Games) never had an image. */}
-            <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-[1.04]">
-                <FeatureCardBackground id={id} />
+                {s.icon}
             </div>
 
-            {/* Glassmorphism content scrim */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0626]/90 via-[#1a0f40]/45 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FBBB14]/0 via-transparent to-[#FBBB14]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <h3 className="text-[18px] md:text-[20px] font-bold text-gray-900 mb-2 group-hover:text-[#402F75] transition-colors">
+                {title}
+            </h3>
+            <p className="text-[13px] md:text-[14px] text-gray-500 leading-relaxed line-clamp-2 flex-1">
+                {description}
+            </p>
 
-            {/* Arrow button */}
-            <div className="absolute top-4 end-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 group-hover:bg-[#FBBB14] group-hover:border-[#FBBB14] group-hover:rotate-45 group-hover:scale-110">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M7 17L17 7M17 7H7M17 7v10" />
+            <div className="flex items-center gap-1.5 mt-5 text-[13px] font-semibold text-[#402F75]">
+                <span>{cta}</span>
+                <svg
+                    width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    className="transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180"
+                >
+                    <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
             </div>
+        </>
+    );
 
-            {/* Content */}
-            <div className="absolute bottom-0 start-0 end-0 p-5 md:p-6">
-                {/* Service badge */}
-                <div className="inline-flex items-center gap-[5px] bg-[#FBBB14]/20 border border-[#FBBB14]/40 backdrop-blur-sm rounded-full px-3 py-[5px] mb-3">
-                    <span className="w-[5px] h-[5px] rounded-full bg-[#FBBB14] flex-shrink-0" />
-                    <span className="text-[10px] font-semibold text-[#FBBB14] uppercase tracking-wider">Service</span>
-                </div>
+    const className =
+        "group relative flex flex-col h-full min-h-[190px] rounded-3xl bg-white border border-gray-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-[0_20px_50px_-20px_rgba(64,47,117,0.3)]";
 
-                <h3 className={`text-white font-bold leading-tight mb-2 ${variant === "tall" ? "text-[22px] md:text-[26px]" : "text-[18px] md:text-[20px]"}`}>
-                    {title}
-                </h3>
-                <p className={`text-white/65 leading-relaxed ${variant === "tall" ? "text-[13px] md:text-[14px]" : "text-[12px] md:text-[13px]"} line-clamp-2`}>
-                    {description}
-                </p>
-
-                {/* CTA link */}
-                <div className="flex items-center gap-[6px] mt-3 group-hover:gap-[10px] transition-all duration-300">
-                    <span className="text-[12px] font-semibold text-white/80 group-hover:text-white transition-colors">Learn more</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/60 group-hover:text-[#FBBB14] transition-colors">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </div>
-            </div>
-        </Wrapper>
+    return href ? (
+        <Link href={href} className={`${className} cursor-pointer`}>{inner}</Link>
+    ) : (
+        <div className={className}>{inner}</div>
     );
 }
