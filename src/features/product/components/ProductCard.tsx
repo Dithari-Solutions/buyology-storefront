@@ -431,6 +431,8 @@ export default function ProductCard({
       <div
         ref={cardRef}
         onClick={() => router.push(href)}
+        onMouseEnter={() => router.prefetch(href)}
+        onTouchStart={() => router.prefetch(href)}
         className={`p-[10px] xl:p-[14px] bg-white rounded-[20px] w-full border border-[#FBBB14] cursor-pointer hover:shadow-md transition-shadow${isList ? ' flex flex-row gap-[16px] xl:gap-[24px]' : ' h-full flex flex-col'}`}
       >
 

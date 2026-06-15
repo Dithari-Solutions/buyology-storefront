@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ProductDetailClient from "@/features/product/components/ProductDetailClient";
-import { getProductBySlug } from "@/features/product/services/productService";
+import { getProductBySlugCached } from "@/features/product/services/productService.server";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import type { Lang } from "@/config/pathSlugs";
 import { buildPageMetadata } from "@/shared/seo/buildMetadata";
@@ -55,11 +55,12 @@ export async function generateMetadata({
 
   try {
     const cookiePrefs = await getCountryFromCookies();
-    const product = await getProductBySlug(slug, {
+    const product = await getProductBySlugCached(
+      slug,
       lang,
-      countryCode: cookiePrefs.countryCode,
-      currency: cookiePrefs.currency,
-    });
+      cookiePrefs.countryCode,
+      cookiePrefs.currency
+    );
     const primary =
       [...product.media].sort((a, b) => a.orderIndex - b.orderIndex)[0]?.url ??
       product.media[0]?.url;
@@ -124,7 +125,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   try {
     const { countryCode, currency } = await getCountryFromCookies();
-    const product = await getProductBySlug(slug, { lang, countryCode, currency });
+    const product = await getProductBySlugCached(slug, lang, countryCode, currency);
     const sortedMedia = [...product.media].sort(
       (a, b) => a.orderIndex - b.orderIndex
     );
