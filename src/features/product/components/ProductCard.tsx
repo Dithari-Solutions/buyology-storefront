@@ -13,7 +13,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { addToCartThunk, clearCart, clearCartThunk } from "@/features/cart/store/cartSlice";
-import { useId, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import ProccessorIcon from "@/assets/icons/proccessor.png";
 import AlertModal from "@/shared/components/AlertModal";
@@ -106,8 +106,6 @@ export default function ProductCard({
   availabilityStatus,
   stockQuantity,
 }: ProductCardProps) {
-  const id = useId();
-  const clipId = `productImageClip-${id.replace(/[^a-zA-Z0-9-]/g, "")}`;
   const isList = view === 'list';
   const lowStock = typeof stockQuantity === "number" && stockQuantity > 0 && stockQuantity < 5;
 
@@ -291,9 +289,9 @@ export default function ProductCard({
       onClick={handleToggleFavourite}
       animate={favBounce ? { scale: [1, 1.45, 0.85, 1.1, 1] } : { scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`cursor-pointer border rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.18)] hover:shadow-md transition-shadow ${
+      className={`cursor-pointer border rounded-full bg-white/80 backdrop-blur-md shadow-[0_4px_14px_-2px_rgba(64,47,117,0.25)] hover:bg-white hover:shadow-[0_6px_18px_-2px_rgba(64,47,117,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 ${
         size === 'sm' ? "p-[7px]" : "p-[8px]"
-      } ${isFav ? "border-[#FBBB14]" : "border-gray-200"}`}
+      } ${isFav ? "border-[#FBBB14] bg-yellow-50/90" : "border-white/60"}`}
     >
       <motion.svg
         width={size === 'sm' ? 18 : 20} height={size === 'sm' ? 18 : 20}
@@ -403,8 +401,8 @@ export default function ProductCard({
                 transition={{ duration: 0.72, ease: [0.4, 0.0, 0.2, 1] }}
               >
                 {/* Card ghost — matches the real card visually */}
-                <div className="w-full h-full bg-white border border-[#FBBB14] p-[10px] flex flex-col gap-[10px]">
-                  <div className="flex-1 bg-[#F6F4FF] rounded-[14px] flex items-center justify-center min-h-0 overflow-hidden">
+                <div className="w-full h-full bg-white border border-gray-100 p-[10px] flex flex-col gap-[10px]">
+                  <div className="flex-1 bg-gradient-to-br from-[#F4F1FF] via-white to-[#FFF7E8] rounded-[14px] flex items-center justify-center min-h-0 overflow-hidden">
                     <Image
                       src={imageUrl ?? MacPro13}
                       alt={title}
@@ -437,51 +435,36 @@ export default function ProductCard({
         onClick={() => router.push(href)}
         onMouseEnter={() => router.prefetch(href)}
         onTouchStart={() => router.prefetch(href)}
-        className={`p-[10px] xl:p-[14px] bg-white rounded-[20px] w-full border border-[#FBBB14] cursor-pointer hover:shadow-md transition-shadow${isList ? ' flex flex-row gap-[16px] xl:gap-[24px]' : ' h-full flex flex-col'}`}
+        className={`group relative bg-white rounded-[24px] w-full border border-gray-100 cursor-pointer transition-all duration-300 hover:border-transparent hover:shadow-[0_22px_55px_-22px_rgba(64,47,117,0.45)] hover:-translate-y-1${isList ? ' flex flex-row gap-[16px] xl:gap-[20px] p-[12px] xl:p-[14px]' : ' h-full flex flex-col p-[12px] xl:p-[14px]'}`}
       >
 
         {/* ── Image container ── */}
-        <div className={`relative overflow-hidden rounded-[20px] flex items-center justify-center${isList ? ' w-[180px] sm:w-[220px] xl:w-[260px] flex-shrink-0 min-h-[180px] xl:min-h-[200px]' : ' h-[200px] xl:h-[220px] 2xl:h-[240px] mb-[12px] xl:mb-[16px]'}`}>
+        <div className={`relative overflow-hidden rounded-[18px] bg-gradient-to-br from-[#F4F1FF] via-white to-[#FFF7E8] flex items-center justify-center${isList ? ' w-[160px] sm:w-[200px] xl:w-[240px] flex-shrink-0 self-stretch min-h-[170px]' : ' h-[200px] xl:h-[220px] 2xl:h-[240px] mb-[14px] xl:mb-[16px]'}`}>
           {/* Special offer + limited stock badges (top-left) */}
           {(isSuperDeal || availabilityStatus === "LOW_STOCK" || lowStock) && (
             <div className="absolute top-[10px] left-[10px] z-20 flex flex-col items-start gap-[5px]">
               {isSuperDeal && (
-                <span className="inline-flex items-center gap-[3px] bg-[#FBBB14] text-white text-[10px] font-bold px-[8px] py-[3px] rounded-full leading-tight shadow-sm">
+                <span className="inline-flex items-center gap-[4px] bg-[#FBBB14] text-white text-[10px] font-bold px-[9px] py-[4px] rounded-full leading-none shadow-[0_4px_12px_-2px_rgba(251,187,20,0.6)]">
                   <FlameIcon className="w-3 h-3" /> Special Offer
                 </span>
               )}
               {availabilityStatus === "LOW_STOCK" && (
-                <span className="inline-flex items-center gap-[3px] bg-[#402F75] text-white text-[10px] font-bold px-[8px] py-[3px] rounded-full leading-tight shadow-sm">
+                <span className="inline-flex items-center gap-[4px] bg-[#402F75] text-white text-[10px] font-bold px-[9px] py-[4px] rounded-full leading-none shadow-[0_4px_12px_-2px_rgba(64,47,117,0.5)]">
                   <HourglassIcon className="w-3 h-3" /> Limited Stock
                 </span>
               )}
               {lowStock && (
-                <span className="inline-flex items-center gap-[3px] bg-orange-500 text-white text-[10px] font-bold px-[8px] py-[3px] rounded-full leading-tight shadow-sm">
+                <span className="inline-flex items-center gap-[4px] bg-orange-500 text-white text-[10px] font-bold px-[9px] py-[4px] rounded-full leading-none shadow-[0_4px_12px_-2px_rgba(249,115,22,0.55)]">
                   <HourglassIcon className="w-3 h-3" /> Only {stockQuantity} left
                 </span>
               )}
             </div>
           )}
-          {isList ? (
-            <div className="absolute inset-0 bg-[#F6F4FF]" />
-          ) : (
-            <>
-              <svg width="0" height="0" className="absolute">
-                <defs>
-                  <clipPath id={clipId} clipPathUnits="objectBoundingBox">
-                    <path d="M 0,0 L 0.74,0 C 0.82,0 0.82,0.10 0.82,0.10 L 0.82,0.16 C 0.82,0.28 0.91,0.28 0.91,0.28 L 0.95,0.28 C 1,0.28 1,0.40 1,0.40 L 1,1 L 0,1 Z" />
-                  </clipPath>
-                </defs>
-              </svg>
-              <div
-                className="absolute inset-0 bg-[#F6F4FF]"
-                style={{ clipPath: `url(#${clipId})` }}
-              />
-              {/* Grid-view fav button — z-20 keeps it above full-bleed images (z-10) */}
-              <div className="absolute top-[10px] right-[10px] z-20">
-                <FavButton size="md" />
-              </div>
-            </>
+          {/* Grid-view fav button (frosted, top-right) — z-20 keeps it above the image (z-10) */}
+          {!isList && (
+            <div className="absolute top-[10px] right-[10px] z-20">
+              <FavButton size="md" />
+            </div>
           )}
           <Image
             src={imageUrl ?? MacPro13}
@@ -489,18 +472,18 @@ export default function ProductCard({
             width={200}
             height={180}
             unoptimized={!!imageUrl}
-            className="object-contain min-h-[160px] xl:min-h-[180px] 2xl:min-h-[200px] w-auto relative z-10"
+            className="object-contain max-h-[86%] xl:max-h-[88%] w-auto relative z-10 transition-transform duration-500 ease-out group-hover:scale-[1.07]"
           />
         </div>
 
         {/* ── Details ── */}
-        <div className={`flex flex-col${isList ? ' flex-1 justify-between py-[4px] min-w-0' : ' gap-[10px] xl:gap-[14px] flex-1 min-h-0'}`}>
+        <div className={`flex flex-col${isList ? ' flex-1 justify-between py-[2px] min-w-0' : ' gap-[10px] xl:gap-[12px] flex-1 min-h-0'}`}>
 
           {/* Title + Rating */}
           <div className="flex items-start justify-between gap-[8px]">
-            <h2 className="font-bold text-[17px] xl:text-[19px] leading-snug text-gray-900">{title}</h2>
+            <h2 className="font-bold text-[16px] xl:text-[18px] leading-snug text-gray-900 line-clamp-2 group-hover:text-[#402F75] transition-colors duration-200">{title}</h2>
             {rating > 0 && (
-              <div className="flex items-center gap-[3px] flex-shrink-0 bg-[#F6F4FF] rounded-full px-[7px] py-[3px]">
+              <div className="flex items-center gap-[3px] flex-shrink-0 bg-[#FFF7E0] rounded-full px-[8px] py-[3px]">
                 <Image src={StarIcon} alt="star" width={12} height={12} />
                 <span className="text-[12px] font-bold text-[#402F75]">{rating}</span>
               </div>
@@ -516,7 +499,7 @@ export default function ProductCard({
 
           {/* Browse-only badge */}
           {availableInSelectedCountry === false && (
-            <span className="inline-flex items-center gap-[4px] self-start bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
+            <span className="inline-flex items-center gap-[4px] self-start bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold rounded-[8px] px-[9px] py-[4px] leading-tight">
               <GlobeIcon className="w-3 h-3" /> Browse only — not available in your country
             </span>
           )}
@@ -530,7 +513,7 @@ export default function ProductCard({
                   <button
                     key={opt.storeId}
                     onClick={(e) => { e.stopPropagation(); setSelectedStoreId(opt.storeId); }}
-                    className={`inline-flex items-center justify-between gap-[6px] rounded-[6px] px-[8px] py-[4px] text-[11px] font-semibold border transition-colors cursor-pointer w-full text-left ${
+                    className={`inline-flex items-center justify-between gap-[6px] rounded-[10px] px-[10px] py-[6px] text-[11px] font-semibold border transition-colors cursor-pointer w-full text-left ${
                       opt.expressDelivery
                         ? isSelected
                           ? 'bg-green-100 text-green-700 border-green-400'
@@ -549,12 +532,12 @@ export default function ProductCard({
           ) : (
             <>
               {expressDelivery === true && (
-                <span className="inline-flex items-center gap-[4px] self-start bg-green-50 text-green-700 border border-green-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
+                <span className="inline-flex items-center gap-[4px] self-start bg-green-50 text-green-700 border border-green-200 text-[11px] font-semibold rounded-[8px] px-[9px] py-[4px] leading-tight">
                   <BoltIcon className="w-3 h-3" />Express — under 30 min
                 </span>
               )}
               {expressDelivery === false && (
-                <span className="inline-flex items-center gap-[4px] self-start bg-gray-50 text-gray-500 border border-gray-200 text-[11px] font-semibold rounded-[6px] px-[8px] py-[3px] leading-tight">
+                <span className="inline-flex items-center gap-[4px] self-start bg-gray-50 text-gray-500 border border-gray-200 text-[11px] font-semibold rounded-[8px] px-[9px] py-[4px] leading-tight">
                   <TruckIcon className="w-3 h-3" />Standard shipping
                 </span>
               )}
@@ -564,19 +547,19 @@ export default function ProductCard({
           {/* Specs */}
           <div className={`grid gap-[6px]${isList ? ' grid-cols-3' : ' grid-cols-2'}`}>
             {processor && (
-              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px] xl:px-[10px] xl:py-[6px]">
+              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[10px] px-[8px] py-[6px] xl:px-[10px]">
                 <Image src={ProccessorIcon} alt="Processor" width={13} height={13} className="flex-shrink-0 opacity-60" />
                 <span className="text-[11px] xl:text-[12px] text-gray-600 font-medium truncate">{processor}</span>
               </div>
             )}
             {ram && (
-              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px] xl:px-[10px] xl:py-[6px]">
+              <div className="flex items-center gap-[5px] bg-gray-50 rounded-[10px] px-[8px] py-[6px] xl:px-[10px]">
                 <Image src={RamIcon} alt="RAM" width={13} height={13} className="flex-shrink-0 opacity-60" />
                 <span className="text-[11px] xl:text-[12px] text-gray-600 font-medium truncate">{ram}</span>
               </div>
             )}
             {storage && (
-              <div className={`flex items-center gap-[5px] bg-gray-50 rounded-[8px] px-[8px] py-[5px] xl:px-[10px] xl:py-[6px]${isList ? '' : ' col-span-2'}`}>
+              <div className={`flex items-center gap-[5px] bg-gray-50 rounded-[10px] px-[8px] py-[6px] xl:px-[10px]${isList ? '' : ' col-span-2'}`}>
                 <Image src={StorageIcon} alt="Storage" width={13} height={13} className="flex-shrink-0 opacity-60" />
                 <span className="text-[11px] xl:text-[12px] text-gray-600 font-medium truncate">{storage}</span>
               </div>
@@ -590,19 +573,20 @@ export default function ProductCard({
           <div className="flex items-end justify-between gap-[8px]">
 
             {/* Price block */}
-            <div className="flex flex-col gap-[2px]">
+            <div className="flex flex-col gap-[3px]">
               {discount > 0 && (
                 <div className="flex items-center gap-[5px]">
                   <span className="bg-[#402F75] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-full leading-tight">-{formatPrice(discount, currency)}</span>
                   <span className="text-gray-400 line-through text-[12px]">{formatPrice(originalPrice, currency)}</span>
                 </div>
               )}
-              <span className="text-[21px] xl:text-[24px] text-[#402F75] font-bold leading-none">{formatPrice(price, currency)}</span>
+              <span className="text-[22px] xl:text-[26px] text-[#402F75] font-extrabold leading-none tracking-tight">{formatPrice(price, currency)}</span>
             </div>
 
             {/* Stock + Buttons */}
-            <div className="flex flex-col items-end gap-[5px]">
-              <span className={`text-[10px] font-semibold rounded-[6px] py-[2px] px-[7px] leading-tight border ${inStock ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-500 border-red-200'}`}>
+            <div className="flex flex-col items-end gap-[6px]">
+              <span className={`inline-flex items-center gap-[4px] text-[10px] font-semibold rounded-full py-[3px] px-[8px] leading-none border ${inStock ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-500 border-red-200'}`}>
+                <span className={`w-[6px] h-[6px] rounded-full ${inStock ? 'bg-green-500' : 'bg-red-400'}`} />
                 {inStock ? 'In Stock' : 'Out of Stock'}
               </span>
               <div className="flex items-center gap-[6px]">
@@ -636,12 +620,12 @@ export default function ProductCard({
                       ? { scale: [1, 0.88, 1.06, 1], transition: { duration: 0.35, ease: "easeOut" } }
                       : { scale: 1 }
                     }
-                    className={`flex items-center gap-[5px] py-[8px] px-[12px] rounded-[30px] text-[12px] font-bold whitespace-nowrap transition-colors duration-300 ${
+                    className={`flex items-center gap-[5px] py-[9px] px-[14px] rounded-full text-[12px] font-bold whitespace-nowrap transition-all duration-300 active:scale-95 ${
                       availableInSelectedCountry === false
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : added
-                        ? "bg-green-500 text-white cursor-pointer"
-                        : "bg-[#FBBB14] text-white hover:bg-[#f0b000] cursor-pointer"
+                        ? "bg-green-500 text-white cursor-pointer shadow-[0_6px_16px_-4px_rgba(34,197,94,0.6)]"
+                        : "bg-[#FBBB14] text-white hover:bg-[#f0b000] cursor-pointer shadow-[0_6px_16px_-4px_rgba(251,187,20,0.6)]"
                     }`}
                   >
                     <AnimatePresence mode="wait" initial={false}>
