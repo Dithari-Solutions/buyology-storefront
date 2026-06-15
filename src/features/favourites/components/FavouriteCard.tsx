@@ -208,7 +208,10 @@ export default function FavouriteCard({ item }: FavouriteCardProps) {
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            if (userId) dispatch(removeFromFavouritesThunk({ userId, productId: item.id }));
+                            // Validate token freshness, not just userId, so an expired
+                            // session prompts sign-in instead of a silent 401.
+                            if (!requireAuth() || !userId) return;
+                            dispatch(removeFromFavouritesThunk({ userId, productId: item.id }));
                         }}
                         className="absolute top-[10px] right-[10px] cursor-pointer border border-[#FBBB14] rounded-full p-[8px] bg-white shadow-sm z-10 hover:scale-110 transition-transform"
                         title="Remove from favourites"
