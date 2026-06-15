@@ -19,7 +19,8 @@ import { selectFavouriteItems } from "@/features/favourites/store/favouritesSlic
 import { selectCartCount } from "@/features/cart/store/cartSlice";
 import type { RootState } from "@/store";
 import ShopNavItem from "./ShopNavItem";
-import { getAllCategories, type AllCategory } from "@/features/product/services/productService";
+import { getAllCategories, searchProducts, getPrimaryImage, type AllCategory, type ApiProduct } from "@/features/product/services/productService";
+import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
 
 const NAV_CANONICAL: Record<string, string> = {
     home: "",
@@ -101,9 +102,14 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState("");
+    // Suggestions tagged with the query they belong to, so we can derive
+    // loading/results without synchronous state writes in the fetch effect.
+    const [sugg, setSugg] = useState<{ q: string; items: ApiProduct[] }>({ q: "", items: [] });
     const router = useRouter();
     const params = useParams();
     const lang = (params?.lang as Lang) ?? 'en';
+    const countryCode = useSelector(selectSelectedCountryCode);
+    const currency = useSelector(selectPreferredCurrency);
 
     useEffect(() => {
         if (open) {
@@ -124,15 +130,46 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
         return () => window.removeEventListener("keydown", onKey);
     }, [onClose]);
 
-    const filtered = query.trim()
-        ? TRENDING_SEARCHES.filter(s => s.toLowerCase().includes(query.toLowerCase()))
-        : TRENDING_SEARCHES;
+    // Live product suggestions as the user types (debounced). Only writes state
+    // from the async callback, so loading/results below are derived, not stored.
+    useEffect(() => {
+        const q = query.trim();
+        if (q.length < 2) return;
+        let active = true;
+        const handle = setTimeout(() => {
+            searchProducts({ query: q, lang, countryCode: countryCode ?? undefined, currency: currency ?? undefined })
+                .then((res) => { if (active) setSugg({ q, items: res.slice(0, 6) }); })
+                .catch(() => { if (active) setSugg({ q, items: [] }); });
+        }, 250);
+        return () => { active = false; clearTimeout(handle); };
+    }, [query, lang, countryCode, currency]);
+
+    const trimmed = query.trim();
+    const showTrending = trimmed.length < 2;
+    const hasResultsForQuery = sugg.q === trimmed;
+    const suggestions = hasResultsForQuery ? sugg.items : [];
+    const loadingSuggest = !showTrending && !hasResultsForQuery;
 
     const handleSearch = (q: string) => {
         if (!q.trim()) return;
         const shopSlug = PATH_SLUGS["shop"]?.[lang] ?? "shop";
         router.push(`/${lang}/${shopSlug}?q=${encodeURIComponent(q.trim())}`);
         onClose();
+    };
+
+    const goToProduct = (p: ApiProduct) => {
+        const shopSlug = PATH_SLUGS["shop"]?.[lang] ?? "shop";
+        router.push(`/${lang}/${shopSlug}/${p.slug}`);
+        onClose();
+    };
+
+    const fmtPrice = (amount?: number | null, ccy?: string | null) => {
+        if (amount == null) return "";
+        try {
+            return new Intl.NumberFormat(undefined, { style: "currency", currency: ccy || "USD", maximumFractionDigits: 0 }).format(amount);
+        } catch {
+            return `${ccy || ""} ${amount}`.trim();
+        }
     };
 
     return (
@@ -219,33 +256,28 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
                             </AnimatePresence>
                         </form>
 
-                        {/* Trending / filtered suggestions */}
+                        {/* Suggestions: trending tags when empty, live product matches when typing */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.15 }}
                             className="mt-6"
                         >
-                            <div className="flex items-center gap-2 mb-3">
-                                {/* Flame / trending icon */}
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#FBBB14" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 2C12 2 9 6 9 10C9 11.5 9.5 12.9 10.4 14C9.5 13.5 8.8 12.5 8.5 11.5C7 13 6 14.9 6 17C6 20.3 8.7 23 12 23C15.3 23 18 20.3 18 17C18 13.5 15.5 10.5 12 9C12.9 7.8 13 5.9 12 4C12 4 12 2 12 2Z"/>
-                                </svg>
-                                <span className="text-white/40 text-[11px] font-semibold uppercase tracking-widest">
-                                    {trendingLabel}
-                                </span>
-                            </div>
-
-                            <AnimatePresence mode="popLayout">
-                                {filtered.length > 0 ? (
-                                    <motion.div className="flex flex-wrap gap-2">
-                                        {filtered.map((item, i) => (
-                                            <motion.button
+                            {showTrending ? (
+                                <>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        {/* Flame / trending icon */}
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#FBBB14" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2C12 2 9 6 9 10C9 11.5 9.5 12.9 10.4 14C9.5 13.5 8.8 12.5 8.5 11.5C7 13 6 14.9 6 17C6 20.3 8.7 23 12 23C15.3 23 18 20.3 18 17C18 13.5 15.5 10.5 12 9C12.9 7.8 13 5.9 12 4C12 4 12 2 12 2Z"/>
+                                        </svg>
+                                        <span className="text-white/40 text-[11px] font-semibold uppercase tracking-widest">
+                                            {trendingLabel}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {TRENDING_SEARCHES.map((item) => (
+                                            <button
                                                 key={item}
-                                                initial={{ opacity: 0, scale: 0.85, y: 8 }}
-                                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                exit={{ opacity: 0, scale: 0.85 }}
-                                                transition={{ delay: i * 0.04, type: "spring", stiffness: 400, damping: 25 }}
                                                 onClick={() => handleSearch(item)}
                                                 className="flex items-center gap-2 bg-white/8 hover:bg-[#FBBB14]/15 border border-white/12 hover:border-[#FBBB14]/40 rounded-full px-4 py-2 text-white/70 hover:text-white text-[13px] font-medium transition-all duration-200 cursor-pointer group"
                                             >
@@ -254,19 +286,59 @@ function SearchOverlay({ open, onClose, placeholder, trendingLabel }: {
                                                     <path d="M21 21l-4.35-4.35" />
                                                 </svg>
                                                 {item}
-                                            </motion.button>
+                                            </button>
                                         ))}
-                                    </motion.div>
-                                ) : (
-                                    <motion.p
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="text-white/30 text-[13px]"
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex flex-col gap-1">
+                                    {/* Search-all-results row */}
+                                    <button
+                                        onClick={() => handleSearch(query)}
+                                        className="flex items-center gap-3 w-full text-start rounded-xl px-3 py-2.5 bg-white/8 hover:bg-[#FBBB14]/15 border border-white/12 hover:border-[#FBBB14]/40 text-white/80 hover:text-white transition-all duration-200 cursor-pointer"
                                     >
-                                        No suggestions for &ldquo;{query}&rdquo;
-                                    </motion.p>
-                                )}
-                            </AnimatePresence>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-[#FBBB14]">
+                                            <circle cx="11" cy="11" r="8" />
+                                            <path d="M21 21l-4.35-4.35" />
+                                        </svg>
+                                        <span className="text-[14px] font-medium truncate">
+                                            Search for &ldquo;<span className="font-bold">{trimmed}</span>&rdquo;
+                                        </span>
+                                    </button>
+
+                                    {loadingSuggest ? (
+                                        <p className="text-white/30 text-[13px] px-3 py-2">Searching…</p>
+                                    ) : suggestions.length > 0 ? (
+                                        suggestions.map((p) => {
+                                            const image = getPrimaryImage(p.media);
+                                            const price = fmtPrice(p.storePrice ?? p.effectivePrice ?? p.basePrice, p.currency);
+                                            return (
+                                                <button
+                                                    key={p.id}
+                                                    onClick={() => goToProduct(p)}
+                                                    className="flex items-center gap-3 w-full text-start rounded-xl px-3 py-2 hover:bg-white/10 transition-colors duration-150 cursor-pointer group"
+                                                >
+                                                    <div className="w-10 h-10 rounded-lg bg-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                                        {image && (
+                                                            <Image src={image} alt={p.title} width={40} height={40} unoptimized className="object-contain w-full h-full p-1" />
+                                                        )}
+                                                    </div>
+                                                    <span className="flex-1 min-w-0 text-white/85 group-hover:text-white text-[14px] font-medium truncate">
+                                                        {p.title}
+                                                    </span>
+                                                    {price && (
+                                                        <span className="text-[#FBBB14] text-[13px] font-bold flex-shrink-0">{price}</span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-white/30 text-[13px] px-3 py-2">
+                                            No products found for &ldquo;{trimmed}&rdquo;
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </motion.div>
 
                         {/* Hint */}
