@@ -91,17 +91,22 @@ export async function resetPassword(payload: {
 }
 
 // ── Sign In ───────────────────────────────────────────────────────────────────
-// 400 bad request | 401 invalid credentials
+// 400 bad request | 401 invalid credentials | 404 email not registered
 // Must use withCredentials so the browser stores the HttpOnly refresh-token cookie.
+// `notRegistered` is surfaced on 404 so the UI can prompt the user to sign up first.
 
-export async function signin(payload: SignInRequest): Promise<ApiResponse<SignInResponse>> {
+export async function signin(
+  payload: SignInRequest,
+): Promise<ApiResponse<SignInResponse> & { notRegistered?: boolean }> {
   try {
     const { data } = await apiClient.post<ApiResponse<any>>("/auth/signin", payload, {
       withCredentials: true,
     });
     return normalizeResponse<SignInResponse>(data);
   } catch (error) {
-    return errorResponse<SignInResponse>(error);
+    const base = errorResponse<SignInResponse>(error);
+    if ((error as HttpError).status === 404) return { ...base, notRegistered: true };
+    return base;
   }
 }
 

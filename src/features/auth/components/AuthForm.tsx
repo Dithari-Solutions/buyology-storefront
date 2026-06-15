@@ -43,6 +43,7 @@ export default function AuthForm() {
 
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [apiError, setApiError] = useState<string | null>(null);
+    const [showSignupPrompt, setShowSignupPrompt] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [termsError, setTermsError] = useState(false);
@@ -118,9 +119,21 @@ export default function AuthForm() {
         setIsLoading(true);
         const res = await signin({ email, password });
         setIsLoading(false);
-        if (!res.success) { setApiError(res.message); return; }
+        if (!res.success) {
+            // Email isn't registered → prompt the customer to sign up first.
+            if (res.notRegistered) { setShowSignupPrompt(true); return; }
+            setApiError(res.message);
+            return;
+        }
         setTokens(res.data!.accessToken, res.data!.expiresIn);
         router.push(`/${lang}`);
+    };
+
+    // From the "no account" prompt: switch the form to sign-up, keeping the typed email.
+    const goToSignUp = () => {
+        setShowSignupPrompt(false);
+        setPassword("");
+        handleSetMode("signUp");
     };
 
     const inputWrapperClass = (hasError: boolean) =>
@@ -297,6 +310,17 @@ export default function AuthForm() {
                     onClose={() => setApiError(null)}
                     severity="error"
                     message={apiError ?? ""}
+                />
+
+                {/* Email isn't registered → invite the customer to sign up first. */}
+                <AlertModal
+                    open={showSignupPrompt}
+                    onClose={() => setShowSignupPrompt(false)}
+                    severity="warning"
+                    title={t("authForm.notRegistered.title")}
+                    message={t("authForm.notRegistered.message")}
+                    primaryAction={{ label: t("authForm.notRegistered.signUpBtn"), onClick: goToSignUp }}
+                    secondaryAction={{ label: t("authForm.notRegistered.cancelBtn"), onClick: () => setShowSignupPrompt(false) }}
                 />
 
                 {/* Terms & Conditions — required for sign-up */}
