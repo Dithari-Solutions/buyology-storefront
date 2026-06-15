@@ -5,7 +5,6 @@ import { headers } from "next/headers";
 import Providers from "@/shared/components/Providers";
 import "./globals.css";
 import AiBotButtonLazy from "@/shared/components/AiBotButtonLazy";
-import BrandBackground from "@/components/BrandBackground";
 import {
   SITE_NAME,
   SITE_URL,
@@ -167,15 +166,13 @@ export default async function RootLayout({
         <JsonLd data={websiteJsonLd(lang)} />
       </head>
       <body
-        className="antialiased bg-[#EAE4FF]"
+        className="antialiased bg-white"
         style={{
           fontFamily: isArabic
             ? "var(--font-ibm-arabic), system-ui, -apple-system, sans-serif"
             : "var(--font-ibm-sans), var(--font-ibm-arabic), system-ui, -apple-system, sans-serif",
         }}
       >
-        {/* Global branded SVG background (fixed, behind all content at z-index -1) */}
-        <BrandBackground />
         <Providers>{children}</Providers>
         <AiBotButtonLazy />
       </body>
