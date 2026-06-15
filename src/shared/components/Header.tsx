@@ -316,7 +316,11 @@ export default function Header() {
         return () => observer.disconnect();
     }, []);
 
-    const navItems = t("nav", { returnObjects: true }) as Record<string, string>;
+    // Drop the "Win Tokens" (games) entry from the header nav.
+    const navItems = Object.fromEntries(
+        Object.entries(t("nav", { returnObjects: true }) as Record<string, string>)
+            .filter(([key]) => key !== "games")
+    ) as Record<string, string>;
 
     function navHref(key: string): string {
         const canonical = NAV_CANONICAL[key];

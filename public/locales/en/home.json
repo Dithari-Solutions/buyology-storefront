@@ -1,9 +1,8 @@
 {
     "marquee": {
+        "freeShipping": "Free Shipping on orders over {{amount}}",
         "items": [
-            "Free Shipping on orders over $100",
             "Up to 30% off Refurbished devices",
-            "MacBook Pro from $299",
             "Expert Repair in under 24 hours",
             "1-Year Warranty on all products",
             "Trade-in your old device today",

@@ -86,7 +86,7 @@ export default function Footer() {
                     <div>
                         <h2 className="text-white text-[18px] md:text-[20px] font-bold mb-[15px] md:mb-[30px]">{t("company.heading")}</h2>
                         <ul>
-                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.aboutUs")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><a href="https://web.buyology.online" target="_blank" rel="noopener noreferrer" className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.aboutUs")}</a></li>
                             <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${contactSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.contactSupport")}</Link></li>
                             <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/privacy-policy`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.privacyPolicy")}</Link></li>
                             <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/terms-conditions`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("company.termsConditions", { defaultValue: "Terms & Conditions" })}</Link></li>

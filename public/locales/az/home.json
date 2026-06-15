@@ -1,9 +1,8 @@
 {
     "marquee": {
+        "freeShipping": "{{amount}}-dən yuxarı sifarişlərə pulsuz çatdırılma",
         "items": [
-            "$100-dən yuxarı sifarişlərə pulsuz çatdırılma",
             "Yenilənmiş cihazlarda 30%-ə qədər endirim",
-            "MacBook Pro $299-dan",
             "24 saatdan az zamanda ekspert təmiri",
             "Bütün məhsullara 1 il zəmanət",
             "Bu gün köhnə cihazınızı dəyişin",
