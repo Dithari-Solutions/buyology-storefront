@@ -192,7 +192,8 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
     } else {
       const hasActiveFilters = activeFilters && (
         activeFilters.minPrice != null || activeFilters.maxPrice != null ||
-        activeFilters.condition || activeFilters.categoryId || activeFilters.brandId ||
+        activeFilters.condition || activeFilters.categoryId ||
+        (activeFilters.brandIds && activeFilters.brandIds.length > 0) ||
         activeFilters.availabilityStatus ||
         Object.values(activeFilters.specs ?? {}).some((v) => v && v.length > 0)
       );

@@ -111,7 +111,10 @@
       "category": "Kateqoriya",
       "subcategory": "Alt kateqoriya",
       "brand": "Brend",
-      "availability": "Mövcudluq statusu"
+      "availability": "Mövcudluq statusu",
+      "clearAll": "Hamısını təmizlə",
+      "seeAllSpecs": "Bütün xüsusiyyətlərə bax",
+      "hideSpecs": "Xüsusiyyətləri gizlət"
     },
     "condition": {
       "NEW": "Yeni",

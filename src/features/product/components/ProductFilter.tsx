@@ -24,9 +24,9 @@ const ChevronIcon = ({ open }: { open: boolean }) => (
     animate={{ rotate: open ? 180 : 0 }}
     transition={{ duration: 0.25, ease: 'easeInOut' }}
     width="16" height="16" viewBox="0 0 16 16" fill="none"
-    className="text-gray-500 flex-shrink-0"
+    className="text-gray-400 flex-shrink-0"
   >
-    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
   </motion.svg>
 );
 
@@ -36,22 +36,29 @@ const accordionVariants = {
   closed: { height: 0,      opacity: 0, transition: { duration: 0.25, ease: easing } },
 };
 
-function FilterSection({ title, children, defaultOpen = true }: {
-  title: string; children: React.ReactNode; defaultOpen?: boolean;
+function FilterSection({ title, count = 0, children, defaultOpen = false }: {
+  title: string; count?: number; children: React.ReactNode; defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-[#FBBB14] rounded-[12px] overflow-hidden">
-      <button onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-[14px] py-[12px] bg-white hover:bg-gray-50 transition-colors">
-        <span className="text-[14px] font-medium text-gray-800">{title}</span>
+    <div className="rounded-[14px] border border-gray-100 bg-white overflow-hidden transition-colors hover:border-gray-200">
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-[14px] py-[11px] hover:bg-gray-50/70 transition-colors">
+        <span className="flex items-center gap-2 text-[13.5px] font-semibold text-gray-800">
+          {title}
+          {count > 0 && (
+            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#402F75] text-white text-[10px] font-bold leading-none">
+              {count}
+            </span>
+          )}
+        </span>
         <ChevronIcon open={open} />
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div key="content" initial="closed" animate="open" exit="closed"
             variants={accordionVariants} style={{ overflow: 'hidden' }}>
-            <div className="px-[14px] pb-[14px] pt-[2px]">{children}</div>
+            <div className="px-[12px] pb-[12px] pt-[2px]">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -63,19 +70,19 @@ function CheckboxItem({ label, checked, onChange }: {
   label: string; checked: boolean; onChange: () => void;
 }) {
   return (
-    <label className="flex items-center gap-[10px] py-[5px] cursor-pointer group">
-      <div onClick={onChange}
-        className={`w-[16px] h-[16px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${
-          checked ? 'bg-[#402F75] border-[#402F75]' : 'border-[#FBBB14] bg-white group-hover:border-[#402F75]'
-        }`}>
+    <button type="button" onClick={onChange}
+      className="flex items-center gap-[10px] w-full py-[6px] px-[8px] -mx-[2px] rounded-[8px] hover:bg-gray-50 transition-colors text-left group">
+      <span className={`w-[18px] h-[18px] rounded-[6px] border flex-shrink-0 flex items-center justify-center transition-all ${
+        checked ? 'bg-[#402F75] border-[#402F75]' : 'border-gray-300 bg-white group-hover:border-[#402F75]'
+      }`}>
         {checked && (
           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
-      </div>
-      <span className="text-[13px] text-gray-700 select-none">{label}</span>
-    </label>
+      </span>
+      <span className={`text-[13px] select-none truncate ${checked ? 'text-gray-900 font-semibold' : 'text-gray-600'}`}>{label}</span>
+    </button>
   );
 }
 
@@ -124,28 +131,28 @@ function PriceRange({ min, max, value, onChange }: {
 
   return (
     <div className="pt-[6px] pb-[4px]">
-      <div ref={trackRef} className="relative h-[4px] mx-[8px] my-[16px]">
+      <div ref={trackRef} className="relative h-[5px] mx-[8px] my-[16px]">
         <div className="absolute inset-0 rounded-full bg-gray-200" />
-        <div className="absolute h-full rounded-full bg-[#402F75]"
+        <div className="absolute h-full rounded-full bg-gradient-to-r from-[#402F75] to-purple-500"
           style={{ left: `${minPct}%`, right: `${100 - maxPct}%` }} />
         {/* Min thumb */}
         <div
           onMouseDown={startDrag('min')}
           onTouchStart={startDrag('min')}
-          className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-[#402F75] border-[3px] border-white shadow-md -translate-x-1/2 cursor-grab active:cursor-grabbing select-none"
+          className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-white border-[3px] border-[#402F75] shadow-md -translate-x-1/2 cursor-grab active:cursor-grabbing select-none"
           style={{ left: `${minPct}%`, zIndex: minPct >= maxPct - 1 ? 3 : 2 }}
         />
         {/* Max thumb */}
         <div
           onMouseDown={startDrag('max')}
           onTouchStart={startDrag('max')}
-          className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-[#402F75] border-[3px] border-white shadow-md -translate-x-1/2 cursor-grab active:cursor-grabbing select-none"
+          className="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-white border-[3px] border-[#402F75] shadow-md -translate-x-1/2 cursor-grab active:cursor-grabbing select-none"
           style={{ left: `${maxPct}%`, zIndex: minPct >= maxPct - 1 ? 2 : 3 }}
         />
       </div>
       <div className="flex justify-between mt-[10px]">
-        <span className="text-[12px] text-gray-500">{value[0].toLocaleString()}</span>
-        <span className="text-[12px] text-gray-500">{value[1].toLocaleString()}</span>
+        <span className="text-[12px] font-semibold text-gray-700 bg-gray-50 rounded-md px-2 py-0.5">{value[0].toLocaleString()}</span>
+        <span className="text-[12px] font-semibold text-gray-700 bg-gray-50 rounded-md px-2 py-0.5">{value[1].toLocaleString()}</span>
       </div>
     </div>
   );
@@ -158,7 +165,8 @@ export interface ActiveFilters {
   maxPrice?: number;
   condition?: string;
   categoryId?: string;
-  brandId?: string;
+  /** multi-select brand ids */
+  brandIds?: string[];
   availabilityStatus?: string;
   /** spec code → selected values (multi-select) */
   specs: Record<string, string[]>;
@@ -178,6 +186,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
 
   const [filters, setFilters] = useState<ProductFilters | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
 
   // Selection state
   const [price, setPrice] = useState<[number, number]>([0, 0]);
@@ -188,7 +197,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   useEffect(() => {
     setCategoryId(initialCategoryId ?? null);
   }, [initialCategoryId]);
-  const [brandId, setBrandId] = useState<string | null>(null);
+  const [brandIds, setBrandIds] = useState<string[]>([]);
   const [availability, setAvailability] = useState<string | null>(null);
   const [specSelections, setSpecSelections] = useState<Record<string, string[]>>({});
 
@@ -209,13 +218,13 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   // Emit changes whenever any selection changes
   const emitChanges = useCallback((overrides: Partial<{
     price: [number, number]; condition: string | null; categoryId: string | null;
-    brandId: string | null; availability: string | null; specSelections: Record<string, string[]>;
+    brandIds: string[]; availability: string | null; specSelections: Record<string, string[]>;
   }> = {}) => {
     if (!filters || !onFiltersChange) return;
     const p     = overrides.price          ?? price;
     const cond  = overrides.condition      ?? condition;
     const cat   = overrides.categoryId     ?? categoryId;
-    const brand = overrides.brandId        ?? brandId;
+    const brands = overrides.brandIds      ?? brandIds;
     const avail = overrides.availability   ?? availability;
     const specs = overrides.specSelections ?? specSelections;
     const priceMin = filters.priceRange.min;
@@ -225,11 +234,11 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
       maxPrice:           p[1] < priceMax ? p[1] : undefined,
       condition:          cond   ?? undefined,
       categoryId:         cat    ?? undefined,
-      brandId:            brand  ?? undefined,
+      brandIds:           brands.length ? brands : undefined,
       availabilityStatus: avail  ?? undefined,
       specs,
     });
-  }, [filters, price, condition, categoryId, brandId, availability, specSelections, onFiltersChange]);
+  }, [filters, price, condition, categoryId, brandIds, availability, specSelections, onFiltersChange]);
 
   const handlePrice = (v: [number, number]) => { setPrice(v); emitChanges({ price: v }); };
   const handleCondition = (val: string) => {
@@ -241,8 +250,8 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
     setCategoryId(next); emitChanges({ categoryId: next });
   };
   const handleBrand = (id: string) => {
-    const next = brandId === id ? null : id;
-    setBrandId(next); emitChanges({ brandId: next });
+    const next = brandIds.includes(id) ? brandIds.filter(b => b !== id) : [...brandIds, id];
+    setBrandIds(next); emitChanges({ brandIds: next });
   };
   const handleAvailability = (val: string) => {
     const next = availability === val ? null : val;
@@ -253,6 +262,18 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
     const nextVals = current.includes(val) ? current.filter(v => v !== val) : [...current, val];
     const next = { ...specSelections, [code]: nextVals };
     setSpecSelections(next); emitChanges({ specSelections: next });
+  };
+
+  // Reset every filter back to defaults.
+  const clearAll = () => {
+    const max = filters ? Math.ceil(filters.priceRange.max) : 0;
+    setPrice([0, max]);
+    setCondition(null);
+    setCategoryId(null);
+    setBrandIds([]);
+    setAvailability(null);
+    setSpecSelections({});
+    onFiltersChange?.({ specs: {} });
   };
 
   const AVAILABILITY_LABELS: Record<string, string> = {
@@ -271,9 +292,9 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
 
   if (loading) {
     return (
-      <aside className="bg-white rounded-[20px] border border-[#FBBB14] p-[14px] w-full md:w-[280px] flex-shrink-0 flex flex-col gap-[10px] animate-pulse">
+      <aside className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-[14px] w-full md:w-[280px] flex-shrink-0 flex flex-col gap-[10px] animate-pulse">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-[44px] rounded-[12px] bg-gray-100" />
+          <div key={i} className="h-[44px] rounded-[14px] bg-gray-100" />
         ))}
       </aside>
     );
@@ -284,23 +305,41 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   const priceMin = 0;
   const priceMax = Math.ceil(filters.priceRange.max);
 
+  // Total active filters for the "Clear all" affordance.
+  const activeCount =
+    (condition ? 1 : 0) + (categoryId ? 1 : 0) + brandIds.length + (availability ? 1 : 0) +
+    Object.values(specSelections).reduce((n, v) => n + (v?.length ?? 0), 0) +
+    ((price[0] > priceMin || price[1] < priceMax) ? 1 : 0);
+
+  const specCount = (code: string) => specSelections[code]?.length ?? 0;
+  const totalSpecSelected = Object.values(specSelections).reduce((n, v) => n + (v?.length ?? 0), 0);
+
   return (
-    <aside className="bg-white rounded-[20px] border border-[#FBBB14] p-[14px] w-full md:w-[280px] flex-shrink-0 flex flex-col gap-[10px]">
-      <div className="flex items-center gap-[10px] px-[2px] pb-[4px]">
-        <Image src={FilterIcon} alt="Filter" width={20} height={20} />
-        <h2 className="text-[18px] font-medium">{t('shop.filters.title', { defaultValue: 'Filters' })}</h2>
+    <aside className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-[14px] w-full md:w-[280px] flex-shrink-0 flex flex-col gap-[10px]">
+      {/* Header */}
+      <div className="flex items-center justify-between px-[2px] pb-[6px] border-b border-gray-100">
+        <div className="flex items-center gap-[10px]">
+          <Image src={FilterIcon} alt="Filter" width={18} height={18} />
+          <h2 className="text-[17px] font-bold text-gray-900">{t('shop.filters.title', { defaultValue: 'Filters' })}</h2>
+        </div>
+        {activeCount > 0 && (
+          <button type="button" onClick={clearAll}
+            className="text-[12px] font-semibold text-[#402F75] hover:underline">
+            {t('shop.filters.clearAll', { defaultValue: 'Clear all' })} ({activeCount})
+          </button>
+        )}
       </div>
 
       {/* Price Range */}
       {priceMax > 0 && (
-        <FilterSection title={t('shop.filters.priceRange', { defaultValue: 'Price Range' })}>
+        <FilterSection title={t('shop.filters.priceRange', { defaultValue: 'Price Range' })} defaultOpen>
           <PriceRange min={priceMin} max={priceMax} value={price} onChange={handlePrice} />
         </FilterSection>
       )}
 
       {/* Condition */}
       {filters.conditions.length > 0 && (
-        <FilterSection title={t('shop.filters.condition', { defaultValue: 'Condition' })}>
+        <FilterSection title={t('shop.filters.condition', { defaultValue: 'Condition' })} count={condition ? 1 : 0} defaultOpen>
           {filters.conditions.map(val => (
             <CheckboxItem key={val} label={CONDITION_LABELS[val] ?? val}
               checked={condition === val} onChange={() => handleCondition(val)} />
@@ -310,7 +349,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
 
       {/* Category */}
       {rootCategories.length > 0 && (
-        <FilterSection title={t('shop.filters.category', { defaultValue: 'Category' })}>
+        <FilterSection title={t('shop.filters.category', { defaultValue: 'Category' })} count={categoryId && rootCategories.some(c => c.id === categoryId) ? 1 : 0} defaultOpen>
           {rootCategories.map((cat: CategoryFilterOption) => (
             <CheckboxItem key={cat.id} label={cat.name}
               checked={categoryId === cat.id} onChange={() => handleCategory(cat.id)} />
@@ -320,7 +359,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
 
       {/* Subcategory */}
       {subCategories.length > 0 && (
-        <FilterSection title={t('shop.filters.subcategory', { defaultValue: 'Subcategory' })}>
+        <FilterSection title={t('shop.filters.subcategory', { defaultValue: 'Subcategory' })} count={categoryId && subCategories.some(c => c.id === categoryId) ? 1 : 0}>
           {subCategories.map((cat: CategoryFilterOption) => (
             <CheckboxItem key={cat.id} label={cat.name}
               checked={categoryId === cat.id} onChange={() => handleCategory(cat.id)} />
@@ -328,19 +367,19 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
         </FilterSection>
       )}
 
-      {/* Brand */}
+      {/* Brand — multi-select */}
       {filters.brands.length > 0 && (
-        <FilterSection title={t('shop.filters.brand', { defaultValue: 'Brand' })}>
+        <FilterSection title={t('shop.filters.brand', { defaultValue: 'Brand' })} count={brandIds.length} defaultOpen>
           {filters.brands.map((b: BrandFilterOption) => (
             <CheckboxItem key={b.id} label={b.name}
-              checked={brandId === b.id} onChange={() => handleBrand(b.id)} />
+              checked={brandIds.includes(b.id)} onChange={() => handleBrand(b.id)} />
           ))}
         </FilterSection>
       )}
 
       {/* Availability */}
       {filters.availabilityStatuses.length > 0 && (
-        <FilterSection title={t('shop.filters.availability', { defaultValue: 'Availability Status' })}>
+        <FilterSection title={t('shop.filters.availability', { defaultValue: 'Availability Status' })} count={availability ? 1 : 0} defaultOpen>
           {filters.availabilityStatuses.map(val => (
             <CheckboxItem key={val} label={AVAILABILITY_LABELS[val] ?? val}
               checked={availability === val} onChange={() => handleAvailability(val)} />
@@ -348,16 +387,43 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
         </FilterSection>
       )}
 
-      {/* Dynamic spec filters — multi-select, value shown with its unit ("8 GB") */}
-      {filters.specs.map((spec: SpecFilterOption) => (
-        <FilterSection key={spec.code} title={spec.label} defaultOpen={spec.code === 'processor'}>
-          {spec.values.map(v => (
-            <CheckboxItem key={v.value} label={v.unit ? `${v.value} ${v.unit}` : v.value}
-              checked={(specSelections[spec.code] ?? []).includes(v.value)}
-              onChange={() => handleSpec(spec.code, v.value)} />
-          ))}
-        </FilterSection>
-      ))}
+      {/* Dynamic spec filters — hidden behind a toggle so the panel stays clean.
+          Each spec is multi-select; values show their unit ("8 GB"). */}
+      {filters.specs.length > 0 && (
+        <>
+          <button type="button" onClick={() => setShowAllSpecs(v => !v)}
+            className="flex items-center justify-center gap-2 w-full py-[11px] rounded-[14px] border border-[#402F75]/25 bg-[#F6F4FF] text-[#402F75] text-[13px] font-bold hover:bg-[#402F75] hover:text-white transition-colors">
+            {showAllSpecs
+              ? t('shop.filters.hideSpecs', { defaultValue: 'Hide specifications' })
+              : t('shop.filters.seeAllSpecs', { defaultValue: 'See all specifications' })}
+            {totalSpecSelected > 0 && !showAllSpecs && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#FBBB14] text-white text-[10px] font-bold leading-none">
+                {totalSpecSelected}
+              </span>
+            )}
+            <ChevronIcon open={showAllSpecs} />
+          </button>
+
+          <AnimatePresence initial={false}>
+            {showAllSpecs && (
+              <motion.div key="specs" initial="closed" animate="open" exit="closed"
+                variants={accordionVariants} style={{ overflow: 'hidden' }}>
+                <div className="flex flex-col gap-[10px]">
+                  {filters.specs.map((spec: SpecFilterOption) => (
+                    <FilterSection key={spec.code} title={spec.label} count={specCount(spec.code)}>
+                      {spec.values.map(v => (
+                        <CheckboxItem key={v.value} label={v.unit ? `${v.value} ${v.unit}` : v.value}
+                          checked={(specSelections[spec.code] ?? []).includes(v.value)}
+                          onChange={() => handleSpec(spec.code, v.value)} />
+                      ))}
+                    </FilterSection>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </aside>
   );
 }

@@ -111,7 +111,10 @@
       "category": "الفئة",
       "subcategory": "الفئة الفرعية",
       "brand": "العلامة التجارية",
-      "availability": "حالة التوفر"
+      "availability": "حالة التوفر",
+      "clearAll": "مسح الكل",
+      "seeAllSpecs": "عرض كل المواصفات",
+      "hideSpecs": "إخفاء المواصفات"
     },
     "condition": {
       "NEW": "جديد",

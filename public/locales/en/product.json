@@ -111,7 +111,10 @@
       "category": "Category",
       "subcategory": "Subcategory",
       "brand": "Brand",
-      "availability": "Availability Status"
+      "availability": "Availability Status",
+      "clearAll": "Clear all",
+      "seeAllSpecs": "See all specifications",
+      "hideSpecs": "Hide specifications"
     },
     "condition": {
       "NEW": "New",

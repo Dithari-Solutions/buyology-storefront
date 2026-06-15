@@ -152,6 +152,8 @@ export interface ProductSearchParams extends ProductQueryParams {
   query?: string;
   condition?: string;
   brandId?: string;
+  /** Multi-select brand filter — repeated as brandIds=...&brandIds=... */
+  brandIds?: string[];
   availabilityStatus?: string;
   categoryId?: string;
   minPrice?: number;
@@ -182,6 +184,7 @@ export async function searchProducts(params: ProductSearchParams = {}): Promise<
   if (filterParams.query) sp.set('query', filterParams.query);
   if (filterParams.condition) sp.set('condition', filterParams.condition);
   if (filterParams.brandId) sp.set('brandId', filterParams.brandId);
+  if (filterParams.brandIds) for (const id of filterParams.brandIds) if (id) sp.append('brandIds', id);
   if (filterParams.availabilityStatus) sp.set('availabilityStatus', filterParams.availabilityStatus);
   if (filterParams.categoryId) sp.set('categoryId', filterParams.categoryId);
   if (filterParams.minPrice != null) sp.set('minPrice', String(filterParams.minPrice));
