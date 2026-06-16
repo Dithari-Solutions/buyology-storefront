@@ -1,49 +1,60 @@
 {
-  "hero": {
-    "label": "Get in Touch",
-    "title": "Contact Us",
-    "subtitle": "We're here to help. Reach out to our team in your region."
-  },
-  "globe": {
-    "selectCountry": "Select a country",
-    "chooseYourSide": "Choose your side"
-  },
-  "countries": {
-    "uae": "United Arab Emirates",
-    "sa": "Saudi Arabia",
-    "qa": "Qatar",
-    "om": "Oman",
-    "az": "Azerbaijan",
-    "bh": "Bahrain"
-  },
-  "info": {
-    "email": "Email",
-    "emailNote": "We'll respond within 24 hours",
-    "call": "Call",
-    "callNote": "Mon–Fri 9am–6pm",
-    "address": "Address"
-  },
-  "form": {
-    "title": "Send us a Message",
-    "sectionLabel": "We're Here to Help",
-    "description": "Have a question or need help finding the perfect item? Our team is available 24/7 to ensure your shopping experience is stress-free.",
-    "fullName": "Full Name",
-    "fullNamePlaceholder": "John Doe",
-    "email": "Email Address",
-    "emailPlaceholder": "john@example.com",
-    "phone": "Phone Number",
-    "phonePlaceholder": "+1 (555) 000-0000",
-    "inquiryType": "Inquiry Type",
-    "message": "Message",
-    "messagePlaceholder": "Write a message...",
-    "submit": "Send Message",
-    "inquiryTypes": {
-      "general": "General Inquiry",
-      "support": "Customer Support",
-      "b2b": "B2B Partnership",
-      "other": "Other"
+    "hero": {
+        "label": "Get in Touch",
+        "title": "Contact Us",
+        "subtitle": "We're here to help. Reach out to our team in your region."
     },
-    "successTitle": "Message Sent!",
-    "successMessage": "Thank you for reaching out. We'll get back to you soon."
-  }
+    "globe": {
+        "selectCountry": "Select a country",
+        "chooseYourSide": "Choose your side"
+    },
+    "countries": {
+        "uae": "United Arab Emirates",
+        "sa": "Saudi Arabia",
+        "qa": "Qatar",
+        "om": "Oman",
+        "az": "Azerbaijan",
+        "bh": "Bahrain"
+    },
+    "info": {
+        "email": "Email",
+        "emailNote": "We'll respond within 24 hours",
+        "call": "Call",
+        "callNote": "Mon–Fri 9am–6pm",
+        "address": "Address",
+        "hours": "Working hours",
+        "closed": "Closed"
+    },
+    "form": {
+        "title": "Send us a Message",
+        "sectionLabel": "We're Here to Help",
+        "description": "Have a question or need help finding the perfect item? Our team is available 24/7 to ensure your shopping experience is stress-free.",
+        "fullName": "Full Name",
+        "fullNamePlaceholder": "John Doe",
+        "email": "Email Address",
+        "emailPlaceholder": "john@example.com",
+        "phone": "Phone Number",
+        "phonePlaceholder": "+1 (555) 000-0000",
+        "inquiryType": "Inquiry Type",
+        "message": "Message",
+        "messagePlaceholder": "Write a message...",
+        "submit": "Send Message",
+        "inquiryTypes": {
+            "general": "General Inquiry",
+            "support": "Customer Support",
+            "b2b": "B2B Partnership",
+            "other": "Other"
+        },
+        "successTitle": "Message Sent!",
+        "successMessage": "Thank you for reaching out. We'll get back to you soon."
+    },
+    "days": {
+        "monday": "Mon",
+        "tuesday": "Tue",
+        "wednesday": "Wed",
+        "thursday": "Thu",
+        "friday": "Fri",
+        "saturday": "Sat",
+        "sunday": "Sun"
+    }
 }

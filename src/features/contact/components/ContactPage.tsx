@@ -90,14 +90,18 @@ const COUNTRIES: Country[] = [
 // ─── backend store data → contact info per country ──────────────────────────
 // Tokens used to match a fetched store (countryName / location.country|city) to a
 // globe CountryId. The hardcoded COUNTRIES entry is the fallback when no store matches.
+// EXACT (normalized) match values — store countryName (full name) or location.country
+// (ISO code). Substring matching caused false positives (e.g. "Qatif" → "qat").
 const COUNTRY_MATCH: Record<CountryId, string[]> = {
-    uae: ["uae", "are", "united arab", "emirat"],
-    sa: ["ksa", "saudi", "sau"],
-    qa: ["qatar", "qat"],
-    om: ["oman", "omn"],
-    az: ["azerbaijan", "aze", "azərbaycan", "azərbaijan"],
-    bh: ["bahrain", "bhr"],
+    uae: ["united arab emirates", "uae", "are", "ae"],
+    sa: ["saudi arabia", "ksa", "saudi", "sau", "sa"],
+    qa: ["qatar", "qat", "qa"],
+    om: ["oman", "omn", "om"],
+    az: ["azerbaijan", "azərbaycan", "aze", "az"],
+    bh: ["bahrain", "bhr", "bh"],
 };
+
+const norm = (s: string | null | undefined) => (s ?? "").trim().toLowerCase();
 
 const ORDERED_DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
 const DAY_LABELS: Record<string, string> = {
@@ -114,25 +118,24 @@ interface ResolvedContact {
 
 function resolveContact(country: Country, stores: PublicStore[]): ResolvedContact {
     const tokens = COUNTRY_MATCH[country.id] ?? [];
-    const store = stores.find((s) => {
-        const name = (s.countryName ?? "").toLowerCase();
-        if (tokens.some((tk) => name.includes(tk))) return true;
-        return (s.locations ?? []).some((l) =>
-            tokens.some((tk) =>
-                (l.country ?? "").toLowerCase().includes(tk) || (l.city ?? "").toLowerCase().includes(tk))
-        );
-    });
-    if (!store) {
-        return { email: country.email, phone: country.phone, address: country.address, hours: null };
+    for (const store of stores) {
+        const storeMatches = tokens.includes(norm(store.countryName));
+        const matchingLoc = (store.locations ?? []).find((l) => tokens.includes(norm(l.country)));
+        if (!storeMatches && !matchingLoc) continue;
+        // Prefer the location in the selected country (its address + hours); otherwise
+        // fall back to the store's primary/first location.
+        const loc = matchingLoc
+            ?? (store.locations ?? []).find((l) => l.isPrimary)
+            ?? store.locations?.[0];
+        const addressParts = [loc?.address, loc?.city].filter(Boolean) as string[];
+        return {
+            email: store.contactEmail || country.email,
+            phone: store.contactPhone || country.phone,
+            address: addressParts.length ? addressParts.join(", ") : country.address,
+            hours: loc?.operatingHours ?? null,
+        };
     }
-    const loc = (store.locations ?? []).find((l) => l.isPrimary) ?? store.locations?.[0];
-    const addressParts = [loc?.address, loc?.city].filter(Boolean) as string[];
-    return {
-        email: store.contactEmail || country.email,
-        phone: store.contactPhone || country.phone,
-        address: addressParts.length ? addressParts.join(", ") : country.address,
-        hours: loc?.operatingHours ?? null,
-    };
+    return { email: country.email, phone: country.phone, address: country.address, hours: null };
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -668,7 +671,7 @@ export default function ContactPage() {
                                                                 <span className="text-gray-500">
                                                                     {t(`days.${day.toLowerCase()}`, { defaultValue: DAY_LABELS[day] })}
                                                                 </span>
-                                                                <span className={`font-semibold ${closed ? "text-gray-400" : "text-[#402F75]"}`}>
+                                                                <span dir="ltr" className={`font-semibold ${closed ? "text-gray-400" : "text-[#402F75]"}`}>
                                                                     {closed
                                                                         ? t("info.closed", { defaultValue: "Closed" })
                                                                         : `${fmtTime(h!.openTime)} – ${fmtTime(h!.closeTime)}`}
