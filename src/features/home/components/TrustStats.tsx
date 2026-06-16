@@ -30,51 +30,54 @@ const STAT_KEYS = ["customers", "devices", "delivery", "rating"] as const;
 // prefix/suffix off the i18n string ("3000+", "4.9★", "24hr") and preserves them.
 function AnimatedStat({ value }: { value: string }) {
     const ref = useRef<HTMLParagraphElement>(null);
+    const started = useRef(false); // persists across renders so it animates ONCE
+
+    // Stable primitives (the match array gets a new identity each render, so keep
+    // it out of the effect deps — depending on it caused a re-run-per-render loop).
     const match = value.match(/^(\D*)([\d,]*\.?\d+)(.*)$/);
-    const target = match ? parseFloat(match[2].replace(/,/g, "")) : NaN;
-    const decimals = match && match[2].includes(".") ? (match[2].split(".")[1]?.length ?? 0) : 0;
+    const prefix = match?.[1] ?? "";
+    const numStr = match?.[2] ?? "";
+    const suffix = match?.[3] ?? "";
+    const target = numStr ? parseFloat(numStr.replace(/,/g, "")) : NaN;
+    const decimals = numStr.includes(".") ? (numStr.split(".")[1]?.length ?? 0) : 0;
+    const animatable = !!numStr && !Number.isNaN(target);
+
     const [current, setCurrent] = useState(0);
 
     useEffect(() => {
         const el = ref.current;
-        if (!el || !match || Number.isNaN(target)) return;
+        if (!animatable || !el || started.current) return;
 
         const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-        if (reduce) { setCurrent(target); return; }
+        if (reduce) { started.current = true; setCurrent(target); return; }
 
         let raf = 0;
-        let started = false;
-        const run = () => {
-            const duration = 1400;
+        const obs = new IntersectionObserver((entries) => {
+            if (!entries[0]?.isIntersecting || started.current) return;
+            started.current = true;
+            obs.disconnect();
             let start = 0;
             const tick = (now: number) => {
                 if (!start) start = now;
-                const p = Math.min(1, (now - start) / duration);
-                const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
-                setCurrent(target * eased);
+                const p = Math.min(1, (now - start) / 1400);
+                setCurrent(target * (1 - Math.pow(1 - p, 3))); // easeOutCubic
                 if (p < 1) raf = requestAnimationFrame(tick);
             };
             raf = requestAnimationFrame(tick);
-        };
-
-        const obs = new IntersectionObserver((entries) => {
-            for (const e of entries) {
-                if (e.isIntersecting && !started) { started = true; run(); obs.disconnect(); break; }
-            }
         }, { threshold: 0.3 });
         obs.observe(el);
         return () => { obs.disconnect(); cancelAnimationFrame(raf); };
-    }, [match, target]);
+    }, [animatable, target]);
 
     const cls = "text-[28px] sm:text-[32px] md:text-[36px] font-extrabold text-white leading-none tabular-nums";
 
     // Non-numeric values fall back to the raw string.
-    if (!match || Number.isNaN(target)) {
+    if (!animatable) {
         return <p className={cls}>{value}</p>;
     }
     return (
         <p ref={ref} className={cls}>
-            {match[1]}{current.toFixed(decimals)}{match[3]}
+            {prefix}{current.toFixed(decimals)}{suffix}
         </p>
     );
 }
