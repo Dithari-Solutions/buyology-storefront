@@ -17,15 +17,20 @@ export default function Features() {
 
     const cta = t("features.learnMore", { defaultValue: "Learn more" });
 
-    // Bento layout: one large tile (Rent), two small (Repair / Brand New),
-    // then three wide rows. `cell` holds the grid span classes per breakpoint.
+    // Tessellating "Twin-Hero Mosaic" bento — tiles fully fill the rectangle, no
+    // gaps. `cell` carries explicit grid-line placement at lg (4 cols × 4 rows)
+    // plus a tidy 2-col fallback at sm. lg layout (verified, no overlaps):
+    //   rent rent  brandNew repair
+    //   rent rent  brandNew repair
+    //   refb refb  sell     sell
+    //   game game  sell     sell
     const services = [
-        { id: "rent", variant: "tall" as const, cell: "sm:row-span-2 lg:col-span-2 lg:row-span-2", title: t("features.rent"), description: t("features.rentDesc"), href: `/${lang}/${rentSlug}` },
-        { id: "repair", variant: "normal" as const, cell: "", title: t("features.repair"), description: t("features.repairDesc"), href: `/${lang}/${repairSlug}` },
-        { id: "brandNew", variant: "normal" as const, cell: "", title: t("features.brandNew"), description: t("features.brandNewDesc"), href: `/${lang}/${shopSlug}?condition=NEW` },
-        { id: "refurbished", variant: "wide" as const, cell: "sm:col-span-2 lg:col-span-2", title: t("features.refurbished"), description: t("features.refurbishedDesc"), href: `/${lang}/${shopSlug}?condition=REFURBISHED` },
-        { id: "sell", variant: "wide" as const, cell: "sm:col-span-2 lg:col-span-2", title: t("features.sell"), description: t("features.sellDesc"), href: `/${lang}/${sellSlug}` },
-        { id: "games", variant: "wide" as const, cell: "sm:col-span-2 lg:col-span-2", title: t("features.games"), description: t("features.gamesDesc"), href: `/${lang}/${gamesSlug}` },
+        { id: "rent", variant: "hero" as const, cell: "sm:col-span-2 sm:row-span-2 lg:col-start-1 lg:col-end-3 lg:row-start-1 lg:row-end-3", title: t("features.rent"), description: t("features.rentDesc"), href: `/${lang}/${rentSlug}` },
+        { id: "brandNew", variant: "tall" as const, cell: "lg:col-start-3 lg:col-end-4 lg:row-start-1 lg:row-end-3", title: t("features.brandNew"), description: t("features.brandNewDesc"), href: `/${lang}/${shopSlug}?condition=NEW` },
+        { id: "repair", variant: "tall" as const, cell: "lg:col-start-4 lg:col-end-5 lg:row-start-1 lg:row-end-3", title: t("features.repair"), description: t("features.repairDesc"), href: `/${lang}/${repairSlug}` },
+        { id: "refurbished", variant: "wide" as const, cell: "sm:col-span-2 lg:col-start-1 lg:col-end-3 lg:row-start-3 lg:row-end-4", title: t("features.refurbished"), description: t("features.refurbishedDesc"), href: `/${lang}/${shopSlug}?condition=REFURBISHED` },
+        { id: "sell", variant: "hero" as const, cell: "sm:col-span-2 sm:row-span-2 lg:col-start-3 lg:col-end-5 lg:row-start-3 lg:row-end-5", title: t("features.sell"), description: t("features.sellDesc"), href: `/${lang}/${sellSlug}` },
+        { id: "games", variant: "wide" as const, cell: "sm:col-span-2 lg:col-start-1 lg:col-end-3 lg:row-start-4 lg:row-end-5", title: t("features.games"), description: t("features.gamesDesc"), href: `/${lang}/${gamesSlug}` },
     ];
 
     return (
@@ -46,8 +51,9 @@ export default function Features() {
                 </div>
             </div>
 
-            {/* Bento grid of colorful service cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 w-[95%] md:w-[90%] auto-rows-[200px] sm:auto-rows-[210px] lg:auto-rows-[195px]">
+            {/* Mosaic bento: rows auto-size on mobile (stacked), fixed at sm+ so the
+                tiles tessellate into one another's space. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 w-[95%] md:w-[90%] auto-rows-auto sm:auto-rows-[200px] lg:auto-rows-[205px]">
                 {services.map((s) => (
                     <div key={s.id} className={s.cell}>
                         <FeatureCard

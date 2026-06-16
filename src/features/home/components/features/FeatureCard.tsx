@@ -4,7 +4,7 @@ interface FeatureCardProps {
     id: string;
     title: string;
     description: string;
-    variant?: "tall" | "wide" | "normal";
+    variant?: "hero" | "tall" | "wide" | "normal";
     href?: string;
     cta?: string;
 }
@@ -55,7 +55,8 @@ const SERVICE: Record<string, { gradient: string; icon: React.ReactNode }> = {
 
 export default function FeatureCard({ id, title, description, variant = "normal", href, cta = "Learn more" }: FeatureCardProps) {
     const s = SERVICE[id] ?? SERVICE.default;
-    const isTall = variant === "tall";
+    const isHero = variant === "hero";
+    const roomy = variant === "hero" || variant === "tall";
 
     const inner = (
         <>
@@ -77,10 +78,10 @@ export default function FeatureCard({ id, title, description, variant = "normal"
 
             {/* Content pinned to the bottom so cards of any height stay tidy */}
             <div className="relative mt-auto pt-6">
-                <h3 className={`font-bold text-white leading-tight mb-1.5 tracking-tight ${isTall ? "text-[22px] md:text-[26px]" : "text-[18px] md:text-[20px]"}`}>
+                <h3 className={`font-bold text-white leading-tight mb-1.5 tracking-tight ${isHero ? "text-[22px] md:text-[28px]" : "text-[18px] md:text-[20px]"}`}>
                     {title}
                 </h3>
-                <p className={`text-white/75 leading-relaxed ${isTall ? "text-[13px] md:text-[14px] line-clamp-3" : "text-[12px] md:text-[13px] line-clamp-2"}`}>
+                <p className={`text-white/75 leading-relaxed ${roomy ? "text-[13px] md:text-[14px] line-clamp-3" : "text-[12px] md:text-[13px] line-clamp-2"}`}>
                     {description}
                 </p>
                 <div className="flex items-center gap-1.5 mt-4 text-[12px] font-semibold text-white/95">
