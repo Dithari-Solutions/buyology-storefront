@@ -269,11 +269,16 @@ export interface ProductFilters {
 export async function getProductFilters(
   lang: Lang = 'en',
   countryCode?: string,
-  currency?: string
+  currency?: string,
+  lat?: number,
+  lng?: number
 ): Promise<ProductFilters> {
   const params: Record<string, string> = { lang: LANG_PARAM[lang] };
   if (countryCode) params.countryCode = countryCode;
   if (currency) params.currency = currency;
+  // lat/lng resolve express-store pricing so the slider bounds match the cards.
+  if (lat != null) params.lat = String(lat);
+  if (lng != null) params.lng = String(lng);
   const { data } = await apiClient.get<{ data: ProductFilters }>('/api/product/filters', { params });
   return data.data;
 }

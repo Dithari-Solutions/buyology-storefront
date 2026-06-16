@@ -15,6 +15,7 @@ import {
   type SpecFilterOption,
 } from '../services/productService';
 import { selectSelectedCountryCode, selectPreferredCurrency } from '@/features/country/store/countrySlice';
+import { selectUserCoords } from '@/features/location/store/locationSlice';
 import type { Lang } from '@/config/pathSlugs';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -183,6 +184,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   const { t } = useTranslation('product');
   const countryCode = useSelector(selectSelectedCountryCode);
   const currency = useSelector(selectPreferredCurrency);
+  const coords = useSelector(selectUserCoords);
 
   const [filters, setFilters] = useState<ProductFilters | null>(null);
   const [loading, setLoading] = useState(true);
@@ -204,7 +206,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   // Fetch filter options from API
   useEffect(() => {
     setLoading(true);
-    getProductFilters(lang, countryCode ?? undefined, currency ?? undefined)
+    getProductFilters(lang, countryCode ?? undefined, currency ?? undefined, coords?.lat, coords?.lng)
       .then(data => {
         setFilters(data);
         // Price range always starts at 0 (not the cheapest product's price).
@@ -213,7 +215,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [lang, countryCode, currency]);
+  }, [lang, countryCode, currency, coords?.lat, coords?.lng]);
 
   // Emit changes whenever any selection changes
   const emitChanges = useCallback((overrides: Partial<{
@@ -227,10 +229,10 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
     const brands = overrides.brandIds      ?? brandIds;
     const avail = overrides.availability   ?? availability;
     const specs = overrides.specSelections ?? specSelections;
-    const priceMin = filters.priceRange.min;
-    const priceMax = filters.priceRange.max;
+    const priceMax = Math.ceil(filters.priceRange.max);
     onFiltersChange({
-      minPrice:           p[0] > priceMin ? p[0] : undefined,
+      // Slider floor is 0; send the bound whenever the user moved off the ends.
+      minPrice:           p[0] > 0 ? p[0] : undefined,
       maxPrice:           p[1] < priceMax ? p[1] : undefined,
       condition:          cond   ?? undefined,
       categoryId:         cat    ?? undefined,
