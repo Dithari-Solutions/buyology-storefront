@@ -9,15 +9,15 @@ import CartItem from "./CartItem";
 
 function CartItemSkeleton() {
     return (
-        <div className="flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 md:p-5 bg-white rounded-2xl border border-[#FBBB14] shadow-sm animate-pulse min-h-[200px] sm:min-h-[180px] md:min-h-[170px] overflow-hidden">
+        <div className="flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 md:p-5 bg-white rounded-[22px] border border-gray-100 shadow-[0_2px_10px_-4px_rgba(16,12,40,0.06)] animate-pulse min-h-[200px] sm:min-h-[178px] md:min-h-[168px] overflow-hidden">
             {/* Checkbox skeleton */}
-            <div className="pt-1 flex-shrink-0">
-                <div className="w-4 h-4 bg-gray-200 rounded"></div>
+            <div className="pt-0.5 flex-shrink-0">
+                <div className="w-5 h-5 bg-gray-200 rounded-md"></div>
             </div>
 
             {/* Image skeleton */}
-            <div className="relative w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] rounded-xl border border-[#FBBB14] flex-shrink-0 flex items-center justify-center overflow-hidden bg-gray-100">
-                <div className="w-full h-full bg-gray-200"></div>
+            <div className="relative w-[84px] h-[84px] sm:w-[104px] sm:h-[104px] md:w-[116px] md:h-[116px] rounded-2xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#F1EEFB] to-[#FBFAFF]">
+                <div className="w-full h-full bg-gray-200/60"></div>
             </div>
 
             {/* Info Block skeleton */}
