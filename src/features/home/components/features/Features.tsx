@@ -17,13 +17,15 @@ export default function Features() {
 
     const cta = t("features.learnMore", { defaultValue: "Learn more" });
 
+    // Bento layout: one large tile (Rent), two small (Repair / Brand New),
+    // then three wide rows. `cell` holds the grid span classes per breakpoint.
     const services = [
-        { id: "rent", title: t("features.rent"), description: t("features.rentDesc"), href: `/${lang}/${rentSlug}` },
-        { id: "repair", title: t("features.repair"), description: t("features.repairDesc"), href: `/${lang}/${repairSlug}` },
-        { id: "brandNew", title: t("features.brandNew"), description: t("features.brandNewDesc"), href: `/${lang}/${shopSlug}?condition=NEW` },
-        { id: "refurbished", title: t("features.refurbished"), description: t("features.refurbishedDesc"), href: `/${lang}/${shopSlug}?condition=REFURBISHED` },
-        { id: "sell", title: t("features.sell"), description: t("features.sellDesc"), href: `/${lang}/${sellSlug}` },
-        { id: "games", title: t("features.games"), description: t("features.gamesDesc"), href: `/${lang}/${gamesSlug}` },
+        { id: "rent", variant: "tall" as const, cell: "sm:row-span-2 lg:col-span-2 lg:row-span-2", title: t("features.rent"), description: t("features.rentDesc"), href: `/${lang}/${rentSlug}` },
+        { id: "repair", variant: "normal" as const, cell: "", title: t("features.repair"), description: t("features.repairDesc"), href: `/${lang}/${repairSlug}` },
+        { id: "brandNew", variant: "normal" as const, cell: "", title: t("features.brandNew"), description: t("features.brandNewDesc"), href: `/${lang}/${shopSlug}?condition=NEW` },
+        { id: "refurbished", variant: "wide" as const, cell: "sm:col-span-2 lg:col-span-2", title: t("features.refurbished"), description: t("features.refurbishedDesc"), href: `/${lang}/${shopSlug}?condition=REFURBISHED` },
+        { id: "sell", variant: "wide" as const, cell: "sm:col-span-2 lg:col-span-2", title: t("features.sell"), description: t("features.sellDesc"), href: `/${lang}/${sellSlug}` },
+        { id: "games", variant: "wide" as const, cell: "sm:col-span-2 lg:col-span-2", title: t("features.games"), description: t("features.gamesDesc"), href: `/${lang}/${gamesSlug}` },
     ];
 
     return (
@@ -44,17 +46,19 @@ export default function Features() {
                 </div>
             </div>
 
-            {/* Uniform grid of service cards — clean, equal-sized, row by row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 w-[95%] md:w-[90%]">
+            {/* Bento grid of colorful service cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 w-[95%] md:w-[90%] auto-rows-[200px] sm:auto-rows-[210px] lg:auto-rows-[195px]">
                 {services.map((s) => (
-                    <FeatureCard
-                        key={s.id}
-                        id={s.id}
-                        title={s.title}
-                        description={s.description}
-                        href={s.href}
-                        cta={cta}
-                    />
+                    <div key={s.id} className={s.cell}>
+                        <FeatureCard
+                            id={s.id}
+                            title={s.title}
+                            description={s.description}
+                            variant={s.variant}
+                            href={s.href}
+                            cta={cta}
+                        />
+                    </div>
                 ))}
             </div>
         </section>
