@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import ScrollReveal from "@/shared/components/ScrollReveal";
 import Globe3D, { type CountryId } from "./Globe3D";
 import CountryShape from "./CountryShape";
+import { getPublicStores, type PublicStore, type PublicOperatingHours } from "../services/storeService";
 
 // ─── types ─────────────────────────────────────────────────────────────────
 
@@ -85,6 +86,54 @@ const COUNTRIES: Country[] = [
     },
 ];
 
+
+// ─── backend store data → contact info per country ──────────────────────────
+// Tokens used to match a fetched store (countryName / location.country|city) to a
+// globe CountryId. The hardcoded COUNTRIES entry is the fallback when no store matches.
+const COUNTRY_MATCH: Record<CountryId, string[]> = {
+    uae: ["uae", "are", "united arab", "emirat"],
+    sa: ["ksa", "saudi", "sau"],
+    qa: ["qatar", "qat"],
+    om: ["oman", "omn"],
+    az: ["azerbaijan", "aze", "azərbaycan", "azərbaijan"],
+    bh: ["bahrain", "bhr"],
+};
+
+const ORDERED_DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
+const DAY_LABELS: Record<string, string> = {
+    MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun",
+};
+const fmtTime = (t: string | null) => (t ? t.slice(0, 5) : "");
+
+interface ResolvedContact {
+    email: string;
+    phone: string;
+    address: string;
+    hours: PublicOperatingHours[] | null;
+}
+
+function resolveContact(country: Country, stores: PublicStore[]): ResolvedContact {
+    const tokens = COUNTRY_MATCH[country.id] ?? [];
+    const store = stores.find((s) => {
+        const name = (s.countryName ?? "").toLowerCase();
+        if (tokens.some((tk) => name.includes(tk))) return true;
+        return (s.locations ?? []).some((l) =>
+            tokens.some((tk) =>
+                (l.country ?? "").toLowerCase().includes(tk) || (l.city ?? "").toLowerCase().includes(tk))
+        );
+    });
+    if (!store) {
+        return { email: country.email, phone: country.phone, address: country.address, hours: null };
+    }
+    const loc = (store.locations ?? []).find((l) => l.isPrimary) ?? store.locations?.[0];
+    const addressParts = [loc?.address, loc?.city].filter(Boolean) as string[];
+    return {
+        email: store.contactEmail || country.email,
+        phone: store.contactPhone || country.phone,
+        address: addressParts.length ? addressParts.join(", ") : country.address,
+        hours: loc?.operatingHours ?? null,
+    };
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^\+?[\d\s\-().]{7,20}$/;
@@ -426,6 +475,16 @@ export default function ContactPage() {
     const [selectedId, setSelectedId] = useState<CountryId>("az");
     const activeCountry = COUNTRIES.find((c) => c.id === selectedId)!;
 
+    // Real contact data (address / phone / email / working hours) from the backend
+    // store APIs; falls back to the static entry when no store matches the country.
+    const [stores, setStores] = useState<PublicStore[]>([]);
+    useEffect(() => {
+        let active = true;
+        getPublicStores().then((s) => { if (active) setStores(s); }).catch(() => {});
+        return () => { active = false; };
+    }, []);
+    const resolved = useMemo(() => resolveContact(activeCountry, stores), [activeCountry, stores]);
+
     return (
         <main className="flex flex-col items-center justify-center pb-10 md:pb-16">
             {/* ── hero ─────────────────────────────────────────────────────── */}
@@ -531,8 +590,8 @@ export default function ContactPage() {
                                             <p className="text-[12px] font-semibold text-gray-500 uppercase tracking-wide">
                                                 {t("info.email")}
                                             </p>
-                                            <p className="text-[15px] font-semibold text-[#402F75] mt-0.5">
-                                                {activeCountry.email}
+                                            <p className="text-[15px] font-semibold text-[#402F75] mt-0.5 break-all">
+                                                {resolved.email}
                                             </p>
                                             <p className="text-[12px] text-gray-400 mt-0.5">
                                                 {t("info.emailNote")}
@@ -555,7 +614,7 @@ export default function ContactPage() {
                                                 {t("info.call")}
                                             </p>
                                             <p className="text-[15px] font-semibold text-[#402F75] mt-0.5">
-                                                {activeCountry.phone}
+                                                {resolved.phone}
                                             </p>
                                             <p className="text-[12px] text-gray-400 mt-0.5">
                                                 {t("info.callNote")}
@@ -579,10 +638,48 @@ export default function ContactPage() {
                                                 {t("info.address")}
                                             </p>
                                             <p className="text-[15px] font-semibold text-[#402F75] mt-0.5">
-                                                {activeCountry.address}
+                                                {resolved.address}
                                             </p>
                                         </div>
                                     </div>
+
+                                    {/* Working hours (from the backend store; only when available) */}
+                                    {resolved.hours && resolved.hours.length > 0 && (
+                                        <div className="flex items-start gap-4 p-4 rounded-2xl bg-[#f5f3ff]">
+                                            <span
+                                                className="flex items-center justify-center w-10 h-10 rounded-xl flex-shrink-0"
+                                                style={{ backgroundColor: "#402F75" }}
+                                            >
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <polyline points="12 6 12 12 16 14" />
+                                                </svg>
+                                            </span>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-[12px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                                                    {t("info.hours", { defaultValue: "Working hours" })}
+                                                </p>
+                                                <div className="flex flex-col gap-1">
+                                                    {ORDERED_DAYS.map((day) => {
+                                                        const h = resolved.hours?.find((x) => x.dayOfWeek === day);
+                                                        const closed = !h || h.isClosed || !h.openTime || !h.closeTime;
+                                                        return (
+                                                            <div key={day} className="flex items-center justify-between gap-4 text-[13px]">
+                                                                <span className="text-gray-500">
+                                                                    {t(`days.${day.toLowerCase()}`, { defaultValue: DAY_LABELS[day] })}
+                                                                </span>
+                                                                <span className={`font-semibold ${closed ? "text-gray-400" : "text-[#402F75]"}`}>
+                                                                    {closed
+                                                                        ? t("info.closed", { defaultValue: "Closed" })
+                                                                        : `${fmtTime(h!.openTime)} – ${fmtTime(h!.closeTime)}`}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
