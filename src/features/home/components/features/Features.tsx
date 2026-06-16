@@ -52,8 +52,10 @@ export default function Features() {
             </div>
 
             {/* Mosaic bento: rows auto-size on mobile (stacked), fixed at sm+ so the
-                tiles tessellate into one another's space. */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 w-[95%] md:w-[90%] auto-rows-auto sm:auto-rows-[200px] lg:auto-rows-[205px]">
+                tiles tessellate into one another's space. Seam (gap-2 = 8px) matches
+                the tile radius (rounded-lg) so junctions stay tight — one interlocking
+                mosaic, not separate floating cards. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 w-[95%] md:w-[90%] auto-rows-auto sm:auto-rows-[200px] lg:auto-rows-[205px] rounded-lg shadow-[0_30px_80px_-45px_rgba(49,46,129,0.5)]">
                 {services.map((s) => (
                     <div key={s.id} className={s.cell}>
                         <FeatureCard
