@@ -22,11 +22,11 @@ export default function Features() {
     // Photo cards where we have product photography; soft illustrated cards for
     // the rest. Interleaved (photo/illustrated/photo…) so neither family clusters
     // in any of the responsive layouts. Same shape, corner arrow, and caption.
-    const services: Array<{ id: string; title: string; href: string; image?: StaticImageData; objectPosition?: string }> = [
+    const services: Array<{ id: string; title: string; href: string; image?: StaticImageData | string; objectPosition?: string }> = [
         { id: "brandNew", title: t("features.brandNew"), href: `/${lang}/${shopSlug}?condition=NEW`, image: BrandNewImg },
-        { id: "rent", title: t("features.rent"), href: `/${lang}/${rentSlug}` },
+        { id: "rent", title: t("features.rent"), href: `/${lang}/${rentSlug}`, image: "/rent.png" },
         { id: "refurbished", title: t("features.refurbished"), href: `/${lang}/${shopSlug}?condition=REFURBISHED`, image: RefurbishedImg, objectPosition: "40% 50%" },
-        { id: "sell", title: t("features.sell"), href: `/${lang}/${sellSlug}` },
+        { id: "sell", title: t("features.sell"), href: `/${lang}/${sellSlug}`, image: "/sell.png" },
         { id: "repair", title: t("features.repair"), href: `/${lang}/${repairSlug}`, image: RepairImg },
         { id: "games", title: t("features.games"), href: `/${lang}/${gamesSlug}` },
     ];

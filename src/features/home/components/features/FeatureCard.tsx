@@ -5,7 +5,7 @@ interface FeatureCardProps {
     id: string;
     title: string;
     href?: string;
-    image?: StaticImageData;
+    image?: StaticImageData | string;
     sizes?: string;
     objectPosition?: string;
 }
@@ -54,7 +54,7 @@ export default function FeatureCard({ id, title, href, image, sizes, objectPosit
                             src={image}
                             alt=""
                             fill
-                            placeholder="blur"
+                            placeholder={typeof image === "string" ? "empty" : "blur"}
                             sizes={sizes ?? "(min-width:1024px) 16vw, (min-width:640px) 31vw, 46vw"}
                             style={objectPosition ? { objectPosition } : undefined}
                             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
