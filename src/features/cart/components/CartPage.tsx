@@ -131,7 +131,7 @@ export default function CartPage() {
                     <div className="absolute -top-32 start-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-[#EDE9FF] blur-3xl opacity-60" />
                 </div>
 
-                <main className="relative w-[95%] sm:w-[92%] lg:w-[90%] max-w-[1400px] mx-auto py-6 sm:py-8 md:py-12">
+                <main className="relative w-[99%] max-w-[1900px] mx-auto px-3 sm:px-5 lg:px-6 py-6 sm:py-8 md:py-12">
 
                     {/* ── Hero header ── */}
                     <div className="mb-6 sm:mb-8">
@@ -221,7 +221,7 @@ export default function CartPage() {
                         <EmptyCartState lang={lang} />
                     ) : (
                         <>
-                            <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px] gap-4 sm:gap-6 items-start">
+                            <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px] 2xl:grid-cols-[1fr_440px] gap-4 sm:gap-6 items-start">
                                 <CartItems />
                                 <OrderSummary />
                             </div>

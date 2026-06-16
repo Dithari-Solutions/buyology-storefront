@@ -130,7 +130,7 @@ export default function CartItems() {
                 </div>
 
                 {loading.cart ? (
-                    <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3">
                         {Array.from({ length: 2 }).map((_, i) => (
                             <CartItemSkeleton key={i} />
                         ))}
@@ -140,7 +140,7 @@ export default function CartItems() {
                         {t("empty.description")}
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3">
                         {cartItems.map((item) => (
                             <CartItem key={item.id} item={item} showSaveForLater />
                         ))}
@@ -155,7 +155,7 @@ export default function CartItems() {
                         {t("savedForLater.heading")}{" "}
                         <span className="text-gray-400 font-normal">({savedItems.length})</span>
                     </h2>
-                    <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3">
                         {savedItems.map((item) => (
                             <CartItem key={item.id} item={item} showSaveForLater={false} />
                         ))}
