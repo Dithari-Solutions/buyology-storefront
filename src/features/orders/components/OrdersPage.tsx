@@ -8,6 +8,7 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import { getOrders } from "../services/orders.api";
 import { repayOrder } from "@/features/checkout/services/payment.api";
+import { SITE_URL } from "@/shared/seo/config";
 import type { OrderSummary, OrderStatus, DeliveryMethod } from "../types";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -162,7 +163,9 @@ function OrderCard({ order, lang }: { order: OrderSummary; lang: string }) {
         try {
             const res = await repayOrder(order.id, {
                 methodType: "CARD",
-                redirectionUrl: `${window.location.origin}/${lang}/payment/callback?orderId=${order.id}`,
+                // Canonical production site URL so the post-payment redirect lands on the
+                // live site rather than the dev/staging host the user happens to be on.
+                redirectionUrl: `${SITE_URL}/${lang}/payment/callback?orderId=${order.id}`,
             });
             // Persist the tx id so the callback can confirm the payment (mirrors checkout).
             sessionStorage.setItem("buyology_pending_tx_id", res.transactionId);

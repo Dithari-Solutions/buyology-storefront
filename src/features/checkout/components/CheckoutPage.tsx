@@ -20,6 +20,7 @@ import { createOrder, createBuyNowOrder } from "@/features/orders/services/order
 import { selectBuyNowItem, clearBuyNow } from "@/features/buyNow/store/buyNowSlice";
 import { getCredentialIdFromAccessToken } from "@/shared/lib/tokenManager";
 import { selectUserCoords } from "@/features/location/store/locationSlice";
+import { SITE_URL } from "@/shared/seo/config";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
 import {
     getProfile,
@@ -441,7 +442,9 @@ export default function CheckoutPage() {
                 billingCity: shippingData.city || undefined,
                 billingCountry: shippingData.country || undefined,
                 billingPostalCode: shippingData.postalCode || undefined,
-                redirectionUrl: `${window.location.origin}/${lang}/payment/callback?orderId=${orderId}`,
+                // Use the canonical production site URL (not window.location.origin) so the
+                // post-payment redirect always lands on the live site, not a dev/staging host.
+                redirectionUrl: `${SITE_URL}/${lang}/payment/callback?orderId=${orderId}`,
             });
 
             // All methods use Unified Checkout — store transactionId and redirect
