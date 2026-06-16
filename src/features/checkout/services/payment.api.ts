@@ -64,6 +64,20 @@ export async function getTransaction(transactionId: string): Promise<Transaction
     return data.data;
 }
 
+/**
+ * Fallback confirmation for when the server-to-server webhook is delayed or blocked.
+ * Forwards the signed Paymob redirect query params to the backend, which verifies the
+ * HMAC and — if valid and paid — marks the order PAID through the same idempotent path
+ * the webhook uses. Best-effort: never throws, so it can't break the return-to-site UX.
+ */
+export async function confirmPaymentRedirect(params: Record<string, string>): Promise<void> {
+    try {
+        await apiClient.post("/api/payments/confirm-redirect", params);
+    } catch {
+        // Swallow — the webhook remains the authoritative confirmation path.
+    }
+}
+
 /** All payment attempts for an order — used to recover status when the tx id is lost. */
 export async function getTransactionsByOrder(orderId: string): Promise<TransactionResponse[]> {
     const { data } = await apiClient.get<ApiEnvelope<TransactionResponse[]>>(
