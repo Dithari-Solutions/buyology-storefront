@@ -31,7 +31,7 @@ const SuperDeals = dynamic(
 );
 const Features = dynamic(
   () => import("@/features/home/components/features/Features"),
-  { loading: () => skel("h-[520px] md:h-[600px]") }
+  { loading: () => skel("h-[880px] sm:h-[720px] lg:h-[400px] xl:h-[470px]") }
 );
 const TrustStats = dynamic(
   () => import("@/features/home/components/TrustStats"),
