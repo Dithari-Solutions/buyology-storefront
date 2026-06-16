@@ -93,6 +93,7 @@
     "limitedStock": {
         "badge": "Məhdud Stok",
         "onlyLeft": "Cəmi 5 ədəd qaldı",
+        "onlyLeftCount": "Cəmi {{count}} ədəd qaldı",
         "productName": "MacBook Pro 13 A1708 (2017)",
         "headlineLine1": "Məhdud stok",
         "headlineLine2": "mövcuddur!",

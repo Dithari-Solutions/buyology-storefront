@@ -93,6 +93,7 @@
     "limitedStock": {
         "badge": "مخزون محدود",
         "onlyLeft": "5 فقط متبقية",
+        "onlyLeftCount": "{{count}} فقط متبقية",
         "productName": "MacBook Pro 13 A1708 (2017)",
         "headlineLine1": "مخزون محدود",
         "headlineLine2": "متوفر الآن!",

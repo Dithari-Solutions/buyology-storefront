@@ -93,6 +93,7 @@
     "limitedStock": {
         "badge": "Limited Stock",
         "onlyLeft": "Only 5 left",
+        "onlyLeftCount": "Only {{count}} left",
         "productName": "MacBook Pro 13 A1708 (2017)",
         "headlineLine1": "Limited stock",
         "headlineLine2": "available!",

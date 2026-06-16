@@ -46,13 +46,17 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
     const { requireAuth, loginGate } = useLoginGate();
     const imageUrl = getPrimaryImage(product.media);
     const specs = extractSpecs(product);
-    const effectivePrice = product.effectivePrice ?? 0;
-    const basePrice = product.basePrice ?? effectivePrice;
+    // Country-scoped pricing comes back on storePrice/originalPrice (already in the
+    // display currency); fall back to the native effective/base price otherwise.
+    const effectivePrice = product.storePrice ?? product.effectivePrice ?? 0;
+    const basePrice = product.originalPrice ?? product.basePrice ?? effectivePrice;
     const detailHref = `/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}/${product.slug}`;
 
     const currencyCode = product.currency ?? "USD";
     const savings = Math.max(0, basePrice - effectivePrice);
     const discountPercent = basePrice > 0 && savings > 0 ? Math.round((savings / basePrice) * 100) : 0;
+    const stockLeft = typeof product.stockQuantity === "number" && product.stockQuantity > 0 ? product.stockQuantity : null;
+    const showLowStock = product.availabilityStatus === "LOW_STOCK" || (stockLeft !== null && stockLeft < 5);
     const formatPrice = (amount: number): string => {
         try {
             return new Intl.NumberFormat(undefined, {
@@ -128,9 +132,11 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
                     </svg>
                     {t("limitedStock.badge")}
                 </span>
-                {product.availabilityStatus === "LOW_STOCK" && (
+                {showLowStock && (
                     <span className="inline-flex items-center gap-1.5 bg-[#FBBB14]/90 text-[#402F75] text-[11px] font-bold px-3 py-1 rounded-full">
-                        {t("limitedStock.onlyLeft")}
+                        {stockLeft !== null
+                            ? t("limitedStock.onlyLeftCount", { count: stockLeft, defaultValue: `Only ${stockLeft} left` })
+                            : t("limitedStock.onlyLeft")}
                     </span>
                 )}
             </div>
