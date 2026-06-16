@@ -51,3 +51,48 @@ body {
   pointer-events: all;
   cursor: grab;
 }
+
+/* ── Home hero (aurora-glass) + carousel motion ──────────────────── */
+@keyframes buyo-orb {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(14px, -22px, 0) scale(1.1); }
+}
+@keyframes buyo-orb-alt {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+  50%      { transform: translate3d(-18px, 16px, 0) scale(0.94); }
+}
+@keyframes buyo-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.buyo-orb     { animation: buyo-orb 24s ease-in-out infinite; }
+.buyo-orb-alt { animation: buyo-orb-alt 28s ease-in-out infinite; }
+.buyo-progress {
+  transform-origin: left center;
+  animation: buyo-progress 5s linear forwards;
+}
+[dir="rtl"] .buyo-progress { transform-origin: right center; }
+
+/* Hide scrollbars on horizontal pill rails (no global utility exists) */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Popular-categories tile: base + colored hover glow (glow color via --glow).
+   Kept in plain CSS so the multi-shadow + var() value can't trip the Tailwind
+   arbitrary-value parser. */
+.cat-tile {
+  box-shadow: 0 1px 2px rgba(16, 12, 40, 0.04);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.3s ease;
+}
+.cat-tile:hover {
+  box-shadow: 0 18px 34px -12px var(--glow), 0 4px 12px rgba(16, 12, 40, 0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buyo-orb, .buyo-orb-alt { animation: none; }
+  .buyo-progress { animation: none; transform: scaleX(1); }
+  .cat-tile { transition: box-shadow 0.3s ease, border-color 0.3s ease; }
+}

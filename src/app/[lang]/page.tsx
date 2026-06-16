@@ -48,9 +48,11 @@ export default function Home() {
       <Header />
       <main className="flex flex-col items-center justify-center pb-10 md:pb-16">
         <Stories />
-        <ScrollReveal className="w-full flex justify-center">
+        {/* Hero is the LCP element — render it directly (no opacity-gated reveal
+            wrapper, which would defer the largest paint until hydration). */}
+        <div className="w-full flex justify-center">
           <Banner />
-        </ScrollReveal>
+        </div>
         <ScrollReveal className="w-full" delay={0.05}>
           <MarqueeStrip />
         </ScrollReveal>
