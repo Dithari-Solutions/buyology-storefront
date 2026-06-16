@@ -10,7 +10,7 @@ import { addItem } from "@/features/cart/store/cartSlice";
 import { getProductFilters } from "@/features/product/services/productService";
 import type { AppDispatch } from "@/store";
 import type { Lang } from "@/config/pathSlugs";
-import FavouriteCard from "./FavouriteCard";
+import ProductCard from "@/features/product/components/ProductCard";
 import FavouritesEmptyItems from "./FavouritesEmptyItems";
 import type { FavouriteItemMeta } from "../types";
 
@@ -98,6 +98,16 @@ export default function FavouritesGrid() {
 
     return (
         <div className="flex flex-col gap-[20px]">
+            {/* Page header */}
+            <div>
+                <h1 className="text-[24px] sm:text-[28px] md:text-[32px] font-bold text-gray-900 leading-tight">
+                    {t("title", { defaultValue: "My Favourites" })}
+                </h1>
+                <p className="text-gray-500 text-[13px] md:text-[15px] mt-1">
+                    {t("subtitle", { defaultValue: "Everything you've saved, ready when you are." })}
+                </p>
+            </div>
+
             {/* Stats bar */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-[12px]">
                 <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[16px] flex items-center gap-[14px]">
@@ -194,9 +204,34 @@ export default function FavouritesGrid() {
                     <p className="text-[13px] text-gray-400">{t("empty.subtitle")}</p>
                 </div>
             ) : (
-                <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[16px]">
+                <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-[16px]">
                     {filteredItems.map((item) => (
-                        <FavouriteCard key={item.id} item={item} />
+                        <ProductCard
+                            key={item.id}
+                            view="grid"
+                            slugs={item.slugs}
+                            productId={item.id}
+                            storeId={item.storeId}
+                            title={item.title}
+                            description={item.description}
+                            price={item.price}
+                            originalPrice={item.originalPrice}
+                            discount={item.originalPrice > item.price ? item.originalPrice - item.price : 0}
+                            currency={item.currency}
+                            rating={item.rating}
+                            inStock={item.inStock}
+                            category={item.category}
+                            processor={item.processor || undefined}
+                            ram={item.ram ? `${item.ram} RAM` : undefined}
+                            storage={item.storage ? `${item.storage} SSD` : undefined}
+                            imageUrl={item.imageUrl}
+                            expressDelivery={item.expressDelivery}
+                            storeOptions={item.storeOptions}
+                            availableInSelectedCountry={item.availableInSelectedCountry}
+                            isSuperDeal={item.isSuperDeal}
+                            availabilityStatus={item.availabilityStatus}
+                            stockQuantity={item.stockQuantity}
+                        />
                     ))}
                 </section>
             )}

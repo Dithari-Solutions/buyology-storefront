@@ -64,6 +64,14 @@ export const fetchFavouritesThunk = createAsyncThunk(
                 processor: processorSpec?.options[0]
                     ? `${processorSpec.options[0].value}${processorSpec.options[0].unit ?? ""}`
                     : undefined,
+                // Carry through what the shop ProductCard needs (add-to-cart + badges).
+                storeId: p.storeId ?? p.storeOptions?.[0]?.storeId ?? undefined,
+                storeOptions: p.storeOptions ?? undefined,
+                expressDelivery: p.expressDelivery ?? null,
+                availabilityStatus: p.availabilityStatus,
+                stockQuantity: p.stockQuantity ?? null,
+                isSuperDeal: p.isSuperDeal ?? false,
+                availableInSelectedCountry: p.availableInSelectedCountry ?? null,
             });
         });
 
