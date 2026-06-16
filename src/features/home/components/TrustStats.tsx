@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const STAT_ICONS = [
@@ -24,6 +25,59 @@ const STAT_ICONS = [
 ];
 
 const STAT_KEYS = ["customers", "devices", "delivery", "rating"] as const;
+
+// Counts a metric up from 0 to its target when it scrolls into view. Parses any
+// prefix/suffix off the i18n string ("3000+", "4.9★", "24hr") and preserves them.
+function AnimatedStat({ value }: { value: string }) {
+    const ref = useRef<HTMLParagraphElement>(null);
+    const match = value.match(/^(\D*)([\d,]*\.?\d+)(.*)$/);
+    const target = match ? parseFloat(match[2].replace(/,/g, "")) : NaN;
+    const decimals = match && match[2].includes(".") ? (match[2].split(".")[1]?.length ?? 0) : 0;
+    const [current, setCurrent] = useState(0);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el || !match || Number.isNaN(target)) return;
+
+        const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        if (reduce) { setCurrent(target); return; }
+
+        let raf = 0;
+        let started = false;
+        const run = () => {
+            const duration = 1400;
+            let start = 0;
+            const tick = (now: number) => {
+                if (!start) start = now;
+                const p = Math.min(1, (now - start) / duration);
+                const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+                setCurrent(target * eased);
+                if (p < 1) raf = requestAnimationFrame(tick);
+            };
+            raf = requestAnimationFrame(tick);
+        };
+
+        const obs = new IntersectionObserver((entries) => {
+            for (const e of entries) {
+                if (e.isIntersecting && !started) { started = true; run(); obs.disconnect(); break; }
+            }
+        }, { threshold: 0.3 });
+        obs.observe(el);
+        return () => { obs.disconnect(); cancelAnimationFrame(raf); };
+    }, [match, target]);
+
+    const cls = "text-[28px] sm:text-[32px] md:text-[36px] font-extrabold text-white leading-none tabular-nums";
+
+    // Non-numeric values fall back to the raw string.
+    if (!match || Number.isNaN(target)) {
+        return <p className={cls}>{value}</p>;
+    }
+    return (
+        <p ref={ref} className={cls}>
+            {match[1]}{current.toFixed(decimals)}{match[3]}
+        </p>
+    );
+}
 
 export default function TrustStats() {
     const { t } = useTranslation("home");
@@ -55,9 +109,7 @@ export default function TrustStats() {
                                 {STAT_ICONS[i]}
                             </div>
                             <div>
-                                <p className="text-[28px] sm:text-[32px] md:text-[36px] font-extrabold text-white leading-none">
-                                    {t(`trustStats.${key}.value`)}
-                                </p>
+                                <AnimatedStat value={t(`trustStats.${key}.value`)} />
                                 <p className="text-white/60 text-[12px] sm:text-[13px] mt-1 font-medium">
                                     {t(`trustStats.${key}.label`)}
                                 </p>
