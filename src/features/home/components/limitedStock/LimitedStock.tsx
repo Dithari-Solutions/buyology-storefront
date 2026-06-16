@@ -43,17 +43,31 @@ export default function LimitedStock() {
     const sliderRef = useRef<HTMLDivElement>(null);
     const [products, setProducts] = useState<ApiProduct[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeIndex, setActiveIndex] = useState(0);
     const isJumping = useRef(false);
+    // scrollLeft sign convention: +1 LTR; -1 for engines that report negative under dir=rtl.
+    const dirSign = useRef(1);
     // Only loop when one set of products overflows — otherwise a single product would
     // render as three identical cards.
     const [enableLoop, setEnableLoop] = useState(false);
 
     useEffect(() => {
         getLimitedStockProducts({ lang, countryCode: countryCode ?? undefined, currency: currency ?? undefined })
-            .then(setProducts)
+            .then((p) => { setProducts(p); setActiveIndex(0); })
             .catch(() => {})
             .finally(() => setLoading(false));
     }, [lang, countryCode, currency]);
+
+    // Detect the scrollLeft sign convention (negative under dir=rtl in modern engines).
+    useEffect(() => {
+        const el = sliderRef.current;
+        if (!el) return;
+        if (getComputedStyle(el).direction !== "rtl") { dirSign.current = 1; return; }
+        const prev = el.scrollLeft;
+        el.scrollLeft = 1;
+        dirSign.current = el.scrollLeft > 0 ? 1 : -1;
+        el.scrollLeft = prev;
+    }, [products]);
 
     // Enable looping only when the first set overflows the row (and there are ≥2 products).
     useEffect(() => {
@@ -82,7 +96,7 @@ export default function LimitedStock() {
         if (!sliderRef.current || products.length === 0 || !enableLoop) return;
         const el = sliderRef.current;
         requestAnimationFrame(() => {
-            el.scrollLeft = el.scrollWidth / 3;
+            el.scrollLeft = (el.scrollWidth / 3) * dirSign.current;
         });
     }, [products, enableLoop]);
 
@@ -96,17 +110,37 @@ export default function LimitedStock() {
 
     const handleScroll = () => {
         const el = sliderRef.current;
-        if (!el || products.length === 0 || isJumping.current || !enableLoop) return;
+        if (!el || products.length === 0) return;
+        const sx = dirSign.current;
+        const per = el.clientWidth || 1;
+        const idx = Math.round((el.scrollLeft * sx) / per); // logical card index across the 3 sets
+        // Track the active dot (mod the real product count, so loop sets map back).
+        setActiveIndex(((idx % products.length) + products.length) % products.length);
+
+        if (isJumping.current || !enableLoop) return;
         const oneSetWidth = el.scrollWidth / 3;
-        if (el.scrollLeft < oneSetWidth * 0.25) {
+        // Reposition only when scrolled out of the middle set [N, 2N) — seamless
+        // because every set is identical, and N-relative (no premature jump for big N).
+        if (idx < products.length) {
             isJumping.current = true;
-            el.scrollLeft += oneSetWidth;
-            isJumping.current = false;
-        } else if (el.scrollLeft > oneSetWidth * 2 - oneSetWidth * 0.25) {
+            el.scrollLeft += oneSetWidth * sx; // logical += one set
+            requestAnimationFrame(() => { isJumping.current = false; });
+        } else if (idx >= products.length * 2) {
             isJumping.current = true;
-            el.scrollLeft -= oneSetWidth;
-            isJumping.current = false;
+            el.scrollLeft -= oneSetWidth * sx; // logical -= one set
+            requestAnimationFrame(() => { isJumping.current = false; });
         }
+    };
+
+    // Jump the slider to the i-th product within the currently-visible set.
+    const goTo = (i: number) => {
+        const el = sliderRef.current;
+        if (!el || products.length === 0) return;
+        const sx = dirSign.current;
+        const per = el.clientWidth || 1;
+        const current = Math.round((el.scrollLeft * sx) / per);
+        const setStart = current - (((current % products.length) + products.length) % products.length);
+        el.scrollTo({ left: (setStart + i) * per * sx, behavior: "smooth" });
     };
 
     const displayItems = enableLoop && products.length > 0
@@ -165,6 +199,32 @@ export default function LimitedStock() {
                         >
                             <LimitedStockCard product={product} />
                         </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Slider pagination dots */}
+            {!loading && products.length > 1 && (
+                <div
+                    className="flex justify-center items-center gap-1.5 mt-5"
+                    role="group"
+                    aria-label={t("limitedStock.title", { defaultValue: "Limited Stock" })}
+                >
+                    {products.map((_, i) => (
+                        <button
+                            key={i}
+                            type="button"
+                            aria-label={`Go to item ${i + 1} of ${products.length}`}
+                            aria-current={i === activeIndex ? "true" : undefined}
+                            onClick={() => goTo(i)}
+                            className="group flex items-center justify-center h-6 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#402F75] focus-visible:ring-offset-2"
+                            style={{ width: i === activeIndex ? 32 : 18 }}
+                        >
+                            <span
+                                className="h-2 w-full rounded-full transition-colors duration-300"
+                                style={{ backgroundColor: i === activeIndex ? "#402F75" : "#D6CEE8" }}
+                            />
+                        </button>
                     ))}
                 </div>
             )}

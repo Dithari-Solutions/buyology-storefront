@@ -6,11 +6,27 @@ import { useRouter, useParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
 import { setBuyNow } from "@/features/buyNow/store/buyNowSlice";
-import { FlameIcon } from "@/shared/icons";
 import type { AppDispatch } from "@/store";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { getPrimaryImage } from "@/features/product/services/productService";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+
+// Scalloped "seal" path for the discount badge (12 soft bumps in a 100×100 box).
+const SEAL_D = (() => {
+    const bumps = 12, cx = 50, cy = 50, rO = 49, rI = 40;
+    const step = (Math.PI * 2) / bumps;
+    let d = "";
+    for (let i = 0; i < bumps; i++) {
+        const a = i * step - Math.PI / 2;
+        const aMid = a + step / 2;
+        const px = cx + rO * Math.cos(a), py = cy + rO * Math.sin(a);
+        const ctrlX = cx + rI * Math.cos(aMid), ctrlY = cy + rI * Math.sin(aMid);
+        const nx = cx + rO * Math.cos(a + step), ny = cy + rO * Math.sin(a + step);
+        if (i === 0) d += `M ${px.toFixed(2)} ${py.toFixed(2)}`;
+        d += ` Q ${ctrlX.toFixed(2)} ${ctrlY.toFixed(2)} ${nx.toFixed(2)} ${ny.toFixed(2)}`;
+    }
+    return d + " Z";
+})();
 
 function extractSpecs(product: ApiProduct): string[] {
     return product.specs.slice(0, 5).map((group) => {
@@ -25,6 +41,7 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
     const router = useRouter();
     const params = useParams();
     const lang = (params?.lang as Lang) ?? "en";
+    const isRtl = lang === "ar";
     const dispatch = useDispatch<AppDispatch>();
     const { requireAuth, loginGate } = useLoginGate();
     const imageUrl = getPrimaryImage(product.media);
@@ -76,101 +93,117 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
             role="link"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === "Enter") router.push(detailHref); }}
-            className="group relative rounded-[28px] w-full overflow-hidden flex-shrink-0 cursor-pointer transition-shadow duration-300 hover:shadow-[0_30px_80px_-30px_rgba(64,47,117,0.65)]"
-            style={{ background: "linear-gradient(120deg, #281a52 0%, #402F75 40%, #5d4a96 72%, #7a64b5 100%)" }}
+            className="group relative rounded-[28px] w-full overflow-hidden flex-shrink-0 cursor-pointer transition-shadow duration-300 hover:shadow-[0_30px_80px_-30px_rgba(64,47,117,0.6)]"
+            style={{ background: `linear-gradient(${isRtl ? "255deg" : "105deg"}, #C7B8EC 0%, #A78FDD 22%, #6A54B2 44%, #56449A 100%)` }}
         >
-            {/* Decorative glow orbs for depth */}
-            <div className="pointer-events-none absolute -top-24 -right-16 w-80 h-80 rounded-full bg-[#FBBB14]/25 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-28 -left-20 w-96 h-96 rounded-full bg-purple-400/25 blur-3xl" />
-            <div className="pointer-events-none absolute top-1/3 left-1/2 w-72 h-72 rounded-full bg-fuchsia-400/10 blur-3xl" />
+            {/* Soft decorative glows */}
+            <div className="pointer-events-none absolute -bottom-24 -end-16 w-80 h-80 rounded-full bg-white/10 blur-3xl" />
+            <div className="pointer-events-none absolute -top-20 end-1/3 w-72 h-72 rounded-full bg-[#FBBB14]/10 blur-3xl" />
+            {/* Content-side scrim guarantees AA legibility for the white text */}
+            <div
+                className="pointer-events-none absolute inset-y-0 end-0 w-3/4"
+                style={{ background: isRtl
+                    ? "linear-gradient(to right, rgba(38,26,82,0.5) 0%, rgba(38,26,82,0.22) 45%, transparent 78%)"
+                    : "linear-gradient(to left, rgba(38,26,82,0.5) 0%, rgba(38,26,82,0.22) 45%, transparent 78%)" }}
+            />
 
-            {/* Top badges */}
-            <div className="absolute top-4 start-4 sm:top-5 sm:start-6 z-20 flex flex-wrap items-center gap-2">
-                {discountPercent > 0 && (
-                    <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#FBBB14] to-amber-300 text-[#1a0f3c] text-[11px] font-extrabold px-3 py-[6px] rounded-full shadow-[0_6px_16px_-4px_rgba(251,187,20,0.7)] uppercase tracking-wide">
-                        <FlameIcon className="w-3.5 h-3.5" /> -{discountPercent}%
+            {/* Discount seal over the image */}
+            {discountPercent > 0 && (
+                <div className="absolute top-3 start-3 sm:top-4 sm:start-5 z-30 w-[68px] h-[68px] sm:w-[84px] sm:h-[84px] drop-shadow-[0_6px_14px_rgba(64,47,117,0.35)]">
+                    <svg viewBox="0 0 100 100" className="w-full h-full" aria-hidden="true">
+                        <path d={SEAL_D} fill="#FBBB14" />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-[#402F75] font-extrabold text-[17px] sm:text-[20px]">
+                        -{discountPercent}%
                     </span>
-                )}
+                </div>
+            )}
+
+            {/* Limited-stock badges, top end */}
+            <div className="absolute top-4 end-4 sm:top-5 sm:end-6 z-30 flex flex-col items-end gap-2">
+                <span className="inline-flex items-center gap-1.5 bg-[#FBBB14] text-[#402F75] text-[12px] font-extrabold px-3.5 py-1.5 rounded-full shadow-[0_6px_16px_-4px_rgba(251,187,20,0.6)]">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M10.3 3.5 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.5a2 2 0 0 0-3.4 0z" />
+                        <path d="M12 9v4M12 17h.01" />
+                    </svg>
+                    {t("limitedStock.badge")}
+                </span>
                 {product.availabilityStatus === "LOW_STOCK" && (
-                    <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md text-white text-[11px] font-semibold px-3 py-[6px] rounded-full border border-white/25">
-                        <span className="relative flex w-1.5 h-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FBBB14] opacity-75" />
-                            <span className="relative inline-flex rounded-full w-1.5 h-1.5 bg-[#FBBB14]" />
-                        </span>
+                    <span className="inline-flex items-center gap-1.5 bg-[#FBBB14]/90 text-[#402F75] text-[11px] font-bold px-3 py-1 rounded-full">
                         {t("limitedStock.onlyLeft")}
                     </span>
                 )}
             </div>
 
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-around px-6 sm:px-10 md:px-[60px] pt-16 pb-8 sm:pt-16 sm:pb-10 md:pt-[60px] md:pb-[50px] gap-6 md:gap-10">
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-10 px-6 sm:px-10 md:px-[56px] pt-16 pb-9 sm:pt-16 sm:pb-10 md:py-[54px]">
 
-                {/* Device image with golden halo */}
+                {/* Device image */}
                 <div className="relative flex items-center justify-center flex-shrink-0">
-                    <div className="pointer-events-none absolute inset-0 m-auto w-[80%] h-[80%] rounded-full bg-[#FBBB14]/25 blur-3xl" />
+                    <div className="pointer-events-none absolute inset-0 m-auto w-[78%] h-[78%] rounded-full bg-white/20 blur-3xl" />
                     {imageUrl ? (
                         <Image
                             src={imageUrl}
-                            alt={product.title}
-                            width={280}
-                            height={280}
+                            alt=""
+                            width={300}
+                            height={300}
                             unoptimized
-                            sizes="(max-width: 640px) 180px, (max-width: 768px) 230px, 280px"
-                            className="w-[180px] sm:w-[230px] md:w-[280px] object-contain drop-shadow-2xl relative z-10 transition-transform duration-500 ease-out group-hover:scale-105"
+                            sizes="(max-width: 640px) 190px, (max-width: 768px) 230px, 300px"
+                            className="w-[190px] sm:w-[230px] md:w-[300px] object-contain drop-shadow-2xl relative z-10 transition-transform duration-500 ease-out group-hover:scale-105"
                         />
                     ) : (
-                        <div className="w-[180px] sm:w-[230px] md:w-[280px] h-[180px] sm:h-[230px] md:h-[280px] bg-white/10 rounded-2xl relative z-10" />
+                        <div className="w-[190px] sm:w-[230px] md:w-[300px] h-[190px] sm:h-[230px] md:h-[300px] bg-white/10 rounded-2xl relative z-10" />
                     )}
                 </div>
 
                 {/* Content */}
-                <div className="flex flex-col items-center md:items-start text-center md:text-start min-w-0">
-                    {product.brandName && (
-                        <p className="text-[#FBBB14] text-[12px] font-bold tracking-[0.2em] uppercase mb-2">
-                            {product.brandName}
-                        </p>
-                    )}
-                    <h2 className="text-[22px] sm:text-[28px] md:text-[38px] font-extrabold text-white leading-[1.1] tracking-tight mb-4">
+                <div className="flex flex-col items-center md:items-start text-center md:text-start min-w-0 flex-1 w-full">
+                    <p className="text-white/95 text-[13px] sm:text-[15px] font-semibold mb-1.5 line-clamp-1">
                         {product.title}
+                    </p>
+                    <h2 className="text-[24px] sm:text-[30px] md:text-[38px] font-extrabold text-white leading-[1.08] tracking-tight mb-4">
+                        {t("limitedStock.headlineLine1")} {t("limitedStock.headlineLine2")}
                     </h2>
 
-                    {/* Specs */}
+                    {/* Specs — gold-dotted inline list */}
                     {specs.length > 0 && (
-                        <ul className="flex flex-wrap justify-center md:justify-start gap-2 mb-6">
+                        <div className="flex flex-wrap justify-center md:justify-start gap-x-5 gap-y-2 mb-6">
                             {specs.map((spec) => (
-                                <li key={spec} className="inline-flex items-center gap-[6px] bg-white/10 border border-white/10 rounded-full px-3 py-1.5 text-white/85 text-[12px] md:text-[13px] font-medium">
-                                    <span className="w-[5px] h-[5px] rounded-full bg-[#FBBB14] flex-shrink-0" />
+                                <span key={spec} className="inline-flex items-center gap-2 text-white text-[12.5px] md:text-[14px] font-medium">
+                                    <span className="w-[6px] h-[6px] rounded-full bg-[#FBBB14] flex-shrink-0" />
                                     {spec}
-                                </li>
+                                </span>
                             ))}
-                        </ul>
+                        </div>
                     )}
 
-                    {/* Price + CTA */}
-                    <div className="flex items-end gap-5 flex-wrap justify-center md:justify-start">
+                    {/* Price + Buy Now */}
+                    <div className="w-full flex items-center justify-center md:justify-between gap-5 flex-wrap mt-1">
                         {effectivePrice > 0 && (
-                            <div className="flex flex-col">
+                            <div className="flex items-end gap-2.5">
+                                <span className="text-[32px] sm:text-[38px] md:text-[44px] font-black text-white leading-none tracking-tight">
+                                    {formatPrice(effectivePrice)}
+                                </span>
                                 {basePrice > effectivePrice && (
-                                    <span className="text-white/45 line-through text-[15px] font-medium leading-none mb-1.5">
+                                    <span className="text-white/75 line-through text-[16px] sm:text-[18px] font-medium leading-none mb-1">
                                         {formatPrice(basePrice)}
                                     </span>
                                 )}
-                                <span className="text-[34px] sm:text-[40px] md:text-[44px] font-black text-white leading-none tracking-tight">
-                                    {formatPrice(effectivePrice)}
-                                </span>
                             </div>
                         )}
-                        {/* Stop the card's navigate-to-detail click when buying. */}
-                        <span onClick={(e) => e.stopPropagation()}>
+
+                        {/* Stop the card's navigate-to-detail click/Enter when buying. */}
+                        <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                             <button
                                 type="button"
                                 onClick={handleBuyNow}
-                                className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#FBBB14] to-amber-400 px-7 py-3.5 text-[15px] font-bold text-[#1a0f3c] shadow-[0_10px_30px_-8px_rgba(251,187,20,0.8)] transition-all duration-200 hover:shadow-[0_14px_42px_-8px_rgba(251,187,20,0.95)] active:scale-95 cursor-pointer"
+                                className="group/btn inline-flex items-center gap-2.5 rounded-full bg-white ps-1.5 pe-6 py-1.5 text-[15px] font-bold text-[#402F75] shadow-[0_10px_30px_-10px_rgba(20,12,50,0.6)] transition-all duration-200 hover:shadow-[0_16px_44px_-10px_rgba(20,12,50,0.75)] active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#58469E]"
                             >
-                                <span className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="relative">
-                                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                                </svg>
-                                <span className="relative">{t("limitedStock.buyNow")}</span>
+                                <span className="w-9 h-9 rounded-full bg-[#402F75] flex items-center justify-center text-white transition-transform duration-300 group-hover/btn:rotate-45">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="rtl:-scale-x-100">
+                                        <path d="M7 17 17 7M9 7h8v8" />
+                                    </svg>
+                                </span>
+                                {t("limitedStock.buyNow")}
                             </button>
                         </span>
                     </div>
