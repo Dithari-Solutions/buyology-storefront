@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import type { RootState } from "@/store";
 import { selectCartTotals } from "@/features/cart/store/cartSlice";
 import Image from "next/image";
 import { b2bAccountApi } from "@/features/b2b/account/api";
@@ -49,6 +48,16 @@ const COUNTRY_NAMES: Record<string, string> = {
 interface PaymentStepProps {
     shipping: ShippingFormData;
     deliveryMethod: "EXPRESS" | "REGULAR";
+    /** True when Express may be offered (≥1 quick-eligible item AND map coordinates). */
+    expressEligible?: boolean;
+    /** True when ≥1 cart item is quick-delivery eligible. */
+    hasExpressItem?: boolean;
+    /** True when the chosen address has map coordinates. */
+    hasCoords?: boolean;
+    /** True when the cart mixes quick-eligible and regular-only items. */
+    mixedCart?: boolean;
+    /** Customer picks Express vs Regular. */
+    onDeliveryMethodChange?: (method: "EXPRESS" | "REGULAR") => void;
     onEdit: () => void;
     onPlaceOrder: (paymentMethod: PaymentMethod, creditAmount: number) => void;
     isSubmitting?: boolean;
@@ -62,12 +71,11 @@ interface PaymentStepProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceOrder, isSubmitting, userId, currency, orderTotalOverride }: PaymentStepProps) {
+export default function PaymentStep({ shipping, deliveryMethod, expressEligible = false, hasExpressItem = false, hasCoords = false, mixedCart = false, onDeliveryMethodChange, onEdit, onPlaceOrder, isSubmitting, userId, currency, orderTotalOverride }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
     // Payment method for the amount due (B2B credit is a separate modifier, not a method).
     const [selected, setSelected] = useState<Exclude<PaymentMethod, "credit">>("card");
     const totals = useSelector(selectCartTotals);
-    const cartItems = useSelector((state: RootState) => state.cart.items);
     const orderTotal = orderTotalOverride ?? totals.total;
 
     const [wallet, setWallet] = useState<{
@@ -123,9 +131,6 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
     })();
     const newTotal = Math.max(0, orderTotal - creditApplied);
     const fullyCovered = creditApplied > 0 && newTotal <= 0.0001;
-
-    const hasQuickDeliveryItems = cartItems.some((i) => i.quickDelivery);
-    const expressUnavailable = hasQuickDeliveryItems && deliveryMethod === "REGULAR";
 
     const countryName = COUNTRY_NAMES[shipping.country] ?? shipping.country;
 
@@ -187,35 +192,85 @@ export default function PaymentStep({ shipping, deliveryMethod, onEdit, onPlaceO
                                 <p className="text-[12px] text-gray-400 mt-0.5">{shipping.email}{shipping.phone && ` · ${shipping.phone}`}</p>
                             )}
 
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                                    deliveryMethod === "EXPRESS"
-                                        ? "bg-green-50 text-green-700 border-green-100"
-                                        : "bg-gray-50 text-gray-600 border-gray-100"
-                                }`}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <rect x="1" y="3" width="15" height="13" rx="1" />
-                                        <path d="M16 8h4l3 3v5h-7V8z" />
-                                        <circle cx="5.5" cy="18.5" r="2.5" />
-                                        <circle cx="18.5" cy="18.5" r="2.5" />
-                                    </svg>
-                                    {deliveryMethod === "EXPRESS" ? "Express Delivery" : "Regular Delivery"}
-                                </span>
-                            </div>
-
-                            {expressUnavailable && (
-                                <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start gap-2.5">
-                                    <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10" />
-                                        <line x1="12" y1="8" x2="12" y2="12" />
-                                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                                    </svg>
-                                    <p className="text-[11px] text-amber-700 leading-normal">
-                                        <strong>Express unavailable:</strong> You have quick-delivery items, but this address has no map coordinates. Standard delivery will be used.
-                                        <button onClick={onEdit} className="ml-1 font-bold underline hover:text-amber-900 cursor-pointer">Add location pin</button>
-                                    </p>
+                            {/* ── Delivery method chooser ── */}
+                            <div className="mt-4">
+                                <p className="text-[12px] font-semibold text-gray-500 mb-2">{t("delivery.heading", { defaultValue: "Delivery method" })}</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {/* Express / Quick */}
+                                    <button
+                                        type="button"
+                                        disabled={!expressEligible}
+                                        onClick={() => onDeliveryMethodChange?.("EXPRESS")}
+                                        className={`text-left rounded-xl border p-3 transition-colors ${
+                                            !expressEligible
+                                                ? "opacity-50 cursor-not-allowed border-gray-100 bg-gray-50"
+                                                : deliveryMethod === "EXPRESS"
+                                                    ? "border-[#402F75] bg-[#F6F4FF] cursor-pointer"
+                                                    : "border-gray-200 hover:border-[#402F75]/40 cursor-pointer"
+                                        }`}
+                                    >
+                                        <span className="flex items-center gap-1.5 text-[12px] font-bold text-gray-800">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13" rx="1" />
+                                                <path d="M16 8h4l3 3v5h-7V8z" />
+                                                <circle cx="5.5" cy="18.5" r="2.5" />
+                                                <circle cx="18.5" cy="18.5" r="2.5" />
+                                            </svg>
+                                            {t("delivery.express", { defaultValue: "Quick delivery" })}
+                                        </span>
+                                        <span className="block text-[11px] text-gray-500 mt-0.5">{t("delivery.expressEta", { defaultValue: "~30 minutes" })}</span>
+                                    </button>
+                                    {/* Regular */}
+                                    <button
+                                        type="button"
+                                        onClick={() => onDeliveryMethodChange?.("REGULAR")}
+                                        className={`text-left rounded-xl border p-3 transition-colors cursor-pointer ${
+                                            deliveryMethod === "REGULAR"
+                                                ? "border-[#402F75] bg-[#F6F4FF]"
+                                                : "border-gray-200 hover:border-[#402F75]/40"
+                                        }`}
+                                    >
+                                        <span className="flex items-center gap-1.5 text-[12px] font-bold text-gray-800">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13" rx="1" />
+                                                <path d="M16 8h4l3 3v5h-7V8z" />
+                                                <circle cx="5.5" cy="18.5" r="2.5" />
+                                                <circle cx="18.5" cy="18.5" r="2.5" />
+                                            </svg>
+                                            {t("delivery.regular", { defaultValue: "Regular delivery" })}
+                                        </span>
+                                        <span className="block text-[11px] text-gray-500 mt-0.5">{t("delivery.regularEta", { defaultValue: "2–3 business days" })}</span>
+                                    </button>
                                 </div>
-                            )}
+
+                                {/* Express disabled reason */}
+                                {!expressEligible && (
+                                    <p className="text-[11px] text-gray-400 mt-2 leading-normal">
+                                        {hasExpressItem && !hasCoords ? (
+                                            <>
+                                                {t("delivery.needPin", { defaultValue: "Quick delivery is available for your items, but this address has no map pin." })}{" "}
+                                                <button onClick={onEdit} className="font-bold underline text-[#402F75] hover:text-[#2e2156] cursor-pointer">{t("delivery.addPin", { defaultValue: "Add location pin" })}</button>
+                                            </>
+                                        ) : (
+                                            t("delivery.notAvailable", { defaultValue: "Quick delivery isn't available for your items in this area." })
+                                        )}
+                                    </p>
+                                )}
+
+                                {/* Mixed-cart notice — proceed, but tell the shopper */}
+                                {mixedCart && deliveryMethod === "EXPRESS" && (
+                                    <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start gap-2.5">
+                                        <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" y1="8" x2="12" y2="12" />
+                                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                                        </svg>
+                                        <p className="text-[11px] text-amber-700 leading-normal">
+                                            {t("delivery.mixedNotice", { defaultValue: "Some items in your order qualify for quick delivery and others will arrive with regular delivery. Your order will still be placed together." })}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <button

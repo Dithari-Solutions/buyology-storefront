@@ -175,13 +175,20 @@ export default function CheckoutPage() {
     const [shippingData, setShippingData] = useState<ShippingFormData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
+    // Customer's explicit delivery choice (null = default to Express when it's eligible).
+    const [deliveryChoice, setDeliveryChoice] = useState<"EXPRESS" | "REGULAR" | null>(null);
 
-    // Determine delivery method: EXPRESS if any item supports quickDelivery AND coordinates are
-    // available, else REGULAR. In Buy Now mode the single product's flag drives it (the cart is empty).
+    // Per-item quick-delivery eligibility (the item's store is within the 30-min radius of the
+    // user's coords — computed by the backend on the cart item's `quickDelivery` flag).
     const hasExpressItem = isBuyNow ? (buyNowItem?.quickDelivery ?? false) : cartItems.some((i) => i.quickDelivery);
-    const deliveryMethod = (hasExpressItem && shippingData?.latitude != null && shippingData?.longitude != null)
-        ? ("EXPRESS" as const)
-        : ("REGULAR" as const);
+    const hasCoords = shippingData?.latitude != null && shippingData?.longitude != null;
+    // Express can only be OFFERED when at least one item qualifies AND we have map coordinates.
+    const expressEligible = hasExpressItem && hasCoords;
+    // A cart that mixes quick-eligible and regular-only items: we still proceed, just inform the shopper.
+    const mixedCart = !isBuyNow && cartItems.some((i) => i.quickDelivery) && cartItems.some((i) => !i.quickDelivery);
+    // Effective method sent to the order: the customer's choice when express is eligible (default
+    // Express), otherwise Regular.
+    const deliveryMethod: "EXPRESS" | "REGULAR" = expressEligible ? (deliveryChoice ?? "EXPRESS") : "REGULAR";
 
     // In Buy Now mode the summary/payment use the single product instead of the cart.
     const buyNowSubtotal = buyNowItem ? buyNowItem.price * buyNowItem.quantity : 0;
@@ -519,6 +526,11 @@ export default function CheckoutPage() {
                             <PaymentStep
                                 shipping={shippingData}
                                 deliveryMethod={deliveryMethod}
+                                expressEligible={expressEligible}
+                                hasExpressItem={hasExpressItem}
+                                hasCoords={hasCoords}
+                                mixedCart={mixedCart}
+                                onDeliveryMethodChange={setDeliveryChoice}
                                 onEdit={() => setStep("shipping")}
                                 onPlaceOrder={handlePlaceOrder}
                                 isSubmitting={isSubmitting}
