@@ -286,9 +286,7 @@ const cartSlice = createSlice({
             state.countryCode = apiCart.countryCode;
             state.currency = apiCart.currency;
             state.shippingFee = apiCart.deliveryFee ?? apiCart.shippingFee ?? 0;
-            // TEMPORARY (TESTING): null so the "spend X for free delivery" hint stays
-            // hidden while delivery is free. Restore: apiCart.freeShippingThreshold ?? null
-            state.freeShippingThreshold = null;
+            state.freeShippingThreshold = apiCart.freeShippingThreshold ?? null;
             state.qualifiesForFreeShipping = apiCart.qualifiesForFreeShipping ?? false;
             state.items = mergeApiItems(state.items, apiCart.items);
             state.selectedIds = state.items.map((i) => i.id);
@@ -346,9 +344,7 @@ const cartSlice = createSlice({
             state.countryCode = result.countryCode;
             state.currency = result.currency;
             state.shippingFee = result.deliveryFee ?? result.shippingFee ?? 0;
-            // TEMPORARY (TESTING): null so the free-delivery hint stays hidden.
-            // Restore: result.freeShippingThreshold ?? null
-            state.freeShippingThreshold = null;
+            state.freeShippingThreshold = result.freeShippingThreshold ?? null;
             state.qualifiesForFreeShipping = result.qualifiesForFreeShipping ?? false;
             const { payload: addPayload } = action.meta.arg as AddToCartThunkArg;
             const apiItem = result.items.find((i) => i.productId === addPayload.productId);
@@ -474,11 +470,7 @@ export const selectCartTotals = createSelector(
         const promoDiscount = promo.applied ? promo.discount : 0;
         const discountedSubtotal = Math.max(0, subtotal - promoDiscount);
 
-        // TEMPORARY (TESTING): shipping is not added to the cart total — orders ship
-        // free for now (mirrors the disabled backend delivery fee). Restore with:
-        //   const shipping = shippingFee;
-        const shipping = 0;
-        void shippingFee;
+        const shipping = shippingFee;
         const total = parseFloat((discountedSubtotal + shipping).toFixed(2));
 
         const selectedItemCount = selectedLines.reduce((acc, i) => acc + i.quantity, 0);

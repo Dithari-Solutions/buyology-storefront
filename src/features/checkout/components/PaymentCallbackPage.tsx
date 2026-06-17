@@ -10,6 +10,7 @@ import Footer from "@/shared/components/Footer";
 import { getTransaction, getTransactionsByOrder, confirmPaymentRedirect } from "../services/payment.api";
 import { clearCart } from "@/features/cart/store/cartSlice";
 import { clearCartApi } from "@/features/cart/services/cart.api";
+import PurchaseReviewPrompt from "./PurchaseReviewPrompt";
 
 const POLL_INTERVAL_MS = 2000;
 const MAX_POLL_ATTEMPTS = 15;
@@ -47,10 +48,8 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                     if (userId) clearCartApi().catch(() => {});
                     dispatch(clearCart());
                     setStatus("success");
-                    // Automatically redirect to order detail after a short delay
-                    setTimeout(() => {
-                        router.push(`/${lang}/orders/${tx.appOrderId}`);
-                    }, 3000);
+                    // No auto-redirect: stay on the success screen so the shopper can
+                    // review their purchase. They navigate via the "View Order" button.
                 } else if (tx.status === "FAILED") {
                     setStatus("failed");
                     setErrorMessage(
@@ -115,7 +114,6 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
             if (userId) clearCartApi().catch(() => {});
             dispatch(clearCart());
             setStatus("success");
-            if (oid) setTimeout(() => { if (!cancelled) router.push(`/${lang}/orders/${oid}`); }, 3000);
         };
 
         const showFailed = () => {
@@ -236,6 +234,8 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                         >
                             {t("payment.view_order", { defaultValue: "View Order" })}
                         </button>
+
+                        {orderId && <PurchaseReviewPrompt orderId={orderId} />}
                     </div>
                 )}
 

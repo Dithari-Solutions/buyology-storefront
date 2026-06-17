@@ -76,6 +76,13 @@ export default function SignupGate() {
     router.push(`/${lang}/${PATH_SLUGS.auth[lang]}?mode=${mode}`);
   }
 
+  // Dismiss the gate for this session (the session flag is already set when it opened,
+  // so it won't reappear until the next session).
+  function dismiss() {
+    setVisible(false);
+    if (typeof window !== "undefined") sessionStorage.setItem(SESSION_KEY, "1");
+  }
+
   return (
     <AnimatePresence>
       {visible && (
@@ -85,6 +92,7 @@ export default function SignupGate() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
+          onClick={dismiss}
           className="fixed inset-0 z-[99990] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
         >
           <motion.div
@@ -92,8 +100,21 @@ export default function SignupGate() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 16 }}
             transition={{ duration: 0.4, ease: [0.34, 1.2, 0.64, 1] }}
-            className="bg-white rounded-[32px] w-full max-w-sm shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-white rounded-[32px] w-full max-w-sm shadow-2xl overflow-hidden"
           >
+            {/* Close button */}
+            <button
+              onClick={dismiss}
+              aria-label="Close"
+              className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
             {/* Purple header */}
             <div
               className="px-8 pt-10 pb-8 text-center"
@@ -111,6 +132,13 @@ export default function SignupGate() {
               <p className="text-[13px] text-white/65 leading-relaxed max-w-[240px] mx-auto">
                 Create a free account to browse products, track orders, and enjoy express delivery.
               </p>
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#FBBB14] px-4 py-2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a0f3c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                  <line x1="7" y1="7" x2="7.01" y2="7" />
+                </svg>
+                <span className="text-[12px] font-extrabold text-[#1a0f3c]">10% off your first order — code WELCOME10</span>
+              </div>
             </div>
 
             {/* Buttons */}

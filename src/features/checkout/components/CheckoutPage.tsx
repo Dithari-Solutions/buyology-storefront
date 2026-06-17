@@ -197,17 +197,12 @@ export default function CheckoutPage() {
             quickDelivery: buyNowItem.quickDelivery ?? false,
         }]
         : undefined;
-    // TEMPORARY (TESTING): delivery is free for now, so the Buy Now summary/payment
-    // total excludes the shipping fee (mirrors the shipping-free cart display + the
-    // disabled backend delivery fee). Restore with:
-    //   shipping: buyNowItem.shippingFee,
-    //   total: buyNowSubtotal + buyNowItem.shippingFee,
     const summaryTotals = isBuyNow && buyNowItem
         ? {
             subtotal: buyNowSubtotal,
-            shipping: 0,
+            shipping: buyNowItem.shippingFee,
             promoDiscount: 0,
-            total: buyNowSubtotal,
+            total: buyNowSubtotal + buyNowItem.shippingFee,
         }
         : undefined;
 
@@ -337,15 +332,9 @@ export default function CheckoutPage() {
                     quantity: buyNowItem.quantity,
                     addressId: shippingData.addressId,
                     deliveryMethod,
-                    // TEMPORARY (TESTING): request free delivery so the backend order total
-                    // (used as the authoritative payment amount below) excludes shipping.
-                    // Restore: remove this line.
-                    shippingFee: 0,
                 });
                 orderId = order.id;
-                // TEMPORARY (TESTING): free delivery. Restore: order.shippingFee ?? 0
-                finalShippingFee = 0;
-                void order.shippingFee;
+                finalShippingFee = order.shippingFee ?? 0;
                 // Use the order's authoritative amount/currency for payment.
                 payAmount = order.totalAmount;
                 payCurrency = order.currency;
@@ -359,13 +348,7 @@ export default function CheckoutPage() {
 
                 // Step 1 — Checkout the cart (ACTIVE → CHECKED_OUT)
                 const checkedOutCart = await checkoutCart();
-                // TEMPORARY (TESTING): delivery is free for now — ignore the cart's shipping
-                // fee so the order total, the Paymob amount and the shipping-free cart display
-                // all match. This also makes createOrder/initiatePayment below send shippingFee
-                // 0 (they read finalShippingFee). Restore with:
-                //   finalShippingFee = checkedOutCart.shippingFee ?? shippingFee;
-                void checkedOutCart.shippingFee;
-                finalShippingFee = 0;
+                finalShippingFee = checkedOutCart.shippingFee ?? shippingFee;
                 dispatch(setShippingFee(finalShippingFee));
 
                 // Step 2 — Create order (cart must be CHECKED_OUT).
