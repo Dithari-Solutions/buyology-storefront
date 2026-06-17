@@ -135,14 +135,41 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
         };
 
         if (hasSignedRedirect) {
-            // Await the confirm so the order is marked paid before we poll its status.
-            confirmPaymentRedirect(redirectParams).finally(resolveAndPoll);
+            // Confirm server-side first. If it resolves the order from the signed params
+            // (HMAC-verified), use that result directly — no session/orderId required.
+            // Otherwise fall back to session/orderId polling.
+            confirmPaymentRedirect(redirectParams)
+                .then((tx) => {
+                    if (cancelled) return;
+                    if (!tx) {
+                        resolveAndPoll();
+                        return;
+                    }
+                    setOrderId(tx.appOrderId);
+                    if (tx.status === "SUCCESS") {
+                        if (userId) clearCartApi().catch(() => {});
+                        dispatch(clearCart());
+                        setStatus("success");
+                        setTimeout(() => router.push(`/${lang}/orders/${tx.appOrderId}`), 3000);
+                    } else if (tx.status === "FAILED" || tx.status === "CANCELLED") {
+                        setStatus("failed");
+                        setErrorMessage(
+                            t("payment.error.failed", {
+                                defaultValue: "Payment was declined. Please try a different payment method.",
+                            })
+                        );
+                    } else {
+                        // Resolved but not yet terminal — poll our own transaction id.
+                        pollTransactionStatus(tx.id);
+                    }
+                })
+                .catch(() => { if (!cancelled) resolveAndPoll(); });
         } else {
             resolveAndPoll();
         }
 
         return () => { cancelled = true; };
-    }, [searchParams, pollTransactionStatus, t]);
+    }, [searchParams, pollTransactionStatus, t, dispatch, userId, router, lang]);
 
     return (
         <>

@@ -68,13 +68,23 @@ export async function getTransaction(transactionId: string): Promise<Transaction
  * Fallback confirmation for when the server-to-server webhook is delayed or blocked.
  * Forwards the signed Paymob redirect query params to the backend, which verifies the
  * HMAC and — if valid and paid — marks the order PAID through the same idempotent path
- * the webhook uses. Best-effort: never throws, so it can't break the return-to-site UX.
+ * the webhook uses, then returns the resolved transaction (status + appOrderId). That
+ * lets the callback show the result and route to the order WITHOUT a session token or
+ * an orderId in the URL. Best-effort: returns null (never throws) on any failure, so
+ * the caller falls back to session/orderId polling.
  */
-export async function confirmPaymentRedirect(params: Record<string, string>): Promise<void> {
+export async function confirmPaymentRedirect(
+    params: Record<string, string>
+): Promise<TransactionResponse | null> {
     try {
-        await apiClient.post("/api/payments/confirm-redirect", params);
+        const { data } = await apiClient.post<ApiEnvelope<TransactionResponse | null>>(
+            "/api/payments/confirm-redirect",
+            params
+        );
+        return data.data ?? null;
     } catch {
         // Swallow — the webhook remains the authoritative confirmation path.
+        return null;
     }
 }
 
