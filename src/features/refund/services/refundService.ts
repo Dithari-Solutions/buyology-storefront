@@ -2,6 +2,7 @@ import { apiClient } from "@/shared/lib/apiClient";
 import type {
     RefundRequestDetail,
     RefundReturnMethod,
+    SetReturnMethodResult,
     SpringPage,
 } from "../types";
 
@@ -59,14 +60,22 @@ export async function createRefund(payload: CreateRefundPayload): Promise<Refund
     return data.data;
 }
 
+/**
+ * Choose the return method. For STORE_DROPOFF the request is confirmed immediately
+ * (`payment` is null). For COURIER_PICKUP the backend creates a standalone Paymob
+ * charge for the courier fee and returns its checkout session in `payment`; the
+ * caller must redirect the browser to `payment.checkoutUrl` to collect the fee.
+ * `redirectionUrl` is where Paymob returns the browser afterwards.
+ */
 export async function setReturnMethod(
     refundId: string,
     method: RefundReturnMethod,
     currency: string,
-): Promise<RefundRequestDetail> {
-    const { data } = await apiClient.post<ApiEnvelope<RefundRequestDetail>>(
+    redirectionUrl?: string,
+): Promise<SetReturnMethodResult> {
+    const { data } = await apiClient.post<ApiEnvelope<SetReturnMethodResult>>(
         `/api/refunds/${refundId}/return-method`,
-        { method, currency },
+        { method, currency, redirectionUrl },
     );
     return data.data;
 }

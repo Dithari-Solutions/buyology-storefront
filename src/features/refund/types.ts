@@ -2,6 +2,7 @@ export type RefundRequestStatus =
     | "PENDING_REVIEW"
     | "APPROVED"
     | "DROPOFF_SELECTED"
+    | "COURIER_FEE_PENDING"
     | "COURIER_REQUESTED"
     | "RECEIVED"
     | "REJECTED"
@@ -9,6 +10,26 @@ export type RefundRequestStatus =
     | "FAILED";
 
 export type RefundReturnMethod = "STORE_DROPOFF" | "COURIER_PICKUP";
+
+/** Paymob checkout session returned when the customer must pay the courier pickup fee. */
+export interface CourierFeePayment {
+    transactionId: string;
+    methodType: string;
+    amount: number;
+    currency: string;
+    clientSecret: string;
+    checkoutUrl: string;
+}
+
+/**
+ * Result of choosing a return method. For STORE_DROPOFF, `payment` is null. For
+ * COURIER_PICKUP, the request enters COURIER_FEE_PENDING and `payment` carries the
+ * Paymob checkout the customer must complete to pay the courier fee.
+ */
+export interface SetReturnMethodResult {
+    refund: RefundRequestDetail;
+    payment: CourierFeePayment | null;
+}
 
 export interface RefundRequestDetail {
     id: string;
@@ -46,6 +67,7 @@ export const ACTIVE_REFUND_STATUSES: RefundRequestStatus[] = [
     "PENDING_REVIEW",
     "APPROVED",
     "DROPOFF_SELECTED",
+    "COURIER_FEE_PENDING",
     "COURIER_REQUESTED",
     "RECEIVED",
     "PAID",

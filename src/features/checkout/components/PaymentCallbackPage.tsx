@@ -23,6 +23,10 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
     const dispatch = useDispatch();
     const userId = useSelector((state: RootState) => state.auth.userId);
 
+    // A standalone refund courier-pickup fee charge (not an order): different copy,
+    // no cart to clear, and we return the shopper to their orders/refunds.
+    const isCourierFee = searchParams.get("kind") === "courier-fee";
+
     const [status, setStatus] = useState<"polling" | "success" | "failed" | "error">("polling");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderId, setOrderId] = useState<string | null>(null);
@@ -45,8 +49,10 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                 setOrderId(tx.appOrderId);
 
                 if (tx.status === "SUCCESS") {
-                    if (userId) clearCartApi().catch(() => {});
-                    dispatch(clearCart());
+                    if (!isCourierFee) {
+                        if (userId) clearCartApi().catch(() => {});
+                        dispatch(clearCart());
+                    }
                     setStatus("success");
                     // No auto-redirect: stay on the success screen so the shopper can
                     // review their purchase. They navigate via the "View Order" button.
@@ -79,7 +85,7 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                 );
             }
         },
-        [dispatch, t, userId, lang, router]
+        [dispatch, t, userId, lang, router, isCourierFee]
     );
 
     useEffect(() => {
@@ -111,8 +117,10 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
         const showSuccess = (oid: string | null) => {
             if (cancelled) return;
             if (oid) setOrderId(oid);
-            if (userId) clearCartApi().catch(() => {});
-            dispatch(clearCart());
+            if (!isCourierFee) {
+                if (userId) clearCartApi().catch(() => {});
+                dispatch(clearCart());
+            }
             setStatus("success");
         };
 
@@ -196,7 +204,7 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
         run();
 
         return () => { cancelled = true; };
-    }, [searchParams, pollTransactionStatus, t, dispatch, userId, router, lang]);
+    }, [searchParams, pollTransactionStatus, t, dispatch, userId, router, lang, isCourierFee]);
 
     return (
         <>
@@ -224,18 +232,30 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                                 <polyline points="20 6 9 17 4 12" />
                             </svg>
                         </div>
-                        <h1 className="text-[24px] font-bold text-gray-900">{t("payment.success", { defaultValue: "Payment Successful!" })}</h1>
+                        <h1 className="text-[24px] font-bold text-gray-900">
+                            {isCourierFee
+                                ? t("payment.courierFee.success", { defaultValue: "Courier Fee Paid!" })
+                                : t("payment.success", { defaultValue: "Payment Successful!" })}
+                        </h1>
                         <p className="text-[14px] text-gray-500 mb-6">
-                            {t("payment.success_desc", { defaultValue: "Thank you for your order. We've received your payment and are processing your order." })}
+                            {isCourierFee
+                                ? t("payment.courierFee.success_desc", { defaultValue: "We've received your courier pickup fee. A courier will be in touch to collect your return — your order will be refunded in full." })
+                                : t("payment.success_desc", { defaultValue: "Thank you for your order. We've received your payment and are processing your order." })}
                         </p>
                         <button
-                            onClick={() => router.push(orderId ? `/${lang}/orders/${orderId}` : `/${lang}/orders`)}
+                            onClick={() => router.push(
+                                isCourierFee
+                                    ? `/${lang}/orders`
+                                    : (orderId ? `/${lang}/orders/${orderId}` : `/${lang}/orders`)
+                            )}
                             className="bg-[#402F75] text-white px-8 py-3 rounded-full font-bold text-[14px] hover:bg-[#34265f] transition-colors"
                         >
-                            {t("payment.view_order", { defaultValue: "View Order" })}
+                            {isCourierFee
+                                ? t("payment.courierFee.back_to_orders", { defaultValue: "Back to My Orders" })
+                                : t("payment.view_order", { defaultValue: "View Order" })}
                         </button>
 
-                        {orderId && <PurchaseReviewPrompt orderId={orderId} />}
+                        {!isCourierFee && orderId && <PurchaseReviewPrompt orderId={orderId} />}
                     </div>
                 )}
 
@@ -253,17 +273,21 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                         </p>
                         <div className="flex gap-4">
                             <button
-                                onClick={() => router.push(`/${lang}/checkout`)}
+                                onClick={() => router.push(isCourierFee ? `/${lang}/orders` : `/${lang}/checkout`)}
                                 className="bg-[#402F75] text-white px-8 py-3 rounded-full font-bold text-[14px] hover:bg-[#34265f] transition-colors"
                             >
-                                {t("payment.back_to_checkout", { defaultValue: "Back to Checkout" })}
+                                {isCourierFee
+                                    ? t("payment.courierFee.back_to_orders", { defaultValue: "Back to My Orders" })
+                                    : t("payment.back_to_checkout", { defaultValue: "Back to Checkout" })}
                             </button>
-                            <button
-                                onClick={() => router.push(`/${lang}/orders`)}
-                                className="bg-white text-[#402F75] border border-[#402F75] px-8 py-3 rounded-full font-bold text-[14px] hover:bg-gray-50 transition-colors"
-                            >
-                                {t("payment.order_history", { defaultValue: "Order History" })}
-                            </button>
+                            {!isCourierFee && (
+                                <button
+                                    onClick={() => router.push(`/${lang}/orders`)}
+                                    className="bg-white text-[#402F75] border border-[#402F75] px-8 py-3 rounded-full font-bold text-[14px] hover:bg-gray-50 transition-colors"
+                                >
+                                    {t("payment.order_history", { defaultValue: "Order History" })}
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
 import { setReturnMethod } from "../services/refundService";
 import type { RefundReturnMethod } from "../types";
+
+// Same session key the checkout/payment-callback flow uses to recover the tx id.
+const PENDING_TX_KEY = "buyology_pending_tx_id";
 
 interface Props {
     refundId: string;
@@ -20,6 +25,7 @@ export default function ChooseReturnMethodModal({
     onChosen,
 }: Props) {
     const { t } = useTranslation("refund");
+    const lang = (useSelector((s: RootState) => s.language.lang) as string) ?? "en";
     const [mounted, setMounted] = useState(false);
     const [submitting, setSubmitting] = useState<RefundReturnMethod | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -32,12 +38,27 @@ export default function ChooseReturnMethodModal({
         setSubmitting(method);
         setError(null);
         try {
-            await setReturnMethod(refundId, method, orderCurrency);
+            // For courier pickup, the customer must pay the courier fee on Paymob before
+            // the request advances — send where Paymob should return the browser.
+            const redirectionUrl = method === "COURIER_PICKUP" && typeof window !== "undefined"
+                ? `${window.location.origin}/${lang}/payment/callback?kind=courier-fee&refundId=${refundId}`
+                : undefined;
+            const result = await setReturnMethod(refundId, method, orderCurrency, redirectionUrl);
+
+            if (method === "COURIER_PICKUP" && result.payment?.checkoutUrl) {
+                // Hand off to Paymob. The payment-callback page confirms the fee and the
+                // request advances to COURIER_REQUESTED via the webhook.
+                if (typeof window !== "undefined") {
+                    sessionStorage.setItem(PENDING_TX_KEY, result.payment.transactionId);
+                    window.location.href = result.payment.checkoutUrl;
+                }
+                return;
+            }
+
             onChosen();
             onClose();
         } catch (e) {
             setError(e instanceof Error ? e.message : t("error.generic"));
-        } finally {
             setSubmitting(null);
         }
     };

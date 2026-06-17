@@ -1,7 +1,8 @@
 {
     "button": {
         "request": "Request a refund",
-        "chooseMethod": "Choose return method"
+        "chooseMethod": "Choose return method",
+        "payCourierFee": "Pay courier pickup fee"
     },
     "summary": {
         "title": "Refund request",
@@ -35,14 +36,16 @@
         },
         "courier": {
             "title": "Courier pickup",
-            "desc": "We'll send a courier. The pickup fee is deducted from your refund (charged in {{currency}})."
+            "desc": "We'll send a courier. A pickup fee (charged in {{currency}}) is paid securely now — it's separate from your refund, so your order is refunded in full."
         },
+        "feePending": "Your courier pickup fee payment is still pending. Complete it below to schedule your return pickup.",
         "submitting": "Saving your choice…"
     },
     "status": {
         "pendingReview": "Pending review",
         "approved": "Approved",
         "dropoffSelected": "Drop-off selected",
+        "courierFeePending": "Awaiting courier fee payment",
         "courierRequested": "Courier requested",
         "received": "Product received",
         "rejected": "Rejected",

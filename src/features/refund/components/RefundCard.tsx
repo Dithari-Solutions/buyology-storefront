@@ -109,7 +109,10 @@ function ActiveRefundView({
     onChooseMethod: () => void;
 }) {
     const { t } = useTranslation("refund");
-    const canChooseMethod = refund.status === "APPROVED";
+    // APPROVED: first choice. COURIER_FEE_PENDING: the courier fee payment was not
+    // completed — let the customer retry it (or switch to drop-off).
+    const canChooseMethod = refund.status === "APPROVED" || refund.status === "COURIER_FEE_PENDING";
+    const isFeePending = refund.status === "COURIER_FEE_PENDING";
 
     return (
         <div>
@@ -135,12 +138,20 @@ function ActiveRefundView({
                 </p>
             )}
 
+            {isFeePending && (
+                <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-800">
+                    {t("method.feePending", { defaultValue: "Your courier pickup fee payment is still pending. Complete it below to schedule your return pickup." })}
+                </p>
+            )}
+
             {canChooseMethod && (
                 <button
                     onClick={onChooseMethod}
                     className="mt-3 w-full rounded-lg bg-[#402F75] py-2.5 text-sm font-semibold text-white hover:bg-[#332561]"
                 >
-                    {t("button.chooseMethod")}
+                    {isFeePending
+                        ? t("button.payCourierFee", { defaultValue: "Pay courier pickup fee" })
+                        : t("button.chooseMethod")}
                 </button>
             )}
         </div>

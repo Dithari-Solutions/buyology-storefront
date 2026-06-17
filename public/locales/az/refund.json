@@ -1,7 +1,8 @@
 {
     "button": {
         "request": "Geri qaytarma tələb et",
-        "chooseMethod": "Geri qaytarma üsulunu seç"
+        "chooseMethod": "Geri qaytarma üsulunu seç",
+        "payCourierFee": "Kuryer götürmə haqqını ödə"
     },
     "summary": {
         "title": "Geri qaytarma sorğusu",
@@ -35,14 +36,16 @@
         },
         "courier": {
             "title": "Kuryer ilə götürmə",
-            "desc": "Sizə kuryer göndəririk. Götürmə haqqı geri qaytarmadan tutulur (məbləğ {{currency}} ilə hesablanır)."
+            "desc": "Sizə kuryer göndəririk. Götürmə haqqı ({{currency}} ilə hesablanır) indi təhlükəsiz ödənilir — bu, geri qaytarmadan ayrıdır, ona görə sifarişiniz tam geri qaytarılır."
         },
+        "feePending": "Kuryer götürmə haqqı ödənişiniz hələ gözləyir. Götürməni planlaşdırmaq üçün aşağıda tamamlayın.",
         "submitting": "Seçiminiz yadda saxlanılır…"
     },
     "status": {
         "pendingReview": "Baxılır",
         "approved": "Təsdiqləndi",
         "dropoffSelected": "Mağazada təhvil seçildi",
+        "courierFeePending": "Kuryer haqqı ödənişi gözlənilir",
         "courierRequested": "Kuryer tələb olunub",
         "received": "Məhsul alındı",
         "rejected": "Rədd edildi",
