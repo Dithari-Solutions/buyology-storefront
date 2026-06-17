@@ -10,6 +10,7 @@ import { getPrimaryImage } from "@/features/product/services/productService";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { selectUserCoords, selectLocationDenied } from "@/features/location/store/locationSlice";
+import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
 
 type PageState =
     | "requesting-location"
@@ -84,6 +85,9 @@ export default function QuickDeliveryPage() {
     // Use global coords from Redux (set when user allowed location on app open)
     const globalCoords = useSelector(selectUserCoords);
     const locationDenied = useSelector(selectLocationDenied);
+    // Country/currency scope the store pricing so prices and storeId resolve (else 0 / null).
+    const countryCode = useSelector(selectSelectedCountryCode);
+    const currency = useSelector(selectPreferredCurrency);
 
     const [state, setState] = useState<PageState>("requesting-location");
     const [products, setProducts] = useState<ApiProduct[]>([]);
@@ -92,14 +96,14 @@ export default function QuickDeliveryPage() {
         async (lat: number, lng: number) => {
             setState("loading");
             try {
-                const result = await getQuickDeliveryProducts(lat, lng, lang);
+                const result = await getQuickDeliveryProducts(lat, lng, lang, countryCode, currency);
                 setProducts(result);
                 setState(result.length > 0 ? "showing-products" : "empty");
             } catch {
                 setState("error");
             }
         },
-        [lang]
+        [lang, countryCode, currency]
     );
 
     // Auto-fetch when global coords become available
@@ -202,19 +206,30 @@ export default function QuickDeliveryPage() {
                             const slugs = { en: product.slug, az: product.slug, ar: product.slug };
                             const ram = getSpecValue(product, "ram");
                             const storage = getSpecValue(product, "storage");
+                            // Store-scoped pricing (resolved by the backend from countryCode/currency).
+                            // storeId is REQUIRED for add-to-cart; storePrice is the display price.
+                            const displayPrice = product.storePrice ?? product.effectivePrice ?? 0;
+                            const displayCurrency = product.currency ?? currency ?? undefined;
+                            const original = product.originalPrice ?? null;
+                            const discountAmount = original != null && original > displayPrice ? original - displayPrice : 0;
                             return (
                                 <ProductCard
                                     key={product.id}
                                     slugs={slugs}
                                     productId={product.id}
+                                    storeId={product.storeId ?? undefined}
                                     title={product.title}
-                                    price={product.effectivePrice ?? 0}
-                                    originalPrice={product.basePrice ?? 0}
-                                    discount={product.discountValue ?? 0}
+                                    price={displayPrice}
+                                    originalPrice={original ?? 0}
+                                    discount={discountAmount}
+                                    currency={displayCurrency}
                                     inStock={product.availabilityStatus !== "OUT_OF_STOCK"}
                                     ram={ram ? `${ram} RAM` : undefined}
                                     storage={storage ? `${storage} SSD` : undefined}
                                     imageUrl={getPrimaryImage(product.media)}
+                                    expressDelivery={product.expressDelivery}
+                                    storeOptions={product.storeOptions}
+                                    availableInSelectedCountry={product.availableInSelectedCountry}
                                 />
                             );
                         })}
