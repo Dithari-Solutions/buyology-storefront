@@ -433,11 +433,10 @@ export default function CheckoutPage() {
                 methodType: METHOD_MAP[paymentMethod],
                 amount: payAmount,
                 currency: payCurrency,
-                // Payments key the customer by auth_credentials.id (the JWT `sub`), NOT
-                // the users.id principal held in Redux `userId` (`uid`). Sending `uid`
-                // here makes the backend store it as the tx customer, then later 403 on
-                // requireOwnsByCredentialId (it can't resolve uid as a credential id).
-                customerId: getCredentialIdFromAccessToken() ?? userId,
+                // customerId here is the users.id principal (Redux `userId`) — that's what
+                // the backend's checkPaymentReadiness(userRepo.findById) expects. Do NOT
+                // send the auth_credentials.id (`sub`) here: it 500s payment initiation.
+                customerId: userId,
                 customerEmail: profile?.email ?? shippingData.email,
                 customerPhone: shippingData.phone || undefined,
                 billingName: `${shippingData.firstName} ${shippingData.lastName}`.trim(),
