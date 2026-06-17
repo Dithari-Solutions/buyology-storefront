@@ -101,6 +101,45 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
         searchParams.forEach((value, key) => { redirectParams[key] = value; });
         const hasSignedRedirect = !!redirectParams.hmac;
 
+        // Paymob's own verdict, carried (signed) in the redirect. This is a DISPLAY
+        // signal only — the webhook is the authoritative server-side mark. It exists so
+        // the page can resolve a result even when an authed status read isn't possible:
+        // the access token is in-memory and is wiped by the full-page redirect back from
+        // Paymob, so reading status here depends on a silent refresh that may not be ready.
+        const paymobSaysSuccess = redirectParams.success === "true";
+        const paymobSaysFailure = redirectParams.success === "false";
+
+        const showSuccess = (oid: string | null) => {
+            if (cancelled) return;
+            if (oid) setOrderId(oid);
+            if (userId) clearCartApi().catch(() => {});
+            dispatch(clearCart());
+            setStatus("success");
+            if (oid) setTimeout(() => { if (!cancelled) router.push(`/${lang}/orders/${oid}`); }, 3000);
+        };
+
+        const showFailed = () => {
+            if (cancelled) return;
+            setStatus("failed");
+            setErrorMessage(
+                t("payment.error.failed", {
+                    defaultValue: "Payment was declined. Please try a different payment method.",
+                })
+            );
+        };
+
+        // Best-effort: fill in our appOrderId for the "View Order" button without
+        // blocking the success UX (tolerates an expired token — the button falls back
+        // to the order list while orderId stays null).
+        const discoverOrderId = () => {
+            if (orderIdFromUrl) { setOrderId(orderIdFromUrl); return; }
+            if (transactionId) {
+                getTransaction(transactionId)
+                    .then((tx) => { if (!cancelled) setOrderId(tx.appOrderId); })
+                    .catch(() => {});
+            }
+        };
+
         const resolveAndPoll = () => {
             if (cancelled) return;
             if (transactionId) {
@@ -134,39 +173,29 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
             }
         };
 
-        if (hasSignedRedirect) {
-            // Confirm server-side first. If it resolves the order from the signed params
-            // (HMAC-verified), use that result directly — no session/orderId required.
-            // Otherwise fall back to session/orderId polling.
-            confirmPaymentRedirect(redirectParams)
-                .then((tx) => {
-                    if (cancelled) return;
-                    if (!tx) {
-                        resolveAndPoll();
-                        return;
-                    }
-                    setOrderId(tx.appOrderId);
-                    if (tx.status === "SUCCESS") {
-                        if (userId) clearCartApi().catch(() => {});
-                        dispatch(clearCart());
-                        setStatus("success");
-                        setTimeout(() => router.push(`/${lang}/orders/${tx.appOrderId}`), 3000);
-                    } else if (tx.status === "FAILED" || tx.status === "CANCELLED") {
-                        setStatus("failed");
-                        setErrorMessage(
-                            t("payment.error.failed", {
-                                defaultValue: "Payment was declined. Please try a different payment method.",
-                            })
-                        );
-                    } else {
-                        // Resolved but not yet terminal — poll our own transaction id.
-                        pollTransactionStatus(tx.id);
-                    }
-                })
-                .catch(() => { if (!cancelled) resolveAndPoll(); });
-        } else {
+        const run = async () => {
+            if (hasSignedRedirect) {
+                // 1. Authoritative: the server confirms the order from the signed redirect
+                //    (HMAC-verified) and returns it — works without a session or token.
+                //    Available once the backend with /confirm-redirect is deployed.
+                const tx = await confirmPaymentRedirect(redirectParams);
+                if (cancelled) return;
+                if (tx) {
+                    if (tx.status === "SUCCESS") return showSuccess(tx.appOrderId);
+                    if (tx.status === "FAILED" || tx.status === "CANCELLED") return showFailed();
+                    return pollTransactionStatus(tx.id); // resolved but not yet terminal
+                }
+                // 2. No server-side resolution (endpoint absent / invalid signature). Use
+                //    Paymob's signed verdict for display; the webhook records the truth.
+                if (paymobSaysSuccess) { showSuccess(orderIdFromUrl); discoverOrderId(); return; }
+                if (paymobSaysFailure) return showFailed();
+            }
+
+            // 3. No signed redirect (direct/legacy nav): resolve by our session/order id.
             resolveAndPoll();
-        }
+        };
+
+        run();
 
         return () => { cancelled = true; };
     }, [searchParams, pollTransactionStatus, t, dispatch, userId, router, lang]);
@@ -202,7 +231,7 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                             {t("payment.success_desc", { defaultValue: "Thank you for your order. We've received your payment and are processing your order." })}
                         </p>
                         <button
-                            onClick={() => router.push(`/${lang}/orders/${orderId}`)}
+                            onClick={() => router.push(orderId ? `/${lang}/orders/${orderId}` : `/${lang}/orders`)}
                             className="bg-[#402F75] text-white px-8 py-3 rounded-full font-bold text-[14px] hover:bg-[#34265f] transition-colors"
                         >
                             {t("payment.view_order", { defaultValue: "View Order" })}
