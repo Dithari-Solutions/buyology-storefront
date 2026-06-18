@@ -13,7 +13,7 @@ export type OrderStatus =
     | "PICKED_UP"
     | "SHIPPED";
 
-export type DeliveryMethod = "EXPRESS" | "REGULAR";
+export type DeliveryMethod = "EXPRESS" | "REGULAR" | "PICKUP";
 
 export type ActorRole = "SYSTEM" | "ADMIN" | "COURIER";
 
@@ -77,6 +77,10 @@ export interface OrderDetail extends OrderSummary {
     postalCode: string | null;
     deliveryLatitude: number | null;
     deliveryLongitude: number | null;
+    /** Store pickup snapshot (deliveryMethod === "PICKUP"). */
+    pickupStoreId?: string | null;
+    pickupStoreName?: string | null;
+    pickupStoreAddress?: string | null;
     storeLatitude: number | null;
     storeLongitude: number | null;
     subtotal: number;
@@ -120,7 +124,10 @@ export interface PaginatedChat {
 
 export interface CreateOrderPayload {
     cartId: string;
-    addressId: string;
+    /** Required for EXPRESS/REGULAR delivery; omitted for PICKUP. */
+    addressId?: string;
+    /** Required for PICKUP: the store the customer collects from. */
+    pickupStoreId?: string;
     deliveryMethod: DeliveryMethod;
     shippingFee?: number;
     couponCode?: string;

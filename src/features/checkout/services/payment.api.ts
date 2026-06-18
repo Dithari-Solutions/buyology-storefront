@@ -12,7 +12,9 @@ export interface InitiatePaymentPayload {
     /** Optional — omitted for Buy Now, where the order isn't tied to the user's cart. */
     cartId?: string;
     addressId?: string;
-    deliveryMethod?: "EXPRESS" | "REGULAR";
+    /** Store pickup: the chosen store the customer collects from (deliveryMethod === "PICKUP"). */
+    pickupStoreId?: string;
+    deliveryMethod?: "EXPRESS" | "REGULAR" | "PICKUP";
     shippingFee?: number;
     methodType: "CARD" | "TABBY" | "TAMARA";
     amount: number;

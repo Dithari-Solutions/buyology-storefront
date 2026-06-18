@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { ShippingFormData } from "../types";
 import type { Address, CreateAddressPayload, AddressLabel } from "@/features/profile/types";
 import { CheckIcon } from "@/shared/icons";
+import { selectSelectedCountryCode, selectSelectedCountry } from "@/features/country/store/countrySlice";
+import PickupStoreSelector from "./PickupStoreSelector";
 import dynamic from "next/dynamic";
 
 const LocationPicker = dynamic(() => import("@/features/map/components/LocationPicker"), { ssr: false });
@@ -54,6 +57,8 @@ export interface ShippingStepProps {
     profileEmail?: string;
     profileName?: string;
     phoneVerified?: boolean;
+    /** Store pickup is offered for cart checkout only (not Buy Now). Defaults to true. */
+    allowPickup?: boolean;
     onSaveAddress: (payload: CreateAddressPayload) => Promise<Address>;
 }
 
@@ -65,9 +70,17 @@ export default function ShippingStep({
     profileEmail,
     profileName,
     phoneVerified,
+    allowPickup = true,
     onSaveAddress,
 }: ShippingStepProps) {
     const { t } = useTranslation("checkout");
+
+    // Fulfillment mode: deliver to an address, or pick up from a store.
+    const selectedCountryCode = useSelector(selectSelectedCountryCode);
+    const selectedCountry = useSelector(selectSelectedCountry);
+    const [fulfillment, setFulfillment] = useState<"DELIVERY" | "PICKUP">(initialData?.fulfillment ?? "DELIVERY");
+    const [pickupStoreId, setPickupStoreId] = useState<string | null>(initialData?.pickupStoreId ?? null);
+    const [pickupError, setPickupError] = useState("");
 
     // Contact — prefilled from the user's profile (they confirm or edit).
     const [email, setEmail] = useState(initialData?.email ?? profileEmail ?? "");
@@ -135,9 +148,37 @@ export default function ShippingStep({
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setEmailError("");
+        setPickupError("");
 
         if (!email.trim()) { setEmailError(t("validation.required")); return; }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setEmailError(t("validation.invalidEmail")); return; }
+
+        // ── Store pickup: no address required, just a chosen store ──
+        if (fulfillment === "PICKUP") {
+            if (!pickupStoreId) {
+                setPickupError(t("pickup.selectError", { defaultValue: "Please choose a store to pick up from." }));
+                return;
+            }
+            const [pf, ...pl] = (profileName ?? "").trim().split(" ");
+            onContinue({
+                email,
+                phone: profilePhone ?? "",
+                firstName: pf ?? "",
+                lastName: pl.join(" "),
+                streetAddress: "",
+                apartment: "",
+                country: selectedCountryCode,
+                city: "",
+                postalCode: "",
+                saveInfo: false,
+                addressId: undefined,
+                latitude: null,
+                longitude: null,
+                fulfillment: "PICKUP",
+                pickupStoreId,
+            });
+            return;
+        }
 
         if (showAddForm) {
             // Validate new address form
@@ -251,8 +292,50 @@ export default function ShippingStep({
 
             {/* ── Delivery Address ─────────────────────────────────────────── */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
-                <h2 className="text-[16px] font-bold text-gray-900 mb-5">{t("address.heading")}</h2>
+                {/* Fulfillment toggle: deliver vs pick up from store */}
+                {allowPickup && (
+                <div className="flex gap-2 mb-5">
+                    {([
+                        ["DELIVERY", t("fulfillment.delivery", { defaultValue: "Deliver to me" })],
+                        ["PICKUP", t("fulfillment.pickup", { defaultValue: "Pick up from store" })],
+                    ] as const).map(([mode, label]) => (
+                        <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setFulfillment(mode)}
+                            className={`flex-1 px-4 py-2.5 rounded-xl text-[13px] font-semibold border-2 transition-all cursor-pointer ${
+                                fulfillment === mode
+                                    ? "bg-[#402F75] text-white border-[#402F75]"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#402F75]"
+                            }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+                )}
 
+                <h2 className="text-[16px] font-bold text-gray-900 mb-5">
+                    {fulfillment === "PICKUP"
+                        ? t("pickup.heading", { defaultValue: "Choose a pickup store" })
+                        : t("address.heading")}
+                </h2>
+
+                {fulfillment === "PICKUP" ? (
+                    <div className="flex flex-col gap-3">
+                        <p className="text-[13px] text-gray-500">
+                            {t("pickup.subheading", { defaultValue: "Collect your order from one of our stores in your country — no delivery fee." })}
+                        </p>
+                        <PickupStoreSelector
+                            countryCode={selectedCountryCode}
+                            countryName={selectedCountry?.name}
+                            selectedStoreId={pickupStoreId}
+                            onSelect={(id) => { setPickupStoreId(id); setPickupError(""); }}
+                        />
+                        {pickupError && <p className="text-[12px] text-red-500">{pickupError}</p>}
+                    </div>
+                ) : (
+                <>
                 {/* Saved address cards */}
                 {savedAddresses.length > 0 && !showAddForm && (
                     <div className="flex flex-col gap-3 mb-4">
@@ -498,6 +581,8 @@ export default function ShippingStep({
 
                         {saveError && <p className="text-[12px] text-red-500">{saveError}</p>}
                     </div>
+                )}
+                </>
                 )}
             </div>
 

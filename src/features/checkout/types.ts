@@ -12,6 +12,10 @@ export interface ShippingFormData {
     addressId?: string;
     latitude?: number | null;
     longitude?: number | null;
+    /** "DELIVERY" (default) ships to the address; "PICKUP" collects from a store. */
+    fulfillment?: "DELIVERY" | "PICKUP";
+    /** Set when fulfillment === "PICKUP": the store the customer collects from. */
+    pickupStoreId?: string;
 }
 
 export type PaymentMethod = "card" | "tabby" | "tamara" | "credit";

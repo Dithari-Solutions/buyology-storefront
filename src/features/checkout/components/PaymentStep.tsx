@@ -47,7 +47,7 @@ const COUNTRY_NAMES: Record<string, string> = {
 
 interface PaymentStepProps {
     shipping: ShippingFormData;
-    deliveryMethod: "EXPRESS" | "REGULAR";
+    deliveryMethod: "EXPRESS" | "REGULAR" | "PICKUP";
     /** True when Express may be offered (≥1 quick-eligible item AND map coordinates). */
     expressEligible?: boolean;
     /** True when ≥1 cart item is quick-delivery eligible. */
@@ -73,6 +73,7 @@ interface PaymentStepProps {
 
 export default function PaymentStep({ shipping, deliveryMethod, expressEligible = false, hasExpressItem = false, hasCoords = false, mixedCart = false, onDeliveryMethodChange, onEdit, onPlaceOrder, isSubmitting, userId, currency, orderTotalOverride }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
+    const isPickup = deliveryMethod === "PICKUP";
     // Payment method for the amount due (B2B credit is a separate modifier, not a method).
     const [selected, setSelected] = useState<Exclude<PaymentMethod, "credit">>("card");
     const totals = useSelector(selectCartTotals);
@@ -178,21 +179,30 @@ export default function PaymentStep({ shipping, deliveryMethod, expressEligible 
                             </svg>
                         </div>
                         <div>
-                            <p className="text-[12px] font-semibold text-gray-500 mb-1">{t("shippingTo")}</p>
+                            <p className="text-[12px] font-semibold text-gray-500 mb-1">
+                                {isPickup ? t("pickup.summaryLabel", { defaultValue: "Pickup from store" }) : t("shippingTo")}
+                            </p>
                             <p className="text-[13px] font-bold text-gray-800">
                                 {shipping.firstName} {shipping.lastName}
                             </p>
-                            <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">
-                                {shipping.streetAddress}
-                                {shipping.apartment && `, ${shipping.apartment}`}
-                                {" · "}
-                                {shipping.city}{shipping.postalCode && `, ${shipping.postalCode}`}{" · "}{countryName}
-                            </p>
+                            {isPickup ? (
+                                <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">
+                                    {t("pickup.summaryNote", { defaultValue: "You'll collect this order from your chosen store. We'll email you when it's ready." })}
+                                </p>
+                            ) : (
+                                <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">
+                                    {shipping.streetAddress}
+                                    {shipping.apartment && `, ${shipping.apartment}`}
+                                    {" · "}
+                                    {shipping.city}{shipping.postalCode && `, ${shipping.postalCode}`}{" · "}{countryName}
+                                </p>
+                            )}
                             {shipping.email && (
                                 <p className="text-[12px] text-gray-400 mt-0.5">{shipping.email}{shipping.phone && ` · ${shipping.phone}`}</p>
                             )}
 
-                            {/* ── Delivery method chooser ── */}
+                            {/* ── Delivery method chooser (hidden for store pickup) ── */}
+                            {!isPickup && (
                             <div className="mt-4">
                                 <p className="text-[12px] font-semibold text-gray-500 mb-2">{t("delivery.heading", { defaultValue: "Delivery method" })}</p>
                                 <div className="grid grid-cols-2 gap-2">
@@ -271,6 +281,7 @@ export default function PaymentStep({ shipping, deliveryMethod, expressEligible 
                                     </div>
                                 )}
                             </div>
+                            )}
                         </div>
                     </div>
                     <button

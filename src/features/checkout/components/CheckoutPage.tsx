@@ -186,9 +186,13 @@ export default function CheckoutPage() {
     const expressEligible = hasExpressItem && hasCoords;
     // A cart that mixes quick-eligible and regular-only items: we still proceed, just inform the shopper.
     const mixedCart = !isBuyNow && cartItems.some((i) => i.quickDelivery) && cartItems.some((i) => !i.quickDelivery);
-    // Effective method sent to the order: the customer's choice when express is eligible (default
-    // Express), otherwise Regular.
-    const deliveryMethod: "EXPRESS" | "REGULAR" = expressEligible ? (deliveryChoice ?? "EXPRESS") : "REGULAR";
+    // Store pickup short-circuits the delivery method (no courier, no shipping fee).
+    const isPickup = shippingData?.fulfillment === "PICKUP";
+    // Effective method sent to the order: PICKUP when chosen; else the customer's choice when
+    // express is eligible (default Express), otherwise Regular.
+    const deliveryMethod: "EXPRESS" | "REGULAR" | "PICKUP" = isPickup
+        ? "PICKUP"
+        : expressEligible ? (deliveryChoice ?? "EXPRESS") : "REGULAR";
 
     // In Buy Now mode the summary/payment use the single product instead of the cart.
     const buyNowSubtotal = buyNowItem ? buyNowItem.price * buyNowItem.quantity : 0;
@@ -310,7 +314,11 @@ export default function CheckoutPage() {
 
         try {
             if (!isBuyNow && !cartId) throw new Error("No active cart found. Please add items and try again.");
-            if (!shippingData.addressId) throw new Error("Please select a delivery address.");
+            if (isPickup) {
+                if (!shippingData.pickupStoreId) throw new Error("Please choose a store to pick up from.");
+            } else if (!shippingData.addressId) {
+                throw new Error("Please select a delivery address.");
+            }
 
             let finalShippingFee: number;
             let orderId: string;
@@ -337,8 +345,9 @@ export default function CheckoutPage() {
                     productId: buyNowItem.productId,
                     storeId: buyNowItem.storeId,
                     quantity: buyNowItem.quantity,
-                    addressId: shippingData.addressId,
-                    deliveryMethod,
+                    addressId: shippingData.addressId!,
+                    // Buy Now never uses store pickup (the pickup toggle is hidden in that mode).
+                    deliveryMethod: deliveryMethod === "PICKUP" ? "REGULAR" : deliveryMethod,
                 });
                 orderId = order.id;
                 finalShippingFee = order.shippingFee ?? 0;
@@ -355,7 +364,8 @@ export default function CheckoutPage() {
 
                 // Step 1 — Checkout the cart (ACTIVE → CHECKED_OUT)
                 const checkedOutCart = await checkoutCart();
-                finalShippingFee = checkedOutCart.shippingFee ?? shippingFee;
+                // Store pickup has no shipping fee; the backend enforces 0 too.
+                finalShippingFee = isPickup ? 0 : (checkedOutCart.shippingFee ?? shippingFee);
                 dispatch(setShippingFee(finalShippingFee));
 
                 // Step 2 — Create order (cart must be CHECKED_OUT).
@@ -366,7 +376,8 @@ export default function CheckoutPage() {
                 if (!authCredentialId) throw new Error("Your session expired. Please sign in again.");
                 const order = await createOrder(authCredentialId, {
                     cartId: cartId!,
-                    addressId: shippingData.addressId,
+                    addressId: isPickup ? undefined : shippingData.addressId,
+                    pickupStoreId: isPickup ? shippingData.pickupStoreId : undefined,
                     deliveryMethod,
                     shippingFee: finalShippingFee,
                     // Forward the applied promo so the backend applies the discount to the
@@ -417,7 +428,8 @@ export default function CheckoutPage() {
             const result = await initiatePayment({
                 appOrderId: orderId,
                 cartId: payCartId,
-                addressId: shippingData.addressId,
+                addressId: isPickup ? undefined : shippingData.addressId,
+                pickupStoreId: isPickup ? shippingData.pickupStoreId : undefined,
                 deliveryMethod,
                 shippingFee: finalShippingFee,
                 methodType: METHOD_MAP[paymentMethod],
@@ -519,6 +531,7 @@ export default function CheckoutPage() {
                                 profileEmail={profile?.email ?? undefined}
                                 profileName={profile ? `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim() : undefined}
                                 phoneVerified={profile?.phoneVerified ?? undefined}
+                                allowPickup={!isBuyNow}
                                 onSaveAddress={handleSaveAddress}
                             />
                         )}

@@ -299,28 +299,42 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                 onCancelled={setOrder}
                             />
 
-                            {/* Delivery address */}
+                            {/* Delivery address / pickup store */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                 <h2 className="text-[15px] font-bold text-gray-900 mb-4 flex items-center gap-2">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                                         <circle cx="12" cy="10" r="3" />
                                     </svg>
-                                    Delivery Address
+                                    {order.deliveryMethod === "PICKUP" ? "Pickup Store" : "Delivery Address"}
                                 </h2>
-                                <p className="text-[14px] font-semibold text-gray-800">
-                                    {order.recipientFirstName} {order.recipientLastName}
-                                </p>
-                                <p className="text-[13px] text-gray-500 mt-0.5">{order.recipientPhone}</p>
-                                <p className="text-[13px] text-gray-500 mt-1">
-                                    {order.addressLine1}
-                                    {order.addressLine2 ? `, ${order.addressLine2}` : ""}
-                                </p>
-                                <p className="text-[13px] text-gray-500">
-                                    {[order.city, order.state, order.country, order.postalCode]
-                                        .filter(Boolean)
-                                        .join(", ")}
-                                </p>
+                                {order.deliveryMethod === "PICKUP" ? (
+                                    <>
+                                        <p className="text-[14px] font-semibold text-gray-800">
+                                            {order.pickupStoreName || "Store pickup"}
+                                        </p>
+                                        {order.pickupStoreAddress && (
+                                            <p className="text-[13px] text-gray-500 mt-1">{order.pickupStoreAddress}</p>
+                                        )}
+                                        <p className="text-[13px] text-gray-500 mt-0.5">{order.recipientPhone}</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-[14px] font-semibold text-gray-800">
+                                            {order.recipientFirstName} {order.recipientLastName}
+                                        </p>
+                                        <p className="text-[13px] text-gray-500 mt-0.5">{order.recipientPhone}</p>
+                                        <p className="text-[13px] text-gray-500 mt-1">
+                                            {order.addressLine1}
+                                            {order.addressLine2 ? `, ${order.addressLine2}` : ""}
+                                        </p>
+                                        <p className="text-[13px] text-gray-500">
+                                            {[order.city, order.state, order.country, order.postalCode]
+                                                .filter(Boolean)
+                                                .join(", ")}
+                                        </p>
+                                    </>
+                                )}
                                 <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <rect x="1" y="3" width="15" height="13" rx="1" />
@@ -329,7 +343,11 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                         <circle cx="18.5" cy="18.5" r="2.5" />
                                     </svg>
                                     <span className="text-[11px] font-semibold text-gray-500">
-                                        {order.deliveryMethod === "EXPRESS" ? "Express delivery" : "Regular delivery"}
+                                        {order.deliveryMethod === "EXPRESS"
+                                            ? "Express delivery"
+                                            : order.deliveryMethod === "PICKUP"
+                                                ? "Store pickup"
+                                                : "Regular delivery"}
                                     </span>
                                 </div>
                             </div>
