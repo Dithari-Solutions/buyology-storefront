@@ -27,9 +27,9 @@ export default function LocationPicker({ initialCoords, onChange }: LocationPick
     useEffect(() => {
         if (!mapContainerRef.current) return;
 
-        const defaultCenter: [number, number] = initialCoords 
-            ? [initialCoords.lng, initialCoords.lat] 
-            : [49.8671, 40.4093]; // Default Baku
+        const defaultCenter: [number, number] = initialCoords
+            ? [initialCoords.lng, initialCoords.lat]
+            : [55.2708, 25.2048]; // Default Dubai
 
         const map = new maplibregl.Map({
             container: mapContainerRef.current,

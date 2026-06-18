@@ -224,9 +224,16 @@ function OrderCard({ order, lang }: { order: OrderSummary; lang: string }) {
                         <span className="flex items-center gap-1.5"><UserIcon /> {recipient}</span>
                     )}
                     <span className="flex items-center gap-1.5">
-                        <TruckIcon /> {order.deliveryMethod === "EXPRESS" ? "Express delivery" : "Regular delivery"}
+                        <TruckIcon />{" "}
+                        {order.deliveryMethod === "EXPRESS"
+                            ? "Express delivery"
+                            : order.deliveryMethod === "PICKUP"
+                                ? "Store pickup"
+                                : "Regular delivery"}
                     </span>
-                    <span className="flex items-center gap-1.5"><PinIcon /> {order.city}, {order.country}</span>
+                    {order.deliveryMethod !== "PICKUP" && (
+                        <span className="flex items-center gap-1.5"><PinIcon /> {order.city}, {order.country}</span>
+                    )}
                     {order.trackingCode && (
                         <span className="flex items-center gap-1.5 font-medium text-gray-600">
                             {order.carrierName ?? "Tracking"}: {order.trackingCode}
@@ -430,6 +437,7 @@ export default function OrdersPage() {
                                 <option value="">All Delivery Methods</option>
                                 <option value="EXPRESS">Express delivery</option>
                                 <option value="REGULAR">Regular delivery</option>
+                                <option value="PICKUP">Store pickup</option>
                             </select>
                             <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="6 9 12 15 18 9" />
