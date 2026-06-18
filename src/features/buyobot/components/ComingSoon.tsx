@@ -133,7 +133,7 @@ export default function ComingSoon() {
                 >
                     {t("subtitle", {
                         defaultValue:
-                            "BuyoBot is Buyology's robotics initiative — intelligent machines engineered to power the future of retail, from automated fulfilment to smarter logistics. We're building it now.",
+                            "BuyoBot is Buyology's robotics — a new range of smart robots coming soon to our store. From home helpers to next-gen companions, you'll be able to shop them right here on Buyology.",
                     })}
                 </motion.p>
 
@@ -145,7 +145,7 @@ export default function ComingSoon() {
                     className="mt-9 w-full max-w-[440px]"
                 >
                     <p className="text-[14px] font-semibold text-[#1a0f40] mb-3">
-                        {t("newsletterHeading", { defaultValue: "Subscribe to our newsletter to be the first to know when BuyoBot goes live." })}
+                        {t("newsletterHeading", { defaultValue: "Subscribe to our newsletter to be the first to shop BuyoBot robots when they land in our store." })}
                     </p>
 
                     {subscribed ? (
@@ -156,7 +156,7 @@ export default function ComingSoon() {
                                 </svg>
                             </span>
                             <p className="text-[14px] font-semibold text-gray-800 text-left">
-                                {t("successMessage", { defaultValue: "Thank you — you're on the list. We'll let you know the moment BuyoBot launches." })}
+                                {t("successMessage", { defaultValue: "Thank you — you're on the list. We'll let you know the moment BuyoBot robots are available to shop." })}
                             </p>
                         </div>
                     ) : (

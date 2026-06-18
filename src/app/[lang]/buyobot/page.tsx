@@ -5,7 +5,7 @@ import ComingSoon from "@/features/buyobot/components/ComingSoon";
 export const metadata = {
     title: "BuyoBot — Buyology Robotics | Coming Soon",
     description:
-        "BuyoBot is Buyology's robotics initiative — intelligent machines engineered to power the future of retail, from automated fulfilment to smarter logistics. Coming soon.",
+        "BuyoBot is Buyology's robotics — a new range of smart robots coming soon to shop on Buyology, from home helpers to next-gen companions. Subscribe to be the first to know.",
     robots: { index: false, follow: true },
 };
 
