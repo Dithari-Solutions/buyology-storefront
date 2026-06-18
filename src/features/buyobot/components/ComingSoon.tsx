@@ -70,7 +70,7 @@ export default function ComingSoon() {
                 transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             />
 
-            <div className="relative z-10 flex flex-col items-center text-center max-w-[560px] w-full">
+            <div className="relative z-10 flex flex-col items-center text-center max-w-[640px] w-full">
                 {/* Badge */}
                 <motion.span
                     initial={{ opacity: 0, y: 10 }}
@@ -85,153 +85,110 @@ export default function ComingSoon() {
                     {t("badge", { defaultValue: "Coming Soon" })}
                 </motion.span>
 
+                {/* Robot mark */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 0.05 }}
+                    className="relative mt-8 mb-2"
+                >
+                    <motion.div
+                        className="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-3xl flex items-center justify-center shadow-2xl"
+                        style={{ background: "linear-gradient(135deg, #402F75 0%, #5B3FA8 100%)" }}
+                        animate={{ y: [0, -8, 0] }}
+                        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#FBBB14" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="7" width="18" height="13" rx="3" />
+                            <path d="M12 7V3" />
+                            <circle cx="12" cy="3" r="1" fill="#FBBB14" />
+                            <circle cx="9" cy="13" r="1.4" fill="#FBBB14" stroke="none" />
+                            <circle cx="15" cy="13" r="1.4" fill="#FBBB14" stroke="none" />
+                            <path d="M9 17h6" />
+                            <path d="M3 12H1" />
+                            <path d="M23 12h-2" />
+                        </svg>
+                    </motion.div>
+                </motion.div>
+
                 {/* Title */}
                 <motion.h1
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.55, delay: 0.1 }}
-                    className="mt-6 text-[30px] sm:text-[40px] md:text-[48px] font-extrabold leading-[1.05] text-[#1a0f40]"
+                    className="mt-6 text-[30px] sm:text-[40px] md:text-[52px] font-extrabold leading-[1.05] text-[#1a0f40]"
                 >
-                    {t("title", { defaultValue: "BuyoBot is" })}{" "}
+                    {t("title", { defaultValue: "Meet BuyoBot," })}{" "}
                     <span style={{ color: "#FBBB14" }}>
-                        {t("titleAccent", { defaultValue: "almost here" })}
+                        {t("titleAccent", { defaultValue: "Buyology Robotics" })}
                     </span>
                 </motion.h1>
 
-                {/* Chat window */}
-                <motion.div
-                    initial={{ opacity: 0, y: 18, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.6, delay: 0.18 }}
-                    className="mt-8 w-full rounded-3xl bg-white border border-[#402F75]/10 shadow-2xl shadow-[#402F75]/10 overflow-hidden text-left"
+                {/* Subtitle */}
+                <motion.p
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.55, delay: 0.15 }}
+                    className="mt-5 text-[15px] md:text-[17px] text-gray-600 max-w-[560px] leading-relaxed"
                 >
-                    {/* Chat header */}
-                    <div
-                        className="flex items-center gap-3 px-5 py-4"
-                        style={{ background: "linear-gradient(135deg, #402F75 0%, #5B3FA8 100%)" }}
-                    >
-                        <motion.div
-                            className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/10 shrink-0"
-                            animate={{ y: [0, -3, 0] }}
-                            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                        >
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FBBB14" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="7" width="18" height="13" rx="3" />
-                                <path d="M12 7V3" />
-                                <circle cx="12" cy="3" r="1" fill="#FBBB14" />
-                                <circle cx="9" cy="13" r="1.4" fill="#FBBB14" stroke="none" />
-                                <circle cx="15" cy="13" r="1.4" fill="#FBBB14" stroke="none" />
-                                <path d="M9 17h6" />
-                            </svg>
-                        </motion.div>
-                        <div className="min-w-0">
-                            <p className="text-white font-bold text-[15px] leading-tight">
-                                {t("botName", { defaultValue: "BuyoBot" })}
-                            </p>
-                            <span className="inline-flex items-center gap-1.5 text-[12px] text-white/70">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#FBBB14] opacity-75 animate-ping" />
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FBBB14]" />
-                                </span>
-                                {t("botStatus", { defaultValue: "Coming soon" })}
-                            </span>
-                        </div>
-                    </div>
+                    {t("subtitle", {
+                        defaultValue:
+                            "BuyoBot is Buyology's robotics initiative — intelligent machines engineered to power the future of retail, from automated fulfilment to smarter logistics. We're building it now.",
+                    })}
+                </motion.p>
 
-                    {/* Chat body */}
-                    <div className="px-4 sm:px-5 py-5 space-y-3 bg-[#F8F8FB]">
-                        {/* Bot message */}
-                        <div className="flex items-end gap-2">
-                            <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-[#402F75]">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FBBB14" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="7" width="18" height="13" rx="3" />
-                                    <path d="M12 7V3" />
-                                    <circle cx="9" cy="13" r="1.4" fill="#FBBB14" stroke="none" />
-                                    <circle cx="15" cy="13" r="1.4" fill="#FBBB14" stroke="none" />
-                                </svg>
-                            </div>
-                            <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-white border border-gray-100 shadow-sm px-4 py-3">
-                                <p className="text-[14px] leading-relaxed text-gray-700">
-                                    {t("chatMessage", {
-                                        defaultValue:
-                                            "Hello, I'm BuyoBot — your AI shopping assistant. I'm not quite ready yet, as our team is putting the finishing touches in place. Subscribe to our newsletter and we'll notify you the moment I'm available to help you find the right device, compare deals, and answer your questions.",
-                                    })}
-                                </p>
-                            </div>
-                        </div>
+                {/* Newsletter signup */}
+                <motion.div
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.55, delay: 0.2 }}
+                    className="mt-9 w-full max-w-[440px]"
+                >
+                    <p className="text-[14px] font-semibold text-[#1a0f40] mb-3">
+                        {t("newsletterHeading", { defaultValue: "Subscribe to our newsletter to be the first to know when BuyoBot goes live." })}
+                    </p>
 
-                        {/* Success message from bot */}
-                        {subscribed && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4 }}
-                                className="flex items-end gap-2"
-                            >
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-[#402F75]">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FBBB14" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                        <rect x="3" y="7" width="18" height="13" rx="3" />
-                                        <path d="M12 7V3" />
-                                        <circle cx="9" cy="13" r="1.4" fill="#FBBB14" stroke="none" />
-                                        <circle cx="15" cy="13" r="1.4" fill="#FBBB14" stroke="none" />
-                                    </svg>
-                                </div>
-                                <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-[#402F75] shadow-sm px-4 py-3">
-                                    <p className="text-[14px] leading-relaxed text-white">
-                                        {t("chatSuccess", {
-                                            defaultValue:
-                                                "Thank you. You're on the list — we'll be in touch as soon as I go live.",
-                                        })}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        )}
-                    </div>
-
-                    {/* Composer */}
-                    <div className="px-4 sm:px-5 py-4 border-t border-gray-100 bg-white">
-                        {subscribed ? (
-                            <div className="flex items-center justify-center gap-2 text-[14px] font-semibold text-[#402F75]">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                    {subscribed ? (
+                        <div className="flex items-center justify-center gap-3 bg-white rounded-2xl px-6 py-4 shadow-sm border border-[#402F75]/10">
+                            <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#402F75] shrink-0">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                                     <polyline points="20 6 9 17 4 12" />
                                 </svg>
-                                {t("subscribedNote", { defaultValue: "You'll be notified at launch." })}
+                            </span>
+                            <p className="text-[14px] font-semibold text-gray-800 text-left">
+                                {t("successMessage", { defaultValue: "Thank you — you're on the list. We'll let you know the moment BuyoBot launches." })}
+                            </p>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+                            <div className="flex flex-col sm:flex-row items-stretch gap-2">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => { setEmail(e.target.value); setEmailError(null); }}
+                                    placeholder={t("emailPlaceholder", { defaultValue: "Enter your email address" })}
+                                    className={`flex-1 bg-white border rounded-full px-5 py-3 text-[14px] text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#402F75]/15 transition-all ${emailError ? "border-red-400 focus:border-red-400" : "border-gray-200 focus:border-[#402F75]"}`}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#402F75] text-white text-[14px] font-bold hover:bg-[#33245f] transition-colors shadow-lg shadow-[#402F75]/25 disabled:opacity-50 whitespace-nowrap"
+                                >
+                                    {loading ? (
+                                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                                            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                                        </svg>
+                                    ) : (
+                                        t("notifyBtn", { defaultValue: "Notify me" })
+                                    )}
+                                </button>
                             </div>
-                        ) : (
-                            <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => { setEmail(e.target.value); setEmailError(null); }}
-                                        placeholder={t("emailPlaceholder", { defaultValue: "Enter your email to get notified" })}
-                                        className={`flex-1 bg-[#F8F8FB] border rounded-full px-4 py-2.5 text-[14px] text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#402F75]/15 transition-all ${emailError ? "border-red-400 focus:border-red-400" : "border-gray-200 focus:border-[#402F75]"}`}
-                                    />
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        aria-label={t("notifyBtn", { defaultValue: "Notify me" })}
-                                        className="flex items-center justify-center w-10 h-10 rounded-full bg-[#402F75] text-white hover:bg-[#33245f] transition-colors shadow-lg shadow-[#402F75]/25 disabled:opacity-50 shrink-0"
-                                    >
-                                        {loading ? (
-                                            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" className="opacity-25" />
-                                                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                                            </svg>
-                                        ) : (
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                <line x1="22" y1="2" x2="11" y2="13" />
-                                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                                            </svg>
-                                        )}
-                                    </button>
-                                </div>
-                                {emailError && (
-                                    <p className="text-red-500 text-[12px] px-1">{emailError}</p>
-                                )}
-                            </form>
-                        )}
-                    </div>
+                            {emailError && (
+                                <p className="text-red-500 text-[12px] text-center sm:text-left px-1">{emailError}</p>
+                            )}
+                        </form>
+                    )}
                 </motion.div>
 
                 {/* Actions */}
@@ -239,7 +196,7 @@ export default function ComingSoon() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.55, delay: 0.28 }}
-                    className="mt-7 flex flex-col sm:flex-row items-center gap-3"
+                    className="mt-9 flex flex-col sm:flex-row items-center gap-3"
                 >
                     <Link
                         href={`/${lang}`}

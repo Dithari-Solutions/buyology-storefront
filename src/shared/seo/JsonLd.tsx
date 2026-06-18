@@ -18,10 +18,10 @@ export function organizationJsonLd() {
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
     sameAs: [
-      "https://www.facebook.com/buyology",
-      "https://www.instagram.com/buyology",
-      "https://twitter.com/buyology",
-      "https://www.linkedin.com/company/buyology",
+      "https://www.facebook.com/buyologyuae/",
+      "http://instagram.com/buyologyuae/",
+      "https://www.linkedin.com/company/buyologytech/posts/?feedView=all",
+      "https://www.youtube.com/@Buyologytech",
     ],
     contactPoint: [
       {
