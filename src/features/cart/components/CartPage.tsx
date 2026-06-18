@@ -12,6 +12,7 @@ import GuestPrompt from "@/shared/components/GuestPrompt";
 import CartItems from "./CartItems";
 import OrderSummary from "./OrderSummary";
 import PopularForYou from "./PopularForYou";
+import B2bUpsell from "./B2bUpsell";
 import { selectCartItems, selectSavedItems, selectCartLoading, fetchCartThunk, fetchCartProductsThunk } from "../store/cartSlice";
 import type { ApiCartResponse } from "../types";
 
@@ -97,6 +98,10 @@ export default function CartPage() {
 
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
     const cartCount = cartItems.length;
+    // Highest single-line quantity — a customer with 6+ of one product is likely buying for
+    // a business, so surface the B2B membership upsell.
+    const maxLineQty = cartItems.reduce((max, i) => Math.max(max, i.quantity), 0);
+    const showB2bUpsell = maxLineQty > 5;
 
     // Not signed in → prompt to sign in / create account.
     if (authRestored && !userId) {
@@ -221,6 +226,7 @@ export default function CartPage() {
                         <EmptyCartState lang={lang} />
                     ) : (
                         <>
+                            {showB2bUpsell && <B2bUpsell lang={lang} qty={maxLineQty} />}
                             <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px] 2xl:grid-cols-[1fr_440px] gap-4 sm:gap-6 items-start">
                                 <CartItems />
                                 <OrderSummary />
