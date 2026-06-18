@@ -177,6 +177,9 @@ export default function CheckoutPage() {
     const [orderPlaced, setOrderPlaced] = useState(false);
     // Customer's explicit delivery choice (null = default to Express when it's eligible).
     const [deliveryChoice, setDeliveryChoice] = useState<"EXPRESS" | "REGULAR" | null>(null);
+    // Live fulfillment mode lifted from ShippingStep so the order summary updates the moment
+    // the shopper toggles "Pick up from store" (pickup has no shipping fee).
+    const [fulfillment, setFulfillment] = useState<"DELIVERY" | "PICKUP">("DELIVERY");
 
     // Per-item quick-delivery eligibility (the item's store is within the 30-min radius of the
     // user's coords — computed by the backend on the cart item's `quickDelivery` flag).
@@ -187,7 +190,9 @@ export default function CheckoutPage() {
     // A cart that mixes quick-eligible and regular-only items: we still proceed, just inform the shopper.
     const mixedCart = !isBuyNow && cartItems.some((i) => i.quickDelivery) && cartItems.some((i) => !i.quickDelivery);
     // Store pickup short-circuits the delivery method (no courier, no shipping fee).
-    const isPickup = shippingData?.fulfillment === "PICKUP";
+    // Use the live lifted state so the summary reacts immediately, falling back to the
+    // submitted shipping data (e.g. on the payment step / retries).
+    const isPickup = fulfillment === "PICKUP" || shippingData?.fulfillment === "PICKUP";
     // Effective method sent to the order: PICKUP when chosen; else the customer's choice when
     // express is eligible (default Express), otherwise Regular.
     const deliveryMethod: "EXPRESS" | "REGULAR" | "PICKUP" = isPickup
@@ -214,6 +219,17 @@ export default function CheckoutPage() {
             shipping: buyNowItem.shippingFee,
             promoDiscount: 0,
             total: buyNowSubtotal + buyNowItem.shippingFee,
+        }
+        : undefined;
+
+    // Cart checkout with store pickup: zero the shipping in the summary/payment total.
+    // (cartTotals.total already nets the promo discount, so subtract its shipping to drop the fee.)
+    const pickupSummaryTotals = isPickup && !isBuyNow
+        ? {
+            subtotal: totals.subtotal,
+            shipping: 0,
+            promoDiscount: totals.promoDiscount,
+            total: parseFloat((totals.total - totals.shipping).toFixed(2)),
         }
         : undefined;
 
@@ -532,6 +548,7 @@ export default function CheckoutPage() {
                                 profileName={profile ? `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim() : undefined}
                                 phoneVerified={profile?.phoneVerified ?? undefined}
                                 allowPickup={!isBuyNow}
+                                onFulfillmentChange={setFulfillment}
                                 onSaveAddress={handleSaveAddress}
                             />
                         )}
@@ -549,7 +566,13 @@ export default function CheckoutPage() {
                                 isSubmitting={isSubmitting}
                                 userId={userId}
                                 currency={summaryCurrency}
-                                orderTotalOverride={isBuyNow && summaryTotals ? summaryTotals.total : undefined}
+                                orderTotalOverride={
+                                    pickupSummaryTotals
+                                        ? pickupSummaryTotals.total
+                                        : isBuyNow && summaryTotals
+                                            ? summaryTotals.total
+                                            : undefined
+                                }
                             />
                         )}
                     </div>
@@ -557,7 +580,7 @@ export default function CheckoutPage() {
                     {/* Right column */}
                     <CheckoutSummary
                         items={summaryItems}
-                        totals={summaryTotals}
+                        totals={pickupSummaryTotals ?? summaryTotals}
                         currency={isBuyNow ? summaryCurrency : undefined}
                     />
                 </div>

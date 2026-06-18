@@ -59,6 +59,8 @@ export interface ShippingStepProps {
     phoneVerified?: boolean;
     /** Store pickup is offered for cart checkout only (not Buy Now). Defaults to true. */
     allowPickup?: boolean;
+    /** Notifies the parent when the shopper switches between delivery and pickup (to update the summary live). */
+    onFulfillmentChange?: (mode: "DELIVERY" | "PICKUP") => void;
     onSaveAddress: (payload: CreateAddressPayload) => Promise<Address>;
 }
 
@@ -71,6 +73,7 @@ export default function ShippingStep({
     profileName,
     phoneVerified,
     allowPickup = true,
+    onFulfillmentChange,
     onSaveAddress,
 }: ShippingStepProps) {
     const { t } = useTranslation("checkout");
@@ -81,6 +84,18 @@ export default function ShippingStep({
     const [fulfillment, setFulfillment] = useState<"DELIVERY" | "PICKUP">(initialData?.fulfillment ?? "DELIVERY");
     const [pickupStoreId, setPickupStoreId] = useState<string | null>(initialData?.pickupStoreId ?? null);
     const [pickupError, setPickupError] = useState("");
+
+    function changeFulfillment(mode: "DELIVERY" | "PICKUP") {
+        setFulfillment(mode);
+        onFulfillmentChange?.(mode);
+    }
+
+    // Sync the initial mode up to the parent so the summary reflects it on first render
+    // (e.g. when returning to this step with a previously-chosen pickup).
+    useEffect(() => {
+        onFulfillmentChange?.(fulfillment);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Contact — prefilled from the user's profile (they confirm or edit).
     const [email, setEmail] = useState(initialData?.email ?? profileEmail ?? "");
@@ -302,7 +317,7 @@ export default function ShippingStep({
                         <button
                             key={mode}
                             type="button"
-                            onClick={() => setFulfillment(mode)}
+                            onClick={() => changeFulfillment(mode)}
                             className={`flex-1 px-4 py-2.5 rounded-xl text-[13px] font-semibold border-2 transition-all cursor-pointer ${
                                 fulfillment === mode
                                     ? "bg-[#402F75] text-white border-[#402F75]"
