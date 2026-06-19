@@ -10,8 +10,6 @@ import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import type { RootState } from "@/store";
 import { getBanners, type ApiBanner } from "@/features/home/services/bannerService";
 
-const CATEGORY_KEYS = ["laptops", "smartphones", "tablets", "gaming", "accessories"] as const;
-
 const isExternal = (url: string) => /^https?:\/\//i.test(url);
 
 function buildInternalHref(lang: Lang, url: string): string {
@@ -153,7 +151,7 @@ export default function Banner() {
                     <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(15,10,40,0.6) 0%, transparent 42%)" }} />
                 </>
             )}
-            {/* Top scrim so the category pills always have a dark floor */}
+            {/* Top scrim for a subtle dark floor along the top edge */}
             <div className="absolute inset-x-0 top-0 h-24" style={{ background: "linear-gradient(to bottom, rgba(15,10,40,0.5) 0%, transparent 100%)" }} />
 
             {/* ── Layer 3: floating accent orbs (aurora state only) ── */}
@@ -166,19 +164,6 @@ export default function Banner() {
 
             {/* ── Layer 4: content ── */}
             <div className="relative z-10 flex flex-col min-h-[280px] sm:min-h-[400px] md:min-h-[530px] lg:min-h-[660px] px-6 sm:px-10 md:px-14 lg:px-16 py-7 sm:py-9 md:py-12">
-
-                {/* Category pills (horizontally scrollable on mobile) */}
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-                    {CATEGORY_KEYS.map((key) => (
-                        <Link
-                            key={key}
-                            href={`/${lang}/${shopSlug}?category=${key}`}
-                            className={`flex-shrink-0 text-white/90 text-[12px] font-medium transition-all px-3 py-1.5 rounded-full bg-[rgba(17,11,38,0.45)] hover:bg-[rgba(17,11,38,0.65)] border border-white/15 hover:border-white/35 backdrop-blur-sm ${focusRing} focus-visible:ring-white/80`}
-                        >
-                            {t(`categories.${key}`)}
-                        </Link>
-                    ))}
-                </div>
 
                 {/* Main: glass panel (start) + app badges (end, desktop) */}
                 <div className="flex-1 grid items-center gap-8 my-6 lg:my-0 lg:grid-cols-[minmax(0,560px)_1fr]">

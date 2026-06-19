@@ -2,8 +2,8 @@ import LegalLayout from "./LegalLayout";
 
 export default function PrivacyPolicyPage() {
     return (
-        <LegalLayout title="Privacy Policy">
-            <p><strong>Buyology FZ Trading LLC</strong></p>
+        <LegalLayout title="Privacy Policy" effectiveDate="19 June, 2026">
+            <p><strong>Buyology FZ Trading LLC</strong><br />United Arab Emirates<br />Version 2.0</p>
 
             <h2>1. Introduction</h2>
             <p>Buyology FZ Trading LLC, incorporated in the United Arab Emirates, together with its affiliated entities operating in the United Arab Emirates, Kingdom of Saudi Arabia, Oman, Qatar, India, and Azerbaijan (collectively referred to as &ldquo;Buyology&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;), respects your privacy and is committed to protecting your personal data.</p>
@@ -36,7 +36,7 @@ export default function PrivacyPolicyPage() {
                 <li>Refund and return records</li>
                 <li>Payment confirmation details</li>
             </ul>
-            <p>We do not store full payment card numbers or CVV details. Payments are securely processed by third-party payment service providers such as Stripe and Tabby (which may change from time to time). We may receive payment confirmation tokens and limited transaction information necessary to confirm payments, process refunds, and prevent fraud.</p>
+            <p>We do not store full payment card numbers or CVV details. Payments are securely processed by our third-party payment service providers, namely Tabby, Tamara, and Paymob (which may change from time to time). We may receive payment confirmation tokens and limited transaction information necessary to confirm payments, process refunds, and prevent fraud.</p>
             <h3>2.3 Seller Verification (KYC) Information</h3>
             <p>If you list products, receive payouts, or participate in refurbishment services as a seller or partner, we may collect:</p>
             <ul>
@@ -119,7 +119,7 @@ export default function PrivacyPolicyPage() {
             <h2>5. Data Sharing</h2>
             <p>We may share personal data with:</p>
             <ul>
-                <li>Payment processors (e.g., Stripe, Tabby)</li>
+                <li>Payment processors &mdash; Tabby, Tamara, and Paymob</li>
                 <li>Independent courier and logistics providers</li>
                 <li>Fulfillment, warehousing, and refurbishment facilities</li>
                 <li>Banking institutions for payouts</li>
@@ -130,7 +130,8 @@ export default function PrivacyPolicyPage() {
                 <li>Regulatory or law enforcement authorities where legally required or necessary to protect rights and safety</li>
             </ul>
             <h3>Delivery Providers</h3>
-            <p>Buyology does not operate in-house delivery services. Orders are fulfilled by independent third-party courier companies. We may share limited personal data (such as your name, delivery address, and contact number) strictly for order fulfillment and delivery updates. Courier partners are contractually required to process personal data only for authorized purposes and in accordance with applicable data protection laws.</p>
+            <p>Buyology does not operate in-house delivery services. Orders are fulfilled by independent third-party courier companies. We may share limited personal data (such as your name, delivery address, and contact number) strictly for order fulfillment and delivery updates.</p>
+            <p>Courier partners are contractually required to process personal data only for authorized purposes and in accordance with applicable data protection laws.</p>
             <p>We do not sell personal data.</p>
 
             <h2>6. International Data Transfers</h2>
@@ -173,25 +174,55 @@ export default function PrivacyPolicyPage() {
             </ul>
             <p>While we take reasonable steps to protect your data, no system can guarantee absolute security.</p>
 
+            <h3>9.1 Data Breach Notification &amp; Public Disclosure</h3>
+            <p>In the event of a personal data breach that is likely to result in a risk to your rights and freedoms, we will:</p>
+            <ul>
+                <li>Notify the competent data protection or regulatory authorities without undue delay, and within the timeframes prescribed by applicable law</li>
+                <li>Notify affected individuals directly (for example, by email or in-app notification) where the breach is likely to result in a high risk to them</li>
+                <li>Make a public disclosure of the breach, where required by applicable law or where direct notification of affected individuals is not reasonably practicable, through a prominent notice on our website or other appropriate public channels</li>
+            </ul>
+            <p>Any such notification will describe, to the extent known, the nature of the breach, the categories of data affected, the likely consequences, the measures taken or proposed to address the breach, and a point of contact for further information. We maintain an internal incident response procedure and keep records of personal data breaches in accordance with applicable law.</p>
+
             <h2>10. Your Rights</h2>
             <p>Subject to applicable law, you may have the right to:</p>
             <ul>
-                <li>Access your personal data</li>
-                <li>Correct inaccurate information</li>
-                <li>Request deletion (subject to legal obligations)</li>
-                <li>Withdraw consent</li>
-                <li>Object to processing (including direct marketing)</li>
-                <li>Request restriction of processing</li>
-                <li>Request data portability, where applicable</li>
-                <li>Lodge a complaint with a competent authority</li>
+                <li>Access &mdash; obtain a copy of the personal data we hold about you</li>
+                <li>Correction &mdash; request correction of inaccurate or incomplete information</li>
+                <li>Deletion (Right to Erasure) &mdash; request deletion of your personal data, as described below</li>
+                <li>Withdrawal of consent &mdash; withdraw consent at any time where processing is based on consent</li>
+                <li>Objection &mdash; object to processing, including for direct marketing purposes</li>
+                <li>Restriction &mdash; request restriction of processing in certain circumstances</li>
+                <li>Data portability &mdash; receive your data in a structured, commonly used, machine-readable format, where applicable</li>
+                <li>Complaint &mdash; lodge a complaint with a competent supervisory authority</li>
             </ul>
-            <p>To exercise your rights, contact: <a href="mailto:support@buyology.com">support@buyology.com</a>. We may verify your identity before responding. We aim to respond within 30 days or within the timeframe required by law. Nothing in this Privacy Policy limits any statutory rights you may have under applicable data protection laws.</p>
+            <h3>10.1 Right to Data Deletion</h3>
+            <p>You may request the deletion of your personal data at any time by contacting us at <a href="mailto:support@buyology.com">support@buyology.com</a> or by using the account deletion option within our website or mobile application, where available.</p>
+            <p>Upon receiving a verified deletion request, we will delete or irreversibly anonymize your personal data without undue delay, except where retention is required or permitted by law, including for:</p>
+            <ul>
+                <li>Compliance with legal, tax, accounting, or regulatory obligations (e.g., transaction and invoice records, KYC documentation)</li>
+                <li>Establishing, exercising, or defending legal claims</li>
+                <li>Fraud prevention, security, and platform integrity purposes</li>
+                <li>Completing transactions, deliveries, refunds, or payouts that are still in progress</li>
+            </ul>
+            <p>Where some data must be retained for the above reasons, we will restrict its processing to those purposes only and delete it once the applicable retention period expires. We will confirm the outcome of your deletion request and inform you of any data we are legally required to retain.</p>
+            <h3>10.2 Exercising Your Rights</h3>
+            <p>To exercise any of your rights, contact: <a href="mailto:support@buyology.com">support@buyology.com</a>. We may verify your identity before responding. We aim to respond within 30 days or within the timeframe required by law. Nothing in this Privacy Policy limits any statutory rights you may have under applicable data protection laws.</p>
 
             <h2>11. Grievance Redressal (India)</h2>
             <p>If you are located in India and have a grievance regarding personal data processing, you may contact the Grievance Officer at <a href="mailto:support@buyology.com">support@buyology.com</a>. We will acknowledge complaints within 7 days and aim to resolve them within 30 days in accordance with applicable law.</p>
 
             <h2>12. Children&rsquo;s Privacy</h2>
-            <p>Our services are intended for individuals aged 18 years or older. We do not knowingly collect personal data from minors. If we become aware that we have collected personal data from a minor without appropriate authorization, we will take steps to delete such data.</p>
+            <p>Our services are intended for individuals aged 18 years or older. We do not knowingly collect, use, or disclose personal data from individuals under the age of 18 (or any higher minimum age required by applicable law in your jurisdiction) without verifiable parental or guardian consent where such consent is required.</p>
+            <h3>12.1 Age Requirements &amp; Parental Consent</h3>
+            <ul>
+                <li>Individuals under 18 may not create an account, make purchases, list products, or otherwise transact on our platform</li>
+                <li>Where applicable law in a jurisdiction sets a higher minimum age for consent to data processing, that higher age applies to users in that jurisdiction</li>
+                <li>Where applicable law permits use of the services by a minor with parental or guardian consent, the parent or guardian is responsible for supervising the minor&rsquo;s use of the services and accepts this Privacy Policy on their behalf</li>
+            </ul>
+            <h3>12.2 If We Learn We Have Collected a Minor&rsquo;s Data</h3>
+            <p>If we become aware that we have collected personal data from an individual under the age of 18 without appropriate authorization, we will promptly take steps to delete such data from our systems and deactivate any associated account.</p>
+            <p>If you are a parent or guardian and believe that your child has provided us with personal data without your consent, please contact us at <a href="mailto:support@buyology.com">support@buyology.com</a> so that we can investigate and take appropriate action.</p>
+            <p>We do not knowingly direct advertising or marketing communications to minors, and we do not knowingly sell or share the personal data of minors.</p>
 
             <h2>13. Changes to This Policy</h2>
             <p>We may update this Privacy Policy to reflect changes in our services, legal requirements, or data protection practices. We will revise the Effective Date at the top of this Policy. Where required, we may notify you via email, in-app notification, or prominent notice on our website.</p>
