@@ -34,7 +34,7 @@
         "apply": "تطبيق",
         "remove": "إزالة",
         "hint": "جرب: SAVE10، SAVE20 أو WELCOME15",
-        "applied": "تم تطبيق الرمز! وفرت ${{amount}}",
+        "applied": "تم تطبيق الرمز! وفرت {{currency}} {{amount}}",
         "error": "رمز الترويج غير صالح. يرجى المحاولة مرة أخرى."
     },
     "benefits": {

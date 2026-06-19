@@ -34,7 +34,7 @@
         "apply": "Tətbiq Et",
         "remove": "Sil",
         "hint": "Yoxlayın: SAVE10, SAVE20 və ya WELCOME15",
-        "applied": "Promo tətbiq edildi! ${{amount}} qənaət etdiniz",
+        "applied": "Promo tətbiq edildi! {{currency}} {{amount}} qənaət etdiniz",
         "error": "Yanlış promo kod. Yenidən cəhd edin."
     },
     "benefits": {

@@ -199,7 +199,7 @@ export default function OrderSummary() {
                 {promo.applied ? (
                     <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                         <p className="text-[13px] text-green-700 font-medium">
-                            {t("promoCode.applied", { amount: promo.discount.toFixed(2) })}
+                            {t("promoCode.applied", { currency, amount: promo.discount.toFixed(2) })}
                         </p>
                         <button
                             onClick={handleRemovePromo}
