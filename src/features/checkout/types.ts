@@ -7,6 +7,7 @@ export interface ShippingFormData {
     apartment: string;
     country: string;
     city: string;
+    state: string;
     postalCode: string;
     saveInfo: boolean;
     addressId?: string;

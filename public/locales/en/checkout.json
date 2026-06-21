@@ -28,7 +28,12 @@
     "addressLinePlaceholder": "Building, street, area…",
     "simplifiedHint": "We use your account name & verified phone for delivery.",
     "addNew": "Add new address",
-    "useSaved": "Use saved address"
+    "useSaved": "Use saved address",
+    "cityPlaceholder": "City",
+    "state": "State / Region",
+    "statePlaceholder": "Region",
+    "postalPlaceholder": "Postal code",
+    "autoFillHint": "Set the pin and we'll fill these in — edit anything that's off. Name & verified phone come from your profile."
   },
   "validation": {
     "required": "Required",

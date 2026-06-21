@@ -121,6 +121,8 @@ export default function ShippingStep({
                   label: "HOME",
                   addressLine1: initialData.streetAddress,
                   city: initialData.city,
+                  state: initialData.state,
+                  postalCode: initialData.postalCode,
                   country: initialData.country || selectedCountryCode,
                   isDefault: false,
                   latitude: initialData.latitude ?? null,
@@ -139,6 +141,7 @@ export default function ShippingStep({
     function validateAddr(): boolean {
         const e: Partial<Record<keyof CreateAddressPayload, string>> = {};
         if (!addrForm.addressLine1?.trim()) e.addressLine1 = t("validation.required");
+        if (!addrForm.city?.trim()) e.city = t("validation.required");
         setAddrErrors(e);
         return Object.keys(e).length === 0;
     }
@@ -167,6 +170,7 @@ export default function ShippingStep({
                 apartment: "",
                 country: selectedCountryCode,
                 city: "",
+                state: "",
                 postalCode: "",
                 saveInfo: false,
                 addressId: undefined,
@@ -191,6 +195,8 @@ export default function ShippingStep({
                     label: addrForm.label ?? "HOME",
                     addressLine1: addrForm.addressLine1,
                     city: addrForm.city || undefined,
+                    state: addrForm.state || undefined,
+                    postalCode: addrForm.postalCode || undefined,
                     country: addrForm.country || selectedCountryCode || "AE",
                     latitude: addrForm.latitude,
                     longitude: addrForm.longitude,
@@ -207,6 +213,7 @@ export default function ShippingStep({
                     apartment: savedAddr.addressLine2 ?? "",
                     country: savedAddr.country,
                     city: savedAddr.city,
+                    state: savedAddr.state ?? "",
                     postalCode: savedAddr.postalCode ?? "",
                     saveInfo: true,
                     addressId: savedAddr.id,
@@ -231,6 +238,7 @@ export default function ShippingStep({
                 apartment: selected.addressLine2 ?? "",
                 country: selected.country,
                 city: selected.city,
+                state: selected.state ?? "",
                 postalCode: selected.postalCode ?? "",
                 saveInfo: false,
                 addressId: selected.id,
@@ -433,13 +441,15 @@ export default function ShippingStep({
                                     longitude: info.lng,
                                     addressLine1: info.line || p.addressLine1,
                                     city: info.city || p.city,
+                                    state: info.state || p.state,
+                                    postalCode: info.postalCode || p.postalCode,
                                     country: info.countryCode || p.country || selectedCountryCode,
                                 }));
-                                setAddrErrors((p) => ({ ...p, addressLine1: undefined }));
+                                setAddrErrors((p) => ({ ...p, addressLine1: undefined, city: undefined }));
                             }}
                         />
 
-                        {/* Single-line address — auto-filled from the map, editable */}
+                        {/* Address line — auto-filled from the map, editable */}
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[13px] font-semibold text-gray-700">
                                 {t("address.addressLine", { defaultValue: "Address" })}<span className="text-red-400 ml-0.5">*</span>
@@ -452,10 +462,51 @@ export default function ShippingStep({
                                 className={addrErrors.addressLine1 ? inpErr : inp}
                             />
                             {addrErrors.addressLine1 && <p className="text-[11px] text-red-500">{addrErrors.addressLine1}</p>}
-                            <p className="text-[11px] text-gray-400">
-                                {t("address.simplifiedHint", { defaultValue: "We use your account name & verified phone for delivery." })}
-                            </p>
                         </div>
+
+                        {/* City / State / Postal — auto-filled from the map, editable */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[13px] font-semibold text-gray-700">
+                                    {t("address.city", { defaultValue: "City" })}<span className="text-red-400 ml-0.5">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={addrForm.city ?? ""}
+                                    onChange={(e) => setAddrField("city", e.target.value)}
+                                    placeholder={t("address.cityPlaceholder", { defaultValue: "City" })}
+                                    className={addrErrors.city ? inpErr : inp}
+                                />
+                                {addrErrors.city && <p className="text-[11px] text-red-500">{addrErrors.city}</p>}
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[13px] font-semibold text-gray-700">
+                                    {t("address.state", { defaultValue: "State / Region" })}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={addrForm.state ?? ""}
+                                    onChange={(e) => setAddrField("state", e.target.value)}
+                                    placeholder={t("address.statePlaceholder", { defaultValue: "Region" })}
+                                    className={inp}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[13px] font-semibold text-gray-700">
+                                    {t("address.postalCode", { defaultValue: "Postal code" })}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={addrForm.postalCode ?? ""}
+                                    onChange={(e) => setAddrField("postalCode", e.target.value)}
+                                    placeholder={t("address.postalPlaceholder", { defaultValue: "Postal code" })}
+                                    className={inp}
+                                />
+                            </div>
+                        </div>
+                        <p className="text-[11px] text-gray-400">
+                            {t("address.autoFillHint", { defaultValue: "Set the pin and we'll fill these in — edit anything that's off. Name & verified phone come from your profile." })}
+                        </p>
 
                         {saveError && <p className="text-[12px] text-red-500">{saveError}</p>}
                     </div>

@@ -19,6 +19,8 @@ export interface ResolvedLocation {
     lng: number;
     line: string;
     city: string | null;
+    state: string | null;
+    postalCode: string | null;
     countryCode: string | null;
 }
 
@@ -44,7 +46,14 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
         setLocating(true);
         const r = await reverseGeocode(lat, lng);
         setLocating(false);
-        if (r) onResolvedRef.current({ lat, lng, line: r.line, city: r.city, countryCode: r.countryCode });
+        if (r) onResolvedRef.current({
+            lat, lng,
+            line: r.line,
+            city: r.city,
+            state: r.state,
+            postalCode: r.postalCode,
+            countryCode: r.countryCode,
+        });
     }
 
     useEffect(() => {
@@ -116,7 +125,8 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
         navigator.geolocation.getCurrentPosition(
             ({ coords }) => {
                 const newPos: [number, number] = [coords.longitude, coords.latitude];
-                mapRef.current?.flyTo({ center: newPos, zoom: 16 });
+                // Zoom in close so the pin sits on the exact spot (and the user can fine-tune it).
+                mapRef.current?.flyTo({ center: newPos, zoom: 18 });
                 markerRef.current?.setLngLat(newPos);
                 onChange({ lat: coords.latitude, lng: coords.longitude });
                 resolve(coords.latitude, coords.longitude);

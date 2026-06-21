@@ -66,6 +66,7 @@ function AddressForm({
     function validate() {
         const e: Partial<Record<keyof CreateAddressPayload, string>> = {};
         if (!form.addressLine1?.trim()) e.addressLine1 = "Required";
+        if (!form.city?.trim()) e.city = "Required";
         setErrors(e);
         return Object.keys(e).length === 0;
     }
@@ -99,19 +100,38 @@ function AddressForm({
                         longitude: info.lng,
                         addressLine1: info.line || p.addressLine1,
                         city: info.city || p.city,
+                        state: info.state || p.state,
+                        postalCode: info.postalCode || p.postalCode,
                         country: info.countryCode || p.country || selectedCountryCode,
                     }));
-                    setErrors((p) => ({ ...p, addressLine1: undefined }));
+                    setErrors((p) => ({ ...p, addressLine1: undefined, city: undefined }));
                 }}
             />
 
-            {/* Single-line address — auto-filled from the map, editable */}
+            {/* Address line — auto-filled from the map, editable */}
             <div>
                 <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Address <span className="text-red-400">*</span></label>
                 <input type="text" value={form.addressLine1} onChange={(e) => setField("addressLine1", e.target.value)} placeholder="Building, street, area…" className={errors.addressLine1 ? inpErr : inp} />
                 {errors.addressLine1 && <p className="text-[11px] text-red-500 mt-0.5">{errors.addressLine1}</p>}
-                <p className="text-[11px] text-gray-400 mt-1">We use your account name &amp; verified phone for delivery.</p>
             </div>
+
+            {/* City / State / Postal — auto-filled from the map, editable */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">City <span className="text-red-400">*</span></label>
+                    <input type="text" value={form.city ?? ""} onChange={(e) => setField("city", e.target.value)} placeholder="City" className={errors.city ? inpErr : inp} />
+                    {errors.city && <p className="text-[11px] text-red-500 mt-0.5">{errors.city}</p>}
+                </div>
+                <div>
+                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">State / Region</label>
+                    <input type="text" value={form.state ?? ""} onChange={(e) => setField("state", e.target.value)} placeholder="Region" className={inp} />
+                </div>
+                <div>
+                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Postal code</label>
+                    <input type="text" value={form.postalCode ?? ""} onChange={(e) => setField("postalCode", e.target.value)} placeholder="Postal code" className={inp} />
+                </div>
+            </div>
+            <p className="text-[11px] text-gray-400">Set the pin and we&apos;ll fill these in — edit anything that&apos;s off. Name &amp; verified phone come from your profile.</p>
 
             {/* Set as default */}
             <label className="flex items-center gap-2.5 cursor-pointer">

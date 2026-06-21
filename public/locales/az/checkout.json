@@ -28,7 +28,12 @@
     "addressLinePlaceholder": "Bina, küçə, ərazi…",
     "simplifiedHint": "Çatdırılma üçün hesab adınızdan və təsdiqlənmiş telefonunuzdan istifadə edirik.",
     "addNew": "Yeni ünvan əlavə et",
-    "useSaved": "Yadda saxlanmış ünvandan istifadə et"
+    "useSaved": "Yadda saxlanmış ünvandan istifadə et",
+    "cityPlaceholder": "Şəhər",
+    "state": "Vilayət / Region",
+    "statePlaceholder": "Region",
+    "postalPlaceholder": "Poçt kodu",
+    "autoFillHint": "Nişanı qoyun, biz bunları dolduracağıq — səhv olanı düzəldin. Ad və təsdiqlənmiş telefon profilinizdən götürülür."
   },
   "validation": {
     "required": "Tələb olunur",

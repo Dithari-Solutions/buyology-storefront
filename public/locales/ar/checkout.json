@@ -28,7 +28,12 @@
     "addressLinePlaceholder": "المبنى، الشارع، المنطقة…",
     "simplifiedHint": "نستخدم اسم حسابك وهاتفك المُوثّق للتوصيل.",
     "addNew": "إضافة عنوان جديد",
-    "useSaved": "استخدام عنوان محفوظ"
+    "useSaved": "استخدام عنوان محفوظ",
+    "cityPlaceholder": "المدينة",
+    "state": "الولاية / المنطقة",
+    "statePlaceholder": "المنطقة",
+    "postalPlaceholder": "الرمز البريدي",
+    "autoFillHint": "حدّد الدبوس وسنملأ هذه الحقول — عدّل ما هو غير صحيح. يُؤخذ الاسم والهاتف المُوثّق من ملفك الشخصي."
   },
   "validation": {
     "required": "مطلوب",

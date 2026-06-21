@@ -461,6 +461,7 @@ export default function CheckoutPage() {
                 billingStreet: shippingData.streetAddress || undefined,
                 billingApartment: shippingData.apartment || undefined,
                 billingCity: shippingData.city || undefined,
+                billingState: shippingData.state || undefined,
                 billingCountry: shippingData.country || undefined,
                 billingPostalCode: shippingData.postalCode || undefined,
                 // Use the canonical production site URL (not window.location.origin) so the
