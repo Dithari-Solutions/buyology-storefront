@@ -453,11 +453,11 @@ export default function PaymentStep({ shipping, deliveryMethod, expressEligible 
             {creditApplied > 0 && (
                 <div className="rounded-2xl border border-[#402F75]/30 bg-[#FAF8FF] p-5 space-y-1.5 text-[13px]">
                     <div className="flex justify-between text-gray-700">
-                        <span>Cart total</span>
+                        <span>{t("credit.cartTotal", { defaultValue: "Cart total" })}</span>
                         <strong>{orderTotal.toFixed(2)} {orderCcy}</strong>
                     </div>
                     <div className="flex justify-between text-[#402F75]">
-                        <span>Wallet credit applied</span>
+                        <span>{t("credit.walletApplied", { defaultValue: "Wallet credit applied" })}</span>
                         <strong>− {creditApplied.toFixed(2)} {orderCcy}</strong>
                     </div>
                     <div className="flex justify-between text-gray-900 pt-1.5 border-t border-[#402F75]/10">

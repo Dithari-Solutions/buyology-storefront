@@ -136,7 +136,7 @@ function OrderConfirmed({ lang }: { lang: string }) {
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
                 <a href={`/${lang}/orders`}>
                     <button className="bg-[#402F75] hover:bg-[#2e2156] transition-colors text-white font-bold px-8 py-3 rounded-full text-[14px] cursor-pointer">
-                        View My Orders
+                        {t("confirmed.viewOrders", { defaultValue: "View My Orders" })}
                     </button>
                 </a>
                 <a href={`/${lang}/shop`}>

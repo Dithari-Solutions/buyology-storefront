@@ -34,7 +34,9 @@ export default function CheckoutSummary({ items: itemsProp, totals: totalsProp, 
     const totals = totalsProp ?? cartTotals;
     const currency = currencyProp ?? cartCurrency;
     const hasExpressItem = items.some((i) => i.quickDelivery);
-    const deliveryEstimate = hasExpressItem ? "Within 30 minutes" : "2–3 business days";
+    const deliveryEstimate = hasExpressItem
+        ? t("summary.expressEta", { defaultValue: "Within 30 minutes" })
+        : t("summary.standardEta", { defaultValue: "2–3 business days" });
 
     return (
         <aside className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:sticky lg:top-6 self-start">
@@ -123,7 +125,9 @@ export default function CheckoutSummary({ items: itemsProp, totals: totalsProp, 
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    {hasExpressItem ? "Express delivery" : "Standard delivery"}
+                    {hasExpressItem
+                        ? t("summary.expressDelivery", { defaultValue: "Express delivery" })
+                        : t("summary.standardDelivery", { defaultValue: "Standard delivery" })}
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-gray-500">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

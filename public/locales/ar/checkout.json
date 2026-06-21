@@ -1,90 +1,156 @@
 {
-    "steps": {
-        "shipping": "الشحن",
-        "payment": "الدفع"
-    },
-    "contact": {
-        "heading": "معلومات الاتصال",
-        "email": "البريد الإلكتروني",
-        "emailPlaceholder": "أدخل بريدك الإلكتروني",
-        "phone": "رقم الهاتف",
-        "phonePlaceholder": "أدخل رقم هاتفك"
-    },
-    "address": {
-        "heading": "عنوان الشحن",
-        "firstName": "الاسم الأول",
-        "lastName": "اسم العائلة",
-        "street": "عنوان الشارع",
-        "apartment": "شقة، جناح، إلخ (اختياري)",
-        "country": "البلد",
-        "city": "المدينة",
-        "postalCode": "الرمز البريدي",
-        "placeholder": "أدخل النص",
-        "saveInfo": "احفظ هذه المعلومات للمرة القادمة"
-    },
-    "validation": {
-        "required": "مطلوب",
-        "invalidEmail": "بريد إلكتروني غير صالح"
-    },
-    "cta": {
-        "continueToPayment": "متابعة الدفع",
-        "placeOrder": "تأكيد الطلب · {{currency}} {{total}}",
-        "processing": "جارٍ المعالجة..."
-    },
-    "shippingTo": "الشحن إلى",
+  "steps": {
+    "shipping": "الشحن",
+    "payment": "الدفع"
+  },
+  "contact": {
+    "heading": "معلومات الاتصال",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "أدخل رقم هاتفك",
     "edit": "تعديل",
-    "payment": {
-        "heading": "طريقة الدفع",
-        "card": {
-            "label": "بطاقة الائتمان/الخصم",
-            "description": "ادفع بأمان عبر بطاقة الائتمان أو الخصم الخاصة بك عبر Stripe",
-            "detail": "الانتقال إلى الدفع المدعوم من Stripe"
-        },
-        "tabby": {
-            "label": "ادفع على 4 أقساط بدون فوائد",
-            "description": "قسّم مشترياتك إلى 4 دفعات شهرية بقيمة {{currency}} {{amount}}",
-            "detail": "بدون فوائد، بدون رسوم. متاح للطلبات من $20 إلى $4000. ادفع {{currency}} {{amount}} اليوم والباقي خلال 3 أشهر."
-        },
-        "tamara": {
-            "label": "قسّم على 3 أو ادفع الشهر القادم",
-            "description": "قسّم على 3 دفعات بقيمة {{currency}} {{amount}} أو ادفع المبلغ كاملاً الشهر القادم",
-            "detail": "متاح للطلبات حتى $3,000. ادفع {{currency}} {{amount}} كل شهر لمدة 3 أشهر."
-        },
-        "paymob": {
-            "label": "دفع آمن",
-            "description": "معلومات الدفع مشفرة وآمنة. لن نخزن بيانات بطاقتك أبداً."
-        },
-        "secureNote": "معلومات الدفع مشفرة وآمنة. لن نخزن بيانات بطاقتك أبداً.",
-        "processing": "Processing your payment...",
-        "processing_desc": "We're verifying your transaction. Please do not close this window or go back.",
-        "success": "Payment Successful!",
-        "success_desc": "Thank you for your order. We've received your payment and are processing your order.",
-        "view_order": "View Order",
-        "failed": "Payment Failed",
-        "failed_desc": "There was an issue processing your payment. Please try again.",
-        "back_to_checkout": "Back to Checkout",
-        "order_history": "Order History",
-        "error": {
-            "timeout": "Payment confirmation is taking longer than expected. Please check your order history or contact support.",
-            "failed": "Payment was declined. Please try a different payment method.",
-            "cancelled": "Payment was cancelled. Please try again.",
-            "invalid_session": "Invalid payment session."
-        }
+    "verified": "مُوثّق",
+    "unverified": "غير مُوثّق"
+  },
+  "address": {
+    "heading": "عنوان الشحن",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "street": "عنوان الشارع",
+    "apartment": "شقة، جناح، إلخ (اختياري)",
+    "country": "البلد",
+    "city": "المدينة",
+    "postalCode": "الرمز البريدي",
+    "placeholder": "أدخل النص",
+    "saveInfo": "احفظ هذه المعلومات للمرة القادمة",
+    "addressLine": "العنوان",
+    "addressLinePlaceholder": "المبنى، الشارع، المنطقة…",
+    "simplifiedHint": "نستخدم اسم حسابك وهاتفك المُوثّق للتوصيل.",
+    "addNew": "إضافة عنوان جديد",
+    "useSaved": "استخدام عنوان محفوظ"
+  },
+  "validation": {
+    "required": "مطلوب",
+    "invalidEmail": "بريد إلكتروني غير صالح"
+  },
+  "cta": {
+    "continueToPayment": "متابعة الدفع",
+    "placeOrder": "تأكيد الطلب · {{currency}} {{total}}",
+    "processing": "جارٍ المعالجة..."
+  },
+  "shippingTo": "الشحن إلى",
+  "edit": "تعديل",
+  "payment": {
+    "heading": "طريقة الدفع",
+    "card": {
+      "label": "بطاقة الائتمان/الخصم",
+      "description": "ادفع بأمان عبر بطاقة الائتمان أو الخصم الخاصة بك عبر Stripe",
+      "detail": "الانتقال إلى الدفع المدعوم من Stripe"
     },
-    "summary": {
-        "heading": "ملخص الطلب",
-        "noItems": "لم يتم تحديد أي عنصر",
-        "subtotal": "المجموع الفرعي",
-        "shipping": "الشحن",
-        "free": "مجاني",
-        "tax": "الضريبة (5%)",
-        "total": "الإجمالي",
-        "freeShipping": "شحن مجاني للطلبات التي تتجاوز $199",
-        "estimatedDelivery": "التسليم المتوقع خلال 3-5 أيام عمل"
+    "tabby": {
+      "label": "ادفع على 4 أقساط بدون فوائد",
+      "description": "قسّم مشترياتك إلى 4 دفعات شهرية بقيمة {{currency}} {{amount}}",
+      "detail": "بدون فوائد، بدون رسوم. متاح للطلبات من $20 إلى $4000. ادفع {{currency}} {{amount}} اليوم والباقي خلال 3 أشهر."
     },
-    "confirmed": {
-        "title": "تم تقديم الطلب!",
-        "description": "شكراً لطلبك. سنرسل إليك بريداً إلكترونياً للتأكيد قريباً.",
-        "continueShopping": "مواصلة التسوق"
+    "tamara": {
+      "label": "قسّم على 3 أو ادفع الشهر القادم",
+      "description": "قسّم على 3 دفعات بقيمة {{currency}} {{amount}} أو ادفع المبلغ كاملاً الشهر القادم",
+      "detail": "متاح للطلبات حتى $3,000. ادفع {{currency}} {{amount}} كل شهر لمدة 3 أشهر."
+    },
+    "paymob": {
+      "label": "دفع آمن",
+      "description": "معلومات الدفع مشفرة وآمنة. لن نخزن بيانات بطاقتك أبداً."
+    },
+    "secureNote": "معلومات الدفع مشفرة وآمنة. لن نخزن بيانات بطاقتك أبداً.",
+    "processing": "Processing your payment...",
+    "processing_desc": "We're verifying your transaction. Please do not close this window or go back.",
+    "success": "Payment Successful!",
+    "success_desc": "Thank you for your order. We've received your payment and are processing your order.",
+    "view_order": "View Order",
+    "failed": "Payment Failed",
+    "failed_desc": "There was an issue processing your payment. Please try again.",
+    "back_to_checkout": "Back to Checkout",
+    "order_history": "Order History",
+    "error": {
+      "timeout": "Payment confirmation is taking longer than expected. Please check your order history or contact support.",
+      "failed": "Payment was declined. Please try a different payment method.",
+      "cancelled": "Payment was cancelled. Please try again.",
+      "invalid_session": "Invalid payment session.",
+      "title": "خطأ في الدفع",
+      "generic": "فشل بدء عملية الدفع. يرجى المحاولة مرة أخرى.",
+      "retry": "حاول مرة أخرى"
+    },
+    "profile": {
+      "incompleteTitle": "أكمل ملفك الشخصي",
+      "incompleteMessage": "يجب إكمال ملفك الشخصي قبل إتمام الشراء.",
+      "goToProfile": "إكمال الملف الشخصي"
+    },
+    "iframe": {
+      "title": "دفع آمن",
+      "poweredBy": "مدعوم من Paymob",
+      "done": "تم",
+      "secureNote": "تفاصيل بطاقتك مشفّرة ولا يتم تخزينها على خوادمنا أبدًا."
     }
+  },
+  "summary": {
+    "heading": "ملخص الطلب",
+    "noItems": "لم يتم تحديد أي عنصر",
+    "subtotal": "المجموع الفرعي",
+    "shipping": "الشحن",
+    "free": "مجاني",
+    "tax": "الضريبة (5%)",
+    "total": "الإجمالي",
+    "freeShipping": "شحن مجاني للطلبات التي تتجاوز $199",
+    "estimatedDelivery": "التسليم المتوقع خلال 3-5 أيام عمل",
+    "expressEta": "خلال 30 دقيقة",
+    "standardEta": "2–3 أيام عمل",
+    "expressDelivery": "توصيل سريع",
+    "standardDelivery": "توصيل قياسي"
+  },
+  "confirmed": {
+    "title": "تم تقديم الطلب!",
+    "description": "شكراً لطلبك. سنرسل إليك بريداً إلكترونياً للتأكيد قريباً.",
+    "continueShopping": "مواصلة التسوق",
+    "viewOrders": "عرض طلباتي"
+  },
+  "fulfillment": {
+    "delivery": "التوصيل إليّ",
+    "pickup": "الاستلام من المتجر"
+  },
+  "delivery": {
+    "heading": "طريقة التوصيل",
+    "express": "توصيل سريع",
+    "expressEta": "~30 دقيقة",
+    "regular": "توصيل عادي",
+    "regularEta": "2–3 أيام عمل",
+    "needPin": "التوصيل السريع متاح لمنتجاتك، لكن لا يوجد دبوس على الخريطة لهذا العنوان.",
+    "addPin": "أضف دبوس الموقع",
+    "notAvailable": "التوصيل السريع غير متاح لمنتجاتك في هذه المنطقة.",
+    "mixedNotice": "بعض العناصر في طلبك مؤهلة للتوصيل السريع وأخرى ستصل بالتوصيل العادي. سيتم تقديم طلبك معًا."
+  },
+  "pickup": {
+    "heading": "اختر متجر الاستلام",
+    "subheading": "استلم طلبك من أحد متاجرنا في بلدك — بدون رسوم توصيل.",
+    "loading": "جارٍ تحميل المتاجر القريبة…",
+    "none": "لا توجد متاجر استلام متاحة في بلدك حاليًا. يرجى اختيار التوصيل بدلاً من ذلك.",
+    "hours": "ساعات العمل",
+    "closed": "مغلق",
+    "selectError": "يرجى اختيار متجر للاستلام منه.",
+    "summaryLabel": "الاستلام من المتجر",
+    "summaryNote": "ستستلم هذا الطلب من المتجر الذي اخترته. سنرسل لك بريدًا إلكترونيًا عندما يكون جاهزًا."
+  },
+  "days": {
+    "monday": "الإثنين",
+    "tuesday": "الثلاثاء",
+    "wednesday": "الأربعاء",
+    "thursday": "الخميس",
+    "friday": "الجمعة",
+    "saturday": "السبت",
+    "sunday": "الأحد"
+  },
+  "credit": {
+    "cartTotal": "إجمالي السلة",
+    "walletApplied": "رصيد المحفظة المُطبّق"
+  }
 }

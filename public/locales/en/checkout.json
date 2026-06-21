@@ -1,90 +1,156 @@
 {
-    "steps": {
-        "shipping": "Shipping",
-        "payment": "Payment"
-    },
-    "contact": {
-        "heading": "Contact Information",
-        "email": "Email Address",
-        "emailPlaceholder": "Enter your email",
-        "phone": "Phone Number",
-        "phonePlaceholder": "Enter your phone number"
-    },
-    "address": {
-        "heading": "Shipping Address",
-        "firstName": "First Name",
-        "lastName": "Last Name",
-        "street": "Street Address",
-        "apartment": "Apartment, Suite, etc. (Optional)",
-        "country": "Country",
-        "city": "City",
-        "postalCode": "Postal Code",
-        "placeholder": "Placeholder text",
-        "saveInfo": "Save this information for next time"
-    },
-    "validation": {
-        "required": "Required",
-        "invalidEmail": "Invalid email address"
-    },
-    "cta": {
-        "continueToPayment": "Continue to Payment",
-        "placeOrder": "Place Order · {{currency}} {{total}}",
-        "processing": "Processing..."
-    },
-    "shippingTo": "Shipping to",
+  "steps": {
+    "shipping": "Shipping",
+    "payment": "Payment"
+  },
+  "contact": {
+    "heading": "Contact Information",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "phone": "Phone Number",
+    "phonePlaceholder": "Enter your phone number",
     "edit": "Edit",
-    "payment": {
-        "heading": "Payment Method",
-        "card": {
-            "label": "Credit/Debit Card",
-            "description": "Pay securely with your credit or debit card via Stripe",
-            "detail": "Go to payment powered by Stripe"
-        },
-        "tabby": {
-            "label": "Pay in 4 interest-free installments",
-            "description": "Split your purchase into 4 easy monthly payments of {{currency}} {{amount}}",
-            "detail": "No interest, No fees. Available for orders from $20–$4000. Pay {{currency}} {{amount}} today, rest over 3 months."
-        },
-        "tamara": {
-            "label": "Split in 3 or Pay Next Month",
-            "description": "Split into 3 payments of {{currency}} {{amount}} or pay the full amount next month",
-            "detail": "Available for orders up to $3,000. Pay {{currency}} {{amount}} every month for 3 months."
-        },
-        "paymob": {
-            "label": "Secure Checkout",
-            "description": "Your payment info is encrypted and secure. We never store your card details."
-        },
-        "secureNote": "Your payment information is encrypted and secure. We never store your card details.",
-        "processing": "Processing your payment...",
-        "processing_desc": "We're verifying your transaction. Please do not close this window or go back.",
-        "success": "Payment Successful!",
-        "success_desc": "Thank you for your order. We've received your payment and are processing your order.",
-        "view_order": "View Order",
-        "failed": "Payment Failed",
-        "failed_desc": "There was an issue processing your payment. Please try again.",
-        "back_to_checkout": "Back to Checkout",
-        "order_history": "Order History",
-        "error": {
-            "timeout": "Payment confirmation is taking longer than expected. Please check your order history or contact support.",
-            "failed": "Payment was declined. Please try a different payment method.",
-            "cancelled": "Payment was cancelled. Please try again.",
-            "invalid_session": "Invalid payment session."
-        }
+    "verified": "Verified",
+    "unverified": "Not verified"
+  },
+  "address": {
+    "heading": "Shipping Address",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "street": "Street Address",
+    "apartment": "Apartment, Suite, etc. (Optional)",
+    "country": "Country",
+    "city": "City",
+    "postalCode": "Postal Code",
+    "placeholder": "Placeholder text",
+    "saveInfo": "Save this information for next time",
+    "addressLine": "Address",
+    "addressLinePlaceholder": "Building, street, area…",
+    "simplifiedHint": "We use your account name & verified phone for delivery.",
+    "addNew": "Add new address",
+    "useSaved": "Use saved address"
+  },
+  "validation": {
+    "required": "Required",
+    "invalidEmail": "Invalid email address"
+  },
+  "cta": {
+    "continueToPayment": "Continue to Payment",
+    "placeOrder": "Place Order · {{currency}} {{total}}",
+    "processing": "Processing..."
+  },
+  "shippingTo": "Shipping to",
+  "edit": "Edit",
+  "payment": {
+    "heading": "Payment Method",
+    "card": {
+      "label": "Credit/Debit Card",
+      "description": "Pay securely with your credit or debit card via Stripe",
+      "detail": "Go to payment powered by Stripe"
     },
-    "summary": {
-        "heading": "Order Summary",
-        "noItems": "No items selected",
-        "subtotal": "Subtotal",
-        "shipping": "Shipping",
-        "free": "Free",
-        "tax": "Tax (5%)",
-        "total": "Total",
-        "freeShipping": "Free shipping on orders over $199",
-        "estimatedDelivery": "Estimated delivery 3-5 business days"
+    "tabby": {
+      "label": "Pay in 4 interest-free installments",
+      "description": "Split your purchase into 4 easy monthly payments of {{currency}} {{amount}}",
+      "detail": "No interest, No fees. Available for orders from $20–$4000. Pay {{currency}} {{amount}} today, rest over 3 months."
     },
-    "confirmed": {
-        "title": "Order Placed!",
-        "description": "Thank you for your order. We'll send you a confirmation email shortly.",
-        "continueShopping": "Continue Shopping"
+    "tamara": {
+      "label": "Split in 3 or Pay Next Month",
+      "description": "Split into 3 payments of {{currency}} {{amount}} or pay the full amount next month",
+      "detail": "Available for orders up to $3,000. Pay {{currency}} {{amount}} every month for 3 months."
+    },
+    "paymob": {
+      "label": "Secure Checkout",
+      "description": "Your payment info is encrypted and secure. We never store your card details."
+    },
+    "secureNote": "Your payment information is encrypted and secure. We never store your card details.",
+    "processing": "Processing your payment...",
+    "processing_desc": "We're verifying your transaction. Please do not close this window or go back.",
+    "success": "Payment Successful!",
+    "success_desc": "Thank you for your order. We've received your payment and are processing your order.",
+    "view_order": "View Order",
+    "failed": "Payment Failed",
+    "failed_desc": "There was an issue processing your payment. Please try again.",
+    "back_to_checkout": "Back to Checkout",
+    "order_history": "Order History",
+    "error": {
+      "timeout": "Payment confirmation is taking longer than expected. Please check your order history or contact support.",
+      "failed": "Payment was declined. Please try a different payment method.",
+      "cancelled": "Payment was cancelled. Please try again.",
+      "invalid_session": "Invalid payment session.",
+      "title": "Payment error",
+      "generic": "Payment initiation failed. Please try again.",
+      "retry": "Try again"
+    },
+    "profile": {
+      "incompleteTitle": "Complete your profile",
+      "incompleteMessage": "You need to complete your profile before checkout.",
+      "goToProfile": "Complete profile"
+    },
+    "iframe": {
+      "title": "Secure Payment",
+      "poweredBy": "powered by Paymob",
+      "done": "Done",
+      "secureNote": "Your card details are encrypted and never stored on our servers."
     }
+  },
+  "summary": {
+    "heading": "Order Summary",
+    "noItems": "No items selected",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free": "Free",
+    "tax": "Tax (5%)",
+    "total": "Total",
+    "freeShipping": "Free shipping on orders over $199",
+    "estimatedDelivery": "Estimated delivery 3-5 business days",
+    "expressEta": "Within 30 minutes",
+    "standardEta": "2–3 business days",
+    "expressDelivery": "Express delivery",
+    "standardDelivery": "Standard delivery"
+  },
+  "confirmed": {
+    "title": "Order Placed!",
+    "description": "Thank you for your order. We'll send you a confirmation email shortly.",
+    "continueShopping": "Continue Shopping",
+    "viewOrders": "View My Orders"
+  },
+  "fulfillment": {
+    "delivery": "Deliver to me",
+    "pickup": "Pick up from store"
+  },
+  "delivery": {
+    "heading": "Delivery method",
+    "express": "Quick delivery",
+    "expressEta": "~30 minutes",
+    "regular": "Regular delivery",
+    "regularEta": "2–3 business days",
+    "needPin": "Quick delivery is available for your items, but this address has no map pin.",
+    "addPin": "Add location pin",
+    "notAvailable": "Quick delivery isn't available for your items in this area.",
+    "mixedNotice": "Some items in your order qualify for quick delivery and others will arrive with regular delivery. Your order will still be placed together."
+  },
+  "pickup": {
+    "heading": "Choose a pickup store",
+    "subheading": "Collect your order from one of our stores in your country — no delivery fee.",
+    "loading": "Loading nearby stores…",
+    "none": "No pickup stores are available in your country right now. Please choose delivery instead.",
+    "hours": "Opening hours",
+    "closed": "Closed",
+    "selectError": "Please choose a store to pick up from.",
+    "summaryLabel": "Pickup from store",
+    "summaryNote": "You'll collect this order from your chosen store. We'll email you when it's ready."
+  },
+  "days": {
+    "monday": "Mon",
+    "tuesday": "Tue",
+    "wednesday": "Wed",
+    "thursday": "Thu",
+    "friday": "Fri",
+    "saturday": "Sat",
+    "sunday": "Sun"
+  },
+  "credit": {
+    "cartTotal": "Cart total",
+    "walletApplied": "Wallet credit applied"
+  }
 }
