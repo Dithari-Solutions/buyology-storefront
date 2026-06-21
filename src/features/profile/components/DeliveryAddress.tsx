@@ -217,6 +217,19 @@ function AddressCard({
                 {[address.city, address.state, countryName].filter(Boolean).join(", ")}
                 {address.postalCode ? ` ${address.postalCode}` : ""}
             </p>
+            {address.latitude != null && address.longitude != null && (
+                <a
+                    href={`https://www.google.com/maps?q=${address.latitude},${address.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#402F75] hover:underline"
+                >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+                    </svg>
+                    {address.latitude.toFixed(5)}, {address.longitude.toFixed(5)} · View on map
+                </a>
+            )}
 
             {/* Actions */}
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">

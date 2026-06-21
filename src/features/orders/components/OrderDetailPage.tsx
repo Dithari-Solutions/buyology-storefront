@@ -333,6 +333,19 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                                 .filter(Boolean)
                                                 .join(", ")}
                                         </p>
+                                        {order.deliveryLatitude != null && order.deliveryLongitude != null && (
+                                            <a
+                                                href={`https://www.google.com/maps?q=${order.deliveryLatitude},${order.deliveryLongitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#402F75] hover:underline"
+                                            >
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+                                                </svg>
+                                                {order.deliveryLatitude.toFixed(5)}, {order.deliveryLongitude.toFixed(5)} · View on map
+                                            </a>
+                                        )}
                                     </>
                                 )}
                                 <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100">

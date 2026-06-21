@@ -383,6 +383,12 @@ export default function ShippingStep({
                                     <p className="text-[13px] text-gray-500 ml-6">
                                         {[addr.city, addr.state, countryName].filter(Boolean).join(", ")}
                                     </p>
+                                    {addr.latitude != null && addr.longitude != null && (
+                                        <p className="text-[12px] text-[#402F75] ml-6 mt-0.5 flex items-center gap-1">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                                            {addr.latitude.toFixed(5)}, {addr.longitude.toFixed(5)}
+                                        </p>
+                                    )}
                                     <p className="text-[12px] text-gray-400 ml-6 mt-0.5">{addr.phoneNumber}</p>
                                 </button>
                             );
