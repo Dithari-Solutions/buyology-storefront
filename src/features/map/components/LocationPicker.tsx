@@ -14,6 +14,10 @@ const CARTO_TILES = [
     "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
 ];
 
+// Above this GPS accuracy radius the auto-detected fix is only area/region level, so we
+// nudge the user to drop the pin on their exact building.
+const COARSE_ACCURACY_M = 60;
+
 export interface ResolvedLocation {
     lat: number;
     lng: number;
@@ -27,7 +31,7 @@ export interface ResolvedLocation {
 interface LocationPickerProps {
     initialCoords?: { lat: number; lng: number };
     onChange: (coords: { lat: number; lng: number }) => void;
-    /** Fired after the pin moves and its address is reverse-geocoded (Use my location / drag). */
+    /** Fired after the pin moves and its address is reverse-geocoded (Use my location / drag / tap). */
     onResolved?: (info: ResolvedLocation) => void;
 }
 
@@ -36,9 +40,15 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
     const mapRef = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
     const onResolvedRef = useRef(onResolved);
+    const onChangeRef = useRef(onChange);
     useEffect(() => { onResolvedRef.current = onResolved; }, [onResolved]);
+    useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
+
     const [mapError, setMapError] = useState(false);
     const [locating, setLocating] = useState(false);
+    const [pin, setPin] = useState<{ lat: number; lng: number } | null>(initialCoords ?? null);
+    // Accuracy of an auto-detected GPS fix in metres; null once the user places the pin by hand (= exact).
+    const [accuracyM, setAccuracyM] = useState<number | null>(null);
 
     // Reverse-geocode a pin position and bubble the resolved address up.
     async function resolve(lat: number, lng: number) {
@@ -54,6 +64,16 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
             postalCode: r.postalCode,
             countryCode: r.countryCode,
         });
+    }
+
+    // Move the pin to an exact point, sync coords up, and resolve the address.
+    function applyPin(lat: number, lng: number, accuracy: number | null, fly: boolean) {
+        markerRef.current?.setLngLat([lng, lat]);
+        if (fly) mapRef.current?.flyTo({ center: [lng, lat], zoom: 18 });
+        setPin({ lat, lng });
+        setAccuracyM(accuracy);
+        onChangeRef.current({ lat, lng });
+        resolve(lat, lng);
     }
 
     useEffect(() => {
@@ -78,8 +98,10 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
                 layers: [{ id: "tiles", type: "raster", source: "tiles" }],
             },
             center: defaultCenter,
-            zoom: 13,
+            zoom: initialCoords ? 17 : 13,
+            maxZoom: 20, // allow rooftop-level precision
         });
+        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
         map.on("error", () => {
             setMapError(true);
@@ -98,17 +120,17 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
             }
         });
 
-        const marker = new maplibregl.Marker({
-            draggable: true,
-            color: "#402F75"
-        })
+        const marker = new maplibregl.Marker({ draggable: true, color: "#402F75" })
             .setLngLat(defaultCenter)
             .addTo(map);
 
+        // Dragging or tapping the map sets the EXACT point (manual = precise, accuracy cleared).
         marker.on("dragend", () => {
-            const lngLat = marker.getLngLat();
-            onChange({ lat: lngLat.lat, lng: lngLat.lng });
-            resolve(lngLat.lat, lngLat.lng);
+            const { lat, lng } = marker.getLngLat();
+            applyPin(lat, lng, null, false);
+        });
+        map.on("click", (e) => {
+            applyPin(e.lngLat.lat, e.lngLat.lng, null, false);
         });
 
         mapRef.current = map;
@@ -117,6 +139,7 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
         return () => {
             map.remove();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const useMyLocation = () => {
@@ -124,17 +147,14 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
         setLocating(true);
         navigator.geolocation.getCurrentPosition(
             ({ coords }) => {
-                const newPos: [number, number] = [coords.longitude, coords.latitude];
-                // Zoom in close so the pin sits on the exact spot (and the user can fine-tune it).
-                mapRef.current?.flyTo({ center: newPos, zoom: 18 });
-                markerRef.current?.setLngLat(newPos);
-                onChange({ lat: coords.latitude, lng: coords.longitude });
-                resolve(coords.latitude, coords.longitude);
+                applyPin(coords.latitude, coords.longitude, coords.accuracy ?? null, true);
             },
             () => setLocating(false),
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
+
+    const coarse = accuracyM != null && accuracyM > COARSE_ACCURACY_M;
 
     return (
         <div className="flex flex-col gap-2">
@@ -161,8 +181,25 @@ export default function LocationPicker({ initialCoords, onChange, onResolved }: 
                     </div>
                 )}
             </div>
+
+            {/* Precision status — the courier is routed to this exact pin. */}
+            {pin && (
+                coarse ? (
+                    <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
+                        <svg className="mt-0.5 flex-shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                        <p className="text-[11px] text-amber-700 leading-snug">
+                            Approximate GPS (~{Math.round(accuracyM!)} m). Drag the pin or tap the map on your exact building so the courier finds you.
+                        </p>
+                    </div>
+                ) : (
+                    <p className="text-[11px] text-green-600 flex items-center gap-1.5">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Exact spot pinned for the courier ({pin.lat.toFixed(5)}, {pin.lng.toFixed(5)}).
+                    </p>
+                )
+            )}
             <p className="text-[11px] text-gray-400">
-                Tap “Use my location” or drag the purple pin — we’ll fill in the address for you.
+                Tap “Use my location”, drag the purple pin, or tap the map to mark your exact spot — we’ll fill in the address.
             </p>
         </div>
     );
