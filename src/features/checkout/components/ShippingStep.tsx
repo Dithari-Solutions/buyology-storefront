@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { ShippingFormData } from "../types";
@@ -108,11 +108,22 @@ export default function ShippingStep({
     // Saved address selection
     const defaultAddr = savedAddresses.find((a) => a.isDefault) ?? savedAddresses[0] ?? null;
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
-        initialData ? null : defaultAddr?.id ?? null
+        initialData?.addressId ?? defaultAddr?.id ?? null
     );
-    const [showAddForm, setShowAddForm] = useState(
-        savedAddresses.length === 0 || !!initialData
-    );
+    // Default to the saved-address LIST; only show the new-address form when there are none.
+    const [showAddForm, setShowAddForm] = useState(savedAddresses.length === 0);
+    // True once the user explicitly taps "Add new address" (so the auto-list effect won't override).
+    const userOpenedForm = useRef(false);
+
+    // Saved addresses can load after this step mounts (and we return here from payment).
+    // Once they're available, show the LIST and pre-select the previously-used / default address
+    // instead of dropping the user into the new-address form + map.
+    useEffect(() => {
+        if (savedAddresses.length === 0 || userOpenedForm.current) return;
+        setShowAddForm(false);
+        setSelectedAddressId((cur) => cur ?? initialData?.addressId ?? defaultAddr?.id ?? null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [savedAddresses.length]);
 
     // New address form (simplified: a single line + map pin; name/phone come from the profile)
     const [addrForm, setAddrForm] = useState<CreateAddressPayload>(
@@ -397,7 +408,7 @@ export default function ShippingStep({
                         {/* Add new address toggle */}
                         <button
                             type="button"
-                            onClick={() => { setShowAddForm(true); setSelectedAddressId(null); }}
+                            onClick={() => { userOpenedForm.current = true; setShowAddForm(true); setSelectedAddressId(null); }}
                             className="flex items-center gap-2 text-[13px] font-semibold text-[#402F75] hover:underline cursor-pointer mt-1"
                         >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -417,6 +428,7 @@ export default function ShippingStep({
                             <button
                                 type="button"
                                 onClick={() => {
+                                    userOpenedForm.current = false;
                                     setShowAddForm(false);
                                     setSelectedAddressId(defaultAddr?.id ?? savedAddresses[0]?.id ?? null);
                                 }}
