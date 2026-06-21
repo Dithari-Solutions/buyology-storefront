@@ -212,15 +212,15 @@ export default function PrivacyPolicyPage() {
             <p>If you are located in India and have a grievance regarding personal data processing, you may contact the Grievance Officer at <a href="mailto:support@buyology.com">support@buyology.com</a>. We will acknowledge complaints within 7 days and aim to resolve them within 30 days in accordance with applicable law.</p>
 
             <h2>12. Children&rsquo;s Privacy</h2>
-            <p>Our services are intended for individuals aged 18 years or older. We do not knowingly collect, use, or disclose personal data from individuals under the age of 18 (or any higher minimum age required by applicable law in your jurisdiction) without verifiable parental or guardian consent where such consent is required.</p>
+            <p>Our services are intended for individuals aged 16 years or older. We do not knowingly collect, use, or disclose personal data from individuals under the age of 16 (or any higher minimum age required by applicable law in your jurisdiction) without verifiable parental or guardian consent where such consent is required.</p>
             <h3>12.1 Age Requirements &amp; Parental Consent</h3>
             <ul>
-                <li>Individuals under 18 may not create an account, make purchases, list products, or otherwise transact on our platform</li>
+                <li>Individuals under 16 may not create an account, make purchases, list products, or otherwise transact on our platform</li>
                 <li>Where applicable law in a jurisdiction sets a higher minimum age for consent to data processing, that higher age applies to users in that jurisdiction</li>
                 <li>Where applicable law permits use of the services by a minor with parental or guardian consent, the parent or guardian is responsible for supervising the minor&rsquo;s use of the services and accepts this Privacy Policy on their behalf</li>
             </ul>
             <h3>12.2 If We Learn We Have Collected a Minor&rsquo;s Data</h3>
-            <p>If we become aware that we have collected personal data from an individual under the age of 18 without appropriate authorization, we will promptly take steps to delete such data from our systems and deactivate any associated account.</p>
+            <p>If we become aware that we have collected personal data from an individual under the age of 16 without appropriate authorization, we will promptly take steps to delete such data from our systems and deactivate any associated account.</p>
             <p>If you are a parent or guardian and believe that your child has provided us with personal data without your consent, please contact us at <a href="mailto:support@buyology.com">support@buyology.com</a> so that we can investigate and take appropriate action.</p>
             <p>We do not knowingly direct advertising or marketing communications to minors, and we do not knowingly sell or share the personal data of minors.</p>
 

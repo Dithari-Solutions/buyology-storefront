@@ -49,13 +49,15 @@ export interface Address {
 }
 
 export interface CreateAddressPayload {
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
+    /** Optional — the simplified form omits these; the backend fills them from the profile. */
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
     label?: AddressLabel;
     addressLine1: string;
     addressLine2?: string;
-    city: string;
+    /** Optional — derived from the map pin; backend falls back to the country when blank. */
+    city?: string;
     state?: string;
     country: string;
     postalCode?: string;

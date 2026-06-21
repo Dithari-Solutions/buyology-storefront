@@ -25,8 +25,6 @@ const COUNTRIES = [
     { code: "RU", name: "Russia" },
 ];
 
-const LABEL_OPTIONS: AddressLabel[] = ["HOME", "WORK", "OTHER"];
-
 const LABEL_COLORS: Record<AddressLabel, string> = {
     HOME: "bg-blue-100 text-blue-700",
     WORK: "bg-purple-100 text-purple-700",
@@ -34,16 +32,10 @@ const LABEL_COLORS: Record<AddressLabel, string> = {
 };
 
 const EMPTY_ADDRESS_FORM: CreateAddressPayload = {
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
     label: "HOME",
     addressLine1: "",
-    addressLine2: "",
     city: "",
-    state: "",
-    country: "AE",
-    postalCode: "",
+    country: "",
     isDefault: false,
     latitude: null,
     longitude: null,
@@ -122,26 +114,21 @@ export default function ShippingStep({
         savedAddresses.length === 0 || !!initialData
     );
 
-    // New address form
+    // New address form (simplified: a single line + map pin; name/phone come from the profile)
     const [addrForm, setAddrForm] = useState<CreateAddressPayload>(
         initialData
             ? {
-                  firstName: initialData.firstName,
-                  lastName: initialData.lastName,
-                  phoneNumber: initialData.phone || profilePhone || "",
                   label: "HOME",
                   addressLine1: initialData.streetAddress,
-                  addressLine2: initialData.apartment || "",
                   city: initialData.city,
-                  state: "",
-                  country: initialData.country,
-                  postalCode: initialData.postalCode || "",
+                  country: initialData.country || selectedCountryCode,
                   isDefault: false,
+                  latitude: initialData.latitude ?? null,
+                  longitude: initialData.longitude ?? null,
               }
-            : { ...EMPTY_ADDRESS_FORM, phoneNumber: profilePhone ?? "" }
+            : { ...EMPTY_ADDRESS_FORM, country: selectedCountryCode }
     );
     const [addrErrors, setAddrErrors] = useState<Partial<Record<keyof CreateAddressPayload, string>>>({});
-    const [saveForLater, setSaveForLater] = useState(initialData?.saveInfo ?? false);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     function setAddrField<K extends keyof CreateAddressPayload>(key: K, value: CreateAddressPayload[K]) {
@@ -151,11 +138,7 @@ export default function ShippingStep({
 
     function validateAddr(): boolean {
         const e: Partial<Record<keyof CreateAddressPayload, string>> = {};
-        if (!addrForm.firstName.trim()) e.firstName = t("validation.required");
-        if (!addrForm.lastName.trim()) e.lastName = t("validation.required");
-        if (!addrForm.phoneNumber.trim()) e.phoneNumber = t("validation.required");
-        if (!addrForm.addressLine1.trim()) e.addressLine1 = t("validation.required");
-        if (!addrForm.city.trim()) e.city = t("validation.required");
+        if (!addrForm.addressLine1?.trim()) e.addressLine1 = t("validation.required");
         setAddrErrors(e);
         return Object.keys(e).length === 0;
     }
@@ -202,26 +185,34 @@ export default function ShippingStep({
             setIsSaving(true);
             setSaveError(null);
             try {
-                let savedAddr: Address | null = null;
-                if (saveForLater) {
-                    savedAddr = await onSaveAddress({ ...addrForm, isDefault: addrForm.isDefault ?? false });
-                }
+                // Always persist the address so the order has a real addressId. Name + phone
+                // are filled server-side from the profile, so we don't collect them here.
+                const savedAddr = await onSaveAddress({
+                    label: addrForm.label ?? "HOME",
+                    addressLine1: addrForm.addressLine1,
+                    city: addrForm.city || undefined,
+                    country: addrForm.country || selectedCountryCode || "AE",
+                    latitude: addrForm.latitude,
+                    longitude: addrForm.longitude,
+                    isDefault: savedAddresses.length === 0,
+                });
 
-                const addr = savedAddr ?? addrForm;
+                const [pf, ...pl] = (profileName ?? "").trim().split(" ");
                 onContinue({
                     email,
-                    phone: "phoneNumber" in addr ? addr.phoneNumber : addrForm.phoneNumber,
-                    firstName: "firstName" in addr ? addr.firstName : addrForm.firstName,
-                    lastName: "lastName" in addr ? addr.lastName : addrForm.lastName,
-                    streetAddress: "addressLine1" in addr ? addr.addressLine1 : addrForm.addressLine1,
-                    apartment: ("addressLine2" in addr ? addr.addressLine2 : addrForm.addressLine2) ?? "",
-                    country: "country" in addr ? addr.country : addrForm.country,
-                    city: "city" in addr ? addr.city : addrForm.city,
-                    postalCode: ("postalCode" in addr ? addr.postalCode : addrForm.postalCode) ?? "",
-                    saveInfo: saveForLater,
-                    addressId: undefined,
-                    latitude: "latitude" in addr ? addr.latitude : addrForm.latitude,
-                    longitude: "longitude" in addr ? addr.longitude : addrForm.longitude,
+                    phone: savedAddr.phoneNumber || profilePhone || "",
+                    firstName: savedAddr.firstName || pf || "",
+                    lastName: savedAddr.lastName || pl.join(" "),
+                    streetAddress: savedAddr.addressLine1,
+                    apartment: savedAddr.addressLine2 ?? "",
+                    country: savedAddr.country,
+                    city: savedAddr.city,
+                    postalCode: savedAddr.postalCode ?? "",
+                    saveInfo: true,
+                    addressId: savedAddr.id,
+                    latitude: savedAddr.latitude,
+                    longitude: savedAddr.longitude,
+                    fulfillment: "DELIVERY",
                 });
             } catch (err) {
                 setSaveError(err instanceof Error ? err.message : "Failed to save address.");
@@ -424,28 +415,7 @@ export default function ShippingStep({
                             </button>
                         )}
 
-                        {/* Label selector */}
-                        <div>
-                            <label className="block text-[13px] font-semibold text-gray-700 mb-2">Address Type</label>
-                            <div className="flex gap-2 flex-wrap">
-                                {LABEL_OPTIONS.map((lbl) => (
-                                    <button
-                                        key={lbl}
-                                        type="button"
-                                        onClick={() => setAddrField("label", lbl)}
-                                        className={`px-4 py-1.5 rounded-full text-[12px] font-semibold border transition-all cursor-pointer ${
-                                            addrForm.label === lbl
-                                                ? "bg-[#402F75] text-white border-[#402F75]"
-                                                : "bg-white text-gray-500 border-gray-200 hover:border-[#402F75]"
-                                        }`}
-                                    >
-                                        {lbl}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Location Picker */}
+                        {/* Location picker — "Use my location" / dragging the pin auto-fills the address */}
                         <LocationPicker
                             initialCoords={
                                 addrForm.latitude && addrForm.longitude
@@ -456,143 +426,36 @@ export default function ShippingStep({
                                 setAddrField("latitude", coords.lat);
                                 setAddrField("longitude", coords.lng);
                             }}
+                            onResolved={(info) => {
+                                setAddrForm((p) => ({
+                                    ...p,
+                                    latitude: info.lat,
+                                    longitude: info.lng,
+                                    addressLine1: info.line || p.addressLine1,
+                                    city: info.city || p.city,
+                                    country: info.countryCode || p.country || selectedCountryCode,
+                                }));
+                                setAddrErrors((p) => ({ ...p, addressLine1: undefined }));
+                            }}
                         />
 
-                        {/* Name row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] font-semibold text-gray-700">
-                                    {t("address.firstName")}<span className="text-red-400 ml-0.5">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={addrForm.firstName}
-                                    onChange={(e) => setAddrField("firstName", e.target.value)}
-                                    placeholder={t("address.placeholder")}
-                                    className={addrErrors.firstName ? inpErr : inp}
-                                />
-                                {addrErrors.firstName && <p className="text-[11px] text-red-500">{addrErrors.firstName}</p>}
-                            </div>
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] font-semibold text-gray-700">
-                                    {t("address.lastName")}<span className="text-red-400 ml-0.5">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={addrForm.lastName}
-                                    onChange={(e) => setAddrField("lastName", e.target.value)}
-                                    placeholder={t("address.placeholder")}
-                                    className={addrErrors.lastName ? inpErr : inp}
-                                />
-                                {addrErrors.lastName && <p className="text-[11px] text-red-500">{addrErrors.lastName}</p>}
-                            </div>
-                        </div>
-
-                        {/* Phone */}
+                        {/* Single-line address — auto-filled from the map, editable */}
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[13px] font-semibold text-gray-700">
-                                {t("contact.phone")}<span className="text-red-400 ml-0.5">*</span>
-                            </label>
-                            <input
-                                type="tel"
-                                maxLength={13}
-                                value={addrForm.phoneNumber}
-                                onChange={(e) => setAddrField("phoneNumber", e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13))}
-                                placeholder="+971501234567"
-                                className={addrErrors.phoneNumber ? inpErr : inp}
-                            />
-                            {addrErrors.phoneNumber && <p className="text-[11px] text-red-500">{addrErrors.phoneNumber}</p>}
-                        </div>
-
-                        {/* Street */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-[13px] font-semibold text-gray-700">
-                                {t("address.street")}<span className="text-red-400 ml-0.5">*</span>
+                                {t("address.addressLine", { defaultValue: "Address" })}<span className="text-red-400 ml-0.5">*</span>
                             </label>
                             <input
                                 type="text"
                                 value={addrForm.addressLine1}
                                 onChange={(e) => setAddrField("addressLine1", e.target.value)}
-                                placeholder={t("address.placeholder")}
+                                placeholder={t("address.addressLinePlaceholder", { defaultValue: "Building, street, area…" })}
                                 className={addrErrors.addressLine1 ? inpErr : inp}
                             />
                             {addrErrors.addressLine1 && <p className="text-[11px] text-red-500">{addrErrors.addressLine1}</p>}
+                            <p className="text-[11px] text-gray-400">
+                                {t("address.simplifiedHint", { defaultValue: "We use your account name & verified phone for delivery." })}
+                            </p>
                         </div>
-
-                        {/* Apartment */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-[13px] font-semibold text-gray-700">
-                                {t("address.apartment")}
-                            </label>
-                            <input
-                                type="text"
-                                value={addrForm.addressLine2 ?? ""}
-                                onChange={(e) => setAddrField("addressLine2", e.target.value)}
-                                placeholder={t("address.placeholder")}
-                                className={inp}
-                            />
-                        </div>
-
-                        {/* Country / City / Postal */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] font-semibold text-gray-700">
-                                    {t("address.country")}<span className="text-red-400 ml-0.5">*</span>
-                                </label>
-                                <div className="relative">
-                                    <select
-                                        value={addrForm.country}
-                                        onChange={(e) => setAddrField("country", e.target.value)}
-                                        className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-[13px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all appearance-none bg-white cursor-pointer pr-9"
-                                    >
-                                        {COUNTRIES.map((c) => (
-                                            <option key={c.code} value={c.code}>{c.name}</option>
-                                        ))}
-                                    </select>
-                                    <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="6 9 12 15 18 9" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] font-semibold text-gray-700">
-                                    {t("address.city")}<span className="text-red-400 ml-0.5">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={addrForm.city}
-                                    onChange={(e) => setAddrField("city", e.target.value)}
-                                    placeholder={t("address.placeholder")}
-                                    className={addrErrors.city ? inpErr : inp}
-                                />
-                                {addrErrors.city && <p className="text-[11px] text-red-500">{addrErrors.city}</p>}
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[13px] font-semibold text-gray-700">
-                                    {t("address.postalCode")}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={addrForm.postalCode ?? ""}
-                                    onChange={(e) => setAddrField("postalCode", e.target.value)}
-                                    placeholder={t("address.placeholder")}
-                                    className={inp}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Save for later */}
-                        <label className="flex items-center gap-2.5 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={saveForLater}
-                                onChange={(e) => setSaveForLater(e.target.checked)}
-                                className="w-4 h-4 rounded border-gray-300 accent-[#402F75] cursor-pointer"
-                            />
-                            <span className="text-[13px] text-gray-600">{t("address.saveInfo")}</span>
-                        </label>
 
                         {saveError && <p className="text-[12px] text-red-500">{saveError}</p>}
                     </div>

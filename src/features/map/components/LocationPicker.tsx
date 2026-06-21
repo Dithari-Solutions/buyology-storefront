@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { reverseGeocode } from "@/features/location/lib/reverseGeocode";
 
 // Open-source CARTO raster basemap (OSM data, no API key for basemaps). HTTPS, so it
 // satisfies the site CSP's `upgrade-insecure-requests`. MapLibre round-robins the subdomains.
@@ -13,16 +14,38 @@ const CARTO_TILES = [
     "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
 ];
 
+export interface ResolvedLocation {
+    lat: number;
+    lng: number;
+    line: string;
+    city: string | null;
+    countryCode: string | null;
+}
+
 interface LocationPickerProps {
     initialCoords?: { lat: number; lng: number };
     onChange: (coords: { lat: number; lng: number }) => void;
+    /** Fired after the pin moves and its address is reverse-geocoded (Use my location / drag). */
+    onResolved?: (info: ResolvedLocation) => void;
 }
 
-export default function LocationPicker({ initialCoords, onChange }: LocationPickerProps) {
+export default function LocationPicker({ initialCoords, onChange, onResolved }: LocationPickerProps) {
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
+    const onResolvedRef = useRef(onResolved);
+    useEffect(() => { onResolvedRef.current = onResolved; }, [onResolved]);
     const [mapError, setMapError] = useState(false);
+    const [locating, setLocating] = useState(false);
+
+    // Reverse-geocode a pin position and bubble the resolved address up.
+    async function resolve(lat: number, lng: number) {
+        if (!onResolvedRef.current) return;
+        setLocating(true);
+        const r = await reverseGeocode(lat, lng);
+        setLocating(false);
+        if (r) onResolvedRef.current({ lat, lng, line: r.line, city: r.city, countryCode: r.countryCode });
+    }
 
     useEffect(() => {
         if (!mapContainerRef.current) return;
@@ -76,6 +99,7 @@ export default function LocationPicker({ initialCoords, onChange }: LocationPick
         marker.on("dragend", () => {
             const lngLat = marker.getLngLat();
             onChange({ lat: lngLat.lat, lng: lngLat.lng });
+            resolve(lngLat.lat, lngLat.lng);
         });
 
         mapRef.current = map;
@@ -88,28 +112,35 @@ export default function LocationPicker({ initialCoords, onChange }: LocationPick
 
     const useMyLocation = () => {
         if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(({ coords }) => {
-            const newPos: [number, number] = [coords.longitude, coords.latitude];
-            mapRef.current?.flyTo({ center: newPos, zoom: 16 });
-            markerRef.current?.setLngLat(newPos);
-            onChange({ lat: coords.latitude, lng: coords.longitude });
-        });
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+                const newPos: [number, number] = [coords.longitude, coords.latitude];
+                mapRef.current?.flyTo({ center: newPos, zoom: 16 });
+                markerRef.current?.setLngLat(newPos);
+                onChange({ lat: coords.latitude, lng: coords.longitude });
+                resolve(coords.latitude, coords.longitude);
+            },
+            () => setLocating(false),
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     };
 
     return (
         <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-gray-600">Pin on Map (Required for Express)</label>
+                <label className="text-[13px] font-medium text-gray-600">Delivery location</label>
                 <button
                     type="button"
                     onClick={useMyLocation}
-                    className="text-[12px] font-bold text-[#402F75] hover:underline flex items-center gap-1"
+                    disabled={locating}
+                    className="text-[12px] font-bold text-[#402F75] hover:underline flex items-center gap-1 disabled:opacity-60"
                 >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={locating ? "animate-spin" : ""}>
                         <circle cx="12" cy="12" r="3" />
                         <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
                     </svg>
-                    Use my location
+                    {locating ? "Locating…" : "Use my location"}
                 </button>
             </div>
             <div className="relative w-full h-[240px] rounded-xl overflow-hidden border border-gray-200">
@@ -121,7 +152,7 @@ export default function LocationPicker({ initialCoords, onChange }: LocationPick
                 )}
             </div>
             <p className="text-[11px] text-gray-400">
-                Drag the purple pin to your exact delivery location.
+                Tap “Use my location” or drag the purple pin — we’ll fill in the address for you.
             </p>
         </div>
     );

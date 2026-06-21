@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import type { Address, AddressLabel, CreateAddressPayload } from "../types";
 import { getAddresses, createAddress, deleteAddress, setDefaultAddress } from "../services/profile.api";
+import { selectSelectedCountryCode } from "@/features/country/store/countrySlice";
 import dynamic from "next/dynamic";
 
 const LocationPicker = dynamic(() => import("@/features/map/components/LocationPicker"), { ssr: false });
@@ -23,8 +24,6 @@ const COUNTRIES = [
     { code: "RU", name: "Russia" },
 ];
 
-const LABEL_OPTIONS: AddressLabel[] = ["HOME", "WORK", "OTHER"];
-
 const LABEL_COLORS: Record<AddressLabel, string> = {
     HOME: "bg-blue-100 text-blue-700",
     WORK: "bg-purple-100 text-purple-700",
@@ -32,16 +31,10 @@ const LABEL_COLORS: Record<AddressLabel, string> = {
 };
 
 const EMPTY_FORM: CreateAddressPayload = {
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
     label: "HOME",
     addressLine1: "",
-    addressLine2: "",
     city: "",
-    state: "",
-    country: "AE",
-    postalCode: "",
+    country: "",
     isDefault: false,
     latitude: null,
     longitude: null,
@@ -61,7 +54,8 @@ function AddressForm({
     error: string | null;
 }) {
     const { t } = useTranslation("profile");
-    const [form, setForm] = useState<CreateAddressPayload>({ ...EMPTY_FORM, ...initial });
+    const selectedCountryCode = useSelector(selectSelectedCountryCode);
+    const [form, setForm] = useState<CreateAddressPayload>({ ...EMPTY_FORM, country: selectedCountryCode, ...initial });
     const [errors, setErrors] = useState<Partial<Record<keyof CreateAddressPayload, string>>>({});
 
     function setField<K extends keyof CreateAddressPayload>(key: K, value: CreateAddressPayload[K]) {
@@ -71,19 +65,15 @@ function AddressForm({
 
     function validate() {
         const e: Partial<Record<keyof CreateAddressPayload, string>> = {};
-        if (!form.firstName.trim()) e.firstName = "Required";
-        if (!form.lastName.trim()) e.lastName = "Required";
-        if (!form.phoneNumber.trim()) e.phoneNumber = "Required";
-        if (!form.addressLine1.trim()) e.addressLine1 = "Required";
-        if (!form.city.trim()) e.city = "Required";
-        if (!form.country.trim()) e.country = "Required";
+        if (!form.addressLine1?.trim()) e.addressLine1 = "Required";
         setErrors(e);
         return Object.keys(e).length === 0;
     }
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (validate()) onSave(form);
+        if (!validate()) return;
+        onSave({ ...form, country: form.country || selectedCountryCode || "AE", city: form.city || undefined });
     }
 
     const inp = "w-full border border-gray-200 rounded-[10px] px-3.5 py-2.5 text-[13px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300";
@@ -91,28 +81,7 @@ function AddressForm({
 
     return (
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-            {/* Label selector */}
-            <div>
-                <label className="block text-[13px] font-medium text-gray-600 mb-2">Address Type</label>
-                <div className="flex gap-2">
-                    {LABEL_OPTIONS.map((lbl) => (
-                        <button
-                            key={lbl}
-                            type="button"
-                            onClick={() => setField("label", lbl)}
-                            className={`px-4 py-1.5 rounded-full text-[12px] font-semibold border transition-all cursor-pointer ${
-                                form.label === lbl
-                                    ? "bg-[#402F75] text-white border-[#402F75]"
-                                    : "bg-white text-gray-500 border-gray-200 hover:border-[#402F75]"
-                            }`}
-                        >
-                            {lbl}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Location Picker */}
+            {/* Location picker — "Use my location" / dragging the pin auto-fills the address */}
             <LocationPicker
                 initialCoords={
                     form.latitude && form.longitude
@@ -123,70 +92,25 @@ function AddressForm({
                     setField("latitude", coords.lat);
                     setField("longitude", coords.lng);
                 }}
+                onResolved={(info) => {
+                    setForm((p) => ({
+                        ...p,
+                        latitude: info.lat,
+                        longitude: info.lng,
+                        addressLine1: info.line || p.addressLine1,
+                        city: info.city || p.city,
+                        country: info.countryCode || p.country || selectedCountryCode,
+                    }));
+                    setErrors((p) => ({ ...p, addressLine1: undefined }));
+                }}
             />
 
-            {/* Name row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">First Name <span className="text-red-400">*</span></label>
-                    <input type="text" value={form.firstName} onChange={(e) => setField("firstName", e.target.value)} placeholder="Ahmed" maxLength={100} className={errors.firstName ? inpErr : inp} />
-                    {errors.firstName && <p className="text-[11px] text-red-500 mt-0.5">{errors.firstName}</p>}
-                </div>
-                <div>
-                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Last Name <span className="text-red-400">*</span></label>
-                    <input type="text" value={form.lastName} onChange={(e) => setField("lastName", e.target.value)} placeholder="Al Mansouri" maxLength={100} className={errors.lastName ? inpErr : inp} />
-                    {errors.lastName && <p className="text-[11px] text-red-500 mt-0.5">{errors.lastName}</p>}
-                </div>
-            </div>
-
-            {/* Phone */}
+            {/* Single-line address — auto-filled from the map, editable */}
             <div>
-                <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Phone <span className="text-red-400">*</span></label>
-                <input type="tel" maxLength={13} value={form.phoneNumber} onChange={(e) => setField("phoneNumber", e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13))} placeholder="+971501234567" className={errors.phoneNumber ? inpErr : inp} />
-                {errors.phoneNumber && <p className="text-[11px] text-red-500 mt-0.5">{errors.phoneNumber}</p>}
-            </div>
-
-            {/* Address line 1 */}
-            <div>
-                <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Address Line 1 <span className="text-red-400">*</span></label>
-                <input type="text" value={form.addressLine1} onChange={(e) => setField("addressLine1", e.target.value)} placeholder="Building 5, Sheikh Zayed Road" className={errors.addressLine1 ? inpErr : inp} />
+                <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Address <span className="text-red-400">*</span></label>
+                <input type="text" value={form.addressLine1} onChange={(e) => setField("addressLine1", e.target.value)} placeholder="Building, street, area…" className={errors.addressLine1 ? inpErr : inp} />
                 {errors.addressLine1 && <p className="text-[11px] text-red-500 mt-0.5">{errors.addressLine1}</p>}
-            </div>
-
-            {/* Address line 2 */}
-            <div>
-                <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Address Line 2 <span className="text-[12px] text-gray-400">(optional)</span></label>
-                <input type="text" value={form.addressLine2 ?? ""} onChange={(e) => setField("addressLine2", e.target.value)} placeholder="Apartment 4B, Floor 2" className={inp} />
-            </div>
-
-            {/* City / State / Country / Postal */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">City <span className="text-red-400">*</span></label>
-                    <input type="text" value={form.city} onChange={(e) => setField("city", e.target.value)} placeholder="Dubai" className={errors.city ? inpErr : inp} />
-                    {errors.city && <p className="text-[11px] text-red-500 mt-0.5">{errors.city}</p>}
-                </div>
-                <div>
-                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">State / Emirate <span className="text-[12px] text-gray-400">(optional)</span></label>
-                    <input type="text" value={form.state ?? ""} onChange={(e) => setField("state", e.target.value)} placeholder="Dubai" className={inp} />
-                </div>
-                <div>
-                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Country <span className="text-red-400">*</span></label>
-                    <div className="relative">
-                        <select value={form.country} onChange={(e) => setField("country", e.target.value)} className={`${inp} appearance-none pr-8 cursor-pointer`}>
-                            {COUNTRIES.map((c) => (
-                                <option key={c.code} value={c.code}>{c.name}</option>
-                            ))}
-                        </select>
-                        <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Postal Code <span className="text-[12px] text-gray-400">(optional)</span></label>
-                    <input type="text" value={form.postalCode ?? ""} onChange={(e) => setField("postalCode", e.target.value)} placeholder="00000" className={inp} />
-                </div>
+                <p className="text-[11px] text-gray-400 mt-1">We use your account name &amp; verified phone for delivery.</p>
             </div>
 
             {/* Set as default */}
@@ -307,7 +231,7 @@ function AddressCard({
     );
 }
 
-export default function DeliveryAddress() {
+export default function DeliveryAddress({ onChanged }: { onChanged?: () => void } = {}) {
     const { t } = useTranslation("profile");
     const userId = useSelector((state: RootState) => state.auth.userId);
 
@@ -342,6 +266,7 @@ export default function DeliveryAddress() {
                 return [...updated, created];
             });
             setShowAddForm(false);
+            onChanged?.();
         } catch (err) {
             setSaveError(err instanceof Error ? err.message : "Failed to save address.");
         } finally {
@@ -355,6 +280,7 @@ export default function DeliveryAddress() {
         try {
             await deleteAddress(userId, addressId);
             setAddresses((prev) => prev.filter((a) => a.id !== addressId));
+            onChanged?.();
         } catch {
             // silent
         } finally {

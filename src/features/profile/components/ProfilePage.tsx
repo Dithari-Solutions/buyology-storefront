@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { RootState } from "@/store";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
@@ -14,14 +15,32 @@ import MembershipDashboard from "@/features/membership/components/MembershipDash
 import type { UserProfile } from "../types";
 import { getProfile } from "../services/profile.api";
 
+const MISSING_LABELS: Record<string, string> = {
+    firstName: "first name",
+    lastName: "surname",
+    phoneNumber: "phone number",
+    phoneVerification: "phone verification",
+    deliveryAddress: "a delivery address",
+};
+
 export default function ProfilePage() {
     const { t } = useTranslation("profile");
     const userId = useSelector((state: RootState) => state.auth.userId);
     const authRestored = useSelector((state: RootState) => state.auth.isRestored);
+    const lang = useSelector((state: RootState) => state.language.lang) as string;
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    // Came here from checkout to finish a required field — show a "return to checkout" prompt.
+    const returnToCheckout = searchParams.get("returnTo") === "checkout";
     const [activeSection, setActiveSection] = useState<Section>("profile");
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [profileLoading, setProfileLoading] = useState(true);
+
+    const refreshProfile = useCallback(() => {
+        if (!userId) return;
+        getProfile(userId).then(setProfile).catch(() => {});
+    }, [userId]);
 
     useEffect(() => {
         if (!userId) return;
@@ -65,7 +84,7 @@ export default function ProfilePage() {
     return (
         <>
             <Header />
-            <main className="w-[90%] mx-auto py-8 md:py-12">
+            <main className={`w-[90%] mx-auto py-8 md:py-12 ${returnToCheckout ? "pb-28" : ""}`}>
                 <div className="mb-6">
                     <h1 className="text-[24px] md:text-[28px] font-bold text-gray-800">
                         {sectionMeta[activeSection].title}
@@ -90,7 +109,7 @@ export default function ProfilePage() {
                                 onProfileUpdate={setProfile}
                             />
                         )}
-                        {activeSection === "delivery" && <DeliveryAddress />}
+                        {activeSection === "delivery" && <DeliveryAddress onChanged={refreshProfile} />}
                         {activeSection === "orders" && (
                             <div className="bg-white rounded-[20px] p-12 shadow-sm flex flex-col items-center justify-center gap-4 text-center">
                                 <div className="w-16 h-16 rounded-full bg-[#EDE9FF] flex items-center justify-center">
@@ -118,6 +137,43 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </main>
+
+            {/* Came from checkout: guide them back once the profile is order-ready. */}
+            {returnToCheckout && profile && (
+                <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 shadow-[0_-6px_20px_-12px_rgba(0,0,0,0.25)]">
+                    <div className="mx-auto flex w-[90%] max-w-3xl items-center justify-between gap-3">
+                        {profile.paymentReady ? (
+                            <>
+                                <p className="text-[13px] font-semibold text-gray-800">
+                                    {t("returnToCheckout.ready", { defaultValue: "You're all set — back to your order." })}
+                                </p>
+                                <button
+                                    onClick={() => router.push(`/${lang}/checkout`)}
+                                    className="inline-flex items-center gap-1.5 rounded-full bg-[#FBBB14] px-5 py-2.5 text-[13px] font-bold text-gray-900 hover:bg-[#f0b000] transition-colors cursor-pointer"
+                                >
+                                    {t("returnToCheckout.button", { defaultValue: "Return to checkout" })}
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="rtl:rotate-180"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-[12px] text-gray-600">
+                                    {t("returnToCheckout.pending", { defaultValue: "Finish these to continue your order:" })}{" "}
+                                    <span className="font-semibold text-gray-800">
+                                        {(profile.missingFields ?? []).map((f) => MISSING_LABELS[f] ?? f).join(", ")}
+                                    </span>
+                                </p>
+                                <button
+                                    onClick={() => router.push(`/${lang}/checkout`)}
+                                    className="text-[12px] font-semibold text-[#402F75] hover:underline whitespace-nowrap cursor-pointer"
+                                >
+                                    {t("returnToCheckout.back", { defaultValue: "Back to checkout" })}
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
             <Footer />
         </>
     );

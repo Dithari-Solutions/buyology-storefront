@@ -45,8 +45,8 @@ function validateProfileForm(form: EditForm): FormErrors {
     const errors: FormErrors = {};
     if (!form.firstName.trim()) errors.firstName = "First name is required.";
     else if (form.firstName.trim().length < 2) errors.firstName = "First name must be at least 2 characters.";
-    if (!form.lastName.trim()) errors.lastName = "Last name is required.";
-    else if (form.lastName.trim().length < 2) errors.lastName = "Last name must be at least 2 characters.";
+    // Surname is optional — only validate length when provided.
+    if (form.lastName.trim() && form.lastName.trim().length < 2) errors.lastName = "Last name must be at least 2 characters.";
     if (form.phoneNumber.trim() && !/^\+?[\d\s\-().]{7,20}$/.test(form.phoneNumber.trim())) errors.phoneNumber = "Enter a valid phone number.";
     if (form.dateOfBirth) {
         const dob = new Date(form.dateOfBirth);
@@ -146,11 +146,16 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
             const updated = await updateProfile(userId, {
                 firstName: form.firstName || undefined,
                 lastName: form.lastName || undefined,
-                phoneNumber: form.phoneNumber || undefined,
+                phoneNumber: form.phoneNumber ? normalizePhone(form.phoneNumber) : undefined,
                 dateOfBirth: form.dateOfBirth || undefined,
             });
             onProfileUpdate(updated);
             setIsEditing(false);
+            // If a phone number is set but not yet verified, start verification right away —
+            // no separate "verify" button. The OTP input appears below for the user to confirm.
+            if (updated.phoneNumber && !updated.phoneVerified) {
+                await startPhoneVerification(updated.phoneNumber);
+            }
         } catch (err) {
             setSaveError(err instanceof Error ? err.message : "Failed to save changes.");
         } finally {
@@ -180,18 +185,23 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
     const [otpVerifying, setOtpVerifying] = useState(false);
     const [otpError, setOtpError] = useState<string | null>(null);
 
-    async function handleSendPhoneOtp() {
-        if (!userId || !profile?.phoneNumber) return;
+    async function startPhoneVerification(phone: string) {
+        if (!userId || !phone) return;
         setOtpError(null);
         setOtpSending(true);
         try {
-            await sendPhoneOtp(userId, normalizePhone(profile.phoneNumber));
+            await sendPhoneOtp(userId, normalizePhone(phone));
             setOtpSent(true);
         } catch (err) {
             setOtpError(extractMessage(err, "Failed to send code. Please try again."));
         } finally {
             setOtpSending(false);
         }
+    }
+
+    // Resend / fallback trigger for an already-saved but still-unverified phone.
+    function handleSendPhoneOtp() {
+        if (profile?.phoneNumber) startPhoneVerification(profile.phoneNumber);
     }
 
     async function handleVerifyPhone() {
@@ -545,7 +555,9 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                     <div className="mt-6 bg-amber-50 border border-amber-200 rounded-[14px] px-4 py-4">
                         <p className="text-[13px] font-semibold text-amber-800 mb-1">Verify your phone number</p>
                         <p className="text-[12px] text-amber-700 mb-3">
-                            A verified phone number is required to complete checkout.
+                            {otpSent
+                                ? `Enter the code we just texted to ${profile.phoneNumber}.`
+                                : "A verified phone number is required to complete checkout."}
                         </p>
                         {!isE164(profile.phoneNumber) ? (
                             <p className="text-[12px] text-amber-700">

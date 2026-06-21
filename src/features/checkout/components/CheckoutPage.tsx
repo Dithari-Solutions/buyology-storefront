@@ -518,8 +518,8 @@ export default function CheckoutPage() {
                             : t("payment.profile.incompleteMessage", { defaultValue: "You need to complete your profile before checkout." })
                     }
                     primaryAction={{
-                        label: t("payment.profile.goToProfile", { defaultValue: "Go to Profile" }),
-                        onClick: () => { window.location.href = `/${lang}/profile`; },
+                        label: t("payment.profile.goToProfile", { defaultValue: "Complete profile" }),
+                        onClick: () => { window.location.href = `/${lang}/profile?returnTo=checkout`; },
                     }}
                 />
 
