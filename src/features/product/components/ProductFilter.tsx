@@ -192,6 +192,13 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
 
   // Selection state
   const [price, setPrice] = useState<[number, number]>([0, 0]);
+  // Tracks whether the user explicitly picked a price range, and the last
+  // lang/country/currency scope we fetched bounds for. Together they let the
+  // bounds refetch (which fires on coords/country/currency change) PRESERVE the
+  // user's price selection on a same-scope refetch instead of silently snapping
+  // the slider back to full range — that snap-back was dropping the user's max cap.
+  const priceTouchedRef = useRef(false);
+  const lastScopeRef = useRef<string | null>(null);
   const [condition, setCondition] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(initialCategoryId ?? null);
 
@@ -206,12 +213,25 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   // Fetch filter options from API
   useEffect(() => {
     setLoading(true);
+    const scope = `${lang}|${countryCode ?? ''}|${currency ?? ''}`;
     getProductFilters(lang, countryCode ?? undefined, currency ?? undefined, coords?.lat, coords?.lng)
       .then(data => {
         setFilters(data);
-        // Price range always starts at 0 (not the cheapest product's price).
         const max = Math.ceil(data.priceRange.max);
-        setPrice([0, max]);
+        // A lang/country/currency change means a new price magnitude, so forget the
+        // old pick and span the full [0, max] range. A SAME-scope refetch (e.g.
+        // geolocation coords resolving after the user already set a price) must KEEP
+        // the user's selection, clamped to the new max — resetting it here silently
+        // dropped their cap and leaked out-of-budget products into the list.
+        if (lastScopeRef.current !== scope) {
+          lastScopeRef.current = scope;
+          priceTouchedRef.current = false;
+        }
+        setPrice(prev =>
+          priceTouchedRef.current
+            ? [Math.min(prev[0], max), Math.min(prev[1], max)]
+            : [0, max]
+        );
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -242,7 +262,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
     });
   }, [filters, price, condition, categoryId, brandIds, availability, specSelections, onFiltersChange]);
 
-  const handlePrice = (v: [number, number]) => { setPrice(v); emitChanges({ price: v }); };
+  const handlePrice = (v: [number, number]) => { priceTouchedRef.current = true; setPrice(v); emitChanges({ price: v }); };
   const handleCondition = (val: string) => {
     const next = condition === val ? null : val;
     setCondition(next); emitChanges({ condition: next });
@@ -269,6 +289,7 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   // Reset every filter back to defaults.
   const clearAll = () => {
     const max = filters ? Math.ceil(filters.priceRange.max) : 0;
+    priceTouchedRef.current = false;
     setPrice([0, max]);
     setCondition(null);
     setCategoryId(null);

@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { verifyOtp, signup } from "@/features/auth/services/auth.api";
 import type { SignUpRequest } from "@/features/auth/types";
 import { setTokens } from "@/shared/lib/tokenManager";
+import { getPendingIntent } from "@/shared/lib/pendingIntent";
 import StatusPopup from "@/features/auth/components/StatusPopup";
 
 type PopupState = {
@@ -135,7 +136,10 @@ export default function OtpForm() {
             message: t("otp.successMsg"),
             subMessage: t("otp.successSub"),
             buttonText: t("authForm.signIn"),
-            onButtonClick: () => router.push(`/${lang}`),
+            // Normally PendingIntentRunner has already replayed the stashed
+            // add-to-cart / buy-now and redirected by the time this shows; this
+            // button is the fallback and still honours that destination.
+            onButtonClick: () => router.push(getPendingIntent()?.returnTo ?? `/${lang}`),
         });
     };
 

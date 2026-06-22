@@ -186,22 +186,29 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
     setPage(1);
     const base = { lang, countryCode, currency, lat: coords?.lat, lng: coords?.lng };
     
+    const hasActiveFilters = !!activeFilters && (
+      activeFilters.minPrice != null || activeFilters.maxPrice != null ||
+      activeFilters.condition || activeFilters.categoryId ||
+      (activeFilters.brandIds && activeFilters.brandIds.length > 0) ||
+      activeFilters.availabilityStatus ||
+      Object.values(activeFilters.specs ?? {}).some((v) => v && v.length > 0)
+    );
+
     let fetchPromise;
-    if (query) {
+    if (query && !hasActiveFilters) {
+      // Pure text search → Elastic for best relevance (no filters to honor).
       fetchPromise = searchProductsElastic({ ...base, query });
+    } else if (hasActiveFilters) {
+      // Filters active (with or without a text term) → /api/product/search, which
+      // applies the price/spec/condition filters AND the text query (bound as `q`).
+      // The elastic endpoint IGNORES price params, so a filtered search must never
+      // route there — doing so dropped the price cap and leaked out-of-budget items.
+      fetchPromise = searchProducts({ ...base, ...activeFilters, specs: activeFilters!.specs, sort, query: query ?? undefined });
     } else {
-      const hasActiveFilters = activeFilters && (
-        activeFilters.minPrice != null || activeFilters.maxPrice != null ||
-        activeFilters.condition || activeFilters.categoryId ||
-        (activeFilters.brandIds && activeFilters.brandIds.length > 0) ||
-        activeFilters.availabilityStatus ||
-        Object.values(activeFilters.specs ?? {}).some((v) => v && v.length > 0)
-      );
-      fetchPromise = hasActiveFilters
-        ? searchProducts({ ...base, ...activeFilters, specs: activeFilters!.specs, sort })
-        // Backend paginates /api/product (default 60). The grid paginates
-        // client-side, so request the full catalog (backend is batch-loaded → fast).
-        : getProducts({ ...base, size: 1000, sort });
+      // No query, no filters → full catalog. Backend paginates /api/product
+      // (default 60); the grid paginates client-side, so request the whole
+      // catalog (backend is batch-loaded → fast).
+      fetchPromise = getProducts({ ...base, size: 1000, sort });
     }
 
     fetchPromise
@@ -367,7 +374,15 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
             const displayCurrency = product.currency ?? currency;
             // Original (pre-discount) price comes from the store-scoped originalPrice
             // (set by the backend only when discounted). discount = amount off.
-            const original = product.originalPrice ?? null;
+            const rawOriginal = product.originalPrice ?? null;
+            // When a max-price filter is active, hide the struck-through original
+            // (and the discount badge) if the original exceeds the cap. The item is
+            // in budget by its sale price — the filter correctly keeps it — but a
+            // >max original just reads as an out-of-range product leaking in.
+            const activeMax = activeFilters?.maxPrice;
+            const original = activeMax != null && rawOriginal != null && rawOriginal > activeMax
+              ? null
+              : rawOriginal;
             const discountAmount = original != null && original > displayPrice
               ? original - displayPrice
               : 0;

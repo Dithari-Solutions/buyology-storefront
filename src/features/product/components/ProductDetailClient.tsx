@@ -18,6 +18,7 @@ import { getRefundSettings } from "@/features/refund/services/refundService";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
 import { setBuyNow } from "@/features/buyNow/store/buyNowSlice";
+import { setPendingIntent } from "@/shared/lib/pendingIntent";
 import { getAccessToken } from "@/shared/lib/tokenManager";
 import type { AppDispatch, RootState } from "@/store";
 import type { Lang } from "@/config/pathSlugs";
@@ -254,7 +255,23 @@ export default function ProductDetailClient({ product: initialProduct, images: i
   }
 
   async function handleAddToCart() {
-    if (!requireAuth()) return;
+    if (!requireAuth()) {
+      // Guest: stash the add so it's replayed after sign-in, then land on the cart.
+      const storeId = product.storeId ?? product.storeOptions?.[0]?.storeId ?? "";
+      if (storeId) {
+        setPendingIntent({
+          kind: "cart",
+          returnTo: `/${lang}/cart`,
+          ts: Date.now(),
+          cart: {
+            payload: { storeId, productId: product.id, quantity: 1 },
+            displayMeta: buildCartDisplayMeta(),
+            tempId: `cart-${product.id}-${Date.now()}`,
+          },
+        });
+      }
+      return;
+    }
     const ok = await persistToBackendCart();
     if (!ok) {
       // Backend rejected. If the session died mid-request (invalid/expired
@@ -307,12 +324,11 @@ export default function ProductDetailClient({ product: initialProduct, images: i
   }
 
   function handleBuyNow() {
-    if (!requireAuth()) return;
     // Buy Now checks out ONLY this product — never the cart. Stash it and hand
     // off to a dedicated single-item checkout (?buyNow=1).
     const storeId = product.storeId ?? product.storeOptions?.[0]?.storeId;
     if (!storeId) return;
-    dispatch(setBuyNow({
+    const buyNowItem = {
       productId: product.id,
       storeId,
       quantity: 1,
@@ -325,7 +341,19 @@ export default function ProductDetailClient({ product: initialProduct, images: i
       currency: product.currency ?? "USD",
       shippingFee: product.freeDelivery ? 0 : (product.deliveryFee ?? 0),
       quickDelivery: product.expressDelivery ?? false,
-    }));
+    };
+    if (!requireAuth()) {
+      // Guest: stash the single-item buy so checkout has it after sign-in,
+      // then send them straight to the checkout page.
+      setPendingIntent({
+        kind: "buyNow",
+        returnTo: `/${lang}/checkout?buyNow=1`,
+        ts: Date.now(),
+        buyNow: buyNowItem,
+      });
+      return;
+    }
+    dispatch(setBuyNow(buyNowItem));
     router.push(`/${lang}/checkout?buyNow=1`);
   }
 

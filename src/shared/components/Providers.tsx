@@ -10,6 +10,7 @@ import HtmlLangDir from "@/shared/components/HtmlLangDir";
 import AppIntro from "@/shared/components/AppIntro";
 import PageTransition from "@/shared/components/PageTransition";
 import SignupGate from "@/shared/components/SignupGate";
+import PendingIntentRunner from "@/shared/components/PendingIntentRunner";
 import { tryRestoreSession } from "@/shared/lib/tokenManager";
 import { initFromLocalStorage, fetchCountriesThunk, setCountryThunk } from "@/features/country/store/countrySlice";
 import { findCountryByAlias } from "@/features/country/lib/match";
@@ -137,6 +138,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <AuthInitializer />
         <CountryInitializer />
         <GeolocationInitializer />
+        <PendingIntentRunner />
         <AppShell>{children}</AppShell>
       </I18nextProvider>
     </Provider>

@@ -15,6 +15,7 @@ import AuthToggler from "@/features/auth/components/AuthToggler";
 import SocialButtons from "@/features/auth/components/SocialButtons";
 import { signup, signin } from "@/features/auth/services/auth.api";
 import { setTokens } from "@/shared/lib/tokenManager";
+import { hasPendingIntent } from "@/shared/lib/pendingIntent";
 import {
     validateEmail,
     validateSignInPassword,
@@ -126,7 +127,10 @@ export default function AuthForm() {
             return;
         }
         setTokens(res.data!.accessToken, res.data!.expiresIn);
-        router.push(`/${lang}`);
+        // If the user got here from a guarded action (add-to-cart / buy-now),
+        // PendingIntentRunner replays it and redirects to the cart / checkout —
+        // don't push home and fight that navigation.
+        if (!hasPendingIntent()) router.push(`/${lang}`);
     };
 
     // From the "no account" prompt: switch the form to sign-up, keeping the typed email.
