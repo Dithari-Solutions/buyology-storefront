@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { getAccessToken } from "@/shared/lib/tokenManager";
+import { setPendingIntent, type PendingIntent } from "@/shared/lib/pendingIntent";
 import LoginPromptModal from "@/features/auth/components/LoginPromptModal";
 
 /**
@@ -39,8 +40,12 @@ export function useLoginGate() {
 
   const openLoginPrompt = () => setOpen(true);
 
-  const requireAuth = (): boolean => {
+  // Pass an `intent` (built via cartIntent/buyNowIntent) so that, after the user
+  // signs in, PendingIntentRunner replays the action and redirects to the cart /
+  // checkout instead of dropping them on the home page.
+  const requireAuth = (intent?: PendingIntent): boolean => {
     if (isAuthed()) return true;
+    if (intent) setPendingIntent(intent);
     setOpen(true);
     return false;
   };

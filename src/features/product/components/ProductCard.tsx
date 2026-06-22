@@ -20,6 +20,7 @@ import AlertModal from "@/shared/components/AlertModal";
 import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import LoginPromptModal from "@/features/auth/components/LoginPromptModal";
 import { getAccessToken } from "@/shared/lib/tokenManager";
+import { setPendingIntent, cartIntent } from "@/shared/lib/pendingIntent";
 
 interface ProductCardProps {
   view?: 'grid' | 'list';
@@ -224,6 +225,10 @@ export default function ProductCard({
   async function handleAddToCart(e: React.MouseEvent) {
     e.stopPropagation();
     if (!userId) {
+      // Guest → stash the add so it's replayed after sign-in and the user lands
+      // on the cart, not the home page.
+      const resolvedStoreId = selectedStoreId ?? storeId ?? "";
+      if (resolvedStoreId) setPendingIntent(cartIntent(lang, resolvedStoreId, productId, buildDisplayMeta()));
       setShowLoginPrompt(true);
       return;
     }
@@ -252,7 +257,9 @@ export default function ProductCard({
           "You can only purchase products from stores in your selected country. Go to Profile → Country Settings to change your home country."
         );
       } else if (!getAccessToken()) {
-        // Session died mid-request (invalid/expired token) → prompt sign-in.
+        // Session died mid-request (invalid/expired token) → stash the add and
+        // prompt sign-in so it completes after re-login (landing on the cart).
+        if (resolvedStoreId) setPendingIntent(cartIntent(lang, resolvedStoreId, productId, buildDisplayMeta()));
         setShowLoginPrompt(true);
       } else {
         setAddToCartError("Couldn't add to cart. Please try again.");

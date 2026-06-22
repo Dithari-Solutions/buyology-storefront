@@ -13,6 +13,7 @@ import type { AppDispatch, RootState } from "@/store";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { getPrimaryImage } from "@/features/product/services/productService";
 import { addItem, selectCartItems } from "@/features/cart/store/cartSlice";
+import { cartIntent } from "@/shared/lib/pendingIntent";
 import {
     addToFavouritesThunk,
     removeFromFavouritesThunk,
@@ -71,7 +72,20 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
 
     function handleAddToCart(e: React.MouseEvent) {
         e.stopPropagation();
-        if (!requireAuth()) return;
+        // Guest → stash the add (with the store + display data) so it's replayed
+        // after sign-in and the user lands on the cart, not the home page.
+        const storeId = product.storeId ?? product.storeOptions?.[0]?.storeId ?? "";
+        if (!requireAuth(storeId ? cartIntent(lang, storeId, product.id, {
+            productId: product.id,
+            title: product.title,
+            imageUrl: imageUrl || "",
+            variant: { color: product.colors?.[0] ?? "", storage: "" },
+            price: effectivePrice,
+            originalPrice: basePrice,
+            discountPercent,
+            quantity: 1,
+            savedForLater: false,
+        }) : undefined)) return;
         if (isInCart) return;
         dispatch(
             addItem({

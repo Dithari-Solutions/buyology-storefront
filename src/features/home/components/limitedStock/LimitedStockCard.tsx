@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
 import { setBuyNow } from "@/features/buyNow/store/buyNowSlice";
+import { buyNowIntent } from "@/shared/lib/pendingIntent";
 import type { AppDispatch } from "@/store";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { getPrimaryImage } from "@/features/product/services/productService";
@@ -69,12 +70,11 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
     };
 
     function handleBuyNow() {
-        if (!requireAuth()) return;
         // Buy Now checks out ONLY this product (never the cart) via the dedicated
         // single-item flow — same as the product detail page.
         const storeId = product.storeId ?? product.storeOptions?.[0]?.storeId;
         if (!storeId) return;
-        dispatch(setBuyNow({
+        const buyNowItem = {
             productId: product.id,
             storeId,
             quantity: 1,
@@ -85,7 +85,11 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
             currency: product.currency ?? "USD",
             shippingFee: product.freeDelivery ? 0 : (product.deliveryFee ?? 0),
             quickDelivery: product.expressDelivery ?? false,
-        }));
+        };
+        // Guest → stash the single-item buy so it's replayed after sign-in and the
+        // user lands on checkout, not the home page.
+        if (!requireAuth(buyNowIntent(lang, buyNowItem))) return;
+        dispatch(setBuyNow(buyNowItem));
         router.push(`/${lang}/checkout?buyNow=1`);
     }
 

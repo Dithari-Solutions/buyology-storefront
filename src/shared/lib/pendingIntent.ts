@@ -68,3 +68,36 @@ export function clearPendingIntent(): void {
 export function hasPendingIntent(): boolean {
   return getPendingIntent() !== null;
 }
+
+/**
+ * Build an "add this to cart after login, then go to the cart" intent. Shared by
+ * every add-to-cart surface (product detail + listing/home cards) so the post-login
+ * replay+redirect behaves identically everywhere.
+ */
+export function cartIntent(
+  lang: string,
+  storeId: string,
+  productId: string,
+  displayMeta: Omit<CartItemMeta, "id" | "cartItemId" | "pending">,
+): PendingIntent {
+  return {
+    kind: "cart",
+    returnTo: `/${lang}/cart`,
+    ts: Date.now(),
+    cart: {
+      payload: { storeId, productId, quantity: 1 },
+      displayMeta,
+      tempId: `cart-${productId}-${Date.now()}`,
+    },
+  };
+}
+
+/** Build a "check this single item out after login, then go to checkout" intent. */
+export function buyNowIntent(lang: string, buyNow: BuyNowItem): PendingIntent {
+  return {
+    kind: "buyNow",
+    returnTo: `/${lang}/checkout?buyNow=1`,
+    ts: Date.now(),
+    buyNow,
+  };
+}
