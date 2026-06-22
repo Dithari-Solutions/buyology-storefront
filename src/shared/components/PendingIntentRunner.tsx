@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import type { AppDispatch, RootState } from "@/store";
@@ -19,34 +19,43 @@ export default function PendingIntentRunner() {
   const userId = useSelector((s: RootState) => s.auth.userId);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const ran = useRef(false);
 
   useEffect(() => {
-    if (!userId || ran.current) return;
+    if (!userId) return;
     const intent = getPendingIntent();
     if (!intent) return;
 
-    // Consume immediately so a re-render or a second login can't double-fire it.
-    ran.current = true;
+    // Consume immediately so a re-render within the SAME login can't double-fire
+    // it. We deliberately do NOT keep a permanent "already ran" latch: a later
+    // guest action followed by another sign-in (e.g. buy-now, then log out, then
+    // add-to-cart) must be able to replay again. clearPendingIntent() is the only
+    // guard needed — a second run finds no intent and returns.
     clearPendingIntent();
 
-    (async () => {
+    if (intent.kind === "buyNow") {
+      // Stage the item BEFORE navigating — the checkout page reads the buyNow slice.
+      dispatch(setBuyNow(intent.buyNow));
+      router.replace(intent.returnTo);
+      return;
+    }
+
+    // Cart: persist to the backend first so the cart page shows the item on load,
+    // but cap the wait — a slow or failed request must never strand the user on
+    // the auth page. Navigate regardless once the add settles or the cap elapses.
+    void (async () => {
       try {
-        if (intent.kind === "cart") {
-          await dispatch(
+        await Promise.race([
+          dispatch(
             addToCartThunk({
               userId,
               payload: intent.cart.payload,
               displayMeta: intent.cart.displayMeta,
               tempId: intent.cart.tempId,
             }),
-          );
-        } else if (intent.kind === "buyNow") {
-          dispatch(setBuyNow(intent.buyNow));
-        }
+          ),
+          new Promise((resolve) => setTimeout(resolve, 3000)),
+        ]);
       } finally {
-        // Land them where the action was headed (cart / single-item checkout),
-        // even if the cart-add failed — they can retry from there.
         router.replace(intent.returnTo);
       }
     })();
