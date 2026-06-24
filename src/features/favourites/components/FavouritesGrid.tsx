@@ -6,9 +6,9 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
 import { selectFavouriteItems, selectFavouritesLoading, clearAllFavouritesThunk } from "../store/favouritesSlice";
 import { selectPreferredCurrency } from "@/features/country/store/countrySlice";
-import { addItem } from "@/features/cart/store/cartSlice";
+import { addToCartThunk } from "@/features/cart/store/cartSlice";
 import { getProductFilters } from "@/features/product/services/productService";
-import type { AppDispatch } from "@/store";
+import type { AppDispatch, RootState } from "@/store";
 import type { Lang } from "@/config/pathSlugs";
 import ProductCard from "@/features/product/components/ProductCard";
 import FavouritesEmptyItems from "./FavouritesEmptyItems";
@@ -21,7 +21,9 @@ export default function FavouritesGrid() {
     const lang = (params?.lang as Lang) ?? "en";
     const items = useSelector(selectFavouriteItems);
     const loading = useSelector(selectFavouritesLoading);
+    const userId = useSelector((s: RootState) => s.auth.userId);
     const [activeCategory, setActiveCategory] = useState<string>("all");
+    const [addingAll, setAddingAll] = useState(false);
 
     // Resolve category id → name so the filter tabs show real labels.
     const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
@@ -43,21 +45,44 @@ export default function FavouritesGrid() {
             ? items
             : items.filter((i) => i.category === activeCategory);
 
-    const handleAddAllToCart = () => {
-        items.forEach((item, idx) => {
-            dispatch(addItem({
-                id: `cart-${item.id}-${Date.now()}-${idx}`,
-                productId: item.id,
-                title: item.title,
-                imageUrl: item.imageUrl ?? "",
-                variant: { color: "", storage: item.storage ?? "" },
-                price: item.price,
-                originalPrice: item.originalPrice,
-                discountPercent: item.originalPrice > 0 ? Math.round((item.discount / item.originalPrice) * 100) : 0,
-                quantity: 1,
-                savedForLater: false,
-            }));
-        });
+    const handleAddAllToCart = async () => {
+        if (!userId || addingAll) return;
+        setAddingAll(true);
+        try {
+            // Persist via the backend thunk — NOT the local `addItem` reducer. Items
+            // added only to local Redux are wiped the moment the cart/checkout page
+            // re-fetches (mergeApiItems rebuilds the cart from the API response), so
+            // they'd silently disappear before checkout.
+            //
+            // Add SEQUENTIALLY (await each): the backend has no unique active-cart
+            // constraint, so firing these in parallel would race in
+            // findOrCreateActiveCart and split items across orphan carts. Awaiting
+            // each lets the first add create the cart and the rest reuse it.
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const storeId = item.storeId ?? item.storeOptions?.[0]?.storeId;
+                // Skip what can't be carted: no store, or not sold in the user's country.
+                if (!storeId || item.availableInSelectedCountry === false) continue;
+                await dispatch(addToCartThunk({
+                    userId,
+                    payload: { storeId, productId: item.id, quantity: 1 },
+                    displayMeta: {
+                        productId: item.id,
+                        title: item.title,
+                        imageUrl: item.imageUrl ?? "",
+                        variant: { color: "", storage: item.storage ?? "" },
+                        price: item.price,
+                        originalPrice: item.originalPrice,
+                        discountPercent: item.originalPrice > 0 ? Math.round((item.discount / item.originalPrice) * 100) : 0,
+                        quantity: 1,
+                        savedForLater: false,
+                    },
+                    tempId: `cart-${item.id}-${Date.now()}-${i}`,
+                }));
+            }
+        } finally {
+            setAddingAll(false);
+        }
     };
 
     const inStockCount = items.filter((i) => i.inStock).length;
@@ -173,7 +198,8 @@ export default function FavouritesGrid() {
                 <div className="flex items-center gap-[10px]">
                     <button
                         onClick={handleAddAllToCart}
-                        className="flex items-center gap-[7px] bg-[#FBBB14] text-white rounded-[30px] px-[16px] py-[8px] text-[13px] font-bold hover:bg-[#f0b000] transition-colors cursor-pointer"
+                        disabled={addingAll || items.length === 0}
+                        className="flex items-center gap-[7px] bg-[#FBBB14] text-white rounded-[30px] px-[16px] py-[8px] text-[13px] font-bold hover:bg-[#f0b000] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="9" cy="21" r="1" />
