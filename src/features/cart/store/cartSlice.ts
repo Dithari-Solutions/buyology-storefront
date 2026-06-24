@@ -123,7 +123,7 @@ export const updateQuantityThunk = createAsyncThunk(
             const result = await updateCartItemQuantity(arg.cartItemId, arg.quantity);
             return { result, localId: arg.localId, quantity: arg.quantity };
         } catch {
-            return rejectWithValue({ localId: arg.localId, previousQuantity: arg.previousQuantity });
+            return rejectWithValue({ localId: arg.localId, previousQuantity: arg.previousQuantity, quantity: arg.quantity });
         }
     }
 );
@@ -394,20 +394,24 @@ const cartSlice = createSlice({
             };
             const stateItem = state.items.find((i) => i.id === localId);
             if (!stateItem) return;
+            // Out-of-order / stale-response guard: if a newer click already moved the
+            // quantity away from what THIS request set, ignore this response so the
+            // displayed value doesn't bounce back to an older number.
+            if (stateItem.quantity !== quantity) return;
             if (result) {
                 const apiItem = result.items.find((i) => i.id === localId);
                 if (apiItem) stateItem.quantity = apiItem.quantity;
-            } else {
-                // 200 but no body — keep the optimistic quantity
-                stateItem.quantity = quantity;
             }
+            // else: 200 with no body — the optimistic value is already correct.
         });
 
         builder.addCase(updateQuantityThunk.rejected, (state, action) => {
-            const payload = action.payload as { localId: string; previousQuantity: number } | undefined;
+            const payload = action.payload as { localId: string; previousQuantity: number; quantity: number } | undefined;
             if (payload) {
                 const item = state.items.find((i) => i.id === payload.localId);
-                if (item) item.quantity = payload.previousQuantity;
+                // Only revert if the value that failed is still the one showing — a stale
+                // failure must not clobber a fresh optimistic quantity from a newer click.
+                if (item && item.quantity === payload.quantity) item.quantity = payload.previousQuantity;
             }
         });
     },

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
@@ -39,34 +40,48 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
 
     const subtotal = (item.price * item.quantity).toFixed(2);
 
-    function handleDecrement() {
-        if (item.quantity <= 1) return;
-        const newQty = item.quantity - 1;
+    // Debounce the server sync: a burst of +/- clicks sends ONE PATCH with the
+    // final quantity. Firing a PATCH per click let responses arrive out of order
+    // and bounce the displayed number (e.g. 8 → back to 7). The optimistic Redux
+    // value updates instantly so the stepper stays snappy.
+    const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const baselineRef = useRef(item.quantity);   // quantity before the current click-burst
+    const optimisticRef = useRef(item.quantity); // latest intended qty (survives rapid clicks)
+    const pendingRef = useRef<{ cartItemId: string; localId: string; quantity: number; previousQuantity: number } | null>(null);
+    const flushRef = useRef<() => void>(() => {});
+
+    useEffect(() => { optimisticRef.current = item.quantity; }, [item.quantity]);
+
+    // Keep flushRef pointing at a fresh closure (current userId/dispatch). It sends
+    // the debounced quantity sync if one is pending — called when the timer fires AND
+    // on unmount, so navigating away within the debounce window never drops the change.
+    useEffect(() => {
+        flushRef.current = () => {
+            if (syncTimer.current) { clearTimeout(syncTimer.current); syncTimer.current = null; }
+            const p = pendingRef.current;
+            pendingRef.current = null;
+            if (p && userId) {
+                dispatch(updateQuantityThunk({ userId, cartItemId: p.cartItemId, localId: p.localId, quantity: p.quantity, previousQuantity: p.previousQuantity }));
+            }
+        };
+    });
+    useEffect(() => () => flushRef.current(), []);
+
+    function step(delta: number) {
+        const newQty = optimisticRef.current + delta;
+        if (newQty < 1) return;
+        // Capture the pre-burst quantity once, so a failed sync reverts to it.
+        if (syncTimer.current === null) baselineRef.current = item.quantity;
+        optimisticRef.current = newQty;
         dispatch(updateQuantity({ id: item.id, quantity: newQty }));
-        if (userId && item.cartItemId) {
-            dispatch(updateQuantityThunk({
-                userId,
-                cartItemId: item.cartItemId,
-                localId: item.id,
-                quantity: newQty,
-                previousQuantity: item.quantity,
-            }));
-        }
+        if (!userId || !item.cartItemId) return;
+        pendingRef.current = { cartItemId: item.cartItemId, localId: item.id, quantity: newQty, previousQuantity: baselineRef.current };
+        if (syncTimer.current) clearTimeout(syncTimer.current);
+        syncTimer.current = setTimeout(() => flushRef.current(), 450);
     }
 
-    function handleIncrement() {
-        const newQty = item.quantity + 1;
-        dispatch(updateQuantity({ id: item.id, quantity: newQty }));
-        if (userId && item.cartItemId) {
-            dispatch(updateQuantityThunk({
-                userId,
-                cartItemId: item.cartItemId,
-                localId: item.id,
-                quantity: newQty,
-                previousQuantity: item.quantity,
-            }));
-        }
-    }
+    function handleDecrement() { step(-1); }
+    function handleIncrement() { step(1); }
 
     function handleRemove() {
         dispatch(removeItem(item.id));
@@ -142,7 +157,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                     ) : (
                         <h3 className="font-bold text-[15px] sm:text-[17px] md:text-[19px] text-gray-900 leading-snug line-clamp-2 pe-16 sm:pe-0 min-w-0 break-words">{item.title}</h3>
                     )}
-                    <div className="flex sm:flex-col items-baseline sm:items-end gap-2 sm:gap-0.5 flex-shrink-0">
+                    <div className={`flex sm:flex-col items-baseline sm:items-end gap-2 sm:gap-0.5 flex-shrink-0 ${item.quickDelivery ? "sm:mt-7" : ""}`}>
                         <span className="text-[#402F75] font-extrabold text-[16px] sm:text-[18px] md:text-[20px] whitespace-nowrap tracking-tight">
                             {currency} {(item.price ?? 0).toLocaleString()}
                         </span>
