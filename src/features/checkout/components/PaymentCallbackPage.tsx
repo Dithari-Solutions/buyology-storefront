@@ -31,6 +31,18 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderId, setOrderId] = useState<string | null>(null);
 
+    // Native app: Paymob redirects here (it only accepts https), and the mobile app
+    // tags the URL with `app=mobile&scheme=buyology...`. Bounce straight back into the
+    // app's deep link so the in-app browser auto-closes and the app finalizes payment.
+    // The scheme is validated (buyology only) to avoid an open redirect; the web flow
+    // (no app=mobile) falls through to the normal polling UI below.
+    useEffect(() => {
+        if (searchParams.get("app") !== "mobile") return;
+        const scheme = searchParams.get("scheme") ?? "";
+        if (!/^buyology(\.[a-z]+)?$/.test(scheme)) return;
+        window.location.replace(`${scheme}://payment-status?${searchParams.toString()}`);
+    }, [searchParams]);
+
     const pollTransactionStatus = useCallback(
         async (transactionId: string, attempts = 0) => {
             if (attempts >= MAX_POLL_ATTEMPTS) {
