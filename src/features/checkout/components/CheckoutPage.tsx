@@ -346,10 +346,13 @@ export default function CheckoutPage() {
                 // ── Retry path: order already created, skip checkout + order creation ──
                 finalShippingFee = pendingShippingFee;
                 orderId = pendingOrderId;
-                payAmount = isBuyNow && pendingAmount != null
+                // Prefer the saved AUTHORITATIVE order amount/currency (persisted when the
+                // order was created) over a client re-derivation — for cart and Buy Now alike,
+                // so a retry can't drift from the order total and fail the amount-match check.
+                payAmount = pendingAmount != null
                     ? pendingAmount
                     : parseFloat((totals.subtotal - totals.promoDiscount + finalShippingFee).toFixed(2));
-                payCurrency = isBuyNow && pendingCurrency ? pendingCurrency : cartCurrency;
+                payCurrency = pendingCurrency ?? cartCurrency;
                 payCartId = isBuyNow ? undefined : (cartId ?? undefined);
             } else if (isBuyNow) {
                 // ── Buy Now: order ONLY this product (the backend builds a throwaway
@@ -402,13 +405,20 @@ export default function CheckoutPage() {
                     couponCode: promo.applied && promo.code ? promo.code : undefined,
                 });
                 orderId = order.id;
-                payAmount = parseFloat((totals.subtotal - totals.promoDiscount + finalShippingFee).toFixed(2));
-                payCurrency = cartCurrency;
+                // Pay the order's AUTHORITATIVE total/currency — never a client re-derivation
+                // (subtotal − promo + fee). The server is the source of truth, so re-deriving
+                // drifts from order.totalAmount and trips the payment amount-match check. This
+                // is exposed by store pickup (fee = 0, so a selected-vs-whole-cart / promo-clamp
+                // / rounding difference is no longer masked by a shipping fee). Mirrors Buy Now.
+                payAmount = order.totalAmount;
+                payCurrency = order.currency ?? cartCurrency;
                 payCartId = cartId ?? undefined;
 
-                // Persist so retries reuse the same order
+                // Persist so retries reuse the same order + its authoritative amount.
                 setPendingOrderId(order.id);
                 setPendingShippingFee(finalShippingFee);
+                setPendingAmount(order.totalAmount);
+                setPendingCurrency(order.currency);
             }
 
             // Step 3a — Apply B2B credit if the user enabled it
