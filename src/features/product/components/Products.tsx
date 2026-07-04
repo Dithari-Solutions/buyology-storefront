@@ -375,17 +375,32 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
             // Original (pre-discount) price comes from the store-scoped originalPrice
             // (set by the backend only when discounted). discount = amount off.
             const rawOriginal = product.originalPrice ?? null;
+            const activeMin = activeFilters?.minPrice;
+            const activeMax = activeFilters?.maxPrice;
             // When a max-price filter is active, hide the struck-through original
             // (and the discount badge) if the original exceeds the cap. The item is
             // in budget by its sale price — the filter correctly keeps it — but a
             // >max original just reads as an out-of-range product leaking in.
-            const activeMax = activeFilters?.maxPrice;
             const original = activeMax != null && rawOriginal != null && rawOriginal > activeMax
               ? null
               : rawOriginal;
             const discountAmount = original != null && original > displayPrice
               ? original - displayPrice
               : 0;
+            // The backend only price-filters the primary (headline) storePrice, but a
+            // multi-store product (e.g. UAE express + standard) also surfaces sibling
+            // store options whose prices aren't capped. Drop any option outside the
+            // selected range so an out-of-budget price (e.g. 1600 when max is 1200)
+            // can't leak onto an in-budget card. The primary always passes the range,
+            // so it's never removed.
+            const visibleStoreOptions =
+              (activeMin == null && activeMax == null) || !product.storeOptions
+                ? product.storeOptions
+                : product.storeOptions.filter(
+                    (o) =>
+                      (activeMin == null || o.storePrice >= activeMin) &&
+                      (activeMax == null || o.storePrice <= activeMax)
+                  );
             return (
               <ProductCard
                 key={product.id}
@@ -404,7 +419,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 storage={storage ? `${storage} SSD` : undefined}
                 imageUrl={getPrimaryImage(product.media)}
                 expressDelivery={product.expressDelivery}
-                storeOptions={product.storeOptions}
+                storeOptions={visibleStoreOptions}
                 availableInSelectedCountry={product.availableInSelectedCountry}
                 rating={Number(product.averageRating ?? 0)}
                 isSuperDeal={product.isSuperDeal}

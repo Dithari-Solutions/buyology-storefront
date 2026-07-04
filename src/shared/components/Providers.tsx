@@ -8,7 +8,6 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "@/shared/i18n";
 import HtmlLangDir from "@/shared/components/HtmlLangDir";
 import AppIntro from "@/shared/components/AppIntro";
-import PageTransition from "@/shared/components/PageTransition";
 import SignupGate from "@/shared/components/SignupGate";
 import PendingIntentRunner from "@/shared/components/PendingIntentRunner";
 import { tryRestoreSession } from "@/shared/lib/tokenManager";
@@ -121,9 +120,11 @@ function GeolocationInitializer() {
 function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* AppIntro = initial page load/refresh; PageTransition = client-side route changes. */}
+      {/* AppIntro = the branded Buyology intro, played once per full page load/refresh.
+          Client-side route changes deliberately DON'T replay it — they fall back to the
+          per-route skeletons (loading.tsx) so navigation feels instant, not gated behind
+          the full-screen animation. */}
       <AppIntro />
-      <PageTransition />
       <SignupGate />
       {children}
     </>
