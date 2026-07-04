@@ -1,22 +1,19 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import Preloader from "@/shared/components/Preloader";
+import dynamic from "next/dynamic";
+
+// The intro decides whether to play by reading sessionStorage (a client-only, per-session
+// flag), so it must not server-render. ssr:false keeps the decision purely client-side —
+// no hydration mismatch — and defers the intro/Preloader code out of the bundle for
+// returning visitors, who never see it.
+const AppIntroClient = dynamic(() => import("@/shared/components/AppIntroClient"), {
+    ssr: false,
+});
 
 /**
- * Plays the Buyology intro once on initial page load / refresh. Client-controlled
- * (mount → full timeline → unmount), so it ALWAYS finishes. AppShell mounts once per full
- * page load and isn't remounted on client navigations, so this runs only on a real page open.
- * Route changes don't replay it — they fall back to the per-route skeletons (loading.tsx).
+ * Plays the Buyology intro once, on the first launch of a browsing session. Route changes
+ * and refreshes don't replay it — they fall back to the per-route skeletons (loading.tsx).
  */
 export default function AppIntro() {
-    const [done, setDone] = useState(false);
-
-    // Stable callback so the Preloader's timeline isn't restarted by re-renders.
-    const handleComplete = useCallback(() => {
-        setDone(true);
-    }, []);
-
-    if (done) return null;
-    return <Preloader onComplete={handleComplete} />;
+    return <AppIntroClient />;
 }
