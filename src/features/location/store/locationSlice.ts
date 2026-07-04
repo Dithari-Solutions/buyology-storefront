@@ -1,15 +1,17 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 
-const SUPPORTED_ISO2 = new Set([
-  "AE", "AZ", "SA", "KW", "QA", "OM", "BH", "EG", "JO", "LB", "TR", "US", "GB", "DE",
-]);
+// IP detection lifecycle. Product visibility is gated on this so nothing renders
+// until we know where the visitor is (see useStoreServiceStatus). "done" means
+// the lookup settled — whether or not it resolved to a country.
+type IpStatus = "idle" | "loading" | "done";
 
 interface LocationState {
   coords: { lat: number; lng: number } | null;
   loading: boolean;
   denied: boolean;
   detectedCountryCode: string | null;
+  ipStatus: IpStatus;
 }
 
 const initialState: LocationState = {
@@ -17,6 +19,7 @@ const initialState: LocationState = {
   loading: false,
   denied: false,
   detectedCountryCode: null,
+  ipStatus: "idle",
 };
 
 // Cheap, no-permission IP-based country detection. Hits our own /api/geoip
@@ -29,9 +32,10 @@ export const detectCountryByIPThunk = createAsyncThunk<
     const res = await fetch("/api/geoip", { credentials: "same-origin" });
     if (!res.ok) return { countryCode: null };
     const data = (await res.json()) as { countryCode?: string | null };
-    const code = data?.countryCode?.toUpperCase() ?? null;
-    if (code && SUPPORTED_ISO2.has(code)) return { countryCode: code };
-    return { countryCode: null };
+    // Return the RAW detected country (ISO alpha-2). Whether we actually serve
+    // that region is validated against the backend's active-countries list (see
+    // useStoreServiceStatus) — never a hardcoded allowlist here.
+    return { countryCode: data?.countryCode?.toUpperCase() ?? null };
   } catch {
     return { countryCode: null };
   }
@@ -62,8 +66,10 @@ export const requestLocationThunk = createAsyncThunk<
             { headers: { "Accept-Language": "en" } }
           );
           const data = await res.json();
+          // Raw detected country — served-region validation happens against the
+          // active-countries list, not a hardcoded set (see useStoreServiceStatus).
           const iso2 = (data?.address?.country_code as string | undefined)?.toUpperCase();
-          if (iso2 && SUPPORTED_ISO2.has(iso2)) countryCode = iso2;
+          if (iso2) countryCode = iso2;
         } catch {
           // Reverse geocoding failed — keep coords, skip country.
         }
@@ -97,10 +103,17 @@ const locationSlice = createSlice({
         state.loading = false;
         state.denied = true;
       })
+      .addCase(detectCountryByIPThunk.pending, (state) => {
+        state.ipStatus = "loading";
+      })
       .addCase(detectCountryByIPThunk.fulfilled, (state, action) => {
-        if (action.payload.countryCode) {
-          state.detectedCountryCode = action.payload.countryCode;
-        }
+        // Store even a null result: it means "detection settled, region unknown"
+        // (kept distinct from "not detected yet" via ipStatus).
+        state.detectedCountryCode = action.payload.countryCode;
+        state.ipStatus = "done";
+      })
+      .addCase(detectCountryByIPThunk.rejected, (state) => {
+        state.ipStatus = "done";
       });
   },
 });
@@ -110,3 +123,4 @@ export default locationSlice.reducer;
 export const selectUserCoords = (state: RootState) => state.location.coords;
 export const selectLocationDenied = (state: RootState) => state.location.denied;
 export const selectDetectedCountryCode = (state: RootState) => state.location.detectedCountryCode;
+export const selectIpStatus = (state: RootState) => state.location.ipStatus;

@@ -8,6 +8,7 @@ import ProductFilter, { type ActiveFilters } from '@/features/product/components
 import Products from '@/features/product/components/Products';
 import Footer from '@/shared/components/Footer';
 import Header from '@/shared/components/Header';
+import RegionGate from '@/features/location/components/RegionGate';
 import { PATH_SLUGS, type Lang } from '@/config/pathSlugs';
 
 const easing = [0.04, 0.62, 0.23, 0.98] as [number, number, number, number];
@@ -37,6 +38,9 @@ function ShopContent() {
 
   return (
     <main className="w-[90%] mx-auto py-[40px]">
+      {/* Whole browsing surface (filters + grid) is gated on store availability
+          for the visitor's region — unserved regions get the notice + picker. */}
+      <RegionGate variant="page">
       {categoryName && (
         <div className="mb-6 flex items-center justify-between gap-4">
           <h1 className="text-[20px] md:text-[24px] font-bold text-[#402F75]">{categoryName}</h1>
@@ -70,6 +74,7 @@ function ShopContent() {
           activeFilters={activeFilters}
         />
       </div>
+      </RegionGate>
     </main>
   );
 }

@@ -9,6 +9,7 @@ import Banner from "@/features/home/components/Banner";
 import Stories from "@/features/story/components/Stories";
 import MarqueeStrip from "@/features/home/components/MarqueeStrip";
 import PopularCategories from "@/features/home/components/PopularCategories";
+import HomeProductBlock from "@/features/home/components/HomeProductBlock";
 
 // Below-the-fold sections — code-split out of the initial hydration bundle.
 // Each placeholder reserves vertical space so the layout doesn't shift when
@@ -20,14 +21,6 @@ const skel = (h: string) => (
 const QuickDeliveryBanner = dynamic(
   () => import("@/features/home/components/QuickDeliveryBanner"),
   { loading: () => skel("h-[180px] md:h-[220px]") }
-);
-const LimitedStock = dynamic(
-  () => import("@/features/home/components/limitedStock/LimitedStock"),
-  { loading: () => skel("h-[340px] md:h-[420px]") }
-);
-const SuperDeals = dynamic(
-  () => import("@/features/home/components/superDeals/SuperDeals"),
-  { loading: () => skel("h-[480px] md:h-[520px]") }
 );
 const Features = dynamic(
   () => import("@/features/home/components/features/Features"),
@@ -62,12 +55,9 @@ export default function Home() {
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
           <QuickDeliveryBanner />
         </ScrollReveal>
-        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
-          <LimitedStock />
-        </ScrollReveal>
-        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
-          <SuperDeals />
-        </ScrollReveal>
+        {/* Product sections are gated on store availability for the visitor's
+            region — hidden until a served region is confirmed. */}
+        <HomeProductBlock />
         <ScrollReveal className="w-full flex justify-center" delay={0.05}>
           <Features />
         </ScrollReveal>

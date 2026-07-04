@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ProductDetailClient from "@/features/product/components/ProductDetailClient";
+import RegionGate from "@/features/location/components/RegionGate";
 import { getProductBySlugCached } from "@/features/product/services/productService.server";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import type { Lang } from "@/config/pathSlugs";
@@ -170,7 +171,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
         <JsonLd data={breadcrumbLd} />
         <Header />
         <main className="min-h-screen">
-          <ProductDetailClient product={product} images={images} slug={slug} />
+          {/* preserveSSR keeps the product in the server HTML for crawlers; the
+              gate then hides it from unserved-region visitors after hydration. */}
+          <RegionGate variant="page" preserveSSR>
+            <ProductDetailClient product={product} images={images} slug={slug} />
+          </RegionGate>
         </main>
         <Footer />
       </>
