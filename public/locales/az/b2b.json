@@ -136,6 +136,29 @@
             "onlyLeft": "Yalnız {{count}} ədəd qalıb"
         }
     },
+    "detail": {
+        "quotePanel": {
+            "body": "Ani qiymət yoxdur — satınalma komandamız topdan sifarişinizin qiymətini müəyyən edir. Bu məhsulu B2B səbətinizə əlavə edin və qiymət təklifi istəyin."
+        },
+        "checkingMembership": "B2B üzvlüyünüz yoxlanılır…",
+        "quantity": "Miqdar",
+        "increase": "Miqdarı artır",
+        "decrease": "Miqdarı azalt",
+        "minHelper": "B2B sifarişləri üçün hər sətirdə minimum {{min}} ədəd.",
+        "belowMin": "B2B minimumu hər sətirdə {{min}} ədəddir.",
+        "added": "B2B səbətinə əlavə edildi",
+        "adding": "Əlavə edilir…",
+        "addedToast": "B2B səbətinizə əlavə edildi.",
+        "viewCart": "B2B səbətinə bax",
+        "goToCart": "B2B səbətinə keç",
+        "addError": "B2B səbətinə əlavə edilə bilmədi. Yenidən cəhd edin.",
+        "noStoreProduct": "Bu məhsul sizin bölgənizdə qiymət təklifi üçün mövcud deyil.",
+        "memberGate": {
+            "title": "Sifariş yalnız B2B üzvləri üçündür",
+            "subtitle": "Məhsulları qiymət təklifi səbətinizə əlavə etmək və topdan sifariş vermək üçün pulsuz B2B üzvlüyünə müraciət edin.",
+            "cta": "B2B üzvlüyünə müraciət et"
+        }
+    },
     "faq": {
         "title": "Tez-tez Verilən Suallar",
         "items": [

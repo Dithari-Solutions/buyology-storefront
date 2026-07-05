@@ -136,6 +136,29 @@
             "onlyLeft": "Only {{count}} left"
         }
     },
+    "detail": {
+        "quotePanel": {
+            "body": "No instant price — our procurement team prices your bulk order. Add this product to your B2B cart and request a quote."
+        },
+        "checkingMembership": "Checking your B2B membership…",
+        "quantity": "Quantity",
+        "increase": "Increase quantity",
+        "decrease": "Decrease quantity",
+        "minHelper": "Minimum {{min}} units per line for B2B orders.",
+        "belowMin": "The B2B minimum is {{min}} units per line.",
+        "added": "Added to B2B cart",
+        "adding": "Adding…",
+        "addedToast": "Added to your B2B cart.",
+        "viewCart": "View B2B cart",
+        "goToCart": "Go to B2B cart",
+        "addError": "Couldn't add to B2B cart. Please try again.",
+        "noStoreProduct": "This product isn't available for quoting in your region.",
+        "memberGate": {
+            "title": "Ordering is for B2B members",
+            "subtitle": "Apply for a free B2B membership to add products to your quote cart and order in bulk.",
+            "cta": "Apply for B2B membership"
+        }
+    },
     "faq": {
         "title": "Frequently Asked Questions",
         "items": [

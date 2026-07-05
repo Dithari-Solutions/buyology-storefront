@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { getProductBySlug, type ApiProduct } from "./productService";
+import { getProductBySlug, getB2bProductBySlug, type ApiProduct } from "./productService";
 import type { Lang } from "@/config/pathSlugs";
 
 /**
@@ -15,4 +15,16 @@ import type { Lang } from "@/config/pathSlugs";
 export const getProductBySlugCached = cache(
   (slug: string, lang?: Lang, countryCode?: string, currency?: string): Promise<ApiProduct> =>
     getProductBySlug(slug, { lang, countryCode, currency })
+);
+
+/**
+ * Request-deduplicated `getB2bProductBySlug` for the B2B product detail route.
+ * Same rationale as {@link getProductBySlugCached} — the B2B detail page fetches
+ * the product once in `generateMetadata` and once in the page component; caching
+ * by primitive args collapses them into one backend round-trip. 404s when the
+ * product isn't B2B-available.
+ */
+export const getB2bProductBySlugCached = cache(
+  (slug: string, lang?: Lang, countryCode?: string, currency?: string): Promise<ApiProduct> =>
+    getB2bProductBySlug(slug, { lang, countryCode, currency })
 );
