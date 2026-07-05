@@ -1,8 +1,20 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { useStoreServiceStatus } from "@/features/location/hooks/useStoreServiceStatus";
 import RegionUnavailable from "./RegionUnavailable";
+
+// Returns false during SSR + the first (hydration) render, true thereafter —
+// without setState-in-effect. Lets preserveSSR surfaces keep the server markup
+// until the client takes over.
+const noopSubscribe = () => () => {};
+function useHydrated(): boolean {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+}
 
 interface Props {
   children: ReactNode;
@@ -44,11 +56,7 @@ export default function RegionGate({
   preserveSSR = false,
 }: Props) {
   const status = useStoreServiceStatus();
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
+  const hydrated = useHydrated();
 
   // SSR-preserving surfaces render children until the client takes over, so the
   // server HTML (and crawlers) still get the product markup.
