@@ -1,5 +1,6 @@
 import auth from "../../../../public/locales/az/auth.json";
 import b2b from "../../../../public/locales/az/b2b.json";
+import b2bRfq from "../../../../public/locales/az/b2b-rfq.json";
 import banner from "../../../../public/locales/az/banner.json";
 import cart from "../../../../public/locales/az/cart.json";
 import checkout from "../../../../public/locales/az/checkout.json";
@@ -19,6 +20,7 @@ import refund from "../../../../public/locales/az/refund.json";
 const resources = {
     auth,
     b2b,
+    "b2b-rfq": b2bRfq,
     banner,
     contact,
     cart,

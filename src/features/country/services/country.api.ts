@@ -13,6 +13,21 @@ export async function getActiveCountries(): Promise<Country[]> {
   return data.data;
 }
 
+export interface B2bActiveCountry {
+  id: string;
+  code: string;
+  name: string;
+  currency: string;
+  b2bEnabled: boolean;
+}
+
+export async function getB2bActiveCountries(): Promise<B2bActiveCountry[]> {
+  const { data } = await apiClient.get<{ data: B2bActiveCountry[] }>(
+    "/api/countries/b2b-active"
+  );
+  return data.data;
+}
+
 export async function updateCountryPreference(
   userId: string,
   countryCode: string,

@@ -112,6 +112,12 @@
         "description": "İndi sifariş verin və məhsullarınız 30 dəqiqə ərzində qapınıza çatdırılsın.",
         "cta": "İndi Al"
     },
+    "b2bBanner": {
+        "label": "Biznes və Topdansatış",
+        "tagline": "Regionunuzda topdan B2B sifarişləri mövcuddur",
+        "description": "Bizneslər üçün fərdi qiymət təklifləri ilə məhsulları topdan həcmdə təchiz edin. Tək sifarişlər tam dəstəklənir.",
+        "cta": "B2B ilə tanış olun"
+    },
     "superDeals": {
         "flashSale": "Flash Sale",
         "title": "Super Endirimlər",

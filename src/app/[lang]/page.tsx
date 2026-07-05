@@ -22,6 +22,10 @@ const QuickDeliveryBanner = dynamic(
   () => import("@/features/home/components/QuickDeliveryBanner"),
   { loading: () => skel("h-[180px] md:h-[220px]") }
 );
+const B2BRegionBanner = dynamic(
+  () => import("@/features/home/components/B2BRegionBanner"),
+  { loading: () => null }
+);
 const Features = dynamic(
   () => import("@/features/home/components/features/Features"),
   { loading: () => skel("h-[880px] sm:h-[720px] lg:h-[400px] xl:h-[470px]") }
@@ -54,6 +58,10 @@ export default function Home() {
         </ScrollReveal>
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
           <QuickDeliveryBanner />
+        </ScrollReveal>
+        {/* Renders only in B2B-enabled regions; otherwise returns null. */}
+        <ScrollReveal className="w-full flex justify-center" delay={0.1}>
+          <B2BRegionBanner />
         </ScrollReveal>
         {/* Product sections are gated on store availability for the visitor's
             region — hidden until a served region is confirmed. */}

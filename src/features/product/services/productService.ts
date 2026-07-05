@@ -53,7 +53,21 @@ export interface ApiProduct {
   variants: unknown[];
   createdAt: string;
   updatedAt: string;
-  // Country-scoped pricing (present when countryCode param is passed)
+  /**
+   * True on B2B-browse responses (`/api/product/b2b*`): the product is
+   * quote-only (RFQ) and all price/store fields below are OMITTED by the
+   * backend. Absent (undefined) on the consumer product listing. Drives the
+   * "Request a Quote" UI instead of a buyable price/add-to-cart.
+   */
+  quoteOnly?: boolean;
+  /**
+   * Store-product id (the RFQ line key for `/api/b2b/quote/cart/items`). Present
+   * on B2B-browse responses when the backend resolves a concrete store-product;
+   * absent on the consumer listing. When absent on a B2B card, add-to-B2B-cart
+   * falls back to the product detail page.
+   */
+  storeProductId?: string | null;
+  // Country-scoped pricing (present when countryCode param is passed; OMITTED on B2B browse)
   storeId?: string | null;
   /** Effective (discounted) price already converted to the display currency. */
   storePrice?: number | null;
@@ -306,4 +320,82 @@ export async function getAllCategories(lang: Lang = 'en'): Promise<AllCategory[]
 export function getPrimaryImage(media: ApiProductMedia[]): string {
   const primary = media.find((m) => m.isPrimary) ?? media[0];
   return primary ? getImageUrl(primary.url) : "";
+}
+
+// ── B2B product browse (PUBLIC) ─────────────────────────────────────────────
+// Mirrors the consumer product endpoints but hits `/api/product/b2b*`. Responses
+// use the same ApiProduct shape with `quoteOnly:true` and price/store fields
+// OMITTED (storePrice, originalPrice, currency, storeId, storeOptions,
+// expressDelivery, freeDelivery, deliveryFee) — the storefront shows
+// "Request a Quote" instead of a buyable price. Only `NEWEST` sort is honored
+// and B2B filters return an empty price range (hide the price slider).
+
+/** B2B catalog listing. Params mirror {@link getProducts} (only NEWEST sort honored). */
+export async function getB2bProducts(params: ProductQueryParams = {}): Promise<ApiProduct[]> {
+  const { data } = await apiClient.get<{ data: ApiProduct[] }>("/api/product/b2b", {
+    params: buildParams(params),
+  });
+  return data.data;
+}
+
+/** B2B catalog search. Params mirror {@link searchProducts}; price bounds are ignored server-side. */
+export async function searchB2bProducts(params: ProductSearchParams = {}): Promise<ApiProduct[]> {
+  const { lang = 'en', countryCode, currency, lat, lng, specs, sort, ...filterParams } = params;
+  const sp = new URLSearchParams();
+  sp.set('lang', LANG_PARAM[lang]);
+  if (countryCode) sp.set('countryCode', countryCode);
+  if (currency) sp.set('currency', currency);
+  if (lat != null) sp.set('lat', String(lat));
+  if (lng != null) sp.set('lng', String(lng));
+  if (sort) sp.set('sort', sort);
+
+  // Backend ProductFilterRequest binds the text search to `q` (not `query`).
+  if (filterParams.query) sp.set('q', filterParams.query);
+  if (filterParams.condition) sp.set('condition', filterParams.condition);
+  if (filterParams.brandId) sp.set('brandId', filterParams.brandId);
+  if (filterParams.brandIds) for (const id of filterParams.brandIds) if (id) sp.append('brandIds', id);
+  if (filterParams.availabilityStatus) sp.set('availabilityStatus', filterParams.availabilityStatus);
+  if (filterParams.categoryId) sp.set('categoryId', filterParams.categoryId);
+  // minPrice/maxPrice intentionally omitted — ignored on the B2B channel.
+
+  if (specs) {
+    const CODE_TO_PARAM: Record<string, string> = {
+      ram: 'ram', storage: 'storage', processor: 'processor', screen_size: 'screenSize',
+      touchable_screen: 'touchableScreen', operating_system: 'operatingSystem',
+      keyboard_language: 'keyboardLanguage',
+    };
+    for (const [code, vals] of Object.entries(specs)) {
+      const param = CODE_TO_PARAM[code];
+      if (!param || !vals) continue;
+      for (const v of vals) if (v) sp.append(param, v);
+    }
+  }
+
+  const { data } = await apiClient.get<{ data: ApiProduct[] }>(`/api/product/b2b/search?${sp.toString()}`);
+  return data.data;
+}
+
+/** B2B filter options. Mirrors {@link getProductFilters}; `priceRange` is {min:0,max:0} (hide slider). */
+export async function getB2bFilters(
+  lang: Lang = 'en',
+  countryCode?: string,
+  currency?: string,
+  lat?: number,
+  lng?: number
+): Promise<ProductFilters> {
+  const params: Record<string, string> = { lang: LANG_PARAM[lang] };
+  if (countryCode) params.countryCode = countryCode;
+  if (currency) params.currency = currency;
+  if (lat != null) params.lat = String(lat);
+  if (lng != null) params.lng = String(lng);
+  const { data } = await apiClient.get<{ data: ProductFilters }>('/api/product/b2b/filters', { params });
+  return data.data;
+}
+
+/** B2B product detail by slug. 404 if the product is not B2B-available. */
+export async function getB2bProductBySlug(slug: string, params: ProductQueryParams = {}): Promise<ApiProduct> {
+  const { data } = await apiClient.get<{ data: ApiProduct }>("/api/product/b2b/by-slug", {
+    params: { ...buildParams(params), slug },
+  });
+  return data.data;
 }

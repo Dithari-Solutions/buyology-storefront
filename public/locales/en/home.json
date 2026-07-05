@@ -112,6 +112,12 @@
         "description": "Order now and receive your items delivered straight to your door in under 30 minutes.",
         "cta": "Shop Now"
     },
+    "b2bBanner": {
+        "label": "Business & Wholesale",
+        "tagline": "Bulk B2B orders available in your region",
+        "description": "Source products at wholesale volumes with dedicated quotes for your business. Single orders remain fully supported.",
+        "cta": "Explore B2B"
+    },
     "superDeals": {
         "flashSale": "Flash Sale",
         "title": "Super Deals",
