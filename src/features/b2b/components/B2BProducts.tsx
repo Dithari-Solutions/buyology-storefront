@@ -11,6 +11,7 @@ import { getB2bProducts, searchB2bProducts, getPrimaryImage, type ApiProduct } f
 import { selectSelectedCountryCode, selectPreferredCurrency, selectSelectedCountry } from '@/features/country/store/countrySlice';
 import { selectUserCoords } from '@/features/location/store/locationSlice';
 import { useB2bMembership } from '@/features/b2b/hooks/useB2bMembership';
+import { useB2bRegion } from '@/features/b2b/hooks/useB2bRegion';
 import { PATH_SLUGS, type Lang } from '@/config/pathSlugs';
 
 function CardSkeleton() {
@@ -133,10 +134,16 @@ export default function B2BProducts({ onFilterToggle, filterOpen, activeFilters 
   const { t } = useTranslation('b2b');
   const { t: tp } = useTranslation('product');
 
-  const countryCode = useSelector(selectSelectedCountryCode);
-  const currency = useSelector(selectPreferredCurrency);
+  const selectedCountryCode = useSelector(selectSelectedCountryCode);
+  const preferredCurrency = useSelector(selectPreferredCurrency);
   const selectedCountry = useSelector(selectSelectedCountry);
   const coords = useSelector(selectUserCoords);
+
+  // B2B-only regions aren't in the B2C selection, so resolve the region from
+  // the b2b-active list (selected or IP-detected) and scope the catalog to it.
+  const { region, regionCode } = useB2bRegion();
+  const countryCode = regionCode ?? selectedCountryCode;
+  const currency = region?.currency ?? preferredCurrency;
 
   const { isActiveMember, loading: membershipLoading } = useB2bMembership();
 
@@ -244,9 +251,9 @@ export default function B2BProducts({ onFilterToggle, filterOpen, activeFilters 
               </>
             )}
           </p>
-          {selectedCountry && (
+          {(region || selectedCountry) && (
             <span className="inline-flex items-center gap-[5px] bg-[#F6F4FF] border border-[#402F75]/20 rounded-full px-[10px] py-[3px] text-[11px] font-semibold text-[#402F75]">
-              {selectedCountry.name}
+              {region?.name ?? selectedCountry?.name}
             </span>
           )}
         </div>

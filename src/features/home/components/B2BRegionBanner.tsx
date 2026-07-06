@@ -1,16 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/store";
-import { selectSelectedCountryCode } from "@/features/country/store/countrySlice";
-import {
-    getB2bActiveCountries,
-    type B2bActiveCountry,
-} from "@/features/country/services/country.api";
+import { useB2bRegion } from "@/features/b2b/hooks/useB2bRegion";
 
 export default function B2BRegionBanner() {
     const { t } = useTranslation("home");
@@ -18,34 +11,11 @@ export default function B2BRegionBanner() {
     const params = useParams();
     const lang = (params?.lang as Lang) ?? "en";
 
-    const selectedCountryCode = useSelector((s: RootState) =>
-        selectSelectedCountryCode(s)
-    );
-
-    const [b2bCountries, setB2bCountries] = useState<B2bActiveCountry[] | null>(null);
-
-    useEffect(() => {
-        let alive = true;
-        getB2bActiveCountries()
-            .then((countries) => {
-                if (alive) setB2bCountries(countries);
-            })
-            .catch(() => {
-                if (alive) setB2bCountries([]);
-            });
-        return () => {
-            alive = false;
-        };
-    }, []);
-
-    // Render nothing until the b2b-active list has loaded, or when the
-    // visitor's region is not B2B-enabled.
-    const isB2bRegion =
-        !!b2bCountries &&
-        !!selectedCountryCode &&
-        b2bCountries.some(
-            (c) => c.code?.toUpperCase() === selectedCountryCode.toUpperCase()
-        );
+    // Show for any B2B-enabled region — crucially INCLUDING B2B-only regions,
+    // which are absent from the B2C /api/countries/active list and so are never
+    // the "selected" country. useB2bRegion checks the b2b-active list against
+    // the selected OR the IP-detected country.
+    const { isB2bRegion } = useB2bRegion();
 
     if (!isB2bRegion) return null;
 
