@@ -9,6 +9,9 @@ export type StaticPageKey =
   | "quick-delivery"
   | "b2b"
   | "b2b-apply"
+  | "b2b-cart"
+  | "b2b-quotes"
+  | "b2b-quote-detail"
   | "contact"
   | "games"
   | "favourites"
@@ -183,6 +186,48 @@ export const STATIC_PAGE_META: Record<StaticPageKey, Record<Lang, PageMeta>> = {
     ar: {
       title: "التقدم لعضوية B2B",
       description: "قدّم طلب عملك للوصول إلى أسعار الجملة ومزايا B2B على Buyology.",
+    },
+  },
+  "b2b-cart": {
+    en: {
+      title: "B2B Quote Cart",
+      description: "Request a quote for your bulk order. Our procurement team prices every line.",
+    },
+    az: {
+      title: "B2B Qiymət Səbəti",
+      description: "Topdan sifarişiniz üçün qiymət təklifi istəyin. Təchizat komandamız hər sətri qiymətləndirir.",
+    },
+    ar: {
+      title: "سلة عروض الأسعار للأعمال",
+      description: "اطلب عرض سعر لطلبك بالجملة. يقوم فريق المشتريات بتسعير كل بند.",
+    },
+  },
+  "b2b-quotes": {
+    en: {
+      title: "My B2B Quotes",
+      description: "Track the status of your B2B quote requests and accept a price to proceed to checkout.",
+    },
+    az: {
+      title: "B2B Qiymət Təkliflərim",
+      description: "B2B qiymət sorğularınızın vəziyyətini izləyin və ödənişə keçmək üçün qiyməti qəbul edin.",
+    },
+    ar: {
+      title: "عروض أسعاري للأعمال",
+      description: "تابع حالة طلبات عروض الأسعار للأعمال واقبل السعر للمتابعة إلى الدفع.",
+    },
+  },
+  "b2b-quote-detail": {
+    en: {
+      title: "B2B Quote Details",
+      description: "Review your quoted prices, accept the quote and proceed to checkout.",
+    },
+    az: {
+      title: "B2B Qiymət Təklifi Təfərrüatları",
+      description: "Təklif edilən qiymətləri nəzərdən keçirin, təklifi qəbul edin və ödənişə keçin.",
+    },
+    ar: {
+      title: "تفاصيل عرض السعر للأعمال",
+      description: "راجع الأسعار المعروضة واقبل العرض وتابع إلى الدفع.",
     },
   },
   contact: {

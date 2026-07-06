@@ -110,6 +110,55 @@
         "successSubtext": "Our B2B team will reach out within 24 hours.",
         "errorMessage": "Something went wrong. Please try again."
     },
+    "browse": {
+        "title": "B2B Catalog",
+        "subtitle": "Browse products available for bulk orders. Request a quote — our procurement team prices each order for you.",
+        "backToB2b": "B2B overview",
+        "clear": "Clear",
+        "memberGate": {
+            "title": "Ordering is for B2B members",
+            "subtitle": "Browse freely — apply for a free B2B membership to request quotes and order in bulk.",
+            "cta": "Apply for B2B membership"
+        },
+        "empty": {
+            "title": "No B2B products here yet",
+            "subtitle": "Try a different filter or check back soon."
+        },
+        "card": {
+            "badge": "Wholesale",
+            "pricing": "Bulk pricing",
+            "requestQuote": "Request a Quote",
+            "addToCart": "Add to B2B cart",
+            "added": "Added!",
+            "applyToOrder": "Apply for B2B membership",
+            "addError": "Couldn't add to B2B cart. Please try again.",
+            "limitedStock": "Limited Stock",
+            "onlyLeft": "Only {{count}} left"
+        }
+    },
+    "detail": {
+        "quotePanel": {
+            "body": "No instant price — our procurement team prices your bulk order. Add this product to your B2B cart and request a quote."
+        },
+        "checkingMembership": "Checking your B2B membership…",
+        "quantity": "Quantity",
+        "increase": "Increase quantity",
+        "decrease": "Decrease quantity",
+        "minHelper": "Minimum {{min}} units per line for B2B orders.",
+        "belowMin": "The B2B minimum is {{min}} units per line.",
+        "added": "Added to B2B cart",
+        "adding": "Adding…",
+        "addedToast": "Added to your B2B cart.",
+        "viewCart": "View B2B cart",
+        "goToCart": "Go to B2B cart",
+        "addError": "Couldn't add to B2B cart. Please try again.",
+        "noStoreProduct": "This product isn't available for quoting in your region.",
+        "memberGate": {
+            "title": "Ordering is for B2B members",
+            "subtitle": "Apply for a free B2B membership to add products to your quote cart and order in bulk.",
+            "cta": "Apply for B2B membership"
+        }
+    },
     "faq": {
         "title": "Frequently Asked Questions",
         "items": [

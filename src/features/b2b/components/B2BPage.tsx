@@ -297,7 +297,8 @@ export default function B2BPage() {
     }[];
 
     function handleBrowse() {
-        router.push(`/${lang}/${PATH_SLUGS.shop[lang] ?? "shop"}`);
+        // Public B2B catalog (Request-a-Quote), not the consumer shop.
+        router.push(`/${lang}/${PATH_SLUGS.b2b[lang] ?? "b2b"}/products`);
     }
 
     return (

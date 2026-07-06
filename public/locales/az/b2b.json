@@ -110,6 +110,55 @@
         "successSubtext": "B2B komandamız 24 saat ərzində sizinlə əlaqə saxlayacaq.",
         "errorMessage": "Xəta baş verdi. Yenidən cəhd edin."
     },
+    "browse": {
+        "title": "B2B Kataloqu",
+        "subtitle": "Topdan sifariş üçün mövcud məhsullara baxın. Qiymət təklifi istəyin — satınalma komandamız hər sifarişi sizin üçün qiymətləndirir.",
+        "backToB2b": "B2B icmalı",
+        "clear": "Təmizlə",
+        "memberGate": {
+            "title": "Sifariş yalnız B2B üzvləri üçündür",
+            "subtitle": "Sərbəst baxın — qiymət təklifi istəmək və topdan sifariş vermək üçün pulsuz B2B üzvlüyünə müraciət edin.",
+            "cta": "B2B üzvlüyünə müraciət et"
+        },
+        "empty": {
+            "title": "Hələ B2B məhsulu yoxdur",
+            "subtitle": "Başqa filtr sınayın və ya bir azdan yenidən yoxlayın."
+        },
+        "card": {
+            "badge": "Topdan",
+            "pricing": "Topdan qiymət",
+            "requestQuote": "Qiymət təklifi istə",
+            "addToCart": "B2B səbətinə əlavə et",
+            "added": "Əlavə edildi!",
+            "applyToOrder": "B2B üzvlüyünə müraciət et",
+            "addError": "B2B səbətinə əlavə edilə bilmədi. Yenidən cəhd edin.",
+            "limitedStock": "Məhdud Stok",
+            "onlyLeft": "Yalnız {{count}} ədəd qalıb"
+        }
+    },
+    "detail": {
+        "quotePanel": {
+            "body": "Ani qiymət yoxdur — satınalma komandamız topdan sifarişinizin qiymətini müəyyən edir. Bu məhsulu B2B səbətinizə əlavə edin və qiymət təklifi istəyin."
+        },
+        "checkingMembership": "B2B üzvlüyünüz yoxlanılır…",
+        "quantity": "Miqdar",
+        "increase": "Miqdarı artır",
+        "decrease": "Miqdarı azalt",
+        "minHelper": "B2B sifarişləri üçün hər sətirdə minimum {{min}} ədəd.",
+        "belowMin": "B2B minimumu hər sətirdə {{min}} ədəddir.",
+        "added": "B2B səbətinə əlavə edildi",
+        "adding": "Əlavə edilir…",
+        "addedToast": "B2B səbətinizə əlavə edildi.",
+        "viewCart": "B2B səbətinə bax",
+        "goToCart": "B2B səbətinə keç",
+        "addError": "B2B səbətinə əlavə edilə bilmədi. Yenidən cəhd edin.",
+        "noStoreProduct": "Bu məhsul sizin bölgənizdə qiymət təklifi üçün mövcud deyil.",
+        "memberGate": {
+            "title": "Sifariş yalnız B2B üzvləri üçündür",
+            "subtitle": "Məhsulları qiymət təklifi səbətinizə əlavə etmək və topdan sifariş vermək üçün pulsuz B2B üzvlüyünə müraciət edin.",
+            "cta": "B2B üzvlüyünə müraciət et"
+        }
+    },
     "faq": {
         "title": "Tez-tez Verilən Suallar",
         "items": [

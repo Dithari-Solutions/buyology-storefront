@@ -5,8 +5,6 @@ import { findCountryByAlias } from "@/features/country/lib/match";
 import {
   selectCountries,
   selectCountriesLoaded,
-  selectCountryManuallySelected,
-  selectSelectedCountryCode,
 } from "@/features/country/store/countrySlice";
 import {
   selectDetectedCountryCode,
@@ -25,29 +23,22 @@ export type StoreServiceStatus = "pending" | "served" | "unserved";
  *
  *  - "pending"  — we don't yet know the visitor's region (countries not loaded
  *                 or IP detection still running). Callers should hide products.
- *  - "served"   — detected (or manually chosen) region is an active country.
+ *  - "served"   — detected region is an active country.
  *  - "unserved" — detection settled and the region isn't served, INCLUDING the
  *                 case where geo-IP couldn't resolve a country at all (strict:
- *                 we keep products hidden rather than guessing).
+ *                 we keep products hidden rather than guessing). The visitor
+ *                 cannot override this by choosing a country.
  */
 export function useStoreServiceStatus(): StoreServiceStatus {
   const countries = useSelector(selectCountries);
   const loaded = useSelector(selectCountriesLoaded);
-  const manuallySelected = useSelector(selectCountryManuallySelected);
-  const selectedCountryCode = useSelector(selectSelectedCountryCode);
   const detectedCountryCode = useSelector(selectDetectedCountryCode);
   const ipStatus = useSelector(selectIpStatus);
 
   // Can't validate anything without the authoritative active-countries list.
   if (!loaded || countries.length === 0) return "pending";
 
-  // An explicit manual pick (region notice / picker) overrides detection, as
-  // long as the chosen country is actually one we serve.
-  if (manuallySelected && findCountryByAlias(countries, selectedCountryCode)) {
-    return "served";
-  }
-
-  // Otherwise wait for IP detection to finish before revealing anything.
+  // Wait for IP detection to finish before revealing anything.
   if (ipStatus !== "done") return "pending";
 
   return findCountryByAlias(countries, detectedCountryCode) ? "served" : "unserved";

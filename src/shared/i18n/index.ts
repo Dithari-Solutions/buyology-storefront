@@ -12,6 +12,7 @@ const SUPPORTED: readonly Lang[] = ["en", "az", "ar"] as const;
 const NAMESPACES = [
     "auth",
     "b2b",
+    "b2b-rfq",
     "banner",
     "cart",
     "checkout",

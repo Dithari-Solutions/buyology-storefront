@@ -14,10 +14,6 @@ interface CountryState {
   // True once the active-countries fetch has settled (fulfilled OR rejected),
   // so consumers can tell "not fetched yet" from "fetched, none active".
   loaded: boolean;
-  // True when the user explicitly picked a country (region notice / picker),
-  // as opposed to an auto-detected or defaulted one. Lets an unserved-region
-  // visitor unblock the storefront by choosing a served country.
-  manuallySelected: boolean;
 }
 
 function readLocal(key: string, fallback: string): string {
@@ -38,22 +34,12 @@ function persist(countryCode: string, currency: string) {
   writeCookie("preferredCurrency", currency);
 }
 
-const MANUAL_KEY = "countryManuallySelected";
-
-// Sticky once set: a manual pick is an explicit assertion of where the visitor
-// is shopping, so we keep honoring it across reloads/navigation.
-function persistManual() {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(MANUAL_KEY, "1");
-}
-
 const initialState: CountryState = {
   countries: [],
   selectedCountryCode: DEFAULT_COUNTRY,
   preferredCurrency: DEFAULT_CURRENCY,
   loading: false,
   loaded: false,
-  manuallySelected: false,
 };
 
 export const fetchCountriesThunk = createAsyncThunk(
@@ -64,7 +50,7 @@ export const fetchCountriesThunk = createAsyncThunk(
 export const setCountryThunk = createAsyncThunk(
   "country/setCountry",
   async (
-    { countryCode, currency, userId, manual }: { countryCode: string; currency?: string; userId?: string | null; manual?: boolean },
+    { countryCode, currency, userId }: { countryCode: string; currency?: string; userId?: string | null },
     { getState }
   ) => {
     const state = getState() as RootState;
@@ -78,7 +64,7 @@ export const setCountryThunk = createAsyncThunk(
       await updateCountryPreference(userId, resolvedCode, resolvedCurrency).catch(console.error);
     }
 
-    return { countryCode: resolvedCode, currency: resolvedCurrency, manual: manual ?? false };
+    return { countryCode: resolvedCode, currency: resolvedCurrency };
   }
 );
 
@@ -89,7 +75,6 @@ const countrySlice = createSlice({
     initFromLocalStorage(state) {
       state.selectedCountryCode = readLocal("selectedCountryCode", DEFAULT_COUNTRY);
       state.preferredCurrency = readLocal("preferredCurrency", DEFAULT_CURRENCY);
-      state.manuallySelected = readLocal(MANUAL_KEY, "") === "1";
       persist(state.selectedCountryCode, state.preferredCurrency);
     },
     syncFromProfile(
@@ -135,10 +120,6 @@ const countrySlice = createSlice({
       .addCase(setCountryThunk.fulfilled, (state, action) => {
         state.selectedCountryCode = action.payload.countryCode;
         state.preferredCurrency = action.payload.currency;
-        if (action.payload.manual) {
-          state.manuallySelected = true;
-          persistManual();
-        }
         persist(state.selectedCountryCode, state.preferredCurrency);
       });
   },
@@ -149,7 +130,6 @@ export default countrySlice.reducer;
 
 export const selectCountries = (state: RootState) => state.country.countries;
 export const selectCountriesLoaded = (state: RootState) => state.country.loaded;
-export const selectCountryManuallySelected = (state: RootState) => state.country.manuallySelected;
 export const selectSelectedCountryCode = (state: RootState) => state.country.selectedCountryCode;
 export const selectPreferredCurrency = (state: RootState) => state.country.preferredCurrency;
 export const selectSelectedCountry = (state: RootState) =>
