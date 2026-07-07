@@ -182,6 +182,11 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
   const [page, setPage] = useState(1);
 
   useEffect(() => {
+    // Guards against out-of-order responses: when filters change we kick off a new fetch,
+    // and an earlier (slower) one must NOT be allowed to land after it. Without this, the
+    // initial unfiltered fetch could resolve last and overwrite the filtered results,
+    // leaking out-of-range products AND dropping the skeleton before the real data arrives.
+    let cancelled = false;
     setLoading(true);
     setPage(1);
     const base = { lang, countryCode, currency, lat: coords?.lat, lng: coords?.lng };
@@ -225,22 +230,44 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
     };
 
     fetchPromise
-      .then((items) =>
+      .then((items) => {
+        if (cancelled) return; // a newer fetch superseded this one — drop its result
         setProducts(
           items
             // Hide products not available in the selected country (no "browse only" in lists).
             .filter((p) => (countryCode ? p.availableInSelectedCountry !== false : true))
             .filter(withinRange)
-        )
-      )
-      .catch(console.error)
-      .finally(() => setLoading(false));
+        );
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error(err);
+        setLoading(false);
+      });
+
+    // Mark this run stale on cleanup so its pending fetch can't clobber the newer one, and
+    // keep the skeleton up (loading stays true) until the LATEST fetch actually resolves.
+    return () => { cancelled = true; };
   }, [lang, countryCode, currency, coords, activeFilters, query, sort]);
 
-  const totalPages = Math.max(1, Math.ceil(products.length / PER_PAGE));
-  const startItem = products.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
-  const endItem = Math.min(page * PER_PAGE, products.length);
-  const pageProducts = products.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  // Final render-time price gate. The fetch already filters, but this re-checks against the
+  // CURRENT active range (not the range captured when the fetch fired), so no out-of-range
+  // card can slip through during a filter change — even for a single frame.
+  const rangeMin = activeFilters?.minPrice;
+  const rangeMax = activeFilters?.maxPrice;
+  const visibleProducts =
+    rangeMin == null && rangeMax == null
+      ? products
+      : products.filter((p) => {
+          const price = p.storePrice ?? p.effectivePrice ?? 0;
+          return (rangeMin == null || price >= rangeMin) && (rangeMax == null || price <= rangeMax);
+        });
+
+  const totalPages = Math.max(1, Math.ceil(visibleProducts.length / PER_PAGE));
+  const startItem = visibleProducts.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
+  const endItem = Math.min(page * PER_PAGE, visibleProducts.length);
+  const pageProducts = visibleProducts.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <div className="flex-1 flex flex-col gap-[16px] min-w-0">
@@ -279,7 +306,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
                 {t('shop.products.showing', { defaultValue: 'Showing' })}{' '}
                 <span className="font-medium text-gray-800">{startItem}–{endItem}</span>{' '}
                 {t('shop.products.of', { defaultValue: 'of' })}{' '}
-                <span className="font-medium text-gray-800">{products.length}</span>{' '}
+                <span className="font-medium text-gray-800">{visibleProducts.length}</span>{' '}
                 {t('shop.products.items', { defaultValue: 'products' })}
               </>
             )}
@@ -449,7 +476,7 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
       )}
 
       {/* Pagination */}
-      {!loading && products.length > PER_PAGE && (
+      {!loading && visibleProducts.length > PER_PAGE && (
         <div className="bg-white rounded-[16px] border border-[#FBBB14] px-[20px] py-[14px]">
           <Pagination
             page={page}
