@@ -195,7 +195,7 @@ export default function B2BProducts({ onFilterToggle, filterOpen, activeFilters 
   return (
     <div className="flex-1 flex flex-col gap-[16px] min-w-0">
       {/* Product-sourcing request form (active members only) + credit banner (everyone) */}
-      <B2BProductRequestForm isActiveMember={isActiveMember} membershipLoading={membershipLoading} />
+      <B2BProductRequestForm isActiveMember={isActiveMember} membershipLoading={membershipLoading} lang={lang} />
       <B2BCreditBanner />
 
       {/* Search status */}

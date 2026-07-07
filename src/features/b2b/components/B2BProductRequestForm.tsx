@@ -2,26 +2,34 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import type { RootState } from "@/store";
+import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import {
   submitProductRequest,
   B2B_PRODUCT_REQUEST_MIN_QTY,
 } from "@/features/b2b/services/productRequest.api";
 
 // ── B2B Product-Sourcing Request form ───────────────────────────────────────
-// Lets an ACTIVE B2B member ask procurement to source a product not in the
-// catalog. Rendered ONLY when `isAuthenticated && isActiveMember`. Quantity is
-// client-validated (>= MIN) — submit is blocked and an inline error shown below
-// the minimum. Optional single reference image with preview + remove (upload UX
-// modelled on ProductReviews.tsx). Success collapses the form into a confirmation.
+// Lets a visitor ask procurement to source a product not in the catalog. The
+// form is ALWAYS shown; the action adapts to the visitor: a guest is prompted
+// to log in, a logged-in non-member is prompted to apply for B2B membership,
+// and an ACTIVE member can submit. Quantity is client-validated (>= MIN).
+// Optional single reference image with preview + remove (upload UX modelled on
+// ProductReviews.tsx). Success collapses the form into a confirmation.
 export default function B2BProductRequestForm({
   isActiveMember,
   membershipLoading,
+  lang,
 }: {
   isActiveMember: boolean;
   membershipLoading: boolean;
+  lang: Lang;
 }) {
   const { t } = useTranslation("b2b");
+  const isAuthenticated = useSelector((s: RootState) => s.auth.isAuthenticated);
 
   const [productName, setProductName] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -42,9 +50,6 @@ export default function B2BProductRequestForm({
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
-
-  // Only members see this form. `isActiveMember` already implies an authenticated user.
-  if (membershipLoading || !isActiveMember) return null;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = e.target.files?.[0];
@@ -75,6 +80,8 @@ export default function B2BProductRequestForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submitting) return;
+    // Submission requires an active member; guests/non-members use the CTA below.
+    if (!isAuthenticated || !isActiveMember) return;
     if (!validate()) return;
 
     setSubmitting(true);
@@ -215,28 +222,57 @@ export default function B2BProductRequestForm({
         )}
 
         <div className="sm:col-span-2">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="flex items-center gap-2 bg-[#402F75] hover:bg-[#352566] disabled:opacity-60 text-white font-bold text-[14px] px-7 py-[13px] rounded-full transition-colors shadow-md"
-          >
-            {submitting ? (
-              <>
-                <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" strokeOpacity="0.3" />
-                  <path d="M12 2a10 10 0 0 1 10 10" />
-                </svg>
-                {t("productRequest.sending", { defaultValue: "Sending…" })}
-              </>
-            ) : (
-              <>
-                {t("productRequest.submit", { defaultValue: "Submit request" })}
+          {!isAuthenticated ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <Link
+                href={`/${lang}/${PATH_SLUGS.auth[lang] ?? "auth"}`}
+                className="flex items-center gap-2 bg-[#402F75] hover:bg-[#352566] text-white font-bold text-[14px] px-7 py-[13px] rounded-full transition-colors shadow-md"
+              >
+                {t("productRequest.loginCta", { defaultValue: "Log in to request" })}
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
-              </>
-            )}
-          </button>
+              </Link>
+              <span className="text-[12.5px] text-gray-500">
+                {t("productRequest.loginPrompt", { defaultValue: "Please log in to send your product request." })}
+              </span>
+            </div>
+          ) : !membershipLoading && !isActiveMember ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <Link
+                href={`/${lang}/${PATH_SLUGS.b2b[lang] ?? "b2b"}/apply`}
+                className="flex items-center gap-2 bg-[#402F75] hover:bg-[#352566] text-white font-bold text-[14px] px-7 py-[13px] rounded-full transition-colors shadow-md"
+              >
+                {t("productRequest.memberCta", { defaultValue: "Apply for B2B membership" })}
+              </Link>
+              <span className="text-[12.5px] text-gray-500">
+                {t("productRequest.memberPrompt", { defaultValue: "A B2B membership is required to submit a request." })}
+              </span>
+            </div>
+          ) : (
+            <button
+              type="submit"
+              disabled={submitting || membershipLoading}
+              className="flex items-center gap-2 bg-[#402F75] hover:bg-[#352566] disabled:opacity-60 text-white font-bold text-[14px] px-7 py-[13px] rounded-full transition-colors shadow-md"
+            >
+              {submitting ? (
+                <>
+                  <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" strokeOpacity="0.3" />
+                    <path d="M12 2a10 10 0 0 1 10 10" />
+                  </svg>
+                  {t("productRequest.sending", { defaultValue: "Sending…" })}
+                </>
+              ) : (
+                <>
+                  {t("productRequest.submit", { defaultValue: "Submit request" })}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </form>
     </div>

@@ -128,7 +128,11 @@
         "successTitle": "Sorğu qəbul edildi!",
         "success": "Satınalma komandamız sorğunuzu nəzərdən keçirəcək və e-poçt vasitəsilə sizinlə əlaqə saxlayacaq.",
         "newRequest": "Başqa sorğu göndər",
-        "error": "Xəta baş verdi. Yenidən cəhd edin."
+        "error": "Xəta baş verdi. Yenidən cəhd edin.",
+        "loginPrompt": "Sorğunuzu göndərmək üçün daxil olun.",
+        "loginCta": "Daxil olub sorğu göndər",
+        "memberPrompt": "Sorğu göndərmək üçün B2B üzvlüyü tələb olunur.",
+        "memberCta": "B2B üzvlüyünə müraciət et"
     },
     "creditBanner": {
         "comingSoon": "Tezliklə",
