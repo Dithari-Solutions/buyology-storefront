@@ -12,11 +12,25 @@ export const BUSINESS_NEEDS_OPTIONS = [
     "Other",
 ] as const;
 
+// Standard company-size buckets. Values are sent verbatim as numberOfEmployees and
+// MUST match the backend allowlist (MembershipApplicationRequest @Pattern).
+export const COMPANY_SIZE_OPTIONS = [
+    "1-10",
+    "11-50",
+    "51-200",
+    "201-500",
+    "501-1000",
+    "1001-5000",
+    "5001-10000",
+    "10001+",
+] as const;
+
 export interface MembershipApplicationRequest {
     companyName: string;
     tradeLicenseNumber: string;
     industryType: string;
-    numberOfEmployees: number;
+    /** Company-size range bucket, e.g. "51-200" (see COMPANY_SIZE_OPTIONS). */
+    numberOfEmployees: string;
     country: string;
     city: string;
     website?: string;
@@ -34,7 +48,7 @@ export interface MembershipApplicationResponse {
     companyName: string;
     tradeLicenseNumber: string;
     industryType: string;
-    numberOfEmployees: number;
+    numberOfEmployees: string;
     country: string;
     city: string;
     website?: string;

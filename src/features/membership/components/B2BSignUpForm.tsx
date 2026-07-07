@@ -6,7 +6,7 @@ import {
     submitBusinessSignup,
     type BusinessSignupPayload,
 } from "../services/membership.api";
-import { BUSINESS_NEEDS_OPTIONS, type MembershipApplicationRequest } from "../types";
+import { BUSINESS_NEEDS_OPTIONS, COMPANY_SIZE_OPTIONS, type MembershipApplicationRequest } from "../types";
 import ContactVerification from "@/shared/components/ContactVerification";
 
 type Step = 1 | 2 | 3;
@@ -90,7 +90,7 @@ export default function B2BSignUpForm({
         companyName: "",
         tradeLicenseNumber: "",
         industryType: "",
-        numberOfEmployees: 1,
+        numberOfEmployees: "",
         country: "",
         city: "",
         website: "",
@@ -134,7 +134,7 @@ export default function B2BSignUpForm({
             if (!form.tradeLicenseNumber.trim()) return "Trade license number is required.";
             if (!licenseFile) return "Please upload your trade license document.";
             if (!form.industryType) return "Industry type is required.";
-            if (form.numberOfEmployees < 1) return "Number of employees must be at least 1.";
+            if (!form.numberOfEmployees) return "Please select your company size.";
             if (!form.country.trim()) return "Country is required.";
             if (!form.city.trim()) return "City is required.";
         }
@@ -283,9 +283,13 @@ export default function B2BSignUpForm({
                         </select>
                     </Field>
                     <div className="grid grid-cols-2 gap-3">
-                        <Field label="Employees *">
-                            <input type="number" min={1} value={form.numberOfEmployees}
-                                onChange={(e) => set("numberOfEmployees", parseInt(e.target.value) || 1)} className={inputCls} />
+                        <Field label="Number of Employees *">
+                            <select value={form.numberOfEmployees} onChange={(e) => set("numberOfEmployees", e.target.value)} className={inputCls}>
+                                <option value="">Select company size</option>
+                                {COMPANY_SIZE_OPTIONS.map((size) => (
+                                    <option key={size} value={size}>{size} employees</option>
+                                ))}
+                            </select>
                         </Field>
                         <Field label="Website (optional)">
                             <input value={form.website} onChange={(e) => set("website", e.target.value)}
