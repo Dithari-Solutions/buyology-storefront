@@ -43,6 +43,10 @@ export interface OrderItem {
     productId: string;
     variantId: string;
     storeId: string;
+    /** Product title (backend resolves it, with a SKU fallback). */
+    productName: string | null;
+    /** Primary product image — a ready-to-use presigned URL from the backend. */
+    productImage: string | null;
     productSku: string;
     variantSku: string;
     quantity: number;

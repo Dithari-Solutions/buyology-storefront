@@ -379,10 +379,27 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                 </h2>
                                 <div className="flex flex-col divide-y divide-gray-50">
                                     {order.items.map((item) => (
-                                        <div key={item.id} className="py-3 flex items-center justify-between gap-4">
+                                        <div
+                                            key={item.id}
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() => router.push(`/${lang}/shop/${item.productId}`)}
+                                            onKeyDown={(e) => { if (e.key === "Enter") router.push(`/${lang}/shop/${item.productId}`); }}
+                                            className="py-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                                        >
+                                            {item.productImage ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img
+                                                    src={item.productImage}
+                                                    alt={item.productName ?? ""}
+                                                    className="w-12 h-12 rounded-lg object-cover bg-gray-100 flex-shrink-0"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 rounded-lg bg-gray-100 flex-shrink-0" />
+                                            )}
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-[13px] font-semibold text-gray-800 truncate">
-                                                    {item.variantSku || item.productSku}
+                                                    {item.productName || item.variantSku || item.productSku}
                                                 </p>
                                                 <p className="text-[11px] text-gray-400 mt-0.5">
                                                     Qty: {item.quantity} × {order.currency} {item.unitPrice.toFixed(2)}

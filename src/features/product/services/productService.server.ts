@@ -1,6 +1,11 @@
 import { cache } from "react";
-import { getProductBySlug, getB2bProductBySlug, type ApiProduct } from "./productService";
+import { getProductBySlug, getProductById, getB2bProductBySlug, type ApiProduct } from "./productService";
 import type { Lang } from "@/config/pathSlugs";
+
+/** A v4-ish UUID — the product-detail route's [slug] slot may carry a productId
+ *  (e.g. links from order history, where only the id is known). */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Request-deduplicated `getProductBySlug` for the product detail route.
@@ -14,7 +19,11 @@ import type { Lang } from "@/config/pathSlugs";
  */
 export const getProductBySlugCached = cache(
   (slug: string, lang?: Lang, countryCode?: string, currency?: string): Promise<ApiProduct> =>
-    getProductBySlug(slug, { lang, countryCode, currency })
+    // When the [slug] slot is actually a productId (order-history "view product" links,
+    // which only know the id), resolve by id instead of slug.
+    UUID_RE.test(slug)
+      ? getProductById(slug, { lang, countryCode, currency })
+      : getProductBySlug(slug, { lang, countryCode, currency })
 );
 
 /**
