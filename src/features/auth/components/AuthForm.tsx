@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import B2BSignUpForm from "@/features/membership/components/B2BSignUpForm";
 import LockIcon from "@/assets/icons/lock.png";
 import EmailIcon from "@/assets/icons/email.png";
 import EyeIcon from "@/assets/icons/eye-visible.png";
@@ -35,6 +36,8 @@ const SHAKE = { x: [0, -9, 9, -6, 6, -3, 3, 0], transition: { duration: 0.45 } }
 export default function AuthForm() {
     const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
     const modeRef = useRef(mode);
+    // Sign-up account type. "business" swaps in the B2B membership application flow.
+    const [accountType, setAccountType] = useState<"personal" | "business">("personal");
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -63,6 +66,18 @@ export default function AuthForm() {
         setFieldErrors({});
         setApiError(null);
     };
+
+    // Deep-link support: /auth?type=business opens sign-up on the Business tab.
+    // Old "Apply for B2B membership" CTAs (and the retired /b2b/apply page) land here.
+    // Done in an effect (not a lazy initializer) so SSR always renders the default and
+    // there's no hydration mismatch; it's an intentional one-time sync from the URL.
+    useEffect(() => {
+        if (new URLSearchParams(window.location.search).get("type") !== "business") return;
+        modeRef.current = "signUp";
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional one-time URL sync
+        setMode("signUp");
+        setAccountType("business");
+    }, []);
 
     const clearError = (field: keyof FieldErrors) => {
         if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -167,6 +182,39 @@ export default function AuthForm() {
                 <AuthToggler mode={mode} setMode={handleSetMode} />
             </div>
 
+            {/* Account type — Personal vs Business (B2B membership) — Sign Up only */}
+            {mode === "signUp" && (
+                <div className="mb-5 w-full grid grid-cols-2 gap-1.5 p-1 bg-gray-100 rounded-[14px]">
+                    {(["personal", "business"] as const).map((type) => (
+                        <button
+                            key={type}
+                            type="button"
+                            onClick={() => setAccountType(type)}
+                            className={`py-2.5 rounded-[11px] text-[13px] font-semibold transition-all ${
+                                accountType === type
+                                    ? "bg-white text-[#402F75] shadow-sm"
+                                    : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                            {type === "personal"
+                                ? t("authForm.personalAccount", { defaultValue: "Personal" })
+                                : t("authForm.businessAccount", { defaultValue: "Business" })}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {mode === "signUp" && accountType === "business" ? (
+                <>
+                    <p className="mb-4 text-[12px] text-gray-500 text-center leading-relaxed">
+                        {t("authForm.businessIntro", { defaultValue: "Apply for a B2B Premium membership. Your account will be created once an administrator approves your application, after which you can sign in." })}
+                    </p>
+                    <B2BSignUpForm
+                        lang={lang}
+                        onSwitchToSignIn={() => { setAccountType("personal"); handleSetMode("signIn"); }}
+                    />
+                </>
+            ) : (
             <form className="w-full flex flex-col gap-[14px]" onSubmit={handleSubmit}>
 
                 {/* Email */}
@@ -367,6 +415,7 @@ export default function AuthForm() {
                         : mode === "signIn" ? t("authForm.signIn") : t("authForm.createAccountBtn")}
                 </button>
             </form>
+            )}
 
             {/* Social logins are temporarily disabled (sign-in + sign-up). Re-enable by
                 removing the `false &&` guard below. */}
@@ -384,9 +433,9 @@ export default function AuthForm() {
                 </>
             )}
 
-            {/* Business / Supplier sign-up CTA */}
+            {/* Supplier (seller) sign-up CTA — hidden on the Business (B2B buyer) tab */}
             <AnimatePresence initial={false}>
-                {mode === "signUp" && (
+                {mode === "signUp" && accountType === "personal" && (
                     <motion.div
                         key="business-cta"
                         initial={{ opacity: 0, height: 0, marginTop: 0 }}
