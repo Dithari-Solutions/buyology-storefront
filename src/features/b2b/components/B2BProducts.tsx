@@ -6,6 +6,8 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import B2BProductCard from './B2BProductCard';
+import B2BProductRequestForm from './B2BProductRequestForm';
+import B2BCreditBanner from './B2BCreditBanner';
 import type { B2BActiveFilters } from './B2BProductFilter';
 import { getB2bProducts, searchB2bProducts, getPrimaryImage, type ApiProduct } from '@/features/product/services/productService';
 import { selectSelectedCountryCode, selectPreferredCurrency, selectSelectedCountry } from '@/features/country/store/countrySlice';
@@ -192,6 +194,10 @@ export default function B2BProducts({ onFilterToggle, filterOpen, activeFilters 
 
   return (
     <div className="flex-1 flex flex-col gap-[16px] min-w-0">
+      {/* Product-sourcing request form (active members only) + credit banner (everyone) */}
+      <B2BProductRequestForm isActiveMember={isActiveMember} membershipLoading={membershipLoading} />
+      <B2BCreditBanner />
+
       {/* Search status */}
       {query && (
         <div className="flex items-center justify-between bg-[#402F75]/5 border border-[#402F75]/20 rounded-[16px] px-[20px] py-[12px]">

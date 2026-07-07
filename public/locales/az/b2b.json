@@ -110,6 +110,35 @@
         "successSubtext": "B2B komandamız 24 saat ərzində sizinlə əlaqə saxlayacaq.",
         "errorMessage": "Xəta baş verdi. Yenidən cəhd edin."
     },
+    "productRequest": {
+        "title": "Tapa bilmirsiniz? Məhsul tələb edin",
+        "subtitle": "Nəyə ehtiyacınız olduğunu bizə bildirin, satınalma komandamız onu sizin üçün tapacaq.",
+        "productName": "Məhsulun adı",
+        "productNamePlaceholder": "məs. Dell Latitude 5540 noutbuk",
+        "productNameRequired": "Məhsulun adı tələb olunur.",
+        "quantity": "Miqdar",
+        "quantityPlaceholder": "Minimum 5",
+        "quantityMin": "Minimum miqdar {{min}}-dir.",
+        "image": "Nümunə şəkil (istəyə bağlı)",
+        "imageHint": "Şəkil əlavə edin",
+        "message": "Satınalma komandasına mesaj (istəyə bağlı)",
+        "messagePlaceholder": "Xüsusiyyətlər, brend, büdcə, vaxt çərçivəsi və ya digər detallar…",
+        "submit": "Sorğu göndər",
+        "sending": "Göndərilir…",
+        "successTitle": "Sorğu qəbul edildi!",
+        "success": "Satınalma komandamız sorğunuzu nəzərdən keçirəcək və e-poçt vasitəsilə sizinlə əlaqə saxlayacaq.",
+        "newRequest": "Başqa sorğu göndər",
+        "error": "Xəta baş verdi. Yenidən cəhd edin."
+    },
+    "creditBanner": {
+        "comingSoon": "Tezliklə",
+        "title": "5000 Kredit tezliklə gəlir",
+        "subtitle": "Üzərində işləyirik — işə düşən kimi ilk xəbər tutmaq üçün abunə olun.",
+        "emailPlaceholder": "E-poçtunuz",
+        "emailError": "Düzgün e-poçt ünvanı daxil edin.",
+        "subscribe": "Abunə ol",
+        "subscribed": "Siyahıdasınız! Sizinlə əlaqə saxlayacağıq."
+    },
     "browse": {
         "title": "B2B Kataloqu",
         "subtitle": "Topdan sifariş üçün mövcud məhsullara baxın. Qiymət təklifi istəyin — satınalma komandamız hər sifarişi sizin üçün qiymətləndirir.",

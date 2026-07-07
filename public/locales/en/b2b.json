@@ -110,6 +110,35 @@
         "successSubtext": "Our B2B team will reach out within 24 hours.",
         "errorMessage": "Something went wrong. Please try again."
     },
+    "productRequest": {
+        "title": "Can't find it? Request a product",
+        "subtitle": "Tell us what you need and our procurement team will source it for you.",
+        "productName": "Product name",
+        "productNamePlaceholder": "e.g. Dell Latitude 5540 laptop",
+        "productNameRequired": "Product name is required.",
+        "quantity": "Quantity",
+        "quantityPlaceholder": "Min 5",
+        "quantityMin": "Minimum quantity is {{min}}.",
+        "image": "Reference image (optional)",
+        "imageHint": "Add an image",
+        "message": "Message to procurement (optional)",
+        "messagePlaceholder": "Specs, brand, budget, timeline, or any other details…",
+        "submit": "Submit request",
+        "sending": "Sending…",
+        "successTitle": "Request received!",
+        "success": "Our procurement team will review your request and follow up by email.",
+        "newRequest": "Submit another request",
+        "error": "Something went wrong. Please try again."
+    },
+    "creditBanner": {
+        "comingSoon": "Coming soon",
+        "title": "5000 Credit is coming soon",
+        "subtitle": "We're working on it — subscribe to be the first to know when it goes live.",
+        "emailPlaceholder": "Your email",
+        "emailError": "Enter a valid email address.",
+        "subscribe": "Subscribe",
+        "subscribed": "You're on the list! We'll be in touch."
+    },
     "browse": {
         "title": "B2B Catalog",
         "subtitle": "Browse products available for bulk orders. Request a quote — our procurement team prices each order for you.",

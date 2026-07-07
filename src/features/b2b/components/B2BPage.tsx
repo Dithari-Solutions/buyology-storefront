@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
+import B2BCreditBanner from "./B2BCreditBanner";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 // ─── Icon components ───────────────────────────────────────────────────────────
@@ -415,6 +416,17 @@ export default function B2BPage() {
                     </div>
                 </motion.div>
             </section>
+
+            {/* ── 5000 Credit coming-soon banner ───────────────────────────── */}
+            <motion.section
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="mb-[64px]"
+            >
+                <B2BCreditBanner />
+            </motion.section>
 
             {/* ── Benefits ─────────────────────────────────────────────────── */}
             <section className="mb-[64px]">
