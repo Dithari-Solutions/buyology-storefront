@@ -132,7 +132,9 @@
         "loginPrompt": "Sorğunuzu göndərmək üçün daxil olun.",
         "loginCta": "Daxil olub sorğu göndər",
         "memberPrompt": "Sorğu göndərmək üçün B2B üzvlüyü tələb olunur.",
-        "memberCta": "B2B üzvlüyünə müraciət et"
+        "memberCta": "B2B üzvlüyünə müraciət et",
+        "openCta": "Məhsul tələb et",
+        "backToProducts": "Məhsullara qayıt"
     },
     "creditBanner": {
         "comingSoon": "Tezliklə",

@@ -132,7 +132,9 @@
         "loginPrompt": "Please log in to send your product request.",
         "loginCta": "Log in to request",
         "memberPrompt": "A B2B membership is required to submit a request.",
-        "memberCta": "Apply for B2B membership"
+        "memberCta": "Apply for B2B membership",
+        "openCta": "Request a product",
+        "backToProducts": "Back to products"
     },
     "creditBanner": {
         "comingSoon": "Coming soon",

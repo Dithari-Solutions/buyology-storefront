@@ -6,7 +6,6 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import B2BProductCard from './B2BProductCard';
-import B2BProductRequestForm from './B2BProductRequestForm';
 import B2BCreditBanner from './B2BCreditBanner';
 import type { B2BActiveFilters } from './B2BProductFilter';
 import { getB2bProducts, searchB2bProducts, getPrimaryImage, type ApiProduct } from '@/features/product/services/productService';
@@ -194,8 +193,26 @@ export default function B2BProducts({ onFilterToggle, filterOpen, activeFilters 
 
   return (
     <div className="flex-1 flex flex-col gap-[16px] min-w-0">
-      {/* Product-sourcing request form (active members only) + credit banner (everyone) */}
-      <B2BProductRequestForm isActiveMember={isActiveMember} membershipLoading={membershipLoading} lang={lang} />
+      {/* Product-sourcing request CTA → dedicated page + credit banner (everyone) */}
+      <Link
+        href={`/${lang}/${PATH_SLUGS.b2b[lang] ?? 'b2b'}/request-product`}
+        className="group flex flex-wrap items-center justify-between gap-[12px] bg-white rounded-[16px] border border-gray-100 shadow-sm px-[20px] py-[16px] hover:border-[#402F75]/40 transition-colors"
+      >
+        <div className="flex items-start gap-[12px]">
+          <span className="w-10 h-10 rounded-full bg-[#EDE9FF] flex items-center justify-center flex-shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35M11 8v6M8 11h6" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-[14px] font-bold text-[#402F75]">{t('productRequest.title', { defaultValue: "Can't find it? Request a product" })}</p>
+            <p className="text-[12.5px] text-gray-500">{t('productRequest.subtitle', { defaultValue: 'Tell us what you need and our procurement team will source it for you.' })}</p>
+          </div>
+        </div>
+        <span className="whitespace-nowrap rounded-full bg-[#402F75] group-hover:bg-[#352566] text-white text-[13px] font-bold px-[18px] py-[9px] transition-colors">
+          {t('productRequest.openCta', { defaultValue: 'Request a product' })}
+        </span>
+      </Link>
       <B2BCreditBanner />
 
       {/* Search status */}

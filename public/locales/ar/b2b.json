@@ -132,7 +132,9 @@
         "loginPrompt": "يرجى تسجيل الدخول لإرسال طلب المنتج.",
         "loginCta": "سجّل الدخول لإرسال الطلب",
         "memberPrompt": "عضوية B2B مطلوبة لإرسال طلب.",
-        "memberCta": "التقديم لعضوية B2B"
+        "memberCta": "التقديم لعضوية B2B",
+        "openCta": "اطلب منتجاً",
+        "backToProducts": "العودة إلى المنتجات"
     },
     "creditBanner": {
         "comingSoon": "قريباً",
