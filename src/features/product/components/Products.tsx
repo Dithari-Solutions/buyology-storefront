@@ -211,10 +211,27 @@ export default function Products({ onFilterToggle, filterOpen, activeFilters }: 
       fetchPromise = getProducts({ ...base, size: 1000, sort });
     }
 
+    // Price cap must hold on the PRICE ACTUALLY SHOWN. The backend can include a product
+    // when ANY of its stores is in budget, but the card shows the primary (express-first)
+    // store's price, which may exceed the cap → those leak in (e.g. a 1600 card under a
+    // 1200 max). Guard client-side on the displayed price so the range is always honored,
+    // regardless of how the backend resolved it.
+    const minP = activeFilters?.minPrice;
+    const maxP = activeFilters?.maxPrice;
+    const withinRange = (p: ApiProduct) => {
+      if (minP == null && maxP == null) return true;
+      const price = p.storePrice ?? p.effectivePrice ?? 0;
+      return (minP == null || price >= minP) && (maxP == null || price <= maxP);
+    };
+
     fetchPromise
       .then((items) =>
-        // Hide products not available in the selected country (no "browse only" in lists).
-        setProducts(countryCode ? items.filter((p) => p.availableInSelectedCountry !== false) : items)
+        setProducts(
+          items
+            // Hide products not available in the selected country (no "browse only" in lists).
+            .filter((p) => (countryCode ? p.availableInSelectedCountry !== false : true))
+            .filter(withinRange)
+        )
       )
       .catch(console.error)
       .finally(() => setLoading(false));

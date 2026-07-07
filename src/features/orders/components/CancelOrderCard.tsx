@@ -7,7 +7,7 @@ import type { OrderDetail, OrderStatus } from "../types";
 // Cancellable up to (and including) IN_COURIER — blocked once the order is on its way (IN_TRANSIT)
 // or later. Mirrors the backend gate; the server is the source of truth.
 const CANCELLABLE: OrderStatus[] = [
-    "PENDING_PAYMENT", "PAID", "PACKAGING", "IN_COURIER",
+    "PENDING_PAYMENT", "PAID", "PACKAGING", "READY_FOR_PICKUP", "IN_COURIER",
     "PROCESSING", "COURIER_ASSIGNED", "PICKED_UP",
 ];
 
