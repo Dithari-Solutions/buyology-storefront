@@ -4,9 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { Lang } from "@/config/pathSlugs";
+import B2BQuotePayPanel from "@/features/b2b/components/B2BQuotePayPanel";
 import {
     B2B_MIN_QTY_PER_LINE,
     getQuoteCart,
+    listMyQuotes,
     updateQuoteItem,
     removeQuoteItem,
     submitQuote,
@@ -22,12 +24,30 @@ function fmtMoney(value: number, currency: string): string {
     return `${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 }
 
+/**
+ * The newest quote that is priced and ready to pay: QUOTED or ACCEPTED, not past
+ * its validUntil, and not already ordered. Returns null when there's nothing to pay.
+ */
+function pickReadyQuote(quotes: B2bQuote[]): B2bQuote | null {
+    const now = Date.now();
+    const ready = quotes
+        .filter(
+            (q) =>
+                (q.status === "QUOTED" || q.status === "ACCEPTED") &&
+                !q.orderId &&
+                (!q.validUntil || new Date(q.validUntil).getTime() > now),
+        )
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    return ready[0] ?? null;
+}
+
 export default function B2BCartPage() {
     const { t } = useTranslation("b2b-rfq");
     const params = useParams();
     const lang = (params?.lang as Lang) ?? "en";
 
     const [quote, setQuote] = useState<B2bQuote | null>(null);
+    const [readyQuote, setReadyQuote] = useState<B2bQuote | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>("");
     const [busyItemId, setBusyItemId] = useState<string | null>(null);
@@ -44,6 +64,12 @@ export default function B2BCartPage() {
             })
             .catch(() => setError(t("b2bCart.loadError")))
             .finally(() => setLoading(false));
+        // Surface a priced, ready-to-pay quote at the top (non-blocking).
+        listMyQuotes()
+            .then((quotes) => setReadyQuote(pickReadyQuote(quotes)))
+            .catch(() => {
+                /* non-blocking — the draft cart still renders */
+            });
     }, [t]);
 
     useEffect(() => {
@@ -122,6 +148,53 @@ export default function B2BCartPage() {
 
     return (
         <div className="mx-auto max-w-4xl px-4 py-8">
+            {/* Priced, ready-to-pay quote — surfaced prominently above the draft cart */}
+            {readyQuote && (
+                <div className="mb-8 overflow-hidden rounded-[20px] border border-[#402F75]/20 bg-[#FAF8FF] shadow-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#402F75]/10 px-5 py-4 sm:px-6">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EDE9FF]">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 className="text-[17px] font-bold text-gray-900">{t("quoteReady.title")}</h2>
+                                <p className="text-[13px] text-gray-500">{t("quoteReady.subtitle")}</p>
+                            </div>
+                        </div>
+                        <a
+                            href={`/${lang}/b2b/quotes/${readyQuote.id}`}
+                            className="text-[13px] font-semibold text-[#402F75] hover:text-[#321f5e]"
+                        >
+                            {t("quoteReady.viewDetails")}
+                        </a>
+                    </div>
+
+                    <div className="grid gap-4 px-5 py-5 sm:px-6 md:grid-cols-2 md:items-start">
+                        <div className="space-y-2 text-[13px]">
+                            {readyQuote.quotedSubtotal != null && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-500">{t("quoteReady.total")}</span>
+                                    <span className="text-[18px] font-bold text-gray-900">
+                                        {fmtMoney(readyQuote.quotedSubtotal, readyQuote.currency)}
+                                    </span>
+                                </div>
+                            )}
+                            {readyQuote.validUntil && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-500">{t("quoteReady.validUntil")}</span>
+                                    <span className="font-medium text-gray-800">
+                                        {new Date(readyQuote.validUntil).toLocaleString()}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                        <B2BQuotePayPanel quote={readyQuote} />
+                    </div>
+                </div>
+            )}
+
             <h1 className="text-2xl font-semibold text-gray-900">{t("b2bCart.title")}</h1>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">{t("b2bCart.subtitle")}</p>
 

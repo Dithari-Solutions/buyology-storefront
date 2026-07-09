@@ -138,7 +138,8 @@
     },
     "creditBanner": {
         "comingSoon": "Tezliklə",
-        "title": "5000 Kredit tezliklə gəlir",
+        "title": "5000 AED kredit tezliklə gəlir",
+        "titleConverted": "{{amount}} (≈ {{converted}}) kredit tezliklə gəlir",
         "subtitle": "Üzərində işləyirik — işə düşən kimi ilk xəbər tutmaq üçün abunə olun.",
         "emailPlaceholder": "E-poçtunuz",
         "emailError": "Düzgün e-poçt ünvanı daxil edin.",

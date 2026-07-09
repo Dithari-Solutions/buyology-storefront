@@ -78,6 +78,25 @@
       "ORDERED": "Sifariş edilib"
     }
   },
+  "payPanel": {
+    "payWith": "Ödəniş üsulu",
+    "card": "Kredit / Debet kartı",
+    "tabby": "Tabby — 4 hissəyə böl",
+    "tamara": "Tamara — 3 hissəyə böl",
+    "payNow": "İndi ödə",
+    "paying": "Ödənişə yönləndirilir…",
+    "comingSoon": "Tezliklə",
+    "creditComingSoon": "{{amount}} B2B krediti tezliklə gəlir — qiymətinizin bir hissəsini onunla ödəyə biləcəksiniz.",
+    "creditComingSoonConverted": "{{amount}} (≈ {{converted}}) B2B krediti tezliklə gəlir — qiymətinizin bir hissəsini onunla ödəyə biləcəksiniz.",
+    "error": "Ödəniş başladıla bilmədi. Yenidən cəhd edin."
+  },
+  "quoteReady": {
+    "title": "Qiymətiniz hazırdır",
+    "subtitle": "Satınalma komandamız sorğunuzu qiymətləndirdi. Sifariş vermək üçün nəzərdən keçirin və ödəyin.",
+    "total": "Qiymət cəmi",
+    "validUntil": "Etibarlıdır",
+    "viewDetails": "Detallara bax"
+  },
   "gate": {
     "membersOnly": "Yalnız B2B üzvləri",
     "membersOnlyBody": "B2B qiymət səbəti və ödənişi təsdiqlənmiş B2B üzvləri üçün mövcuddur. Topdan sifariş vermək üçün üzvlük üçün müraciət edin.",

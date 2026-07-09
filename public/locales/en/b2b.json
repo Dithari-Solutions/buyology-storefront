@@ -138,7 +138,8 @@
     },
     "creditBanner": {
         "comingSoon": "Coming soon",
-        "title": "5000 Credit is coming soon",
+        "title": "5000 AED credit is coming soon",
+        "titleConverted": "{{amount}} (≈ {{converted}}) credit is coming soon",
         "subtitle": "We're working on it — subscribe to be the first to know when it goes live.",
         "emailPlaceholder": "Your email",
         "emailError": "Enter a valid email address.",

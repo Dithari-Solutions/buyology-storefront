@@ -78,6 +78,25 @@
       "ORDERED": "Ordered"
     }
   },
+  "payPanel": {
+    "payWith": "Pay with",
+    "card": "Credit / Debit card",
+    "tabby": "Tabby — pay in 4",
+    "tamara": "Tamara — pay in 3",
+    "payNow": "Pay now",
+    "paying": "Redirecting to payment…",
+    "comingSoon": "Coming soon",
+    "creditComingSoon": "{{amount}} B2B credit is coming soon — you'll be able to pay part of your quote with it.",
+    "creditComingSoonConverted": "{{amount}} (≈ {{converted}}) B2B credit is coming soon — you'll be able to pay part of your quote with it.",
+    "error": "Could not start payment. Please try again."
+  },
+  "quoteReady": {
+    "title": "Your quote is ready",
+    "subtitle": "Our procurement team has priced your request. Review and pay to place your order.",
+    "total": "Quote total",
+    "validUntil": "Valid until",
+    "viewDetails": "View details"
+  },
   "gate": {
     "membersOnly": "B2B members only",
     "membersOnlyBody": "The B2B quote cart and checkout are available to approved B2B members. Apply for membership to place bulk orders.",

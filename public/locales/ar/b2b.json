@@ -138,7 +138,8 @@
     },
     "creditBanner": {
         "comingSoon": "قريباً",
-        "title": "رصيد 5000 قادم قريباً",
+        "title": "رصيد 5000 AED قادم قريباً",
+        "titleConverted": "رصيد {{amount}} (≈ {{converted}}) قادم قريباً",
         "subtitle": "نحن نعمل عليه — اشترك لتكون أول من يعرف عند إطلاقه.",
         "emailPlaceholder": "بريدك الإلكتروني",
         "emailError": "أدخل عنوان بريد إلكتروني صالحاً.",

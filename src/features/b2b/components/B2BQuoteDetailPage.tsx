@@ -2,26 +2,23 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import type { RootState } from "@/store";
 import type { Lang } from "@/config/pathSlugs";
-import { SITE_URL } from "@/shared/seo/config";
-import { getProfile, getAddresses } from "@/features/profile/services/profile.api";
-import type { Address, UserProfile } from "@/features/profile/types";
+import B2BQuotePayPanel from "@/features/b2b/components/B2BQuotePayPanel";
 import {
     getQuote,
     acceptQuote,
     cancelQuote,
-    checkoutQuote,
     type B2bQuote,
 } from "@/features/b2b/services/quote.api";
 
 // ── B2B quote detail ──────────────────────────────────────────────────────────
 // Shows per-line quoted unit prices, line totals, subtotal and validUntil for a
-// QUOTED quote, with an Accept button. Checkout is GATED: only an ACCEPTED quote
-// can proceed. On checkout we mirror the consumer flow — call checkoutQuote and
-// redirect the browser to the returned `checkoutUrl` (the Paymob hosted page).
+// QUOTED quote, with an Accept button. Payment is GATED to a priceable quote
+// (QUOTED/ACCEPTED) and handled by the shared <B2BQuotePayPanel/> — which lets the
+// member pick CARD / Tabby / Tamara, accepts a QUOTED quote first if needed, then
+// redirects the browser to the Paymob hosted page. SUBMITTED/expired quotes keep
+// the existing explanatory message.
 
 function fmtMoney(value: number, currency: string): string {
     return `${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
@@ -32,17 +29,12 @@ export default function B2BQuoteDetailPage() {
     const params = useParams();
     const lang = (params?.lang as Lang) ?? "en";
     const quoteId = params?.quoteId as string;
-    const userId = useSelector((s: RootState) => s.auth.userId);
 
     const [quote, setQuote] = useState<B2bQuote | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [accepting, setAccepting] = useState(false);
     const [cancelling, setCancelling] = useState(false);
-    const [checkingOut, setCheckingOut] = useState(false);
-
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [addresses, setAddresses] = useState<Address[]>([]);
 
     const load = useCallback(() => {
         if (!quoteId) return;
@@ -59,19 +51,6 @@ export default function B2BQuoteDetailPage() {
     useEffect(() => {
         load();
     }, [load]);
-
-    // Load profile + addresses so checkout can supply a delivery address / email.
-    useEffect(() => {
-        if (!userId) return;
-        Promise.all([getProfile(userId), getAddresses(userId)])
-            .then(([prof, addrs]) => {
-                setProfile(prof);
-                setAddresses(addrs);
-            })
-            .catch(() => {
-                /* non-blocking */
-            });
-    }, [userId]);
 
     const accept = async () => {
         if (!quote) return;
@@ -102,27 +81,6 @@ export default function B2BQuoteDetailPage() {
         }
     };
 
-    const checkout = async () => {
-        if (!quote) return;
-        setCheckingOut(true);
-        setError("");
-        try {
-            const defaultAddr = addresses.find((a) => a.isDefault) ?? addresses[0];
-            const result = await checkoutQuote(quote.id, {
-                methodType: "CARD",
-                deliveryMethod: "DELIVERY",
-                addressId: defaultAddr?.id,
-                customerEmail: profile?.email ?? undefined,
-                redirectionUrl: `${SITE_URL}/${lang}/payment/callback`,
-            });
-            // Mirror the consumer checkout: redirect the browser to the payment URL.
-            window.location.href = result.checkoutUrl;
-        } catch {
-            setError(t("b2bQuote.checkoutError"));
-            setCheckingOut(false);
-        }
-    };
-
     if (loading) {
         return (
             <div className="mx-auto max-w-3xl px-4 py-20 text-center text-sm text-gray-500">
@@ -149,15 +107,16 @@ export default function B2BQuoteDetailPage() {
     const canAccept = isQuoted && !isExpired;
     const canCancel = quote.status === "SUBMITTED" || quote.status === "QUOTED";
 
-    // Checkout is only ever unlocked for an ACCEPTED quote. For other statuses we
-    // render a disabled button with an explanatory message.
-    const checkoutBlockedMsg = isAccepted
+    // The pay panel is gated to a priceable quote: QUOTED (not expired) or ACCEPTED.
+    // (It accepts a QUOTED quote under the hood before checking out.)
+    const canPay = isAccepted || (isQuoted && !isExpired);
+
+    // For statuses that can't pay yet, keep an explanatory message.
+    const checkoutBlockedMsg = canPay
         ? null
         : quote.status === "SUBMITTED"
             ? t("b2bQuote.checkoutBlockedSubmitted")
-            : isQuoted
-                ? t("b2bQuote.checkoutBlockedQuoted")
-                : t("b2bQuote.checkoutBlockedGeneric");
+            : t("b2bQuote.checkoutBlockedGeneric");
 
     return (
         <div className="mx-auto max-w-3xl px-4 py-8">
@@ -296,15 +255,9 @@ export default function B2BQuoteDetailPage() {
                     </button>
                 )}
 
-                {/* Checkout — gated to ACCEPTED only */}
-                {isAccepted ? (
-                    <button
-                        onClick={checkout}
-                        disabled={checkingOut}
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FBBB14] px-8 py-[14px] text-[15px] font-bold text-gray-900 transition-all hover:bg-[#f0b000] active:scale-[0.98] disabled:opacity-60"
-                    >
-                        {checkingOut ? t("b2bQuote.checkingOut") : t("b2bQuote.checkout")}
-                    </button>
+                {/* Checkout — gated to a priceable (QUOTED/ACCEPTED) quote */}
+                {canPay ? (
+                    <B2BQuotePayPanel quote={quote} />
                 ) : checkoutBlockedMsg ? (
                     <div>
                         <button

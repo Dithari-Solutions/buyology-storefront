@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { subscribeToNewsletter } from "@/features/newsletter/services/newsletter.api";
+import { selectPreferredCurrency } from "@/features/country/store/countrySlice";
+import { convertAmount } from "@/features/currency/services/currency.api";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const B2B_CREDIT_AED = 5000;
 
 // ── "5000 Credit is coming soon" teaser banner ──────────────────────────────
 // Shown on both the B2B landing page and the top of the products page. Inline
@@ -13,10 +17,41 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // regardless to avoid email-harvesting signals).
 export default function B2BCreditBanner() {
   const { t } = useTranslation("b2b");
+  const memberCurrency = useSelector(selectPreferredCurrency);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+
+  // 5000 AED converted into the member's region currency (null → show plain "5000 AED").
+  const [convertedCredit, setConvertedCredit] = useState<number | null>(null);
+  const memberCcy = (memberCurrency ?? "AED").toUpperCase();
+
+  useEffect(() => {
+    if (memberCcy === "AED") {
+      setConvertedCredit(null);
+      return;
+    }
+    let alive = true;
+    convertAmount(B2B_CREDIT_AED, "AED", memberCcy).then((v) => {
+      if (alive) setConvertedCredit(v);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [memberCcy]);
+
+  const creditTitle =
+    convertedCredit != null && memberCcy !== "AED"
+      ? t("creditBanner.titleConverted", {
+          amount: `${B2B_CREDIT_AED} AED`,
+          converted: `${convertedCredit.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })} ${memberCcy}`,
+          defaultValue: `${B2B_CREDIT_AED} AED (≈ {{converted}}) credit is coming soon`,
+        })
+      : t("creditBanner.title", { defaultValue: `${B2B_CREDIT_AED} AED credit is coming soon` });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,7 +85,7 @@ export default function B2BCreditBanner() {
             {t("creditBanner.comingSoon", { defaultValue: "Coming soon" })}
           </span>
           <h3 className="text-[22px] sm:text-[26px] font-bold leading-tight mb-2">
-            {t("creditBanner.title", { defaultValue: "5000 Credit is coming soon" })}
+            {creditTitle}
           </h3>
           <p className="text-white/75 text-[14px] leading-relaxed">
             {t("creditBanner.subtitle", { defaultValue: "We're working on it — subscribe to be the first to know when it goes live." })}
