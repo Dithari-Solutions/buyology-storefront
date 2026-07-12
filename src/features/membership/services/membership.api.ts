@@ -40,6 +40,26 @@ export async function submitBusinessSignup(
     );
 }
 
+/**
+ * Self-service B2B application for an already-signed-in customer (upgrade from their
+ * existing account). No password is captured — the user keeps their current login —
+ * and the application is pre-attached to them server-side (from the auth token), so
+ * no userId is sent. Multipart: a `data` JSON part + the required `tradeLicense` file.
+ */
+export async function submitSelfB2bApplication(
+    payload: MembershipApplicationRequest,
+    tradeLicense: File
+): Promise<MembershipApplicationResponse> {
+    const form = new FormData();
+    form.append("data", new Blob([JSON.stringify(payload)], { type: "application/json" }));
+    form.append("tradeLicense", tradeLicense);
+    return unwrap(
+        await apiClient.post("/api/membership/apply-self", form, {
+            headers: { "Content-Type": "multipart/form-data" },
+        })
+    );
+}
+
 export async function getMyApplication(userId: string): Promise<MembershipApplicationResponse> {
     return unwrap(await apiClient.get(`/api/membership/application?userId=${userId}`));
 }

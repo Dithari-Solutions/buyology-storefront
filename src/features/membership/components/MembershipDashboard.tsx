@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { type Lang } from "@/config/pathSlugs";
 import { getUidFromAccessToken } from "@/shared/lib/tokenManager";
@@ -21,6 +19,7 @@ import type {
     WalletTransaction,
 } from "../types";
 import DigitalMembershipCard from "./DigitalMembershipCard";
+import SelfB2BApplicationForm from "./SelfB2BApplicationForm";
 
 type View = "overview" | "card" | "wallet";
 
@@ -41,7 +40,6 @@ const TX_COLOR: Record<string, string> = {
 export default function MembershipDashboard() {
     const userId = useSelector((s: RootState) => s.auth.userId);
     const lang = useSelector((s: RootState) => s.language.lang) as Lang;
-    const { t } = useTranslation("profile");
 
     const [view, setView] = useState<View>("overview");
     const [loading, setLoading] = useState(true);
@@ -50,6 +48,7 @@ export default function MembershipDashboard() {
     const [wallet, setWallet] = useState<WalletInfo | null>(null);
     const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
     const [txLoading, setTxLoading] = useState(false);
+    const [applying, setApplying] = useState(false);
 
     useEffect(() => {
         if (!userId) { setLoading(false); return; }
@@ -89,16 +88,30 @@ export default function MembershipDashboard() {
         );
     }
 
+    // Self-service application form (from "Apply Now" / "Re-apply")
+    if (applying) {
+        return (
+            <SelfB2BApplicationForm
+                lang={lang}
+                onSuccess={(app) => {
+                    setApplication(app);
+                    setApplying(false);
+                }}
+                onCancel={() => setApplying(false)}
+            />
+        );
+    }
+
     // No application yet
     if (!application && !card) {
-        return <NoMembershipState lang={lang} />;
+        return <NoMembershipState onApply={() => setApplying(true)} />;
     }
 
     return (
         <div className="space-y-4">
             {/* Status banner */}
             {application && !card && (
-                <StatusBanner application={application} lang={lang} />
+                <StatusBanner application={application} onApply={() => setApplying(true)} />
             )}
 
             {/* Active membership */}
@@ -138,7 +151,7 @@ export default function MembershipDashboard() {
     );
 }
 
-function NoMembershipState({ lang }: { lang: string }) {
+function NoMembershipState({ onApply }: { onApply: () => void }) {
     const perks = [
         { label: "AED 5,000 wallet credit" },
         { label: "Priority support" },
@@ -179,17 +192,18 @@ function NoMembershipState({ lang }: { lang: string }) {
                 ))}
             </div>
 
-            <Link
-                href={`/${lang}/b2b/apply`}
+            <button
+                type="button"
+                onClick={onApply}
                 className="relative rounded-[14px] bg-[#402F75] px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#352565] transition-colors"
             >
                 Apply Now
-            </Link>
+            </button>
         </div>
     );
 }
 
-function StatusBanner({ application, lang }: { application: MembershipApplicationResponse; lang: string }) {
+function StatusBanner({ application, onApply }: { application: MembershipApplicationResponse; onApply: () => void }) {
     const cfg = STATUS_CONFIG[application.status];
     return (
         <div className={`rounded-[20px] border p-5 ${cfg.bg}`}>
@@ -204,12 +218,13 @@ function StatusBanner({ application, lang }: { application: MembershipApplicatio
                     )}
                 </div>
                 {application.status === "REJECTED" && (
-                    <Link
-                        href={`/${lang}/b2b/apply`}
+                    <button
+                        type="button"
+                        onClick={onApply}
                         className="rounded-[10px] bg-[#402F75] px-4 py-2 text-xs font-semibold text-white hover:bg-[#352565] transition-colors whitespace-nowrap"
                     >
                         Re-apply
-                    </Link>
+                    </button>
                 )}
             </div>
         </div>
