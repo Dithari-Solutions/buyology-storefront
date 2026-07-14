@@ -66,16 +66,38 @@ export async function listRepairStores(country: string): Promise<RepairStoreOpti
   );
 }
 
+/** Paymob checkout session returned when a courier fee must be paid (mirrors PaymentInitiatedResponse). */
+export interface RepairPayment {
+  transactionId: string;
+  methodType: string;
+  amount: number;
+  currency: string;
+  clientSecret: string | null;
+  checkoutUrl: string | null;
+}
+
+/**
+ * Result of choosing a delivery / return method. For free options `payment` is null and `repair`
+ * is already advanced. For the courier options `payment.checkoutUrl` is where the browser must be
+ * sent to pay the 20 AED fee — the repair only advances once that payment succeeds.
+ */
+export interface RepairDeliveryResult {
+  repair: Repair;
+  payment: RepairPayment | null;
+}
+
 export interface ChooseDeliveryPayload {
   method: Extract<RepairDeliveryMethod, "COURIER_PICKUP" | "STORE_DROPOFF">;
   storeLocationId?: string;
-  /** Customer currency the 20 AED courier fee should be converted into. */
+  /** Customer currency the 20 AED courier fee should be converted into for display. */
   currency?: string;
+  /** Where Paymob returns the browser after the courier-fee checkout (courier pickup only). */
+  redirectionUrl?: string;
 }
 
-/** Choose how the device reaches the store (SUBMITTED → AWAITING_DEVICE). */
-export async function chooseDelivery(id: string, payload: ChooseDeliveryPayload): Promise<Repair> {
-  return unwrap(await apiClient.post<ApiResponse<Repair>>(`/api/repairs/${id}/delivery`, payload));
+/** Choose how the device reaches the store. Store drop-off advances immediately; courier returns a checkout session. */
+export async function chooseDelivery(id: string, payload: ChooseDeliveryPayload): Promise<RepairDeliveryResult> {
+  return unwrap(await apiClient.post<ApiResponse<RepairDeliveryResult>>(`/api/repairs/${id}/delivery`, payload));
 }
 
 /** Accept (→ IN_REPAIR) or decline (→ DECLINED) the quoted fixing price. */
@@ -88,9 +110,11 @@ export async function respondToPrice(id: string, accept: boolean): Promise<Repai
 export interface ChooseReturnPayload {
   method: Extract<RepairDeliveryMethod, "COURIER_RETURN" | "STORE_PICKUP">;
   currency?: string;
+  /** Where Paymob returns the browser after the courier-fee checkout (courier return only). */
+  redirectionUrl?: string;
 }
 
-/** After a decline, choose how the device is returned. */
-export async function chooseReturn(id: string, payload: ChooseReturnPayload): Promise<Repair> {
-  return unwrap(await apiClient.post<ApiResponse<Repair>>(`/api/repairs/${id}/return`, payload));
+/** After a decline, choose how the device is returned. Store pickup is free; courier returns a checkout session. */
+export async function chooseReturn(id: string, payload: ChooseReturnPayload): Promise<RepairDeliveryResult> {
+  return unwrap(await apiClient.post<ApiResponse<RepairDeliveryResult>>(`/api/repairs/${id}/return`, payload));
 }

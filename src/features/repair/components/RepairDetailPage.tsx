@@ -17,8 +17,12 @@ import {
   listRepairStores,
   respondToPrice,
 } from "@/features/repair/services/repair.api";
+import type { RepairDeliveryResult } from "@/features/repair/services/repair.api";
 import type { Repair, RepairStoreOption } from "@/features/repair/types";
 import { REPAIR_COURIER_FEE_AED } from "@/features/repair/types";
+
+/** Shared with the payment-callback page: stashes our tx UUID across the Paymob redirect. */
+const PENDING_TX_KEY = "buyology_pending_tx_id";
 import {
   REPAIR_STATUS_LABEL,
   REPAIR_STATUS_TONE,
@@ -143,18 +147,48 @@ export default function RepairDetailPage() {
     }
   };
 
+  // Where Paymob returns the browser after the courier-fee checkout.
+  const callbackUrl = () =>
+    typeof window !== "undefined"
+      ? `${window.location.origin}/${lang}/payment/callback?kind=repair-courier-fee&repairId=${repair.id}`
+      : undefined;
+
+  // Runs a delivery/return choice. Free options advance immediately; courier options return a
+  // Paymob checkout session we redirect the browser to (the webhook advances the repair on success).
+  const runDelivery = async (fn: () => Promise<RepairDeliveryResult>, failMsg: string) => {
+    setError(null);
+    setBusy(true);
+    try {
+      const result = await fn();
+      if (result.payment?.checkoutUrl) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(PENDING_TX_KEY, result.payment.transactionId);
+          window.location.href = result.payment.checkoutUrl;
+        }
+        return;
+      }
+      setRepair(result.repair);
+    } catch (e) {
+      // Surface the backend message (e.g. a payment-readiness prompt) when present.
+      setError(e instanceof Error && e.message ? e.message : failMsg);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleChooseDelivery = () => {
     if (!deliveryChoice) return;
     if (deliveryChoice === "STORE_DROPOFF" && !selectedStoreId) {
       setError(t("detail.pickStore", { defaultValue: "Please choose a store branch." }));
       return;
     }
-    run(
+    runDelivery(
       () =>
         chooseDelivery(repair.id, {
           method: deliveryChoice,
           storeLocationId: deliveryChoice === "STORE_DROPOFF" ? selectedStoreId : undefined,
           currency: ccy,
+          redirectionUrl: deliveryChoice === "COURIER_PICKUP" ? callbackUrl() : undefined,
         }),
       t("detail.saveFailed", { defaultValue: "Couldn't save your choice. Please try again." }),
     );
@@ -162,11 +196,33 @@ export default function RepairDetailPage() {
 
   const handleChooseReturn = () => {
     if (!returnChoice) return;
-    run(
-      () => chooseReturn(repair.id, { method: returnChoice, currency: ccy }),
+    runDelivery(
+      () =>
+        chooseReturn(repair.id, {
+          method: returnChoice,
+          currency: ccy,
+          redirectionUrl: returnChoice === "COURIER_RETURN" ? callbackUrl() : undefined,
+        }),
       t("detail.saveFailed", { defaultValue: "Couldn't save your choice. Please try again." }),
     );
   };
+
+  // Resume/retry a pending courier-fee payment (redirects to Paymob).
+  const payInboundCourier = () =>
+    runDelivery(
+      () => chooseDelivery(repair.id, { method: "COURIER_PICKUP", currency: ccy, redirectionUrl: callbackUrl() }),
+      t("detail.saveFailed", { defaultValue: "Couldn't save your choice. Please try again." }),
+    );
+  const payReturnCourier = () =>
+    runDelivery(
+      () => chooseReturn(repair.id, { method: "COURIER_RETURN", currency: ccy, redirectionUrl: callbackUrl() }),
+      t("detail.saveFailed", { defaultValue: "Couldn't save your choice. Please try again." }),
+    );
+
+  const inboundCourierPending =
+    repair.status === "SUBMITTED" && repair.inboundDeliveryMethod === "COURIER_PICKUP" && !repair.courierFeePaid;
+  const returnCourierPending =
+    repair.status === "DECLINED" && repair.returnDeliveryMethod === "COURIER_RETURN" && !repair.courierFeePaid;
 
   const statusLabel = t(`status.${repair.status}`, { defaultValue: REPAIR_STATUS_LABEL[repair.status] });
 
@@ -250,6 +306,30 @@ export default function RepairDetailPage() {
                   })}
                 </p>
               </div>
+
+              {inboundCourierPending && (
+                <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-4">
+                  <p className="text-[13px] font-bold text-amber-900">
+                    {t("detail.courierPaymentPending", { defaultValue: "Complete your courier payment" })}
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-amber-800">
+                    {t("detail.courierPaymentPendingBody", {
+                      defaultValue:
+                        "Pay the courier pickup fee to schedule the collection of your device — or choose to bring it to a store below instead.",
+                    })}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={payInboundCourier}
+                    disabled={busy}
+                    className="mt-3 w-full rounded-full bg-amber-500 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                  >
+                    {busy
+                      ? t("detail.redirecting", { defaultValue: "Redirecting…" })
+                      : `${t("detail.payCourierFee", { defaultValue: "Pay courier fee" })} (${courierFeeLabel})`}
+                  </button>
+                </div>
+              )}
 
               <div className="rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm">
                 <h2 className="text-[15px] font-bold text-gray-900">
@@ -413,7 +493,44 @@ export default function RepairDetailPage() {
               <p className="mt-1 text-[13px] text-gray-500">
                 {t("detail.returnBody", { defaultValue: "You've declined the estimate. Choose how you'd like to receive your device back." })}
               </p>
-              {repair.returnDeliveryMethod ? (
+              {returnCourierPending ? (
+                <div className="mt-4 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-4">
+                  <p className="text-[13px] font-bold text-amber-900">
+                    {t("detail.courierPaymentPending", { defaultValue: "Complete your courier payment" })}
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-amber-800">
+                    {t("detail.returnPaymentPendingBody", {
+                      defaultValue:
+                        "Pay the courier fee to have your device delivered back to you — or collect it from the store for free instead.",
+                    })}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={payReturnCourier}
+                      disabled={busy}
+                      className="flex-1 rounded-full bg-amber-500 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                    >
+                      {busy
+                        ? t("detail.redirecting", { defaultValue: "Redirecting…" })
+                        : `${t("detail.payCourierFee", { defaultValue: "Pay courier fee" })} (${courierFeeLabel})`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        runDelivery(
+                          () => chooseReturn(repair.id, { method: "STORE_PICKUP", currency: ccy }),
+                          t("detail.saveFailed", { defaultValue: "Couldn't save your choice. Please try again." }),
+                        )
+                      }
+                      disabled={busy}
+                      className="flex-1 rounded-full border border-gray-300 py-2.5 text-[13px] font-bold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      {t("detail.switchToStorePickup", { defaultValue: "Collect from store instead" })}
+                    </button>
+                  </div>
+                </div>
+              ) : repair.returnDeliveryMethod ? (
                 <div className="mt-4 rounded-[14px] border border-indigo-100 bg-indigo-50/60 px-4 py-3.5 text-[13px] text-indigo-800">
                   {repair.returnDeliveryMethod === "COURIER_RETURN"
                     ? t("detail.returnCourierChosen", { defaultValue: "A courier will deliver your device back to you." })

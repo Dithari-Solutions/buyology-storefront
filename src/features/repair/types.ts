@@ -34,6 +34,7 @@ export interface Repair {
   returnDeliveryMethod: RepairDeliveryMethod | null;
   courierFeeAmount: number | null;
   courierFeeCurrency: string | null;
+  courierFeePaid: boolean;
   estimatedPrice: number | null;
   estimatedPriceCurrency: string | null;
   estimatedTime: string | null;
