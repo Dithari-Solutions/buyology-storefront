@@ -47,14 +47,29 @@ export async function submitRepairRequest(payload: SubmitRepairPayload): Promise
   );
 }
 
-/** The customer's own repairs, newest first. */
-export async function listMyRepairs(): Promise<Repair[]> {
-  return unwrap(await apiClient.get<ApiResponse<Repair[]>>("/api/repairs"));
+/**
+ * The customer's own repairs, newest first. `currency` is optional — when given, the backend
+ * also returns the AED AI estimate converted into it.
+ */
+export async function listMyRepairs(currency?: string): Promise<Repair[]> {
+  return unwrap(
+    await apiClient.get<ApiResponse<Repair[]>>("/api/repairs", {
+      params: currency ? { currency } : undefined,
+    }),
+  );
 }
 
-/** A single owned repair (also clears the customer's "new update" flag server-side). */
-export async function getRepair(id: string): Promise<Repair> {
-  return unwrap(await apiClient.get<ApiResponse<Repair>>(`/api/repairs/${id}`));
+/**
+ * A single owned repair (also clears the customer's "new update" flag server-side).
+ * `currency` is optional — when given, the backend also returns the AED AI estimate
+ * converted into it.
+ */
+export async function getRepair(id: string, currency?: string): Promise<Repair> {
+  return unwrap(
+    await apiClient.get<ApiResponse<Repair>>(`/api/repairs/${id}`, {
+      params: currency ? { currency } : undefined,
+    }),
+  );
 }
 
 /** Active store branches in a country (alpha-3) for the drop-off / pickup picker. */

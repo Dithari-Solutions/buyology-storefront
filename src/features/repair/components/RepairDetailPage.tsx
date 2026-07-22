@@ -85,11 +85,12 @@ export default function RepairDetailPage() {
   const load = useCallback(() => {
     if (!userId || !repairId) return;
     setLoading(true);
-    getRepair(repairId)
+    // Pass the display currency so the backend converts the AED AI estimate for us.
+    getRepair(repairId, ccy)
       .then((r) => setRepair(r))
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
-  }, [userId, repairId]);
+  }, [userId, repairId, ccy]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -288,6 +289,54 @@ export default function RepairDetailPage() {
               </div>
             )}
           </div>
+
+          {/* Preliminary AI estimate — advisory, shown until the team sends the real quote. */}
+          {repair.aiEstimateMinPrice != null &&
+            repair.aiEstimateMaxPrice != null &&
+            repair.status !== "PRICE_ESTIMATED" &&
+            repair.status !== "IN_REPAIR" &&
+            repair.status !== "COMPLETED" &&
+            repair.status !== "DECLINED" && (
+              <div className="rounded-[18px] border border-[#E4DCFB] bg-[#F8F6FF] p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-[14px] font-bold text-[#402F75]">
+                    {t("detail.aiEstimateTitle", { defaultValue: "Preliminary estimate" })}
+                  </h2>
+                  <span className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-semibold text-[#402F75]">
+                    {t("detail.aiEstimateBadge", { defaultValue: "AI · not final" })}
+                  </span>
+                </div>
+
+                <p className="mt-2 text-[20px] font-extrabold text-gray-900">
+                  {fmtMoney(repair.aiEstimateMinPrice, repair.aiEstimateCurrency ?? "AED")} –{" "}
+                  {fmtMoney(repair.aiEstimateMaxPrice, repair.aiEstimateCurrency ?? "AED")}
+                </p>
+                {repair.aiEstimateConvertedMinPrice != null &&
+                  repair.aiEstimateConvertedMaxPrice != null &&
+                  repair.aiEstimateConvertedCurrency && (
+                    <p className="mt-0.5 text-[13px] font-semibold text-gray-500">
+                      ≈ {fmtMoney(repair.aiEstimateConvertedMinPrice, repair.aiEstimateConvertedCurrency)} –{" "}
+                      {fmtMoney(repair.aiEstimateConvertedMaxPrice, repair.aiEstimateConvertedCurrency)}
+                    </p>
+                  )}
+
+                {repair.aiEstimateSummary && (
+                  <p className="mt-3 text-[13px] leading-relaxed text-gray-700">{repair.aiEstimateSummary}</p>
+                )}
+                {repair.aiEstimateTime && (
+                  <p className="mt-1 text-[12.5px] text-gray-500">
+                    {t("detail.aiEstimateTime", { defaultValue: "Typical turnaround" })}: {repair.aiEstimateTime}
+                  </p>
+                )}
+
+                <p className="mt-3 text-[11.5px] leading-relaxed text-gray-500">
+                  {t("detail.aiEstimateDisclaimer", {
+                    defaultValue:
+                      "Generated automatically from your photos and description as a rough guide. Our technicians will inspect your device and send you the final price before any repair starts.",
+                  })}
+                </p>
+              </div>
+            )}
 
           {/* Contextual info + actions */}
           {error && (

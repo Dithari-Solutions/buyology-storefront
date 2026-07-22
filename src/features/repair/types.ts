@@ -38,6 +38,22 @@ export interface Repair {
   estimatedPrice: number | null;
   estimatedPriceCurrency: string | null;
   estimatedTime: string | null;
+  /**
+   * Preliminary AI estimate from the submitted photos + description, priced for the UAE
+   * market in AED. Advisory only — the binding quote is still `estimatedPrice`, sent by the
+   * repair team. The `converted*` pair is the same range converted server-side into the
+   * currency passed on the request (absent when none was asked for or FX was unavailable).
+   */
+  aiEstimateMinPrice: number | null;
+  aiEstimateMaxPrice: number | null;
+  aiEstimateCurrency: string | null;
+  aiEstimateConfidence: "LOW" | "MEDIUM" | "HIGH" | null;
+  aiEstimateSummary: string | null;
+  aiEstimateTime: string | null;
+  aiEstimatedAt: string | null;
+  aiEstimateConvertedMinPrice: number | null;
+  aiEstimateConvertedMaxPrice: number | null;
+  aiEstimateConvertedCurrency: string | null;
   adminNote: string | null;
   contactEmail: string | null;
   contactPhone: string | null;

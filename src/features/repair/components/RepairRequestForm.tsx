@@ -10,10 +10,25 @@ import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { getProfile } from "@/features/profile/services/profile.api";
 import type { UserProfile } from "@/features/profile/types";
-import { submitRepairRequest } from "@/features/repair/services/repair.api";
-import { REPAIR_MAX_IMAGES } from "@/features/repair/types";
+import { selectPreferredCurrency, selectSelectedCountryCode } from "@/features/country/store/countrySlice";
+import { convertAmount } from "@/features/currency/services/currency.api";
+import { chooseDelivery, listRepairStores, submitRepairRequest } from "@/features/repair/services/repair.api";
+import type { RepairStoreOption } from "@/features/repair/types";
+import { REPAIR_COURIER_FEE_AED, REPAIR_MAX_IMAGES } from "@/features/repair/types";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
+
+/** Shared with the payment-callback page: stashes our tx UUID across the Paymob redirect. */
+const PENDING_TX_KEY = "buyology_pending_tx_id";
+
+type DeliveryChoice = "STORE_DROPOFF" | "COURIER_PICKUP";
+
+function fmtMoney(amount: number, currency: string) {
+  return `${currency.toUpperCase()} ${amount.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
 
 export default function RepairRequestForm() {
   const params = useParams();
@@ -26,8 +41,14 @@ export default function RepairRequestForm() {
 
   const userId = useSelector((s: RootState) => s.auth.userId);
   const authRestored = useSelector((s: RootState) => s.auth.isRestored);
+  const preferredCurrency = useSelector(selectPreferredCurrency);
+  const countryCode = useSelector(selectSelectedCountryCode);
+  const ccy = (preferredCurrency ?? "AED").toUpperCase();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  // Wizard: 1 = device details, 2 = delivery method (required before submitting).
+  const [step, setStep] = useState<1 | 2>(1);
 
   const [productName, setProductName] = useState("");
   const [brand, setBrand] = useState("");
@@ -37,12 +58,21 @@ export default function RepairRequestForm() {
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
+  // Step 2 — delivery choice.
+  const [deliveryChoice, setDeliveryChoice] = useState<DeliveryChoice | null>(null);
+  const [stores, setStores] = useState<RepairStoreOption[]>([]);
+  const [selectedStoreId, setSelectedStoreId] = useState("");
+  const [convertedFee, setConvertedFee] = useState<number | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Once the request is created we cache its id so a retry of the delivery step
+  // (e.g. after a payment hiccup) reuses the same request instead of duplicating it.
+  const createdRepairIdRef = useRef<string | null>(null);
 
   // Login gate — wait for the silent refresh to settle, then redirect guests.
   useEffect(() => {
@@ -64,9 +94,28 @@ export default function RepairRequestForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch store branches (for the drop-off picker on step 2).
+  useEffect(() => {
+    if (!countryCode) return;
+    listRepairStores(countryCode).then(setStores).catch(() => setStores([]));
+  }, [countryCode]);
+
+  // Convert the 20 AED courier fee to the customer's currency for display.
+  useEffect(() => {
+    if (ccy === "AED") { setConvertedFee(null); return; }
+    let alive = true;
+    convertAmount(REPAIR_COURIER_FEE_AED, "AED", ccy).then((v) => { if (alive) setConvertedFee(v); });
+    return () => { alive = false; };
+  }, [ccy]);
+
   const email = profile?.email ?? null;
   const phone = profile?.phoneNumber ?? null;
   const profileComplete = Boolean(email && phone);
+
+  const courierFeeLabel =
+    ccy === "AED" || convertedFee == null
+      ? fmtMoney(REPAIR_COURIER_FEE_AED, "AED")
+      : `${fmtMoney(REPAIR_COURIER_FEE_AED, "AED")} (≈ ${fmtMoney(convertedFee, ccy)})`;
 
   function addFiles(incoming: File[]) {
     const images = incoming.filter((f) => f.type.startsWith("image/"));
@@ -84,7 +133,7 @@ export default function RepairRequestForm() {
     setPreviews((p) => p.filter((_, i) => i !== index));
   }
 
-  function validate(): boolean {
+  function validateStep1(): boolean {
     const errors: Record<string, string> = {};
     if (!productName.trim()) errors.productName = t("form.required", { defaultValue: "Required" });
     if (!brand.trim()) errors.brand = t("form.required", { defaultValue: "Required" });
@@ -94,26 +143,75 @@ export default function RepairRequestForm() {
     return Object.keys(errors).length === 0;
   }
 
+  function handleContinue() {
+    if (!profileComplete) return;
+    if (!validateStep1()) return;
+    setSubmitError(null);
+    setStep(2);
+  }
+
+  // Where Paymob returns the browser after the courier-fee checkout.
+  const callbackUrl = (repairId: string) =>
+    typeof window !== "undefined"
+      ? `${window.location.origin}/${lang}/payment/callback?kind=repair-courier-fee&repairId=${repairId}`
+      : undefined;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (submitting) return;
+    if (step !== 2 || submitting) return;
     if (!profileComplete) return;
-    if (!validate()) return;
+
+    // Delivery method is required before the request can be submitted.
+    if (!deliveryChoice) {
+      setSubmitError(t("form.pickDelivery", { defaultValue: "Please choose how to get your device to us." }));
+      return;
+    }
+    if (deliveryChoice === "STORE_DROPOFF" && !selectedStoreId) {
+      setSubmitError(t("detail.pickStore", { defaultValue: "Please choose a store branch." }));
+      return;
+    }
 
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await submitRepairRequest({
-        productName: productName.trim(),
-        brand: brand.trim(),
-        model: model.trim(),
-        purchaseDate: purchaseDate || undefined,
-        description: description.trim(),
-        images: files,
+      // Create the request once, then reuse its id on any retry of the delivery leg.
+      let repairId = createdRepairIdRef.current;
+      if (!repairId) {
+        const created = await submitRepairRequest({
+          productName: productName.trim(),
+          brand: brand.trim(),
+          model: model.trim(),
+          purchaseDate: purchaseDate || undefined,
+          description: description.trim(),
+          images: files,
+        });
+        repairId = created.id;
+        createdRepairIdRef.current = repairId;
+      }
+
+      const result = await chooseDelivery(repairId, {
+        method: deliveryChoice,
+        storeLocationId: deliveryChoice === "STORE_DROPOFF" ? selectedStoreId : undefined,
+        currency: ccy,
+        redirectionUrl: deliveryChoice === "COURIER_PICKUP" ? callbackUrl(repairId) : undefined,
       });
+
+      // Courier pickup → pay the fee at Paymob; the webhook advances the request on success.
+      if (result.payment?.checkoutUrl) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(PENDING_TX_KEY, result.payment.transactionId);
+          window.location.href = result.payment.checkoutUrl;
+        }
+        return;
+      }
+      // Store drop-off → free, already advanced.
       setSuccess(true);
-    } catch {
-      setSubmitError(t("form.error", { defaultValue: "Something went wrong. Please try again." }));
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error && err.message
+          ? err.message
+          : t("form.error", { defaultValue: "Something went wrong. Please try again." }),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -164,11 +262,28 @@ export default function RepairRequestForm() {
       err ? "border-red-400" : "border-gray-200"
     }`;
 
+  const stepPill = (n: 1 | 2, label: string) => {
+    const active = step === n;
+    const done = step > n;
+    return (
+      <div className="flex items-center gap-2">
+        <span
+          className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-bold ${
+            active ? "bg-[#402F75] text-white" : done ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"
+          }`}
+        >
+          {done ? "✓" : n}
+        </span>
+        <span className={`text-[12.5px] font-semibold ${active ? "text-[#402F75]" : "text-gray-400"}`}>{label}</span>
+      </div>
+    );
+  };
+
   return (
     <main className="w-[92%] max-w-[720px] mx-auto py-8 sm:py-10">
       <div className="rounded-[22px] border border-gray-100 bg-white px-6 py-6 sm:px-8 shadow-sm">
         {/* Heading */}
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-5 flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#EDE9FF]">
             <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
               <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6Z" />
@@ -177,6 +292,13 @@ export default function RepairRequestForm() {
           <h1 className="text-[19px] font-extrabold text-gray-900">
             {t("form.title", { defaultValue: "Submit Repair Request" })}
           </h1>
+        </div>
+
+        {/* Stepper */}
+        <div className="mb-6 flex items-center gap-3">
+          {stepPill(1, t("form.stepDevice", { defaultValue: "Device details" }))}
+          <span className="h-px flex-1 bg-gray-200" />
+          {stepPill(2, t("form.stepDelivery", { defaultValue: "Delivery method" }))}
         </div>
 
         {/* Profile completeness banner */}
@@ -214,166 +336,277 @@ export default function RepairRequestForm() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-7">
-          {/* Product information */}
-          <section>
-            <h2 className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
-              {t("form.productInfo", { defaultValue: "Product Information" })}
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-gray-700">
-                  {t("form.productName", { defaultValue: "Product Name" })}
-                </label>
-                <input
-                  value={productName}
-                  onChange={(e) => { setProductName(e.target.value); setFieldErrors((p) => ({ ...p, productName: "" })); }}
-                  placeholder={t("form.productNamePlaceholder", { defaultValue: "e.g. MacBook Air" })}
-                  className={inputCls(fieldErrors.productName)}
-                />
-                {fieldErrors.productName && <p className="text-[11px] text-red-500">{fieldErrors.productName}</p>}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-gray-700">
-                  {t("form.brand", { defaultValue: "Brand" })}
-                </label>
-                <input
-                  value={brand}
-                  onChange={(e) => { setBrand(e.target.value); setFieldErrors((p) => ({ ...p, brand: "" })); }}
-                  placeholder={t("form.brandPlaceholder", { defaultValue: "e.g. Apple" })}
-                  className={inputCls(fieldErrors.brand)}
-                />
-                {fieldErrors.brand && <p className="text-[11px] text-red-500">{fieldErrors.brand}</p>}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-gray-700">
-                  {t("form.model", { defaultValue: "Model" })}
-                </label>
-                <input
-                  value={model}
-                  onChange={(e) => { setModel(e.target.value); setFieldErrors((p) => ({ ...p, model: "" })); }}
-                  placeholder={t("form.modelPlaceholder", { defaultValue: "e.g. 2021 M1" })}
-                  className={inputCls(fieldErrors.model)}
-                />
-                {fieldErrors.model && <p className="text-[11px] text-red-500">{fieldErrors.model}</p>}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-gray-700">
-                  {t("form.purchaseDate", { defaultValue: "Purchase Date (Optional)" })}
-                </label>
-                <input
-                  type="date"
-                  value={purchaseDate}
-                  onChange={(e) => setPurchaseDate(e.target.value)}
-                  className={inputCls()}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Contact information (read-only, from profile) */}
-          <section>
-            <h2 className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
-              {t("form.contactInfo", { defaultValue: "Contact Information" })}
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-gray-700">
-                  {t("form.email", { defaultValue: "Email Address" })}
-                </label>
-                <div className="rounded-[12px] border border-gray-200 bg-gray-50 px-4 py-3 text-[14px] text-gray-700">
-                  {email ?? <span className="text-gray-400">{t("form.emailMissing", { defaultValue: "Add an email in your profile" })}</span>}
-                </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-gray-700">
-                  {t("form.phone", { defaultValue: "Phone Number" })}
-                </label>
-                <div className="rounded-[12px] border border-gray-200 bg-gray-50 px-4 py-3 text-[14px] text-gray-700">
-                  {phone ?? <span className="text-gray-400">{t("form.phoneMissing", { defaultValue: "Add a phone number in your profile" })}</span>}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Problem details */}
-          <section>
-            <h2 className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
-              {t("form.problemDetails", { defaultValue: "Problem Details" })}
-            </h2>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[13px] font-semibold text-gray-700">
-                {t("form.description", { defaultValue: "Problem Description" })}
-              </label>
-              <textarea
-                rows={4}
-                value={description}
-                onChange={(e) => { setDescription(e.target.value); setFieldErrors((p) => ({ ...p, description: "" })); }}
-                placeholder={t("form.descriptionPlaceholder", { defaultValue: "Please describe the issue you're experiencing in detail…" })}
-                className={`resize-none ${inputCls(fieldErrors.description)}`}
-              />
-              {fieldErrors.description && <p className="text-[11px] text-red-500">{fieldErrors.description}</p>}
-            </div>
-          </section>
-
-          {/* Upload images */}
-          <section>
-            <h2 className="mb-1 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
-              {t("form.uploadImages", { defaultValue: "Upload Images" })}
-            </h2>
-            <p className="mb-3 text-[12px] text-gray-500">
-              {t("form.uploadHint", { defaultValue: "Upload up to 4 images showing the issue (Optional)" })}
-            </p>
-
-            {previews.length > 0 && (
-              <div className="mb-3 grid grid-cols-4 gap-2.5">
-                {previews.map((url, i) => (
-                  <div key={i} className="relative aspect-square overflow-hidden rounded-[12px] border border-gray-200">
-                    <Image src={url} alt={`Upload ${i + 1}`} fill className="object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeFile(i)}
-                      className="absolute end-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-[12px] leading-none text-white hover:bg-black/80"
-                      aria-label="Remove image"
-                    >
-                      ×
-                    </button>
+          {/* ── STEP 1 — Device details ─────────────────────────────────────── */}
+          {step === 1 && (
+            <>
+              {/* Product information */}
+              <section>
+                <h2 className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
+                  {t("form.productInfo", { defaultValue: "Product Information" })}
+                </h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[13px] font-semibold text-gray-700">
+                      {t("form.productName", { defaultValue: "Product Name" })}
+                    </label>
+                    <input
+                      value={productName}
+                      onChange={(e) => { setProductName(e.target.value); setFieldErrors((p) => ({ ...p, productName: "" })); }}
+                      placeholder={t("form.productNamePlaceholder", { defaultValue: "e.g. MacBook Air" })}
+                      className={inputCls(fieldErrors.productName)}
+                    />
+                    {fieldErrors.productName && <p className="text-[11px] text-red-500">{fieldErrors.productName}</p>}
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[13px] font-semibold text-gray-700">
+                      {t("form.brand", { defaultValue: "Brand" })}
+                    </label>
+                    <input
+                      value={brand}
+                      onChange={(e) => { setBrand(e.target.value); setFieldErrors((p) => ({ ...p, brand: "" })); }}
+                      placeholder={t("form.brandPlaceholder", { defaultValue: "e.g. Apple" })}
+                      className={inputCls(fieldErrors.brand)}
+                    />
+                    {fieldErrors.brand && <p className="text-[11px] text-red-500">{fieldErrors.brand}</p>}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[13px] font-semibold text-gray-700">
+                      {t("form.model", { defaultValue: "Model" })}
+                    </label>
+                    <input
+                      value={model}
+                      onChange={(e) => { setModel(e.target.value); setFieldErrors((p) => ({ ...p, model: "" })); }}
+                      placeholder={t("form.modelPlaceholder", { defaultValue: "e.g. 2021 M1" })}
+                      className={inputCls(fieldErrors.model)}
+                    />
+                    {fieldErrors.model && <p className="text-[11px] text-red-500">{fieldErrors.model}</p>}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[13px] font-semibold text-gray-700">
+                      {t("form.purchaseDate", { defaultValue: "Purchase Date (Optional)" })}
+                    </label>
+                    <input
+                      type="date"
+                      value={purchaseDate}
+                      onChange={(e) => setPurchaseDate(e.target.value)}
+                      className={inputCls()}
+                    />
+                  </div>
+                </div>
+              </section>
 
-            {previews.length < REPAIR_MAX_IMAGES && (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => { e.preventDefault(); addFiles(Array.from(e.dataTransfer.files ?? [])); }}
-                className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-gray-300 px-4 py-8 text-center transition-colors hover:border-[#402F75]"
+              {/* Contact information (read-only, from profile) */}
+              <section>
+                <h2 className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
+                  {t("form.contactInfo", { defaultValue: "Contact Information" })}
+                </h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[13px] font-semibold text-gray-700">
+                      {t("form.email", { defaultValue: "Email Address" })}
+                    </label>
+                    <div className="rounded-[12px] border border-gray-200 bg-gray-50 px-4 py-3 text-[14px] text-gray-700">
+                      {email ?? <span className="text-gray-400">{t("form.emailMissing", { defaultValue: "Add an email in your profile" })}</span>}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[13px] font-semibold text-gray-700">
+                      {t("form.phone", { defaultValue: "Phone Number" })}
+                    </label>
+                    <div className="rounded-[12px] border border-gray-200 bg-gray-50 px-4 py-3 text-[14px] text-gray-700">
+                      {phone ?? <span className="text-gray-400">{t("form.phoneMissing", { defaultValue: "Add a phone number in your profile" })}</span>}
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Problem details */}
+              <section>
+                <h2 className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
+                  {t("form.problemDetails", { defaultValue: "Problem Details" })}
+                </h2>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-semibold text-gray-700">
+                    {t("form.description", { defaultValue: "Problem Description" })}
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={description}
+                    onChange={(e) => { setDescription(e.target.value); setFieldErrors((p) => ({ ...p, description: "" })); }}
+                    placeholder={t("form.descriptionPlaceholder", { defaultValue: "Please describe the issue you're experiencing in detail…" })}
+                    className={`resize-none ${inputCls(fieldErrors.description)}`}
+                  />
+                  {fieldErrors.description && <p className="text-[11px] text-red-500">{fieldErrors.description}</p>}
+                </div>
+              </section>
+
+              {/* Upload images */}
+              <section>
+                <h2 className="mb-1 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
+                  {t("form.uploadImages", { defaultValue: "Upload Images" })}
+                </h2>
+                <p className="mb-3 text-[12px] text-gray-500">
+                  {t("form.uploadHint", { defaultValue: "Upload up to 4 images showing the issue (Optional)" })}
+                </p>
+
+                {previews.length > 0 && (
+                  <div className="mb-3 grid grid-cols-4 gap-2.5">
+                    {previews.map((url, i) => (
+                      <div key={i} className="relative aspect-square overflow-hidden rounded-[12px] border border-gray-200">
+                        <Image src={url} alt={`Upload ${i + 1}`} fill className="object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeFile(i)}
+                          className="absolute end-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-[12px] leading-none text-white hover:bg-black/80"
+                          aria-label="Remove image"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {previews.length < REPAIR_MAX_IMAGES && (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => { e.preventDefault(); addFiles(Array.from(e.dataTransfer.files ?? [])); }}
+                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-gray-300 px-4 py-8 text-center transition-colors hover:border-[#402F75]"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                      <path d="M12 16V4M12 4l-4 4M12 4l4 4M4 20h16" />
+                    </svg>
+                    <p className="text-[13px] font-medium text-gray-500">
+                      {t("form.uploadCta", { defaultValue: "Click to upload or drag and drop" })}
+                    </p>
+                    <p className="text-[11px] text-gray-400">
+                      {t("form.uploadFormats", { defaultValue: "PNG, JPG up to 10MB" })}
+                    </p>
+                  </div>
+                )}
+                <input ref={fileInputRef} type="file" accept={ACCEPT} multiple className="hidden" onChange={(e) => addFiles(Array.from(e.target.files ?? []))} />
+              </section>
+
+              <button
+                type="button"
+                onClick={handleContinue}
+                disabled={!profileComplete}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#402F75] py-[14px] text-[14px] font-bold text-white shadow-md transition-colors hover:bg-[#352566] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-                  <path d="M12 16V4M12 4l-4 4M12 4l4 4M4 20h16" />
+                {t("form.continue", { defaultValue: "Continue to delivery" })}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 6l6 6-6 6" />
                 </svg>
-                <p className="text-[13px] font-medium text-gray-500">
-                  {t("form.uploadCta", { defaultValue: "Click to upload or drag and drop" })}
+              </button>
+            </>
+          )}
+
+          {/* ── STEP 2 — Delivery method (required) ──────────────────────────── */}
+          {step === 2 && (
+            <>
+              <section>
+                <h2 className="text-[15px] font-bold text-gray-900">
+                  {t("detail.chooseDelivery", { defaultValue: "Choose Delivery Method" })}
+                </h2>
+                <p className="mt-1 text-[12.5px] text-gray-500">
+                  {t("form.deliveryHint", {
+                    defaultValue: "Choose how to get your device to us — this is required to submit your request.",
+                  })}
                 </p>
-                <p className="text-[11px] text-gray-400">
-                  {t("form.uploadFormats", { defaultValue: "PNG, JPG up to 10MB" })}
-                </p>
+
+                <div className="mt-4 space-y-3">
+                  {/* Store drop-off */}
+                  <button
+                    type="button"
+                    onClick={() => { setDeliveryChoice("STORE_DROPOFF"); setSubmitError(null); }}
+                    className={`flex w-full items-start gap-3 rounded-[14px] border px-4 py-3.5 text-start transition-colors ${
+                      deliveryChoice === "STORE_DROPOFF" ? "border-[#402F75] bg-[#F8F6FF]" : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${deliveryChoice === "STORE_DROPOFF" ? "border-[#402F75]" : "border-gray-300"}`}>
+                      {deliveryChoice === "STORE_DROPOFF" && <span className="h-2 w-2 rounded-full bg-[#402F75]" />}
+                    </span>
+                    <span className="flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-[14px] font-bold text-gray-900">{t("detail.bringToStore", { defaultValue: "Bring to Store" })}</span>
+                        <span className="text-[12px] font-bold text-green-600">{t("detail.free", { defaultValue: "Free" })}</span>
+                      </span>
+                      <span className="mt-0.5 block text-[12.5px] text-gray-500">{t("detail.bringToStoreBody", { defaultValue: "Bring your device to one of our store locations." })}</span>
+                    </span>
+                  </button>
+
+                  {deliveryChoice === "STORE_DROPOFF" && (
+                    <div className="ml-7">
+                      {stores.length === 0 ? (
+                        <p className="text-[12.5px] text-gray-400">{t("detail.noStores", { defaultValue: "No stores available in your region yet." })}</p>
+                      ) : (
+                        <select
+                          value={selectedStoreId}
+                          onChange={(e) => { setSelectedStoreId(e.target.value); setSubmitError(null); }}
+                          className="w-full rounded-[12px] border border-gray-200 px-4 py-3 text-[13.5px] text-gray-800 outline-none focus:border-[#402F75]"
+                        >
+                          <option value="">{t("detail.selectStore", { defaultValue: "Select a store branch…" })}</option>
+                          {stores.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.branchName} — {s.city}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Courier pickup */}
+                  <button
+                    type="button"
+                    onClick={() => { setDeliveryChoice("COURIER_PICKUP"); setSubmitError(null); }}
+                    className={`flex w-full items-start gap-3 rounded-[14px] border px-4 py-3.5 text-start transition-colors ${
+                      deliveryChoice === "COURIER_PICKUP" ? "border-[#402F75] bg-[#F8F6FF]" : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${deliveryChoice === "COURIER_PICKUP" ? "border-[#402F75]" : "border-gray-300"}`}>
+                      {deliveryChoice === "COURIER_PICKUP" && <span className="h-2 w-2 rounded-full bg-[#402F75]" />}
+                    </span>
+                    <span className="flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-[14px] font-bold text-gray-900">{t("detail.courierPickup", { defaultValue: "Request Courier Pickup" })}</span>
+                        <span className="text-[12px] font-bold text-[#402F75]">{courierFeeLabel}</span>
+                      </span>
+                      <span className="mt-0.5 block text-[12.5px] text-gray-500">{t("detail.courierPickupBody", { defaultValue: "We'll send a courier to collect your device (fee applies)." })}</span>
+                    </span>
+                  </button>
+                </div>
+              </section>
+
+              {submitError && <p className="text-[13px] text-red-500">{submitError}</p>}
+
+              <div className="flex flex-col gap-3 sm:flex-row-reverse">
+                <button
+                  type="submit"
+                  disabled={submitting || !profileComplete || !deliveryChoice}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#FBBB14] py-[14px] text-[14px] font-bold text-[#2f2158] shadow-md transition-colors hover:bg-[#eab00d] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {submitting
+                    ? t("form.submitting", { defaultValue: "Submitting…" })
+                    : deliveryChoice === "COURIER_PICKUP"
+                      ? `${t("form.submitAndPay", { defaultValue: "Submit & pay courier fee" })} (${courierFeeLabel})`
+                      : t("form.submit", { defaultValue: "Submit Repair Request" })}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setStep(1); setSubmitError(null); }}
+                  disabled={submitting}
+                  className="flex items-center justify-center gap-2 rounded-full border border-gray-200 py-[14px] px-6 text-[14px] font-bold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 6l-6 6 6 6" />
+                  </svg>
+                  {t("form.back", { defaultValue: "Back" })}
+                </button>
               </div>
-            )}
-            <input ref={fileInputRef} type="file" accept={ACCEPT} multiple className="hidden" onChange={(e) => addFiles(Array.from(e.target.files ?? []))} />
-          </section>
-
-          {submitError && <p className="text-[13px] text-red-500">{submitError}</p>}
-
-          <button
-            type="submit"
-            disabled={submitting || !profileComplete}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#FBBB14] py-[14px] text-[14px] font-bold text-[#2f2158] shadow-md transition-colors hover:bg-[#eab00d] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {submitting
-              ? t("form.submitting", { defaultValue: "Submitting…" })
-              : t("form.submit", { defaultValue: "Submit Repair Request" })}
-          </button>
+            </>
+          )}
         </form>
       </div>
     </main>
