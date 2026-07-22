@@ -12,8 +12,8 @@ import { getProfile } from "@/features/profile/services/profile.api";
 import type { UserProfile } from "@/features/profile/types";
 import { selectPreferredCurrency, selectSelectedCountryCode } from "@/features/country/store/countrySlice";
 import { convertAmount } from "@/features/currency/services/currency.api";
-import { chooseDelivery, listRepairStores, submitRepairRequest } from "@/features/repair/services/repair.api";
-import type { RepairStoreOption } from "@/features/repair/types";
+import { chooseDelivery, getRepair, listRepairStores, submitRepairRequest } from "@/features/repair/services/repair.api";
+import type { Repair, RepairStoreOption } from "@/features/repair/types";
 import { REPAIR_COURIER_FEE_AED, REPAIR_MAX_IMAGES } from "@/features/repair/types";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
@@ -66,6 +66,10 @@ export default function RepairRequestForm() {
 
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  // The AI estimate is produced server-side after the request is committed, so it isn't in the
+  // submit response — the success screen polls for it and shows it as soon as it lands.
+  const [estimate, setEstimate] = useState<Repair | null>(null);
+  const [estimatePending, setEstimatePending] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -107,6 +111,49 @@ export default function RepairRequestForm() {
     convertAmount(REPAIR_COURIER_FEE_AED, "AED", ccy).then((v) => { if (alive) setConvertedFee(v); });
     return () => { alive = false; };
   }, [ccy]);
+
+  // Poll for the preliminary AI estimate once the request is in. It's generated off the request
+  // thread (a few seconds), so rather than making the customer wait on submit or come back to the
+  // request later, the success screen fills it in as soon as it's ready. Gives up quietly after
+  // ~60s — the estimate is advisory, and the team's real quote follows by email either way.
+  useEffect(() => {
+    if (!success) return;
+    const repairId = createdRepairIdRef.current;
+    if (!repairId) return;
+
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
+    setEstimatePending(true);
+
+    const poll = async () => {
+      if (cancelled) return;
+      attempts += 1;
+      try {
+        const fresh = await getRepair(repairId, ccy);
+        if (cancelled) return;
+        if (fresh.aiEstimateMinPrice != null && fresh.aiEstimateMaxPrice != null) {
+          setEstimate(fresh);
+          setEstimatePending(false);
+          return;
+        }
+      } catch {
+        // Transient read failure — keep trying until the attempt budget runs out.
+      }
+      if (cancelled) return;
+      if (attempts >= 20) {
+        setEstimatePending(false);
+        return;
+      }
+      timer = setTimeout(poll, 3000);
+    };
+
+    timer = setTimeout(poll, 2000);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [success, ccy]);
 
   const email = profile?.email ?? null;
   const phone = profile?.phoneNumber ?? null;
@@ -238,6 +285,61 @@ export default function RepairRequestForm() {
             })}{" "}
             <span className="font-semibold text-gray-700">{email}</span>
           </p>
+
+          {/* Preliminary AI estimate — appears here a few seconds after submitting. */}
+          {estimatePending && (
+            <div className="mt-6 w-full rounded-[16px] border border-[#E4DCFB] bg-[#F8F6FF] px-5 py-4">
+              <div className="flex items-center justify-center gap-2.5">
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#402F75] border-t-transparent" />
+                <p className="text-[13px] font-semibold text-[#402F75]">
+                  {t("success.estimatePending", { defaultValue: "Preparing your preliminary estimate…" })}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {estimate?.aiEstimateMinPrice != null && estimate.aiEstimateMaxPrice != null && (
+            <div className="mt-6 w-full rounded-[16px] border border-[#E4DCFB] bg-[#F8F6FF] px-5 py-4 text-start">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-[13.5px] font-bold text-[#402F75]">
+                  {t("success.estimateTitle", { defaultValue: "Preliminary estimate" })}
+                </h2>
+                <span className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-semibold text-[#402F75]">
+                  {t("success.estimateBadge", { defaultValue: "AI · not final" })}
+                </span>
+              </div>
+
+              <p className="mt-2 text-[20px] font-extrabold text-gray-900">
+                {fmtMoney(estimate.aiEstimateMinPrice, estimate.aiEstimateCurrency ?? "AED")} –{" "}
+                {fmtMoney(estimate.aiEstimateMaxPrice, estimate.aiEstimateCurrency ?? "AED")}
+              </p>
+              {estimate.aiEstimateConvertedMinPrice != null &&
+                estimate.aiEstimateConvertedMaxPrice != null &&
+                estimate.aiEstimateConvertedCurrency && (
+                  <p className="mt-0.5 text-[13px] font-semibold text-gray-500">
+                    ≈ {fmtMoney(estimate.aiEstimateConvertedMinPrice, estimate.aiEstimateConvertedCurrency)} –{" "}
+                    {fmtMoney(estimate.aiEstimateConvertedMaxPrice, estimate.aiEstimateConvertedCurrency)}
+                  </p>
+                )}
+
+              {estimate.aiEstimateSummary && (
+                <p className="mt-3 text-[13px] leading-relaxed text-gray-700">{estimate.aiEstimateSummary}</p>
+              )}
+              {estimate.aiEstimateTime && (
+                <p className="mt-1 text-[12.5px] text-gray-500">
+                  {t("success.estimateTime", { defaultValue: "Typical turnaround" })}: {estimate.aiEstimateTime}
+                </p>
+              )}
+
+              <p className="mt-3 text-[11.5px] leading-relaxed text-gray-500">
+                {t("success.estimateDisclaimer", {
+                  defaultValue:
+                    "Generated automatically from your photos and description as a rough guide. Our technicians will inspect your device and send you the final price before any repair starts.",
+                })}
+              </p>
+            </div>
+          )}
+
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link
               href={`/${lang}/${repairSlug}/my`}
