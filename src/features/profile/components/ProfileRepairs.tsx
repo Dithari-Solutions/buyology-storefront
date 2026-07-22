@@ -54,9 +54,11 @@ export default function ProfileRepairs() {
           </h2>
           <p className="mt-0.5 text-[13px] text-gray-400">
             {repairs.length > 0
+              // Interpolated as `total`, not `count` — passing `count` makes i18next resolve
+              // plural sub-keys (_one/_other) that these namespaces don't define.
               ? t("profile.count", {
-                  defaultValue: "{{count}} repair request(s)",
-                  count: repairs.length,
+                  defaultValue: "{{total}} repair request(s)",
+                  total: repairs.length,
                 })
               : t("list.emptyBody", {
                   defaultValue: "When you request a repair it'll appear here so you can track its progress.",

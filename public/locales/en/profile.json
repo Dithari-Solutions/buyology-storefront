@@ -13,7 +13,8 @@
       "myProfile": "My Profile",
       "deliveryAddress": "Delivery Address",
       "orderHistory": "Order History",
-      "settings": "Settings"
+      "settings": "Settings",
+      "repairs": "Repairs"
     },
     "signOut": "Sign Out",
     "logout": {
@@ -60,5 +61,9 @@
     "title": "Settings",
     "subtitle": "Manage your account settings",
     "comingSoon": "Settings coming soon"
+  },
+  "repairs": {
+    "title": "Repairs",
+    "subtitle": "Track your device repair requests, or start a new one."
   }
 }

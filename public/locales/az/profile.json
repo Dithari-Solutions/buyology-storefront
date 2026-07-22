@@ -13,7 +13,8 @@
       "myProfile": "Mənim Profilim",
       "deliveryAddress": "Çatdırılma ünvanı",
       "orderHistory": "Sifariş tarixi",
-      "settings": "Parametrlər"
+      "settings": "Parametrlər",
+      "repairs": "Təmirlər"
     },
     "signOut": "Çıxış",
     "logout": {
@@ -60,5 +61,9 @@
     "title": "Parametrlər",
     "subtitle": "Hesab parametrlərinizi idarə edin",
     "comingSoon": "Parametrlər tezliklə əlçatan olacaq"
+  },
+  "repairs": {
+    "title": "Təmirlər",
+    "subtitle": "Cihaz təmir sorğularınızı izləyin və ya yenisini başladın."
   }
 }

@@ -8,11 +8,26 @@
     "ctaTitle": "Başlamağa Hazırsınız?",
     "ctaBody": "Təmir sorğunuzu indi göndərin, komandamız 24 saat ərzində sizinlə əlaqə saxlayacaq.",
     "steps": {
-      "submit": { "title": "Təmir Sorğusu Göndər", "body": "Formanı cihaz məlumatları ilə doldurun və şəkillər yükləyin." },
-      "review": { "title": "Texnik Baxışı", "body": "Mütəxəssislərimiz sorğunuza baxır və problemi diaqnoz edir." },
-      "estimate": { "title": "Qiymət Təxmini Alın", "body": "Şəffaf qiymət təxmini və təmir müddəti əldə edin." },
-      "send": { "title": "Cihazı Göndər", "body": "Mağazamıza gətirin və ya kuryer sifariş edin." },
-      "repaired": { "title": "Cihaz Təmir Olundu", "body": "Cihazınızı təmir edir və hazır olduqda sizə bildiririk." }
+      "submit": {
+        "title": "Təmir Sorğusu Göndər",
+        "body": "Formanı cihaz məlumatları ilə doldurun və şəkillər yükləyin."
+      },
+      "review": {
+        "title": "Texnik Baxışı",
+        "body": "Mütəxəssislərimiz sorğunuza baxır və problemi diaqnoz edir."
+      },
+      "estimate": {
+        "title": "Qiymət Təxmini Alın",
+        "body": "Şəffaf qiymət təxmini və təmir müddəti əldə edin."
+      },
+      "send": {
+        "title": "Cihazı Göndər",
+        "body": "Mağazamıza gətirin və ya kuryer sifariş edin."
+      },
+      "repaired": {
+        "title": "Cihaz Təmir Olundu",
+        "body": "Cihazınızı təmir edir və hazır olduqda sizə bildiririk."
+      }
     }
   },
   "form": {
@@ -43,13 +58,38 @@
     "uploadCta": "Yükləmək üçün klikləyin və ya sürüşdürün",
     "uploadFormats": "PNG, JPG maksimum 10MB",
     "submit": "Təmir Sorğusu Göndər",
-    "submitting": "Göndərilir…"
+    "submitting": "Göndərilir…",
+    "subtitle": "Cihazınız haqqında məlumat verin, sonra onu bizə necə çatdıracağınızı seçin.",
+    "stepDevice": "Cihaz məlumatları",
+    "stepDelivery": "Çatdırılma üsulu",
+    "continue": "Çatdırılmaya keç",
+    "back": "Geri",
+    "deliveryHint": "Cihazınızı bizə necə çatdıracağınızı seçin — sorğunu göndərmək üçün bu tələb olunur.",
+    "pickDelivery": "Zəhmət olmasa cihazınızı bizə necə çatdıracağınızı seçin.",
+    "submitAndPay": "Göndər və kuryer haqqını ödə",
+    "uploadHintRequired": "Problemi göstərən ən azı 1 şəkil əlavə edin (4-ə qədər) — qiyməti şəkillərə əsasən müəyyən edirik.",
+    "imagesRequired": "Problemin ən azı bir şəklini əlavə edin.",
+    "summaryTitle": "Sorğunuz",
+    "summaryEmpty": "Təyin edilməyib",
+    "summaryNoPhotos": "Hələ yoxdur",
+    "nextTitle": "Növbəti addımlar",
+    "next1": "Dərhal ilkin qiymət təxmini alırsınız.",
+    "next2": "Texniklərimiz cihazınızı yoxlayır.",
+    "next3": "Qəbul və ya imtina etməyiniz üçün yekun qiyməti göndəririk."
   },
   "success": {
     "title": "Təmir Sorğusu Göndərildi",
     "body": "Texniklərimiz tezliklə sorğunuza baxacaq. Təsdiq e-poçtunu bu ünvana alacaqsınız:",
     "viewRequests": "Təmir Sorğularına Bax",
-    "backHome": "Ana Səhifəyə Qayıt"
+    "backHome": "Ana Səhifəyə Qayıt",
+    "estimatePending": "Süni intellekt təmiri qiymətləndirir…",
+    "estimatePendingBody": "Şəkilləriniz və təsvirivniz təhlil edilir. Bu adətən bir neçə saniyə çəkir.",
+    "estimateTitle": "İlkin qiymət təxmini",
+    "estimateBadge": "Sİ · yekun deyil",
+    "estimateTime": "Təxmini müddət",
+    "estimateDisclaimer": "Şəkilləriniz və təsvirinizə əsasən avtomatik hazırlanmış təxmini göstəricidir. Texniklərimiz cihazınızı yoxlayacaq və təmirə başlamazdan əvvəl yekun qiyməti göndərəcək.",
+    "estimateUnavailable": "Bu dəfə dərhal təxmin yoxdur",
+    "estimateUnavailableBody": "Bunun üçün ilkin qiymət hazırlaya bilmədik. Texniklərimiz cihazınızı yoxlayacaq və tam qiymət təklifi göndərəcək — heç bir gecikmə olmayacaq."
   },
   "list": {
     "title": "Təmirlərim",
@@ -124,6 +164,13 @@
       "PRICE_ESTIMATED": "Qiymət Təxmini Göndərildi",
       "IN_REPAIR": "Təmir Başladı",
       "COMPLETED": "Tamamlandı"
-    }
+    },
+    "aiEstimateTitle": "İlkin qiymət təxmini",
+    "aiEstimateBadge": "Sİ · yekun deyil",
+    "aiEstimateTime": "Təxmini müddət",
+    "aiEstimateDisclaimer": "Şəkilləriniz və təsvirinizə əsasən avtomatik hazırlanmış təxmini göstəricidir. Texniklərimiz cihazınızı yoxlayacaq və təmirə başlamazdan əvvəl yekun qiyməti göndərəcək."
+  },
+  "profile": {
+    "count": "{{total}} təmir sorğusu"
   }
 }

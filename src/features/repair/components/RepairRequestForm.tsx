@@ -175,6 +175,7 @@ export default function RepairRequestForm() {
     previews.forEach((u) => URL.revokeObjectURL(u));
     setFiles(combined);
     setPreviews(combined.map((f) => URL.createObjectURL(f)));
+    setFieldErrors((p) => ({ ...p, images: "" }));
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -190,6 +191,13 @@ export default function RepairRequestForm() {
     if (!brand.trim()) errors.brand = t("form.required", { defaultValue: "Required" });
     if (!model.trim()) errors.model = t("form.required", { defaultValue: "Required" });
     if (!description.trim()) errors.description = t("form.required", { defaultValue: "Required" });
+    // At least one photo is mandatory — the repair is priced from what the photos show.
+    // The backend enforces this too (400), this is just the friendlier first line of defence.
+    if (files.length === 0) {
+      errors.images = t("form.imagesRequired", {
+        defaultValue: "Add at least one photo of the problem.",
+      });
+    }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -627,9 +635,13 @@ export default function RepairRequestForm() {
               <section>
                 <h2 className="mb-1 text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
                   {t("form.uploadImages", { defaultValue: "Upload Images" })}
+                  <span className="ms-1 text-red-500">*</span>
                 </h2>
                 <p className="mb-3 text-[12px] text-gray-500">
-                  {t("form.uploadHint", { defaultValue: "Upload up to 4 images showing the issue (Optional)" })}
+                  {t("form.uploadHintRequired", {
+                    defaultValue:
+                      "Add at least 1 photo of the issue (up to 4) — we price the repair from what they show.",
+                  })}
                 </p>
 
                 {previews.length > 0 && (
@@ -655,7 +667,9 @@ export default function RepairRequestForm() {
                     onClick={() => fileInputRef.current?.click()}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => { e.preventDefault(); addFiles(Array.from(e.dataTransfer.files ?? [])); }}
-                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-gray-300 px-4 py-8 text-center transition-colors hover:border-[#402F75]"
+                    className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[14px] border-2 border-dashed px-4 py-8 text-center transition-colors hover:border-[#402F75] ${
+                      fieldErrors.images ? "border-red-400 bg-red-50/40" : "border-gray-300"
+                    }`}
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
                       <path d="M12 16V4M12 4l-4 4M12 4l4 4M4 20h16" />
@@ -669,6 +683,9 @@ export default function RepairRequestForm() {
                   </div>
                 )}
                 <input ref={fileInputRef} type="file" accept={ACCEPT} multiple className="hidden" onChange={(e) => addFiles(Array.from(e.target.files ?? []))} />
+                {fieldErrors.images && (
+                  <p className="mt-2 text-[11px] text-red-500">{fieldErrors.images}</p>
+                )}
               </section>
 
               <button
