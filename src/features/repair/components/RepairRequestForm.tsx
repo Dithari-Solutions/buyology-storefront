@@ -67,9 +67,11 @@ export default function RepairRequestForm() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   // The AI estimate is produced server-side after the request is committed, so it isn't in the
-  // submit response — the success screen polls for it and shows it as soon as it lands.
+  // submit response — the success screen polls for it and shows it as soon as it lands. The
+  // status drives a permanent slot on that screen so there is always something to look at:
+  // estimating → ready, or a plain explanation if it never arrives.
   const [estimate, setEstimate] = useState<Repair | null>(null);
-  const [estimatePending, setEstimatePending] = useState(false);
+  const [estimateStatus, setEstimateStatus] = useState<"idle" | "pending" | "ready" | "unavailable">("idle");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -124,7 +126,7 @@ export default function RepairRequestForm() {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let attempts = 0;
-    setEstimatePending(true);
+    setEstimateStatus("pending");
 
     const poll = async () => {
       if (cancelled) return;
@@ -134,15 +136,15 @@ export default function RepairRequestForm() {
         if (cancelled) return;
         if (fresh.aiEstimateMinPrice != null && fresh.aiEstimateMaxPrice != null) {
           setEstimate(fresh);
-          setEstimatePending(false);
+          setEstimateStatus("ready");
           return;
         }
       } catch {
         // Transient read failure — keep trying until the attempt budget runs out.
       }
       if (cancelled) return;
-      if (attempts >= 20) {
-        setEstimatePending(false);
+      if (attempts >= 30) {
+        setEstimateStatus("unavailable");
         return;
       }
       timer = setTimeout(poll, 3000);
@@ -286,19 +288,60 @@ export default function RepairRequestForm() {
             <span className="font-semibold text-gray-700">{email}</span>
           </p>
 
-          {/* Preliminary AI estimate — appears here a few seconds after submitting. */}
-          {estimatePending && (
-            <div className="mt-6 w-full rounded-[16px] border border-[#E4DCFB] bg-[#F8F6FF] px-5 py-4">
-              <div className="flex items-center justify-center gap-2.5">
-                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#402F75] border-t-transparent" />
-                <p className="text-[13px] font-semibold text-[#402F75]">
-                  {t("success.estimatePending", { defaultValue: "Preparing your preliminary estimate…" })}
-                </p>
+          {/* Preliminary AI estimate — a permanent slot on this screen: it animates while the
+              estimate is being generated, then swaps to the price (or a plain note if it can't). */}
+          {estimateStatus === "pending" && (
+            <div className="mt-6 w-full overflow-hidden rounded-[16px] border border-[#E4DCFB] bg-gradient-to-br from-[#F8F6FF] to-[#EFEAFF] px-5 py-5 text-start">
+              <div className="flex items-center gap-3">
+                {/* Pulsing halo behind a spinning ring — reads as "working" at a glance. */}
+                <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-[#402F75]/20" />
+                  <span className="absolute inset-0 animate-spin rounded-full border-2 border-[#402F75]/30 border-t-[#402F75]" />
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className="relative h-4 w-4">
+                    <path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Z" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[14px] font-bold text-[#402F75]">
+                    {t("success.estimatePending", { defaultValue: "AI is estimating your repair…" })}
+                    <span className="ml-0.5 inline-flex">
+                      <span className="animate-bounce" style={{ animationDelay: "0ms" }}>.</span>
+                      <span className="animate-bounce" style={{ animationDelay: "150ms" }}>.</span>
+                      <span className="animate-bounce" style={{ animationDelay: "300ms" }}>.</span>
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-[12px] text-gray-500">
+                    {t("success.estimatePendingBody", {
+                      defaultValue: "Analysing your photos and description. This usually takes a few seconds.",
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Shimmer placeholders standing in for the price + description lines. */}
+              <div className="mt-4 space-y-2">
+                <div className="h-6 w-1/2 animate-pulse rounded-md bg-[#402F75]/15" />
+                <div className="h-3 w-full animate-pulse rounded bg-[#402F75]/10" style={{ animationDelay: "120ms" }} />
+                <div className="h-3 w-4/5 animate-pulse rounded bg-[#402F75]/10" style={{ animationDelay: "240ms" }} />
               </div>
             </div>
           )}
 
-          {estimate?.aiEstimateMinPrice != null && estimate.aiEstimateMaxPrice != null && (
+          {estimateStatus === "unavailable" && (
+            <div className="mt-6 w-full rounded-[16px] border border-gray-200 bg-gray-50 px-5 py-4 text-start">
+              <p className="text-[13px] font-semibold text-gray-700">
+                {t("success.estimateUnavailable", { defaultValue: "No instant estimate this time" })}
+              </p>
+              <p className="mt-1 text-[12.5px] leading-relaxed text-gray-500">
+                {t("success.estimateUnavailableBody", {
+                  defaultValue:
+                    "We couldn't prepare a preliminary price for this one. Our technicians will review your device and send you a full quote — nothing is delayed.",
+                })}
+              </p>
+            </div>
+          )}
+
+          {estimateStatus === "ready" && estimate?.aiEstimateMinPrice != null && estimate.aiEstimateMaxPrice != null && (
             <div className="mt-6 w-full rounded-[16px] border border-[#E4DCFB] bg-[#F8F6FF] px-5 py-4 text-start">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-[13.5px] font-bold text-[#402F75]">
