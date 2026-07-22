@@ -63,7 +63,7 @@ export default function RepairLandingPage() {
   const myHref = `/${lang}/${repairSlug}/my`;
 
   return (
-    <main className="w-[92%] max-w-[1080px] mx-auto py-8 sm:py-10">
+    <main className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-12">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#4a3a86] to-[#2f2158] px-6 py-12 sm:px-12 sm:py-16 text-center">
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5" />

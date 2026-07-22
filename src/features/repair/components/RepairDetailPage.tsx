@@ -114,15 +114,18 @@ export default function RepairDetailPage() {
 
   if (loading) {
     return (
-      <main className="w-[92%] max-w-[960px] mx-auto py-10">
-        <div className="h-64 animate-pulse rounded-[20px] bg-gray-100" />
+      <main className="w-full px-4 py-10 sm:px-6 lg:px-8 xl:px-12">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="buyo-shimmer h-64 rounded-[20px]" />
+          <div className="buyo-shimmer h-64 rounded-[20px]" style={{ animationDelay: "150ms" }} />
+        </div>
       </main>
     );
   }
 
   if (notFound || !repair) {
     return (
-      <main className="w-[92%] max-w-[560px] mx-auto py-16 text-center">
+      <main className="buyo-fade w-full px-4 py-16 text-center sm:px-6 lg:px-8">
         <p className="text-[15px] text-gray-600">{t("detail.notFound", { defaultValue: "Repair request not found." })}</p>
         <Link href={`/${lang}/${repairSlug}/my`} className="mt-4 inline-block text-[13px] font-bold text-[#402F75] hover:underline">
           {t("detail.backToList", { defaultValue: "Back to my repairs" })}
@@ -230,19 +233,19 @@ export default function RepairDetailPage() {
   const statusLabel = t(`status.${repair.status}`, { defaultValue: REPAIR_STATUS_LABEL[repair.status] });
 
   return (
-    <main className="w-[92%] max-w-[960px] mx-auto py-8 sm:py-10">
-      <Link href={`/${lang}/${repairSlug}/my`} className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#402F75] hover:underline">
+    <main className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-12">
+      <Link href={`/${lang}/${repairSlug}/my`} className="buyo-fade mb-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#402F75] transition-transform hover:-translate-x-0.5 hover:underline">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M15 18l-6-6 6-6" />
         </svg>
         {t("detail.backToList", { defaultValue: "Back to my repairs" })}
       </Link>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-7">
         {/* Left column */}
         <div className="space-y-5">
           {/* Summary card */}
-          <div className="rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="buyo-rise buyo-card rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h1 className="text-[22px] font-extrabold text-gray-900">{repair.productName}</h1>
               <span className={`rounded-full px-3 py-1 text-[12px] font-semibold ${REPAIR_STATUS_TONE[repair.status]}`}>
@@ -299,7 +302,7 @@ export default function RepairDetailPage() {
             repair.status !== "IN_REPAIR" &&
             repair.status !== "COMPLETED" &&
             repair.status !== "DECLINED" && (
-              <div className="rounded-[18px] border border-[#E4DCFB] bg-[#F8F6FF] p-5">
+              <div className="buyo-rise buyo-d1 buyo-card rounded-[18px] border border-[#E4DCFB] bg-[#F8F6FF] p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-[14px] font-bold text-[#402F75]">
                     {t("detail.aiEstimateTitle", { defaultValue: "Preliminary estimate" })}
@@ -382,7 +385,7 @@ export default function RepairDetailPage() {
                 </div>
               )}
 
-              <div className="rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm">
+              <div className="buyo-rise buyo-d2 buyo-card rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm">
                 <h2 className="text-[15px] font-bold text-gray-900">
                   {t("detail.chooseDelivery", { defaultValue: "Choose Delivery Method" })}
                 </h2>
@@ -482,7 +485,7 @@ export default function RepairDetailPage() {
 
           {/* PRICE_ESTIMATED — cost estimate + accept/decline */}
           {repair.status === "PRICE_ESTIMATED" && repair.estimatedPrice != null && (
-            <div className="overflow-hidden rounded-[18px] bg-gradient-to-br from-[#4a3a86] to-[#2f2158] p-6 text-white shadow-sm">
+            <div className="buyo-rise buyo-card overflow-hidden rounded-[18px] bg-gradient-to-br from-[#4a3a86] to-[#2f2158] p-6 text-white shadow-sm">
               <h2 className="text-[16px] font-bold">{t("detail.costEstimate", { defaultValue: "Repair Cost Estimate" })}</h2>
               <div className="mt-4 flex flex-wrap gap-8">
                 <div>
@@ -539,7 +542,7 @@ export default function RepairDetailPage() {
 
           {/* DECLINED — arrange the device's return */}
           {repair.status === "DECLINED" && (
-            <div className="rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="buyo-rise buyo-card rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm">
               <h2 className="text-[15px] font-bold text-gray-900">{t("detail.returnTitle", { defaultValue: "Get your device back" })}</h2>
               <p className="mt-1 text-[13px] text-gray-500">
                 {t("detail.returnBody", { defaultValue: "You've declined the estimate. Choose how you'd like to receive your device back." })}
@@ -626,7 +629,7 @@ export default function RepairDetailPage() {
         </div>
 
         {/* Right column — timeline */}
-        <aside className="rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm lg:sticky lg:top-6 lg:self-start">
+        <aside className="buyo-rise buyo-d3 rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm lg:sticky lg:top-6 lg:self-start">
           <h2 className="text-[15px] font-bold text-gray-900">{t("detail.timeline", { defaultValue: "Repair Timeline" })}</h2>
           <ol className="mt-5 space-y-0">
             {REPAIR_TIMELINE_STEPS.map((step, i) => {

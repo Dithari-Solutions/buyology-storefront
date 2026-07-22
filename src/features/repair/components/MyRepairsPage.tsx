@@ -47,8 +47,8 @@ export default function MyRepairsPage() {
   if (!authRestored || !userId) return null;
 
   return (
-    <main className="w-[92%] max-w-[820px] mx-auto py-8 sm:py-10">
-      <div className="mb-6 flex items-center justify-between gap-4">
+    <main className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-12">
+      <div className="buyo-rise mb-6 flex items-center justify-between gap-4">
         <h1 className="text-[22px] font-extrabold text-gray-900">
           {t("list.title", { defaultValue: "My Repairs" })}
         </h1>
@@ -63,13 +63,13 @@ export default function MyRepairsPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-[16px] bg-gray-100" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="buyo-shimmer h-28 rounded-[16px]" style={{ animationDelay: `${i * 90}ms` }} />
           ))}
         </div>
       ) : repairs.length === 0 ? (
-        <div className="flex flex-col items-center rounded-[22px] border border-dashed border-gray-200 bg-gradient-to-b from-[#F8F6FF] to-white px-6 py-14 text-center">
+        <div className="buyo-rise flex flex-col items-center rounded-[22px] border border-dashed border-gray-200 bg-gradient-to-b from-[#F8F6FF] to-white px-6 py-14 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#EDE9FF]">
             <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
               <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6Z" />
@@ -89,12 +89,13 @@ export default function MyRepairsPage() {
           </Link>
         </div>
       ) : (
-        <ul className="space-y-3">
-          {repairs.map((r) => (
-            <li key={r.id}>
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {repairs.map((r, i) => (
+            // Cap the stagger so a long list doesn't leave the last cards hidden for seconds.
+            <li key={r.id} className="buyo-rise" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
               <Link
                 href={`/${lang}/${repairSlug}/${r.id}`}
-                className="flex items-center justify-between gap-4 rounded-[16px] border border-gray-100 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-md"
+                className="buyo-card buyo-card-hover flex h-full items-center justify-between gap-4 rounded-[16px] border border-gray-100 bg-white px-5 py-4 shadow-sm"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">

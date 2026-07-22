@@ -273,10 +273,11 @@ export default function RepairRequestForm() {
   // ── Success ───────────────────────────────────────────────────────────────
   if (success) {
     return (
-      <main className="w-[92%] max-w-[560px] mx-auto py-14">
-        <div className="flex flex-col items-center rounded-[22px] border border-gray-100 bg-white px-6 py-12 text-center shadow-sm">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#EDE9FF]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
+      <main className="w-full px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <div className="buyo-rise mx-auto flex max-w-[680px] flex-col items-center rounded-[22px] border border-gray-100 bg-white px-6 py-12 text-center shadow-sm">
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-[#EDE9FF]">
+            <span className="absolute inset-0 animate-ping rounded-full bg-[#402F75]/10" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative h-8 w-8">
               <path d="M9 12l2 2 4-4M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" />
             </svg>
           </div>
@@ -322,9 +323,9 @@ export default function RepairRequestForm() {
 
               {/* Shimmer placeholders standing in for the price + description lines. */}
               <div className="mt-4 space-y-2">
-                <div className="h-6 w-1/2 animate-pulse rounded-md bg-[#402F75]/15" />
-                <div className="h-3 w-full animate-pulse rounded bg-[#402F75]/10" style={{ animationDelay: "120ms" }} />
-                <div className="h-3 w-4/5 animate-pulse rounded bg-[#402F75]/10" style={{ animationDelay: "240ms" }} />
+                <div className="buyo-shimmer h-7 w-1/2 rounded-md" />
+                <div className="buyo-shimmer h-3 w-full rounded" style={{ animationDelay: "150ms" }} />
+                <div className="buyo-shimmer h-3 w-4/5 rounded" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           )}
@@ -415,39 +416,71 @@ export default function RepairRequestForm() {
     return (
       <div className="flex items-center gap-2">
         <span
-          className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-bold ${
-            active ? "bg-[#402F75] text-white" : done ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"
+          className={`flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold transition-colors duration-300 ${
+            active
+              ? "bg-[#402F75] text-white shadow-md shadow-[#402F75]/25"
+              : done
+                ? "bg-green-100 text-green-700"
+                : "bg-white/70 text-gray-400 ring-1 ring-gray-200"
           }`}
         >
           {done ? "✓" : n}
         </span>
-        <span className={`text-[12.5px] font-semibold ${active ? "text-[#402F75]" : "text-gray-400"}`}>{label}</span>
+        <span className={`text-[12.5px] font-semibold transition-colors ${active ? "text-[#402F75]" : "text-gray-400"}`}>
+          {label}
+        </span>
       </div>
     );
   };
 
+  /** One line of the live "your request" rail — value falls back to a muted placeholder. */
+  const railRow = (label: string, value: string | null | undefined, placeholder: string) => (
+    <div className="flex items-start justify-between gap-3 py-2">
+      <span className="text-[12px] font-medium text-gray-400">{label}</span>
+      <span className={`max-w-[60%] text-end text-[12.5px] font-semibold ${value ? "text-gray-800" : "text-gray-300"}`}>
+        {value || placeholder}
+      </span>
+    </div>
+  );
+
   return (
-    <main className="w-[92%] max-w-[720px] mx-auto py-8 sm:py-10">
-      <div className="rounded-[22px] border border-gray-100 bg-white px-6 py-6 sm:px-8 shadow-sm">
-        {/* Heading */}
-        <div className="mb-5 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#EDE9FF]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <main className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-12">
+      {/* ── Header band ─────────────────────────────────────────────────── */}
+      <header className="buyo-rise mb-6 overflow-hidden rounded-[22px] bg-gradient-to-br from-[#402F75] via-[#4a3a86] to-[#2f2158] px-6 py-6 shadow-lg sm:px-8">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-white/15 backdrop-blur">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
               <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6Z" />
             </svg>
           </span>
-          <h1 className="text-[19px] font-extrabold text-gray-900">
-            {t("form.title", { defaultValue: "Submit Repair Request" })}
-          </h1>
+          <div className="min-w-0">
+            <h1 className="text-[20px] font-extrabold text-white sm:text-[22px]">
+              {t("form.title", { defaultValue: "Submit Repair Request" })}
+            </h1>
+            <p className="mt-0.5 text-[12.5px] text-white/70">
+              {t("form.subtitle", {
+                defaultValue: "Tell us about your device, then choose how to get it to us.",
+              })}
+            </p>
+          </div>
         </div>
 
-        {/* Stepper */}
-        <div className="mb-6 flex items-center gap-3">
+        {/* Stepper with an animated progress rail */}
+        <div className="mt-6 flex items-center gap-3 rounded-[16px] bg-white/10 px-4 py-3 backdrop-blur">
           {stepPill(1, t("form.stepDevice", { defaultValue: "Device details" }))}
-          <span className="h-px flex-1 bg-gray-200" />
+          <span className="relative mx-1 h-1 flex-1 overflow-hidden rounded-full bg-white/20">
+            <span
+              className="absolute inset-y-0 start-0 rounded-full bg-[#FBBB14] transition-all duration-500 ease-out"
+              style={{ width: step === 1 ? "0%" : "100%" }}
+            />
+          </span>
           {stepPill(2, t("form.stepDelivery", { defaultValue: "Delivery method" }))}
         </div>
+      </header>
 
+      {/* ── Body: form + live summary rail ──────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-8">
+        <div className="buyo-rise buyo-d1 buyo-card rounded-[22px] border border-gray-100 bg-white px-6 py-6 shadow-sm sm:px-8">
         {/* Profile completeness banner */}
         {!profileComplete ? (
           <div className="mb-6 flex flex-col gap-2 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -482,7 +515,10 @@ export default function RepairRequestForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-7">
+        <form onSubmit={handleSubmit}>
+          {/* Keyed on `step` so switching steps remounts this subtree and replays the
+              fade — a plain conditional would swap the content with no transition. */}
+          <div key={step} className="buyo-fade space-y-7">
           {/* ── STEP 1 — Device details ─────────────────────────────────────── */}
           {step === 1 && (
             <>
@@ -754,7 +790,84 @@ export default function RepairRequestForm() {
               </div>
             </>
           )}
+          </div>
         </form>
+        </div>
+
+        {/* ── Live summary rail — keeps the extra width useful and shows the
+               customer exactly what they're about to send. ─────────────────── */}
+        <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+          <div className="buyo-rise buyo-d2 buyo-card rounded-[22px] border border-gray-100 bg-white p-6 shadow-sm">
+            <h2 className="text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
+              {t("form.summaryTitle", { defaultValue: "Your request" })}
+            </h2>
+
+            <div className="mt-3 divide-y divide-gray-100">
+              {railRow(
+                t("form.productName", { defaultValue: "Product Name" }),
+                productName.trim(),
+                t("form.summaryEmpty", { defaultValue: "Not set" }),
+              )}
+              {railRow(
+                t("form.brand", { defaultValue: "Brand" }),
+                brand.trim(),
+                t("form.summaryEmpty", { defaultValue: "Not set" }),
+              )}
+              {railRow(
+                t("form.model", { defaultValue: "Model" }),
+                model.trim(),
+                t("form.summaryEmpty", { defaultValue: "Not set" }),
+              )}
+              {railRow(
+                t("form.uploadImages", { defaultValue: "Upload Images" }),
+                files.length > 0 ? `${files.length} / ${REPAIR_MAX_IMAGES}` : "",
+                t("form.summaryNoPhotos", { defaultValue: "None yet" }),
+              )}
+              {railRow(
+                t("detail.chooseDelivery", { defaultValue: "Choose Delivery Method" }),
+                deliveryChoice === "STORE_DROPOFF"
+                  ? t("detail.bringToStore", { defaultValue: "Bring to Store" })
+                  : deliveryChoice === "COURIER_PICKUP"
+                    ? t("detail.courierPickup", { defaultValue: "Request Courier Pickup" })
+                    : "",
+                t("form.summaryEmpty", { defaultValue: "Not set" }),
+              )}
+            </div>
+
+            {deliveryChoice === "COURIER_PICKUP" && (
+              <div className="mt-3 flex items-center justify-between rounded-[12px] bg-[#F8F6FF] px-3 py-2.5">
+                <span className="text-[12px] font-semibold text-[#402F75]">
+                  {t("detail.payCourierFee", { defaultValue: "Pay courier fee" })}
+                </span>
+                <span className="text-[12.5px] font-bold text-[#402F75]">{courierFeeLabel}</span>
+              </div>
+            )}
+          </div>
+
+          {/* What happens next */}
+          <div className="buyo-rise buyo-d3 rounded-[22px] border border-gray-100 bg-gradient-to-br from-[#F8F6FF] to-white p-6 shadow-sm">
+            <h2 className="text-[13px] font-bold uppercase tracking-wide text-[#402F75]">
+              {t("form.nextTitle", { defaultValue: "What happens next" })}
+            </h2>
+            <ol className="mt-4 space-y-0">
+              {[
+                t("form.next1", { defaultValue: "You get an instant preliminary estimate." }),
+                t("form.next2", { defaultValue: "Our technicians inspect your device." }),
+                t("form.next3", { defaultValue: "We send you the final price to accept or decline." }),
+              ].map((line, i, arr) => (
+                <li key={i} className="relative flex gap-3 pb-5 last:pb-0">
+                  {i < arr.length - 1 && (
+                    <span aria-hidden className="absolute left-[11px] top-6 h-full w-0.5 bg-[#E4DCFB]" />
+                  )}
+                  <span className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EDE9FF] text-[11px] font-bold text-[#402F75]">
+                    {i + 1}
+                  </span>
+                  <p className="pt-0.5 text-[12.5px] leading-relaxed text-gray-600">{line}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </aside>
       </div>
     </main>
   );
