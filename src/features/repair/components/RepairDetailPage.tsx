@@ -39,7 +39,9 @@ const TIMELINE_LABELS: Record<(typeof REPAIR_TIMELINE_STEPS)[number], string> = 
 };
 
 function fmtMoney(amount: number, currency: string) {
-  return `${currency.toUpperCase()} ${amount.toLocaleString(undefined, {
+  // Pinned locale: an undefined locale resolves to the server's during SSR and the browser's on
+  // the client, so the two renders disagree on separators and React fails hydration (#418).
+  return `${currency.toUpperCase()} ${amount.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
