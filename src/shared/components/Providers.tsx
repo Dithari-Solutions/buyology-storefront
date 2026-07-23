@@ -11,6 +11,8 @@ import AppIntro from "@/shared/components/AppIntro";
 import SignupGate from "@/shared/components/SignupGate";
 import PendingIntentRunner from "@/shared/components/PendingIntentRunner";
 import { tryRestoreSession } from "@/shared/lib/tokenManager";
+import { setB2bStatus } from "@/features/auth/store/authSlice";
+import { getProfile } from "@/features/profile/services/profile.api";
 import { initFromLocalStorage, fetchCountriesThunk, setCountryThunk } from "@/features/country/store/countrySlice";
 import { findCountryByAlias } from "@/features/country/lib/match";
 import { requestLocationThunk, detectCountryByIPThunk, selectDetectedCountryCode } from "@/features/location/store/locationSlice";
@@ -21,6 +23,43 @@ function AuthInitializer() {
   useEffect(() => {
     tryRestoreSession();
   }, []);
+  return null;
+}
+
+/**
+ * Keeps the B2B approval flags in Redux in sync with the signed-in user's profile.
+ * The action gate (useB2bApprovalGate) reads these synchronously, so they must be
+ * resolved app-wide rather than per-page.
+ */
+function B2bApprovalSync() {
+  const dispatch = useDispatch<AppDispatch>();
+  const userId = useSelector((state: RootState) => state.auth.userId);
+
+  useEffect(() => {
+    if (!userId) {
+      dispatch(setB2bStatus({ pendingApproval: false, applicationStatus: null }));
+      return;
+    }
+    let active = true;
+    getProfile(userId)
+      .then((p) => {
+        if (!active) return;
+        dispatch(
+          setB2bStatus({
+            pendingApproval: !!p.b2bPendingApproval,
+            applicationStatus: p.b2bApplicationStatus ?? null,
+          }),
+        );
+      })
+      .catch(() => {
+        // Non-fatal: leave the gate closed rather than locking a user out on a
+        // transient profile-fetch failure.
+      });
+    return () => {
+      active = false;
+    };
+  }, [dispatch, userId]);
+
   return null;
 }
 
@@ -137,6 +176,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <I18nextProvider i18n={i18n}>
         <HtmlLangDir />
         <AuthInitializer />
+        <B2bApprovalSync />
         <CountryInitializer />
         <GeolocationInitializer />
         <PendingIntentRunner />

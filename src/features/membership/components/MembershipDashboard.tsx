@@ -88,11 +88,13 @@ export default function MembershipDashboard() {
         );
     }
 
-    // Self-service application form (from "Apply Now" / "Re-apply")
+    // Self-service application form. A rejected application is loaded into the form so
+    // the member can correct what was flagged and re-submit it.
     if (applying) {
         return (
             <SelfB2BApplicationForm
                 lang={lang}
+                initial={application?.status === "REJECTED" ? application : null}
                 onSuccess={(app) => {
                     setApplication(app);
                     setApplying(false);
@@ -111,7 +113,10 @@ export default function MembershipDashboard() {
         <div className="space-y-4">
             {/* Status banner */}
             {application && !card && (
-                <StatusBanner application={application} onApply={() => setApplying(true)} />
+                <>
+                    <StatusBanner application={application} onApply={() => setApplying(true)} />
+                    <ApplicationDetails application={application} />
+                </>
             )}
 
             {/* Active membership */}
@@ -227,6 +232,67 @@ function StatusBanner({ application, onApply }: { application: MembershipApplica
                     </button>
                 )}
             </div>
+        </div>
+    );
+}
+
+/**
+ * Read-only view of everything the member submitted, shown alongside the status so
+ * they can check exactly what is under review — and what to correct if rejected.
+ */
+function ApplicationDetails({ application }: { application: MembershipApplicationResponse }) {
+    const rows: { label: string; value?: string | null }[] = [
+        { label: "Company name", value: application.companyName },
+        { label: "Trade licence number", value: application.tradeLicenseNumber },
+        { label: "Industry", value: application.industryType },
+        { label: "Company size", value: application.numberOfEmployees ? `${application.numberOfEmployees} employees` : null },
+        { label: "Country", value: application.country },
+        { label: "City", value: application.city },
+        { label: "Website", value: application.website },
+        { label: "Contact name", value: application.contactFullName },
+        { label: "Designation", value: application.contactDesignation },
+        { label: "Email", value: application.contactEmail },
+        { label: "Mobile", value: application.contactMobile },
+        { label: "Business needs", value: application.businessNeeds?.length ? application.businessNeeds.join(", ") : null },
+    ];
+
+    return (
+        <div className="bg-white rounded-[20px] p-6 shadow-sm">
+            <h3 className="text-[15px] font-semibold text-gray-800 mb-1">Your submitted details</h3>
+            <p className="text-[12px] text-gray-400 mb-4">
+                These are the details currently under review.
+            </p>
+            <dl className="divide-y divide-gray-100">
+                {rows.map(({ label, value }) => (
+                    <div key={label} className="flex flex-col sm:flex-row sm:items-start gap-0.5 sm:gap-4 py-2.5">
+                        <dt className="w-full sm:w-44 shrink-0 text-[12px] font-medium uppercase tracking-wide text-gray-400">
+                            {label}
+                        </dt>
+                        <dd className="text-[13.5px] text-gray-700 break-words">
+                            {value || <span className="text-gray-300">—</span>}
+                        </dd>
+                    </div>
+                ))}
+                <div className="flex flex-col sm:flex-row sm:items-start gap-0.5 sm:gap-4 py-2.5">
+                    <dt className="w-full sm:w-44 shrink-0 text-[12px] font-medium uppercase tracking-wide text-gray-400">
+                        Trade licence
+                    </dt>
+                    <dd className="text-[13.5px] text-gray-700">
+                        {application.tradeLicenseFileUrl ? (
+                            <a
+                                href={application.tradeLicenseFileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-[#402F75] underline"
+                            >
+                                View uploaded document
+                            </a>
+                        ) : (
+                            <span className="text-gray-300">—</span>
+                        )}
+                    </dd>
+                </div>
+            </dl>
         </div>
     );
 }

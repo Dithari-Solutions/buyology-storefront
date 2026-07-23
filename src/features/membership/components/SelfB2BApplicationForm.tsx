@@ -68,30 +68,36 @@ type FormState = Omit<MembershipApplicationRequest, "businessNeeds" | "termsAcce
 
 export default function SelfB2BApplicationForm({
     lang,
+    initial,
     onSuccess,
     onCancel,
 }: {
     lang: string;
+    /** Existing application to edit and re-submit. Omit for a first-time application. */
+    initial?: MembershipApplicationResponse | null;
     onSuccess: (app: MembershipApplicationResponse) => void;
     onCancel: () => void;
 }) {
     const userId = useSelector((s: RootState) => s.auth.userId);
+    const isEditing = !!initial;
+    // On a re-submission the document already on file is reused unless replaced.
+    const hasLicenseOnFile = !!initial?.tradeLicenseFileUrl;
 
-    const [ready, setReady] = useState(false);
+    const [ready, setReady] = useState(isEditing);
     const [form, setForm] = useState<FormState>({
-        companyName: "",
-        tradeLicenseNumber: "",
-        industryType: "",
-        numberOfEmployees: "",
-        country: "",
-        city: "",
-        website: "",
-        contactFullName: "",
-        contactDesignation: "",
-        contactEmail: "",
-        contactMobile: "",
+        companyName: initial?.companyName ?? "",
+        tradeLicenseNumber: initial?.tradeLicenseNumber ?? "",
+        industryType: initial?.industryType ?? "",
+        numberOfEmployees: initial?.numberOfEmployees ?? "",
+        country: initial?.country ?? "",
+        city: initial?.city ?? "",
+        website: initial?.website ?? "",
+        contactFullName: initial?.contactFullName ?? "",
+        contactDesignation: initial?.contactDesignation ?? "",
+        contactEmail: initial?.contactEmail ?? "",
+        contactMobile: initial?.contactMobile ?? "",
     });
-    const [businessNeeds, setBusinessNeeds] = useState<string[]>([]);
+    const [businessNeeds, setBusinessNeeds] = useState<string[]>(initial?.businessNeeds ?? []);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [licenseFile, setLicenseFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -99,8 +105,10 @@ export default function SelfB2BApplicationForm({
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
 
-    // Prefill the contact fields from the signed-in user's profile.
+    // Prefill the contact fields from the signed-in user's profile. Skipped when
+    // editing — the application's own values are the source of truth there.
     useEffect(() => {
+        if (isEditing) return;
         const id = getUidFromAccessToken() ?? userId;
         if (!id) {
             setReady(true);
@@ -125,7 +133,7 @@ export default function SelfB2BApplicationForm({
         return () => {
             active = false;
         };
-    }, [userId]);
+    }, [userId, isEditing]);
 
     const set = (k: keyof FormState, v: string) => setForm((prev) => ({ ...prev, [k]: v }));
 
@@ -151,7 +159,7 @@ export default function SelfB2BApplicationForm({
     function validate(): string {
         if (!form.companyName.trim()) return "Company name is required.";
         if (!form.tradeLicenseNumber.trim()) return "Trade license number is required.";
-        if (!licenseFile) return "Please upload your trade license document.";
+        if (!licenseFile && !hasLicenseOnFile) return "Please upload your trade license document.";
         if (!form.industryType) return "Industry type is required.";
         if (!form.numberOfEmployees) return "Please select your company size.";
         if (!form.country.trim()) return "Country is required.";
@@ -171,7 +179,6 @@ export default function SelfB2BApplicationForm({
             setError(err);
             return;
         }
-        if (!licenseFile) return;
         setError("");
         setSubmitting(true);
         try {
@@ -204,10 +211,13 @@ export default function SelfB2BApplicationForm({
             {/* Header */}
             <div className="flex items-start justify-between gap-4 mb-5">
                 <div>
-                    <h3 className="text-[16px] font-bold text-gray-900">Apply for B2B Premium Membership</h3>
+                    <h3 className="text-[16px] font-bold text-gray-900">
+                        {isEditing ? "Edit and re-submit your application" : "Apply for B2B Premium Membership"}
+                    </h3>
                     <p className="text-[13px] text-gray-500 mt-0.5">
-                        Add your company details and trade license. We&apos;ll review your application
-                        and activate your membership once approved.
+                        {isEditing
+                            ? "Correct the details below and re-submit. Your application returns to review and we'll notify you by email once a decision has been made."
+                            : "Add your company details and trade license. We'll review your application and activate your membership once approved."}
                     </p>
                 </div>
                 <button
@@ -267,13 +277,21 @@ export default function SelfB2BApplicationForm({
                         }`}
                     >
                         <span className={`truncate ${licenseFile ? "text-[#402F75] font-medium" : "text-gray-400"}`}>
-                            {licenseFile ? licenseFile.name : "Upload PDF or image (PDF, JPG, PNG, WebP)"}
+                            {licenseFile
+                                ? licenseFile.name
+                                : hasLicenseOnFile
+                                    ? "Document already on file — upload only to replace it"
+                                    : "Upload PDF or image (PDF, JPG, PNG, WebP)"}
                         </span>
                         <span className="shrink-0 text-[12px] font-semibold text-[#402F75]">
-                            {licenseFile ? "Change" : "Browse"}
+                            {licenseFile || hasLicenseOnFile ? "Change" : "Browse"}
                         </span>
                     </label>
-                    <p className="mt-1 text-[11px] text-gray-400">Required. Maximum size 10 MB.</p>
+                    <p className="mt-1 text-[11px] text-gray-400">
+                        {hasLicenseOnFile
+                            ? "Optional — your existing document is kept unless you upload a new one. Maximum size 10 MB."
+                            : "Required. Maximum size 10 MB."}
+                    </p>
                 </Field>
                 <Field label="Industry Type *">
                     <select
@@ -443,7 +461,7 @@ export default function SelfB2BApplicationForm({
                     disabled={submitting}
                     className="flex-1 rounded-[14px] bg-[#402F75] py-3 text-sm font-semibold text-white hover:bg-[#352565] disabled:opacity-50 transition-colors"
                 >
-                    {submitting ? "Submitting..." : "Submit Application"}
+                    {submitting ? "Submitting..." : isEditing ? "Re-submit Application" : "Submit Application"}
                 </button>
             </div>
         </div>

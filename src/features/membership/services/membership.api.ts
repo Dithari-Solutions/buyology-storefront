@@ -41,18 +41,20 @@ export async function submitBusinessSignup(
 }
 
 /**
- * Self-service B2B application for an already-signed-in customer (upgrade from their
- * existing account). No password is captured — the user keeps their current login —
- * and the application is pre-attached to them server-side (from the auth token), so
- * no userId is sent. Multipart: a `data` JSON part + the required `tradeLicense` file.
+ * Self-service B2B application for an already-signed-in customer — used both to
+ * upgrade an existing account and to re-submit a rejected application. No password is
+ * captured (the user keeps their current login) and the application is pre-attached to
+ * them server-side from the auth token, so no userId is sent. Multipart: a `data` JSON
+ * part plus a `tradeLicense` file, which may be omitted on a re-submission to keep the
+ * document already on file.
  */
 export async function submitSelfB2bApplication(
     payload: MembershipApplicationRequest,
-    tradeLicense: File
+    tradeLicense?: File | null
 ): Promise<MembershipApplicationResponse> {
     const form = new FormData();
     form.append("data", new Blob([JSON.stringify(payload)], { type: "application/json" }));
-    form.append("tradeLicense", tradeLicense);
+    if (tradeLicense) form.append("tradeLicense", tradeLicense);
     return unwrap(
         await apiClient.post("/api/membership/apply-self", form, {
             headers: { "Content-Type": "multipart/form-data" },

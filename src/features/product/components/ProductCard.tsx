@@ -19,6 +19,7 @@ import ProccessorIcon from "@/assets/icons/proccessor.png";
 import AlertModal from "@/shared/components/AlertModal";
 import { addToFavouritesThunk, removeFromFavouritesThunk, selectIsFavourite } from "@/features/favourites/store/favouritesSlice";
 import LoginPromptModal from "@/features/auth/components/LoginPromptModal";
+import { useB2bApprovalGate } from "@/features/membership/hooks/useB2bApprovalGate";
 import { getAccessToken } from "@/shared/lib/tokenManager";
 import { setPendingIntent, cartIntent } from "@/shared/lib/pendingIntent";
 
@@ -132,12 +133,15 @@ export default function ProductCard({
 
   useEffect(() => { setMounted(true); }, []);
 
+  const { requireApproved, approvalGate } = useB2bApprovalGate();
+
   function handleToggleFavourite(e: React.MouseEvent) {
     e.stopPropagation();
     if (!userId) {
       setShowLoginPrompt(true);
       return;
     }
+    if (!requireApproved()) return;
 
     if (isFav) {
       dispatch(removeFromFavouritesThunk({ userId, productId }));
@@ -232,6 +236,7 @@ export default function ProductCard({
       setShowLoginPrompt(true);
       return;
     }
+    if (!requireApproved()) return;
 
     // Block purchase if product is not available in user's country
     if (availableInSelectedCountry === false) {
@@ -328,6 +333,7 @@ export default function ProductCard({
           onClose={() => setShowLoginPrompt(false)}
         />
       )}
+      {approvalGate}
 
       {mounted && crossCountryError && createPortal(
         <div

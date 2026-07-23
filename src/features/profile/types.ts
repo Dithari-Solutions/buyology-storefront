@@ -24,6 +24,13 @@ export interface UserProfile {
     pendingDeletion?: boolean;
     /** ISO timestamp when the account will be permanently deleted. */
     deletionScheduledAt?: string | null;
+    /** B2B application status: PENDING | UNDER_REVIEW | APPROVED | REJECTED. Null if never applied. */
+    b2bApplicationStatus?: "PENDING" | "UNDER_REVIEW" | "APPROVED" | "REJECTED" | null;
+    /**
+     * True when the account was created through the B2B sign-up and is still awaiting
+     * approval. Browsing stays open, but every action is blocked behind the notice.
+     */
+    b2bPendingApproval?: boolean;
 }
 
 export interface Address {

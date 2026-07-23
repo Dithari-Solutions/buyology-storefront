@@ -12,6 +12,7 @@ import type { AppDispatch, RootState } from "@/store";
 import type { Lang } from "@/config/pathSlugs";
 import ProductCard from "@/features/product/components/ProductCard";
 import FavouritesEmptyItems from "./FavouritesEmptyItems";
+import { useB2bApprovalGate } from "@/features/membership/hooks/useB2bApprovalGate";
 import type { FavouriteItemMeta } from "../types";
 
 export default function FavouritesGrid() {
@@ -22,6 +23,7 @@ export default function FavouritesGrid() {
     const items = useSelector(selectFavouriteItems);
     const loading = useSelector(selectFavouritesLoading);
     const userId = useSelector((s: RootState) => s.auth.userId);
+    const { requireApproved, approvalGate } = useB2bApprovalGate();
     const [activeCategory, setActiveCategory] = useState<string>("all");
     const [addingAll, setAddingAll] = useState(false);
 
@@ -47,6 +49,7 @@ export default function FavouritesGrid() {
 
     const handleAddAllToCart = async () => {
         if (!userId || addingAll) return;
+        if (!requireApproved()) return;
         setAddingAll(true);
         try {
             // Persist via the backend thunk — NOT the local `addItem` reducer. Items
@@ -123,6 +126,7 @@ export default function FavouritesGrid() {
 
     return (
         <div className="flex flex-col gap-[20px]">
+            {approvalGate}
             {/* Page header */}
             <div>
                 <h1 className="text-[24px] sm:text-[28px] md:text-[32px] font-bold text-gray-900 leading-tight">

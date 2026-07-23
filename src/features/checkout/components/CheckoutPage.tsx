@@ -21,6 +21,7 @@ import { selectBuyNowItem, clearBuyNow } from "@/features/buyNow/store/buyNowSli
 import { getCredentialIdFromAccessToken } from "@/shared/lib/tokenManager";
 import { selectUserCoords } from "@/features/location/store/locationSlice";
 import { SITE_URL } from "@/shared/seo/config";
+import { useB2bApprovalGate } from "@/features/membership/hooks/useB2bApprovalGate";
 import type { Address, UserProfile, CreateAddressPayload } from "@/features/profile/types";
 import {
     getProfile,
@@ -157,6 +158,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const lang = useSelector((state: RootState) => state.language.lang) as string;
     const userId = useSelector((state: RootState) => state.auth.userId);
+    const { requireApproved, approvalGate } = useB2bApprovalGate();
     const authRestored = useSelector((state: RootState) => state.auth.isRestored);
     const cartId = useSelector((state: RootState) => state.cart.cartId);
     const cartCurrency = useSelector((state: RootState) => state.cart.currency) ?? "AED";
@@ -324,6 +326,9 @@ export default function CheckoutPage() {
 
     async function handlePlaceOrder(paymentMethod: PaymentMethod, creditAmount: number = 0) {
         if (!userId || !shippingData) return;
+        // A B2B sign-up still awaiting approval may browse and reach checkout, but
+        // cannot place an order until an admin approves the application.
+        if (!requireApproved()) return;
 
         setIsSubmitting(true);
         setPaymentError(null);
@@ -515,6 +520,7 @@ export default function CheckoutPage() {
     return (
         <>
             <Header />
+            {approvalGate}
             <main className="w-[90%] mx-auto py-8 md:py-12">
                 <StepIndicator current={step} />
 
