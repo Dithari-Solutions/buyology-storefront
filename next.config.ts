@@ -108,7 +108,9 @@ const nextConfig: NextConfig = {
     const csp = [
       "default-src 'self'",
       // static.cloudflareinsights.com → the Web Analytics beacon Cloudflare injects.
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appleid.cdn-apple.com https://static.cloudflareinsights.com",
+      // googletagmanager.com → GA4 (src/shared/components/Analytics.tsx); without
+      // it the tag is blocked silently and the analytics check keeps failing.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appleid.cdn-apple.com https://static.cloudflareinsights.com https://www.googletagmanager.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https: http:",
       // Story videos are served cross-origin (Contabo / api.buyology.online); without

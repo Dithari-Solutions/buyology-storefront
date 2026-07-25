@@ -10,6 +10,8 @@ interface Options {
   suffix?: string;
   /** Disable indexing (used for private pages like checkout / profile / orders). */
   noindex?: boolean;
+  /** Skip the "%s | Buyology" template (for titles that already carry the brand). */
+  titleAbsolute?: boolean;
 }
 
 export function makeStaticMetadata(
@@ -32,6 +34,7 @@ export function makeStaticMetadata(
       description: meta.description,
       keywords: meta.keywords,
       noindex: options.noindex,
+      titleAbsolute: options.titleAbsolute,
     });
   };
 }

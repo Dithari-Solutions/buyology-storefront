@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import type { AllCategory } from '@/features/product/services/productService';
+import { categoryHref } from "@/shared/utils/categoryHref";
 
 const svgProps = {
   width: 18,
@@ -61,13 +62,11 @@ export default function ShopNavItem({
   lang,
   label,
   href,
-  shopSlug,
   categories,
 }: {
   lang: string;
   label: string;
   href: string;
-  shopSlug: string;
   categories: AllCategory[];
 }) {
   const [open, setOpen] = useState(false);
@@ -75,8 +74,7 @@ export default function ShopNavItem({
     (c) => !c.parentId && (c.status ? c.status.toUpperCase() === 'ACTIVE' : true)
   );
 
-  const catHref = (c: AllCategory) =>
-    `/${lang}/${shopSlug}?categoryId=${c.id}&categoryName=${encodeURIComponent(c.name)}`;
+  const catHref = (c: AllCategory) => categoryHref(lang, c);
 
   return (
     <li className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>

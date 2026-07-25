@@ -1,4 +1,4 @@
-import { SITE_NAME, SITE_URL } from "./config";
+import { BUSINESS, SITE_NAME, SITE_URL } from "./config";
 
 export function JsonLd({ data }: { data: Record<string, unknown> | Record<string, unknown>[] }) {
   return (
@@ -10,27 +10,112 @@ export function JsonLd({ data }: { data: Record<string, unknown> | Record<string
   );
 }
 
+const SAME_AS = [
+  "https://www.facebook.com/buyologyuae/",
+  "https://instagram.com/buyologyuae/",
+  "https://www.linkedin.com/company/buyologytech/",
+  "https://www.youtube.com/@Buyologytech",
+];
+
+const POSTAL_ADDRESS = {
+  "@type": "PostalAddress",
+  streetAddress: BUSINESS.streetAddress,
+  addressLocality: BUSINESS.addressLocality,
+  addressRegion: BUSINESS.addressRegion,
+  ...(BUSINESS.postalCode ? { postalCode: BUSINESS.postalCode } : {}),
+  addressCountry: BUSINESS.addressCountry,
+};
+
 export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
     name: SITE_NAME,
+    legalName: BUSINESS.legalName,
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
-    sameAs: [
-      "https://www.facebook.com/buyologyuae/",
-      "http://instagram.com/buyologyuae/",
-      "https://www.linkedin.com/company/buyologytech/posts/?feedView=all",
-      "https://www.youtube.com/@Buyologytech",
-    ],
+    telephone: BUSINESS.telephone,
+    address: POSTAL_ADDRESS,
+    sameAs: SAME_AS,
     contactPoint: [
       {
         "@type": "ContactPoint",
         contactType: "customer support",
+        telephone: BUSINESS.telephone,
         availableLanguage: ["English", "Azerbaijani", "Arabic"],
-        areaServed: ["AZ", "AE", "WW"],
+        areaServed: ["AE", "SA", "QA", "OM", "BH", "AZ"],
       },
     ],
+  };
+}
+
+/**
+ * LocalBusiness (Store) node — required for the "Local Business Schema" and
+ * "Address & Phone" local-SEO signals. Uses the same NAP the footer prints, so
+ * the on-page text and the structured data agree (a NAP mismatch is worse than
+ * having neither).
+ */
+export function localBusinessJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "@id": `${SITE_URL}/#localbusiness`,
+    name: SITE_NAME,
+    legalName: BUSINESS.legalName,
+    url: SITE_URL,
+    image: `${SITE_URL}/logo.png`,
+    logo: `${SITE_URL}/logo.png`,
+    telephone: BUSINESS.telephone,
+    priceRange: "$$",
+    currenciesAccepted: "AED, USD, AZN",
+    paymentAccepted: "Credit Card, Debit Card, Tabby, Tamara, Cash on Delivery",
+    address: POSTAL_ADDRESS,
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: BUSINESS.latitude,
+      longitude: BUSINESS.longitude,
+    },
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+        ],
+        opens: "09:00",
+        closes: "18:00",
+      },
+    ],
+    areaServed: [
+      "United Arab Emirates",
+      "Saudi Arabia",
+      "Qatar",
+      "Oman",
+      "Bahrain",
+      "Azerbaijan",
+    ],
+    sameAs: SAME_AS,
+    parentOrganization: { "@id": `${SITE_URL}/#organization` },
+  };
+}
+
+/**
+ * FAQPage node for the home page's Q&A block. Generative engines quote these
+ * pairs directly, so the answers must match the visible copy verbatim.
+ */
+export function faqJsonLd(items: Array<{ question: string; answer: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
   };
 }
 

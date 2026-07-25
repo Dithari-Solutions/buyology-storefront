@@ -52,7 +52,7 @@ export default function FeatureCard({ id, title, href, image, sizes, objectPosit
                     <>
                         <Image
                             src={image}
-                            alt=""
+                            alt={title}
                             fill
                             placeholder={typeof image === "string" ? "empty" : "blur"}
                             sizes={sizes ?? "(min-width:1024px) 16vw, (min-width:640px) 31vw, 46vw"}

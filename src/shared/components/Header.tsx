@@ -21,6 +21,7 @@ import type { RootState } from "@/store";
 import ShopNavItem from "./ShopNavItem";
 import { getAllCategories, searchProducts, getPrimaryImage, type AllCategory, type ApiProduct } from "@/features/product/services/productService";
 import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
+import { categoryHref } from "@/shared/utils/categoryHref";
 
 const NAV_CANONICAL: Record<string, string> = {
     home: "",
@@ -405,7 +406,6 @@ export default function Header() {
     const cartSlug    = PATH_SLUGS["cart"]?.      [lang] ?? "cart";
     const favSlug     = PATH_SLUGS["favourites"]?.[lang] ?? "favourites";
     const profileSlug = PATH_SLUGS["profile"]?.   [lang] ?? "profile";
-    const shopSlug    = PATH_SLUGS["shop"]?.      [lang] ?? "shop";
 
     return (
         <>
@@ -454,7 +454,6 @@ export default function Header() {
                                         lang={lang}
                                         label={label}
                                         href={navHref(key)}
-                                        shopSlug={shopSlug}
                                         categories={categories}
                                     />
                                 ) : (
@@ -590,7 +589,7 @@ export default function Header() {
                                                             .map((c) => (
                                                                 <li key={c.id}>
                                                                     <Link
-                                                                        href={`/${lang}/${shopSlug}?categoryId=${c.id}&categoryName=${encodeURIComponent(c.name)}`}
+                                                                        href={categoryHref(lang, c)}
                                                                         onClick={() => setMenuOpen(false)}
                                                                         className="block text-white/65 hover:text-white text-[13px] px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all duration-200"
                                                                     >

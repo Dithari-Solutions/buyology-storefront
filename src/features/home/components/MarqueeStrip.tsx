@@ -37,21 +37,10 @@ export default function MarqueeStrip() {
     const items: string[] = [t("marquee.freeShipping", { amount: thresholdLabel }), ...staticItems];
 
     return (
-        <div className="w-full overflow-hidden py-3 mt-4" style={{ backgroundColor: "#402F75" }}>
-            <style>{`
-                @keyframes marquee-scroll {
-                    0%   { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
-                .marquee-inner {
-                    display: flex;
-                    width: max-content;
-                    animation: marquee-scroll 35s linear infinite;
-                }
-                .marquee-inner:hover {
-                    animation-play-state: paused;
-                }
-            `}</style>
+        // Keyframes + .marquee-inner now live in globals.css. Injecting a <style>
+        // element from a client component re-emitted the same rules on every
+        // render and counted as inline styling in the SEO audit.
+        <div className="w-full overflow-hidden py-3 mt-4 bg-[#402F75]">
             <div className="marquee-inner">
                 {[...items, ...items].map((item, i) => (
                     <span

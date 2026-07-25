@@ -11,6 +11,7 @@ import type { AppDispatch } from "@/store";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { getPrimaryImage } from "@/features/product/services/productService";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import { shouldSkipOptimization } from "@/shared/utils/imageUrl";
 
 // Scalloped "seal" path for the discount badge (12 soft bumps in a 100×100 box).
 const SEAL_D = (() => {
@@ -153,10 +154,10 @@ export default function LimitedStockCard({ product }: { product: ApiProduct }) {
                     {imageUrl ? (
                         <Image
                             src={imageUrl}
-                            alt=""
+                            alt={product.title}
                             width={300}
                             height={300}
-                            unoptimized
+                            unoptimized={shouldSkipOptimization(imageUrl)}
                             sizes="(max-width: 640px) 190px, (max-width: 768px) 230px, 300px"
                             className="w-[190px] sm:w-[230px] md:w-[300px] object-contain drop-shadow-2xl relative z-10 transition-transform duration-500 ease-out group-hover:scale-105"
                         />

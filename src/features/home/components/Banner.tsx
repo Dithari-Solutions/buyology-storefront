@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import type { RootState } from "@/store";
 import { getBanners, type ApiBanner } from "@/features/home/services/bannerService";
+import { shouldSkipOptimization } from "@/shared/utils/imageUrl";
 
 const isExternal = (url: string) => /^https?:\/\//i.test(url);
 
@@ -21,7 +22,6 @@ export default function Banner() {
     const { t } = useTranslation("banner");
     const router = useRouter();
     const lang = (useSelector((state: RootState) => state.language.lang) as Lang) ?? "en";
-    const isRtl = lang === "ar";
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
 
     const [banners, setBanners] = useState<ApiBanner[]>([]);
@@ -97,10 +97,6 @@ export default function Banner() {
         </>
     );
 
-    const imageScrim = isRtl
-        ? "linear-gradient(260deg, rgba(20,14,48,0.92) 0%, rgba(40,28,90,0.72) 42%, rgba(40,28,90,0.30) 70%, transparent 100%)"
-        : "linear-gradient(100deg, rgba(20,14,48,0.92) 0%, rgba(40,28,90,0.72) 42%, rgba(40,28,90,0.30) 70%, transparent 100%)";
-
     const appBadge = (src: string, label: string, sizeClass: string) => (
         <span className="block">
             <Image src={src} alt={label} width={128} height={42} loading="lazy" unoptimized className={`${sizeClass} h-auto`} />
@@ -121,25 +117,21 @@ export default function Banner() {
                     <Image
                         key={remoteBackground}
                         src={remoteBackground!}
-                        alt=""
+                        // The banner carries the page's headline offer, so it is
+                        // content rather than decoration — describe it.
+                        alt={overlayText ?? `${t("headlineLine1")} ${t("headlineLine2")}`}
                         fill
                         priority={activeIndex === 0}
-                        unoptimized
+                        unoptimized={shouldSkipOptimization(remoteBackground)}
                         sizes="(max-width: 768px) 95vw, 90vw"
                         className="object-cover transition-opacity duration-700"
                     />
                 ) : (
                     <>
-                        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #2e1065 0%, #402F75 48%, #5b21b6 100%)" }} />
-                        <div
-                            className="absolute inset-0"
-                            style={{
-                                background:
-                                    "radial-gradient(42% 52% at 18% 26%, rgba(251,187,20,0.30), transparent 60%), radial-gradient(46% 56% at 84% 20%, rgba(124,58,237,0.55), transparent 62%), radial-gradient(54% 62% at 72% 90%, rgba(251,187,20,0.16), transparent 60%)",
-                            }}
-                        />
-                        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1.4px)", backgroundSize: "18px 18px" }} />
-                        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 28%)" }} />
+                        <div className="absolute inset-0 buyo-hero-aurora" />
+                        <div className="absolute inset-0 buyo-hero-glow" />
+                        <div className="absolute inset-0 opacity-[0.05] buyo-hero-dots" />
+                        <div className="absolute inset-0 buyo-hero-sheen" />
                     </>
                 )}
             </div>
@@ -147,12 +139,12 @@ export default function Banner() {
             {/* ── Layer 2: scrims ── */}
             {hasImage && (
                 <>
-                    <div className="absolute inset-0" style={{ background: imageScrim }} />
-                    <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(15,10,40,0.6) 0%, transparent 42%)" }} />
+                    <div className="absolute inset-0 buyo-hero-scrim-img" />
+                    <div className="absolute inset-0 buyo-hero-scrim-bottom" />
                 </>
             )}
             {/* Top scrim for a subtle dark floor along the top edge */}
-            <div className="absolute inset-x-0 top-0 h-24" style={{ background: "linear-gradient(to bottom, rgba(15,10,40,0.5) 0%, transparent 100%)" }} />
+            <div className="absolute inset-x-0 top-0 h-24 buyo-hero-scrim-top" />
 
             {/* ── Layer 3: floating accent orbs (aurora state only) ── */}
             {!hasImage && (

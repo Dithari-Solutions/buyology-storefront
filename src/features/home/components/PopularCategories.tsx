@@ -8,6 +8,7 @@ import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { getAllCategories, type AllCategory } from "@/features/product/services/productService";
 import { CategoryIcon } from "@/shared/components/ShopNavItem";
+import { categoryHref } from "@/shared/utils/categoryHref";
 
 // Cohesive per-tile palette cycled by index — washes floor to white so they sit
 // on the light page; gradient badges lead with brand purple, gold as one accent.
@@ -85,7 +86,7 @@ export default function PopularCategories() {
                 {roots.map((cat, i) => (
                     <Link
                         key={cat.id}
-                        href={`/${lang}/${shopSlug}?categoryId=${cat.id}&categoryName=${encodeURIComponent(cat.name)}`}
+                        href={categoryHref(lang, cat)}
                         className="cat-tile group relative isolate overflow-hidden flex flex-col items-start gap-3.5 rounded-[20px] p-4 md:p-5 min-h-[132px] md:min-h-[148px] cursor-pointer border border-[rgba(64,47,117,0.07)] hover:border-[rgba(64,47,117,0.16)] hover:-translate-y-1.5 motion-reduce:hover:translate-y-0 will-change-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-[#402F75] focus-visible:ring-offset-2"
                         style={{ backgroundImage: WASH[i % WASH.length], "--glow": GLOW[i % GLOW.length] } as React.CSSProperties}
                     >

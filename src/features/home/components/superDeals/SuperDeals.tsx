@@ -1,13 +1,11 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import SuperDealsCard from "./SuperDealsCard";
-import arrowLeft from "@/assets/icons/Arrow-left.png";
 import { getSuperDealProducts } from "@/features/product/services/productService";
 import type { ApiProduct } from "@/features/product/services/productService";
 import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
@@ -185,16 +183,20 @@ export default function SuperDeals() {
                     <button
                         onClick={() => scroll("left")}
                         aria-label={t("superDeals.prev")}
-                        className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-200 flex items-center justify-center bg-white hover:bg-[#402F75] hover:border-[#402F75] [&:hover_img]:invert transition-all duration-200 shadow-sm"
+                        className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-200 flex items-center justify-center bg-white hover:bg-[#402F75] hover:border-[#402F75] text-[#402F75] hover:text-white transition-all duration-200 shadow-sm"
                     >
-                        <Image src={arrowLeft} alt="" width={16} height={16} className="w-[13px] md:w-[16px]" />
+                        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[13px] md:w-[16px]">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
                     </button>
                     <button
                         onClick={() => scroll("right")}
                         aria-label={t("superDeals.next")}
-                        className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-200 flex items-center justify-center bg-white hover:bg-[#402F75] hover:border-[#402F75] [&:hover_img]:invert transition-all duration-200 rotate-180 shadow-sm"
+                        className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-200 flex items-center justify-center bg-white hover:bg-[#402F75] hover:border-[#402F75] text-[#402F75] hover:text-white transition-all duration-200 rotate-180 shadow-sm"
                     >
-                        <Image src={arrowLeft} alt="" width={16} height={16} className="w-[13px] md:w-[16px]" />
+                        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[13px] md:w-[16px]">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -224,16 +226,11 @@ export default function SuperDeals() {
                 <div
                     ref={sliderRef}
                     onScroll={handleScroll}
-                    className="flex gap-4 md:gap-6 overflow-x-auto pb-5"
-                    style={{
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none",
-                        // NOTE: no CSS `scroll-behavior: smooth` here — it would force the
-                        // instant infinite-loop reposition (scrollTo behavior:"auto") to
-                        // animate and fight the scroll engine, shuffling the slides. Arrow
-                        // clicks stay smooth via the explicit scrollBy({behavior:"smooth"}).
-                        overscrollBehaviorX: "contain",
-                    }}
+                    // NOTE: no CSS `scroll-behavior: smooth` here — it would force the
+                    // instant infinite-loop reposition (scrollTo behavior:"auto") to
+                    // animate and fight the scroll engine, shuffling the slides. Arrow
+                    // clicks stay smooth via the explicit scrollBy({behavior:"smooth"}).
+                    className="flex gap-4 md:gap-6 overflow-x-auto pb-5 no-scrollbar overscroll-x-contain"
                 >
                     {displayItems.map((product, i) => {
                         const setIdx = Math.floor(i / products.length);

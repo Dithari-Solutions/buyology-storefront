@@ -3,8 +3,17 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ScrollReveal from "@/shared/components/ScrollReveal";
 import { makeStaticMetadata } from "@/shared/seo/staticMeta";
+import { getSafeLang } from "@/shared/seo/config";
+import { JsonLd, faqJsonLd } from "@/shared/seo/JsonLd";
+import HomeSeoContent from "@/features/home/components/HomeSeoContent";
+import { HOME_SEO_COPY } from "@/features/home/data/homeSeoCopy";
 
-export const generateMetadata = makeStaticMetadata("home", { canonical: null });
+// `titleAbsolute` — the home title already ends in "| Buyology", so the root
+// layout's "%s | Buyology" template would otherwise print the brand twice.
+export const generateMetadata = makeStaticMetadata("home", {
+  canonical: null,
+  titleAbsolute: true,
+});
 import Banner from "@/features/home/components/Banner";
 import Stories from "@/features/story/components/Stories";
 import MarqueeStrip from "@/features/home/components/MarqueeStrip";
@@ -39,9 +48,16 @@ const Newsletter = dynamic(
   { loading: () => skel("h-[260px] md:h-[300px]") }
 );
 
-export default function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const lang = getSafeLang((await params).lang);
+
   return (
     <>
+      <JsonLd data={faqJsonLd(HOME_SEO_COPY[lang].faq)} />
       <Header />
       <main className="flex flex-col items-center justify-center pb-10 md:pb-16">
         <Stories />
@@ -75,6 +91,9 @@ export default function Home() {
         <ScrollReveal className="w-full flex justify-center" delay={0.1}>
           <Newsletter />
         </ScrollReveal>
+        {/* Server-rendered prose + FAQ. Deliberately outside ScrollReveal (which
+            is opacity-gated on hydration) so the text is in the raw HTML. */}
+        <HomeSeoContent lang={lang} />
       </main>
       <Footer />
     </>

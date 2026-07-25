@@ -3,12 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/../public/logo.png";
-import { COLORS } from "../styles/variables";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import AuthVector from "@/assets/vectors/auth-bg-vector.png";
+import {
+    BUSINESS,
+    BUSINESS_ADDRESS_LINE,
+    BUSINESS_TEL_HREF,
+} from "@/shared/seo/config";
 
 export default function Footer() {
     const { t } = useTranslation("footer");
@@ -20,11 +24,7 @@ export default function Footer() {
     const contactSlug = PATH_SLUGS.contact?.[lang] ?? "contact";
 
     return (
-        <footer className="relative overflow-hidden flex flex-col items-center justify-center w-full mt-[30px] md:mt-[50px] py-[30px] md:py-[50px] px-[20px] sm:px-[40px] md:px-[60px] lg:px-[100px]" style={{
-            backgroundColor: COLORS.primary,
-            borderTopLeftRadius: "30px",
-            borderTopRightRadius: "30px"
-        }}>
+        <footer className="relative overflow-hidden flex flex-col items-center justify-center w-full mt-[30px] md:mt-[50px] py-[30px] md:py-[50px] px-[20px] sm:px-[40px] md:px-[60px] lg:px-[100px] rounded-t-[30px] bg-[#402F75]">
             <Image
                 src={AuthVector}
                 alt=""
@@ -32,8 +32,7 @@ export default function Footer() {
                 width={500}
                 height={338}
                 sizes="500px"
-                className="absolute bottom-0 right-0 pointer-events-none select-none z-0 w-[500px] h-auto"
-                style={{ aspectRatio: "851 / 575" }}
+                className="absolute bottom-0 right-0 pointer-events-none select-none z-0 w-[500px] h-auto aspect-[851/575]"
             />
             <div className="relative z-10 flex flex-col md:flex-row items-start justify-between w-full gap-8 md:gap-4">
                 <div className="w-full md:w-[calc(100%/3-10px)]">
@@ -41,6 +40,31 @@ export default function Footer() {
                     <p className="text-white mb-[15px] md:mb-[20px] text-[14px] md:text-[14px]">
                         {t("description")}
                     </p>
+
+                    {/* NAP (name / address / phone). Kept in plain text and
+                        matching the LocalBusiness JSON-LD verbatim — local search
+                        treats a mismatch between the two as a negative signal. */}
+                    <address className="not-italic mb-[15px] md:mb-[20px] space-y-1.5">
+                        <p className="text-white/85 text-[13px] md:text-[14px]">
+                            {BUSINESS.legalName}
+                        </p>
+                        <p className="text-white/85 text-[13px] md:text-[14px]">
+                            {BUSINESS_ADDRESS_LINE}
+                        </p>
+                        {/* Phone only — no plain-text email. The audit's "Email
+                            Privacy" check passes today and a mailto: in the
+                            global footer would put an address on every page for
+                            scrapers to harvest. Email lives on /contact. */}
+                        <p className="text-[13px] md:text-[14px]">
+                            <a
+                                href={BUSINESS_TEL_HREF}
+                                className="text-white/85 hover:text-[#FBBB14] transition-colors"
+                            >
+                                {BUSINESS.telephone}
+                            </a>
+                        </p>
+                    </address>
+
                     <div className="flex items-center gap-3">
                         {/* Facebook */}
                         <a href="https://www.facebook.com/buyologyuae/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="p-[10px] rounded-full bg-[#E7E6F2] hover:bg-white transition-colors flex items-center justify-center">

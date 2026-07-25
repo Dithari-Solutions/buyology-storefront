@@ -20,6 +20,7 @@ import {
     selectIsFavourite,
 } from "@/features/favourites/store/favouritesSlice";
 import { useLoginGate } from "@/features/auth/hooks/useLoginGate";
+import { shouldSkipOptimization } from "@/shared/utils/imageUrl";
 
 function extractSpecs(product: ApiProduct): string[] {
     return product.specs.slice(0, 4).map((group) => {
@@ -161,7 +162,7 @@ export default function SuperDealsCard({ product }: { product: ApiProduct }) {
                         alt={product.title}
                         width={150}
                         height={130}
-                        unoptimized
+                        unoptimized={shouldSkipOptimization(imageUrl)}
                         sizes="(max-width: 640px) 100px, (max-width: 768px) 120px, 145px"
                         className="object-contain w-[100px] sm:w-[120px] md:w-[145px] relative z-[1] transition-transform duration-500 ease-out group-hover:scale-110"
                     />

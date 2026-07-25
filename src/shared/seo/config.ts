@@ -28,12 +28,16 @@ export const SITE_META: Record<
   }
 > = {
   en: {
-    title: "Buyology — Buy, Rent, Repair and Sell Online",
+    title: "Shop New & Refurbished Devices — Rent, Repair | Buyology",
     titleTemplate: "%s | Buyology",
     description:
-      "Buyology is the all-in-one e-commerce platform to buy, rent, repair and sell electronics, gadgets and lifestyle products. Fast delivery, verified sellers, secure checkout.",
+      "Shop brand new and refurbished devices — phones, laptops, gadgets. Buy, rent, repair or sell now, with free shipping, fast delivery and new arrivals weekly.",
     keywords: [
       "buyology",
+      "refurbished devices",
+      "brand new devices",
+      "new arrivals",
+      "free shipping",
       "online shopping",
       "ecommerce",
       "buy electronics",
@@ -44,6 +48,7 @@ export const SITE_META: Record<
       "smartphones",
       "laptops",
       "gadgets",
+      "flash sale",
       "super deals",
       "B2B marketplace",
       "quick delivery",
@@ -51,12 +56,15 @@ export const SITE_META: Record<
     tagline: "Buy, Rent, Repair and Sell — all in one place.",
   },
   az: {
-    title: "Buyology — Onlayn Al, İcarəyə Götür, Təmir Et və Sat",
+    title: "Yeni və Refurbished Cihazlar — İcarə, Təmir | Buyology",
     titleTemplate: "%s | Buyology",
     description:
-      "Buyology — elektronika, qadcetlər və məişət məhsullarını almaq, icarəyə götürmək, təmir etdirmək və satmaq üçün hər şey bir yerdə platforma. Sürətli çatdırılma, etibarlı satıcılar, təhlükəsiz ödəniş.",
+      "Yeni və refurbished cihazlar — telefon, noutbuk, qadcet. İndi al, icarəyə götür, təmir et və ya sat: pulsuz çatdırılma və hər həftə yeni məhsullar.",
     keywords: [
       "buyology",
+      "refurbished cihazlar",
+      "yeni məhsullar",
+      "pulsuz çatdırılma",
       "onlayn alış-veriş",
       "elektronika",
       "telefon almaq",
@@ -64,6 +72,7 @@ export const SITE_META: Record<
       "icarə",
       "təmir",
       "sat",
+      "endirim",
       "B2B",
       "tez çatdırılma",
       "Azərbaycan",
@@ -71,12 +80,15 @@ export const SITE_META: Record<
     tagline: "Al, icarəyə götür, təmir et və sat — hamısı bir yerdə.",
   },
   ar: {
-    title: "Buyology — اشترِ واستأجر وأصلح وبع عبر الإنترنت",
+    title: "أجهزة جديدة ومجددة — شراء وإيجار وإصلاح | Buyology",
     titleTemplate: "%s | Buyology",
     description:
-      "Buyology هي منصة التجارة الإلكترونية الشاملة لشراء واستئجار وإصلاح وبيع الإلكترونيات والأجهزة ومنتجات نمط الحياة. توصيل سريع، بائعون موثوقون، دفع آمن.",
+      "تسوق أجهزة جديدة ومجددة — هواتف ولابتوب وإكسسوارات. اشترِ أو استأجر أو أصلح أو بع الآن مع شحن مجاني وتوصيل سريع ووصول منتجات جديدة أسبوعياً.",
     keywords: [
       "بيولوجي",
+      "أجهزة مجددة",
+      "أجهزة جديدة",
+      "شحن مجاني",
       "تسوق إلكتروني",
       "متجر إلكتروني",
       "شراء إلكترونيات",
@@ -86,12 +98,48 @@ export const SITE_META: Record<
       "سوق",
       "هواتف",
       "أجهزة",
+      "تخفيضات",
       "B2B",
       "توصيل سريع",
     ],
     tagline: "اشترِ واستأجر وأصلح وبع — كل ذلك في مكان واحد.",
   },
 };
+
+/**
+ * Public business identity — surfaced in the footer (NAP: name/address/phone)
+ * and in LocalBusiness / Organization JSON-LD. Overridable via env so a staging
+ * deploy can point at non-production contact details.
+ */
+export const BUSINESS = {
+  legalName: "Buyology LLC",
+  streetAddress:
+    process.env.NEXT_PUBLIC_BUSINESS_STREET || "Business Bay, Bay Square",
+  addressLocality: process.env.NEXT_PUBLIC_BUSINESS_CITY || "Dubai",
+  addressRegion: process.env.NEXT_PUBLIC_BUSINESS_REGION || "Dubai",
+  postalCode: process.env.NEXT_PUBLIC_BUSINESS_POSTAL_CODE || "",
+  addressCountry: process.env.NEXT_PUBLIC_BUSINESS_COUNTRY || "AE",
+  /** Display form used in the footer + schema `telephone`. */
+  telephone: process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+971 4 352 7800",
+  email: process.env.NEXT_PUBLIC_BUSINESS_EMAIL || "support.ae@buyology.com",
+  /** Rough coordinates of the Business Bay HQ — used by LocalBusiness geo. */
+  latitude: 25.1857,
+  longitude: 55.2766,
+  openingHours: "Mo-Fr 09:00-18:00",
+} as const;
+
+/** `tel:` href form — digits and a leading + only. */
+export const BUSINESS_TEL_HREF = `tel:${BUSINESS.telephone.replace(/[^+\d]/g, "")}`;
+
+/** Single-line postal address, e.g. "Business Bay, Bay Square, Dubai, AE". */
+export const BUSINESS_ADDRESS_LINE = [
+  BUSINESS.streetAddress,
+  BUSINESS.addressLocality,
+  BUSINESS.postalCode,
+  BUSINESS.addressCountry,
+]
+  .filter(Boolean)
+  .join(", ");
 
 /**
  * Build a localized URL path for a canonical route name.

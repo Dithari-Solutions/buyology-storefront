@@ -25,6 +25,12 @@ export interface PageMetaInput {
   type?: "website" | "article" | "product" | "profile";
   /** Disallow indexing. */
   noindex?: boolean;
+  /**
+   * Emit the title as-is, bypassing the root layout's "%s | Buyology" template.
+   * Use when `title` already carries the brand (otherwise it appears twice, which
+   * both wastes SERP characters and dilutes keyword weight).
+   */
+  titleAbsolute?: boolean;
   /** Extra OG fields (e.g. price for products). */
   extraOpenGraph?: Record<string, unknown>;
 }
@@ -40,6 +46,7 @@ export function buildPageMetadata(input: PageMetaInput): Metadata {
     image = DEFAULT_OG_IMAGE,
     type = "website",
     noindex = false,
+    titleAbsolute = false,
     extraOpenGraph,
   } = input;
 
@@ -60,7 +67,7 @@ export function buildPageMetadata(input: PageMetaInput): Metadata {
       : buildAlternates(canonical, suffix);
 
   return {
-    title,
+    title: titleAbsolute ? { absolute: title } : title,
     description,
     keywords,
     alternates: {

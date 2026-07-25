@@ -34,24 +34,50 @@ interface PageMeta {
 }
 
 export const STATIC_PAGE_META: Record<StaticPageKey, Record<Lang, PageMeta>> = {
+  // NOTE: home titles are emitted with `titleAbsolute` (see page.tsx) so the
+  // "%s | Buyology" root template doesn't append a second brand mention — the
+  // brand is already in the string below.
   home: {
     en: {
-      title: "Buyology — Buy, Rent, Repair and Sell Online",
+      title: "Shop New & Refurbished Devices — Rent, Repair | Buyology",
       description:
-        "Shop electronics, gadgets and lifestyle products. Buy, rent, repair and sell — all in one place with fast delivery and secure checkout.",
-      keywords: ["online shopping", "ecommerce", "buy electronics", "marketplace"],
+        "Shop brand new and refurbished devices — phones, laptops, gadgets. Buy, rent, repair or sell now, with free shipping, fast delivery and new arrivals weekly.",
+      keywords: [
+        "refurbished devices",
+        "brand new devices",
+        "new arrivals",
+        "free shipping",
+        "online shopping",
+        "ecommerce",
+        "buy electronics",
+        "marketplace",
+      ],
     },
     az: {
-      title: "Buyology — Onlayn Al, İcarə, Təmir və Sat",
+      title: "Yeni və Refurbished Cihazlar — İcarə, Təmir | Buyology",
       description:
-        "Elektronika, qadcetlər və məişət məhsullarını al, icarəyə götür, təmir et və sat — hamısı bir yerdə, sürətli çatdırılma ilə.",
-      keywords: ["onlayn alış-veriş", "elektronika", "marketpleys"],
+        "Yeni və refurbished cihazlar — telefon, noutbuk, qadcet. İndi al, icarəyə götür, təmir et və ya sat: pulsuz çatdırılma və hər həftə yeni məhsullar.",
+      keywords: [
+        "refurbished cihazlar",
+        "yeni məhsullar",
+        "pulsuz çatdırılma",
+        "onlayn alış-veriş",
+        "elektronika",
+        "marketpleys",
+      ],
     },
     ar: {
-      title: "Buyology — اشترِ واستأجر وأصلح وبع عبر الإنترنت",
+      title: "أجهزة جديدة ومجددة — شراء وإيجار وإصلاح | Buyology",
       description:
-        "تسوق الإلكترونيات والأجهزة ومنتجات نمط الحياة. اشترِ واستأجر وأصلح وبع في مكان واحد مع توصيل سريع.",
-      keywords: ["تسوق إلكتروني", "متجر إلكتروني", "إلكترونيات"],
+        "تسوق أجهزة جديدة ومجددة — هواتف ولابتوب وإكسسوارات. اشترِ أو استأجر أو أصلح أو بع الآن مع شحن مجاني وتوصيل سريع ووصول منتجات جديدة أسبوعياً.",
+      keywords: [
+        "أجهزة مجددة",
+        "أجهزة جديدة",
+        "شحن مجاني",
+        "تسوق إلكتروني",
+        "متجر إلكتروني",
+        "إلكترونيات",
+      ],
     },
   },
   shop: {

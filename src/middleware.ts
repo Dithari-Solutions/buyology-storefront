@@ -14,8 +14,13 @@ export function middleware(request: NextRequest) {
 
   if (!pathnameHasLocale) {
     // Preserve the query string (e.g. ?token=...) across the locale redirect.
+    // 308 (permanent) rather than the default 307: the locale prefix is a fixed
+    // property of the URL space, so browsers and crawlers may cache the hop
+    // instead of paying for it on every visit. PageSpeed flagged this chain as
+    // ~1.25 s of the mobile load ("Avoid multiple page redirects").
     return NextResponse.redirect(
-      new URL(`/${defaultLocale}${pathname}${search}`, request.url)
+      new URL(`/${defaultLocale}${pathname}${search}`, request.url),
+      308
     );
   }
 

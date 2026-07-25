@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL, SUPPORTED_LANGS, localizedPath } from "@/shared/seo/config";
-import { getProducts } from "@/features/product/services/productService";
+import {
+  getAllCategories,
+  getProducts,
+} from "@/features/product/services/productService";
 
 const STATIC_ROUTES: Array<{
   canonical: string | null;
@@ -61,5 +64,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Graceful: still emit static sitemap if API is unreachable at build time.
   }
 
-  return [...staticEntries, ...productEntries];
+  // Readable category landing pages (/shop/category/<slug>). These replaced the
+  // old ?categoryId=<uuid> links, so they need to be discoverable.
+  let categoryEntries: MetadataRoute.Sitemap = [];
+  try {
+    const categories = await getAllCategories("en");
+    categoryEntries = categories
+      .filter((c) => c.slug && (c.status ? c.status.toUpperCase() === "ACTIVE" : true))
+      .flatMap((c) =>
+        SUPPORTED_LANGS.map((lang) => ({
+          url: `${SITE_URL}${localizedPath("shop", lang, `/category/${c.slug}`)}`,
+          lastModified: now,
+          changeFrequency: "weekly" as const,
+          priority: 0.75,
+          alternates: {
+            languages: langAlternates("shop", `/category/${c.slug}`),
+          },
+        }))
+      );
+  } catch {
+    // Same graceful degradation as products.
+  }
+
+  return [...staticEntries, ...categoryEntries, ...productEntries];
 }

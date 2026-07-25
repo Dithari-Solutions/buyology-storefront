@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useStories } from "../hooks/useStories";
 import StoryViewer from "./StoryViewer";
 import type { StorySummaryResponse } from "../services/story.api";
+import { shouldSkipOptimization } from "@/shared/utils/imageUrl";
 
 function StoryItem({
     story,
@@ -71,7 +72,7 @@ function StoryItem({
                         fill
                         sizes="88px"
                         loading="lazy"
-                        unoptimized
+                        unoptimized={shouldSkipOptimization(story.thumbnailUrl)}
                         className={`object-cover transition-opacity duration-300 ${
                             imageLoaded ? "opacity-100" : "opacity-0"
                         }`}
@@ -104,8 +105,7 @@ export default function Stories() {
     if (loading) {
         return (
             <section
-                className="w-[95%] md:w-[90%] overflow-x-auto py-5"
-                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                className="w-[95%] md:w-[90%] overflow-x-auto py-5 no-scrollbar"
             >
                 <div className="flex items-center gap-5 md:gap-8 w-max md:w-full md:justify-center">
                     {Array.from({ length: 8 }).map((_, i) => (
@@ -121,8 +121,7 @@ export default function Stories() {
     return (
         <>
             <section
-                className="w-[95%] md:w-[90%] overflow-x-auto py-5"
-                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                className="w-[95%] md:w-[90%] overflow-x-auto py-5 no-scrollbar"
             >
                 {/* w-max lets items overflow on mobile (enabling the slider).
                     md:justify-center centers them with a gap on desktop. */}

@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import Providers from "@/shared/components/Providers";
 import "./globals.css";
 import AiBotButtonLazy from "@/shared/components/AiBotButtonLazy";
+import Analytics from "@/shared/components/Analytics";
 import BrandBackground from "@/components/BrandBackground";
 import {
   SITE_NAME,
@@ -15,7 +16,12 @@ import {
   SUPPORTED_LANGS,
   getSafeLang,
 } from "@/shared/seo/config";
-import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/shared/seo/JsonLd";
+import {
+  JsonLd,
+  localBusinessJsonLd,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/shared/seo/JsonLd";
 
 // Self-hosted via next/font/google (no CDN / @import). Latin (EN + AZ, incl.
 // ə ğ ı ş via latin-ext) → IBM Plex Sans; Arabic (AR) → IBM Plex Sans Arabic.
@@ -121,11 +127,14 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     icons: {
+      // Sized derivatives, not the 6400×6400 master (which was ~261 KB fetched
+      // on every page load just to draw a 16px tab icon).
       icon: [
-        { url: "/buyology-logo.png", type: "image/png" },
+        { url: "/icon-32.png", type: "image/png", sizes: "32x32" },
+        { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
       ],
-      shortcut: "/buyology-logo.png",
-      apple: "/buyology-logo.png",
+      shortcut: "/icon-32.png",
+      apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
     },
     manifest: "/manifest.webmanifest",
     category: "shopping",
@@ -165,18 +174,20 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://eu2.contabostorage.com" />
         <JsonLd data={organizationJsonLd()} />
         <JsonLd data={websiteJsonLd(lang)} />
+        <JsonLd data={localBusinessJsonLd()} />
       </head>
+      {/* Font stack comes from the `.font-app` / `.font-app-rtl` utilities in
+          globals.css rather than a style attribute — inline styles are flagged
+          by SEO/perf audits and can't be cached with the stylesheet. */}
       <body
-        className="antialiased bg-[#FBFAFF]"
-        style={{
-          fontFamily: isArabic
-            ? "var(--font-ibm-arabic), system-ui, -apple-system, sans-serif"
-            : "var(--font-ibm-sans), var(--font-ibm-arabic), system-ui, -apple-system, sans-serif",
-        }}
+        className={`antialiased bg-[#FBFAFF] ${
+          isArabic ? "font-app-rtl" : "font-app"
+        }`}
       >
         <BrandBackground />
         <Providers>{children}</Providers>
         <AiBotButtonLazy />
+        <Analytics />
       </body>
     </html>
   );
