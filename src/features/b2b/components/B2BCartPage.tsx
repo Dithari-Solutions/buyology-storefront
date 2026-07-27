@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 import type { Lang } from "@/config/pathSlugs";
+import type { AppDispatch } from "@/store";
+import { setB2bQuoteCount } from "@/features/b2b/store/b2bQuoteSlice";
 import B2BQuotePayPanel from "@/features/b2b/components/B2BQuotePayPanel";
 import {
     B2B_MIN_QTY_PER_LINE,
@@ -44,6 +47,7 @@ function pickReadyQuote(quotes: B2bQuote[]): B2bQuote | null {
 export default function B2BCartPage() {
     const { t } = useTranslation("b2b-rfq");
     const params = useParams();
+    const dispatch = useDispatch<AppDispatch>();
     const lang = (params?.lang as Lang) ?? "en";
 
     const [quote, setQuote] = useState<B2bQuote | null>(null);
@@ -61,6 +65,7 @@ export default function B2BCartPage() {
             .then((q) => {
                 setQuote(q);
                 setError("");
+                dispatch(setB2bQuoteCount(q.items?.length ?? 0));
             })
             .catch(() => setError(t("b2bCart.loadError")))
             .finally(() => setLoading(false));
@@ -70,7 +75,7 @@ export default function B2BCartPage() {
             .catch(() => {
                 /* non-blocking — the draft cart still renders */
             });
-    }, [t]);
+    }, [t, dispatch]);
 
     useEffect(() => {
         load();
@@ -83,6 +88,7 @@ export default function B2BCartPage() {
         try {
             const updated = await updateQuoteItem(itemId, { quantity });
             setQuote(updated);
+            dispatch(setB2bQuoteCount(updated.items?.length ?? 0));
         } catch {
             setError(t("b2bCart.updateError"));
         } finally {
@@ -96,6 +102,7 @@ export default function B2BCartPage() {
         try {
             const updated = await removeQuoteItem(itemId);
             setQuote(updated);
+            dispatch(setB2bQuoteCount(updated.items?.length ?? 0));
         } catch {
             setError(t("b2bCart.removeError"));
         } finally {
@@ -108,6 +115,7 @@ export default function B2BCartPage() {
         setError("");
         try {
             await submitQuote({ memberNote: note.trim() || undefined });
+            dispatch(setB2bQuoteCount(0));   // DRAFT → SUBMITTED, the cart is now empty
             setSubmitted(true);
         } catch {
             setError(t("b2bCart.submitError"));

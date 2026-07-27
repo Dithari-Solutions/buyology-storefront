@@ -14,6 +14,8 @@ import OrderSummary from "./OrderSummary";
 import PopularForYou from "./PopularForYou";
 import B2bUpsell from "./B2bUpsell";
 import { selectCartItems, selectSavedItems, selectCartLoading, fetchCartThunk, fetchCartProductsThunk } from "../store/cartSlice";
+import { fetchB2bQuoteCount, selectB2bIsMember, selectB2bResolved } from "@/features/b2b/store/b2bQuoteSlice";
+import B2BCartPage from "@/features/b2b/components/B2BCartPage";
 import type { ApiCartResponse } from "../types";
 
 function EmptyCartState({ lang }: { lang: Lang }) {
@@ -70,6 +72,14 @@ export default function CartPage() {
     const isLoading = loading?.cart || loading?.products;
     const hasContent = cartItems.length > 0 || savedItems.length > 0;
 
+    // A B2B member's cart IS the B2B RFQ quote cart — resolve membership (getQuoteCart
+    // 200 = member, 403 = not) so we can render the right cart below.
+    const b2bIsMember = useSelector(selectB2bIsMember);
+    const b2bResolved = useSelector(selectB2bResolved);
+    useEffect(() => {
+        if (userId) dispatch(fetchB2bQuoteCount());
+    }, [userId, dispatch]);
+
     // Sync cart from API on mount when authenticated; include device coords for quickDelivery
     useEffect(() => {
         if (!userId) return;
@@ -102,6 +112,29 @@ export default function CartPage() {
     // a business, so surface the B2B membership upsell.
     const maxLineQty = cartItems.reduce((max, i) => Math.max(max, i.quantity), 0);
     const showB2bUpsell = maxLineQty > 5;
+
+    // B2B member → their cart is the B2B RFQ quote cart (not the B2C cart). Show a brief
+    // spinner while membership resolves so we don't flash the B2C cart first.
+    if (userId && !b2bResolved) {
+        return (
+            <>
+                <Header />
+                <main className="w-[90%] mx-auto min-h-[60vh] flex items-center justify-center py-8 md:py-12">
+                    <div className="w-8 h-8 border-2 border-[#402F75] border-t-transparent rounded-full animate-spin" />
+                </main>
+                <Footer />
+            </>
+        );
+    }
+    if (b2bIsMember) {
+        return (
+            <>
+                <Header />
+                <B2BCartPage />
+                <Footer />
+            </>
+        );
+    }
 
     // Not signed in → prompt to sign in / create account.
     if (authRestored && !userId) {

@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 import MacPro13 from "@/assets/devices/macPro13.png";
 import RamIcon from "@/assets/icons/ram.png";
 import StorageIcon from "@/assets/icons/storage.png";
@@ -13,6 +14,8 @@ import StarIcon from "@/assets/icons/star.png";
 import { HourglassIcon } from "@/shared/icons";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { addQuoteItem, B2B_MIN_QTY_PER_LINE } from "@/features/b2b/services/quote.api";
+import { setB2bQuoteCount } from "@/features/b2b/store/b2bQuoteSlice";
+import type { AppDispatch } from "@/store";
 
 export interface B2BProductCardProps {
   view?: "grid" | "list";
@@ -55,6 +58,7 @@ export default function B2BProductCard({
 
   const router = useRouter();
   const params = useParams();
+  const dispatch = useDispatch<AppDispatch>();
   const lang = (params?.lang as Lang) ?? "en";
   const { t } = useTranslation("b2b");
 
@@ -82,7 +86,8 @@ export default function B2BProductCard({
     try {
       // Every B2B line starts at the enforced minimum quantity (5). The member
       // adjusts quantities in the B2B cart.
-      await addQuoteItem({ storeProductId, quantity: B2B_MIN_QTY_PER_LINE });
+      const updated = await addQuoteItem({ storeProductId, quantity: B2B_MIN_QTY_PER_LINE });
+      dispatch(setB2bQuoteCount(updated.items?.length ?? 0));   // live header-badge update
       setAdded(true);
       setTimeout(() => setAdded(false), 1800);
     } catch (e: unknown) {

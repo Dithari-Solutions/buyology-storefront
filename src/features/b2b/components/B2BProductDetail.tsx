@@ -4,13 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import ProductDetailImage from "@/features/product/components/ProductDetailImage";
 import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
 import { getB2bProductBySlug, type ApiProduct } from "@/features/product/services/productService";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import { addQuoteItem, B2B_MIN_QTY_PER_LINE } from "@/features/b2b/services/quote.api";
+import { setB2bQuoteCount } from "@/features/b2b/store/b2bQuoteSlice";
+import type { AppDispatch } from "@/store";
 import { useB2bMembership } from "@/features/b2b/hooks/useB2bMembership";
 import { useB2bRegion } from "@/features/b2b/hooks/useB2bRegion";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
@@ -31,6 +33,7 @@ export default function B2BProductDetail({ product: initialProduct, images: init
   const lang = (params?.lang as Lang) ?? "en";
   const { t } = useTranslation("b2b");
   const { t: tp } = useTranslation("product");
+  const dispatch = useDispatch<AppDispatch>();
 
   // Scope the country-refetch by the B2B REGION the member is browsing (mirrors the
   // listing in B2BProducts.tsx), NOT the B2C selected country. B2B-only regions can never
@@ -115,7 +118,8 @@ export default function B2BProductDetail({ product: initialProduct, images: init
     setAdding(true);
     setError(null);
     try {
-      await addQuoteItem({ storeProductId: product.storeProductId, quantity: qty });
+      const updated = await addQuoteItem({ storeProductId: product.storeProductId, quantity: qty });
+      dispatch(setB2bQuoteCount(updated.items?.length ?? 0));   // live header-badge update
       setAdded(true);
       setTimeout(() => setAdded(false), 2200);
     } catch (e: unknown) {

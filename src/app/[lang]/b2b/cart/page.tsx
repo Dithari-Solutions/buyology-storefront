@@ -1,23 +1,8 @@
-import Header from "@/shared/components/Header";
-import Footer from "@/shared/components/Footer";
-import B2BMembershipGate from "@/features/b2b/components/B2BMembershipGate";
-import B2BCartPage from "@/features/b2b/components/B2BCartPage";
-import { makeStaticMetadata } from "@/shared/seo/staticMeta";
+import { redirect } from "next/navigation";
 
-export const generateMetadata = makeStaticMetadata("b2b-cart", {
-    canonical: "b2b",
-    suffix: "/cart",
-    noindex: true,
-});
-
-export default function Page() {
-    return (
-        <>
-            <Header />
-            <B2BMembershipGate>
-                <B2BCartPage />
-            </B2BMembershipGate>
-            <Footer />
-        </>
-    );
+// The B2B cart is unified into the regular cart. For a B2B member, /cart renders the
+// B2B RFQ quote cart, so this path just redirects there.
+export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
+    const { lang } = await params;
+    redirect(`/${lang}/cart`);
 }

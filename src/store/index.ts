@@ -6,6 +6,7 @@ import authReducer from "@/features/auth/store/authSlice";
 import countryReducer from "@/features/country/store/countrySlice";
 import locationReducer from "@/features/location/store/locationSlice";
 import buyNowReducer from "@/features/buyNow/store/buyNowSlice";
+import b2bQuoteReducer from "@/features/b2b/store/b2bQuoteSlice";
 
 export const store = configureStore({
     reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
         country: countryReducer,
         location: locationReducer,
         buyNow: buyNowReducer,
+        b2bQuote: b2bQuoteReducer,
     },
 });
 
