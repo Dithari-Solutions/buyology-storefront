@@ -75,7 +75,8 @@
       "REJECTED": "مرفوض",
       "EXPIRED": "منتهي الصلاحية",
       "CANCELLED": "ملغى",
-      "ORDERED": "تم الطلب"
+      "ORDERED": "تم الطلب",
+      "AWAITING_PAYMENT_VERIFICATION": "في انتظار التحقق من الدفع"
     }
   },
   "payPanel": {

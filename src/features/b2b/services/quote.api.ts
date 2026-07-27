@@ -23,6 +23,7 @@ export type B2bQuoteStatus =
   | "SUBMITTED"
   | "QUOTED"
   | "ACCEPTED"
+  | "AWAITING_PAYMENT_VERIFICATION"
   | "REJECTED"
   | "EXPIRED"
   | "CANCELLED"
@@ -36,6 +37,10 @@ export interface B2bQuoteItem {
   quantity: number;
   productTitle: string | null;
   sku: string | null;
+  /** Lead time set by procurement at pricing (e.g. "2–3 weeks"). */
+  leadTime: string | null;
+  /** Optional line description set by procurement at pricing. */
+  description: string | null;
   /** null until the quote is QUOTED by procurement. */
   quotedUnitPrice: number | null;
   /** quantity * quotedUnitPrice; null until QUOTED. */
@@ -51,6 +56,16 @@ export interface B2bQuote {
   currency: string;
   memberNote: string | null;
   procurementNote: string | null;
+  /** Payment terms set by procurement (shown to the member + on the order email). */
+  paymentTerms: string | null;
+  /** Terms & conditions set by procurement. */
+  termsAndConditions: string | null;
+  /** "BANK_TRANSFER" once the member submits a bank-transfer proof. */
+  paymentMethod: string | null;
+  /** Presigned URL of the uploaded bank-transfer proof; null if none. */
+  proofOfPaymentFileUrl: string | null;
+  proofUploadedAt: string | null;
+  paymentVerifiedAt: string | null;
   submittedAt: string | null;
   quotedAt: string | null;
   validUntil: string | null;
@@ -91,6 +106,13 @@ export interface CheckoutQuoteRequest {
   methodType: "CARD" | "TABBY" | "TAMARA";
   customerEmail?: string;
   redirectionUrl?: string;
+}
+
+/** Delivery target for a bank-transfer checkout (no gateway method — paid externally). */
+export interface BankTransferCheckoutRequest {
+  deliveryMethod?: "PICKUP" | "DELIVERY";
+  addressId?: string;
+  pickupStoreId?: string;
 }
 
 /** GET current DRAFT quote (the B2B cart); the backend creates an empty draft if none exists. */
@@ -155,5 +177,25 @@ export async function checkoutQuote(
       `/api/b2b/quote/${id}/checkout`,
       body,
     ),
+  );
+}
+
+/**
+ * Pay an accepted quote by bank transfer, uploading proof of payment. The order is
+ * created and the quote moves to AWAITING_PAYMENT_VERIFICATION until procurement
+ * validates the proof. Sent as multipart: a JSON `data` part + the `proof` file.
+ */
+export async function submitBankTransfer(
+  id: string,
+  body: BankTransferCheckoutRequest,
+  proof: File,
+): Promise<B2bQuote> {
+  const form = new FormData();
+  form.append("data", new Blob([JSON.stringify(body)], { type: "application/json" }));
+  form.append("proof", proof);
+  return unwrap(
+    await apiClient.post<ApiResponse<B2bQuote>>(`/api/b2b/quote/${id}/bank-transfer`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   );
 }
