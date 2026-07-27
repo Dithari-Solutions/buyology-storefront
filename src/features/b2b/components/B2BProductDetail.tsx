@@ -12,6 +12,7 @@ import { getB2bProductBySlug, type ApiProduct } from "@/features/product/service
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import { addQuoteItem, B2B_MIN_QTY_PER_LINE } from "@/features/b2b/services/quote.api";
 import { useB2bMembership } from "@/features/b2b/hooks/useB2bMembership";
+import { useB2bRegion } from "@/features/b2b/hooks/useB2bRegion";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 
 interface B2BProductDetailProps {
@@ -31,8 +32,16 @@ export default function B2BProductDetail({ product: initialProduct, images: init
   const { t } = useTranslation("b2b");
   const { t: tp } = useTranslation("product");
 
-  const countryCode = useSelector(selectSelectedCountryCode);
-  const currency = useSelector(selectPreferredCurrency);
+  // Scope the country-refetch by the B2B REGION the member is browsing (mirrors the
+  // listing in B2BProducts.tsx), NOT the B2C selected country. B2B-only regions can never
+  // be selectedCountryCode, so using the B2C country here resolves storeProductId against a
+  // region with no assignment for this product → the by-slug endpoint 404s / storeProductId
+  // is wrong → add-to-cart is falsely blocked ("not available in your region").
+  const selectedCountryCode = useSelector(selectSelectedCountryCode);
+  const preferredCurrency = useSelector(selectPreferredCurrency);
+  const { region, regionCode } = useB2bRegion();
+  const countryCode = regionCode ?? selectedCountryCode;
+  const currency = region?.currency ?? preferredCurrency;
 
   const b2bSlug = PATH_SLUGS.b2b[lang] ?? "b2b";
   const cartHref = `/${lang}/${b2bSlug}/cart`;
@@ -109,9 +118,13 @@ export default function B2BProductDetail({ product: initialProduct, images: init
       await addQuoteItem({ storeProductId: product.storeProductId, quantity: qty });
       setAdded(true);
       setTimeout(() => setAdded(false), 2200);
-    } catch {
-      setError(t("detail.addError", { defaultValue: "Couldn't add to B2B cart. Please try again." }));
-      setTimeout(() => setError(null), 4000);
+    } catch (e: unknown) {
+      // Surface the real reason (403 membership, 400 min-qty / not B2B-eligible) instead
+      // of a generic message, so a failed add is never mistaken for a silent success.
+      const msg = (e as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message
+        ?? (e as { message?: string })?.message;
+      setError(msg || t("detail.addError", { defaultValue: "Couldn't add to B2B cart. Please try again." }));
+      setTimeout(() => setError(null), 6000);
     } finally {
       setAdding(false);
     }

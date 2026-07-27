@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import B2BProductDetail from "@/features/b2b/components/B2BProductDetail";
@@ -12,20 +11,6 @@ type PageProps = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
-async function getCountryFromCookies(): Promise<{ countryCode?: string; currency?: string }> {
-  try {
-    const store = await cookies();
-    const countryCode = store.get("selectedCountryCode")?.value;
-    const currency = store.get("preferredCurrency")?.value;
-    return {
-      countryCode: countryCode ? decodeURIComponent(countryCode) : undefined,
-      currency: currency ? decodeURIComponent(currency) : undefined,
-    };
-  } catch {
-    return {};
-  }
-}
-
 function truncate(text: string, max = 160): string {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
@@ -37,8 +22,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const lang = getSafeLang(rawLang);
 
   try {
-    const { countryCode, currency } = await getCountryFromCookies();
-    const product = await getB2bProductBySlugCached(slug, lang, countryCode, currency);
+    // Resolve globally (not the B2C country cookie): a product can be B2B-available only in
+    // a B2B-only region that is never the visitor's B2C selectedCountry, and scoping SSR by
+    // that country 404s a valid product. The client component re-fetches region-scoped.
+    const product = await getB2bProductBySlugCached(slug, lang);
     const primary =
       [...product.media].sort((a, b) => a.orderIndex - b.orderIndex)[0]?.url ?? product.media[0]?.url;
     const image = primary ? getImageUrl(primary) : undefined;
@@ -87,8 +74,8 @@ export default async function B2BProductDetailPage({ params }: PageProps) {
   const lang = getSafeLang(rawLang);
 
   try {
-    const { countryCode, currency } = await getCountryFromCookies();
-    const product = await getB2bProductBySlugCached(slug, lang, countryCode, currency);
+    // Resolve globally (see generateMetadata) — the client component region-scopes on mount.
+    const product = await getB2bProductBySlugCached(slug, lang);
     const sortedMedia = [...product.media].sort((a, b) => a.orderIndex - b.orderIndex);
     const images = sortedMedia.map((m) => getImageUrl(m.url));
 

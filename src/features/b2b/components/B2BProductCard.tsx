@@ -85,9 +85,13 @@ export default function B2BProductCard({
       await addQuoteItem({ storeProductId, quantity: B2B_MIN_QTY_PER_LINE });
       setAdded(true);
       setTimeout(() => setAdded(false), 1800);
-    } catch {
-      setError(t("browse.card.addError", { defaultValue: "Couldn't add to B2B cart. Please try again." }));
-      setTimeout(() => setError(null), 4000);
+    } catch (e: unknown) {
+      // Surface the real reason (403 membership, 400 min-qty / not B2B-eligible) so a
+      // failed add isn't mistaken for a silent success.
+      const msg = (e as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message
+        ?? (e as { message?: string })?.message;
+      setError(msg || t("browse.card.addError", { defaultValue: "Couldn't add to B2B cart. Please try again." }));
+      setTimeout(() => setError(null), 6000);
     } finally {
       setAdding(false);
     }
