@@ -110,28 +110,40 @@ export const SITE_META: Record<
  * Public business identity — surfaced in the footer (NAP: name/address/phone)
  * and in LocalBusiness / Organization JSON-LD. Overridable via env so a staging
  * deploy can point at non-production contact details.
+ *
+ * IMPORTANT: these values MUST match the connected Google Business Profile
+ * exactly. Google cross-references the on-page NAP against the verified profile;
+ * any divergence (name, address, or phone) is a negative local-SEO signal. The
+ * defaults below mirror the "Buyology Factory Outlet" GBP (Sharjah).
  */
 export const BUSINESS = {
-  legalName: "Buyology LLC",
+  /** GBP listing name — used for the footer heading + LocalBusiness `name`. */
+  name: process.env.NEXT_PUBLIC_BUSINESS_NAME || "Buyology Factory Outlet",
+  legalName: process.env.NEXT_PUBLIC_BUSINESS_NAME || "Buyology Factory Outlet",
   streetAddress:
-    process.env.NEXT_PUBLIC_BUSINESS_STREET || "Business Bay, Bay Square",
-  addressLocality: process.env.NEXT_PUBLIC_BUSINESS_CITY || "Dubai",
-  addressRegion: process.env.NEXT_PUBLIC_BUSINESS_REGION || "Dubai",
+    process.env.NEXT_PUBLIC_BUSINESS_STREET || "Industrial Area 17, Industrial Area",
+  addressLocality: process.env.NEXT_PUBLIC_BUSINESS_CITY || "Sharjah",
+  addressRegion: process.env.NEXT_PUBLIC_BUSINESS_REGION || "Sharjah",
   postalCode: process.env.NEXT_PUBLIC_BUSINESS_POSTAL_CODE || "",
   addressCountry: process.env.NEXT_PUBLIC_BUSINESS_COUNTRY || "AE",
   /** Display form used in the footer + schema `telephone`. */
-  telephone: process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+971 4 352 7800",
+  telephone: process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+971 52 708 5203",
   email: process.env.NEXT_PUBLIC_BUSINESS_EMAIL || "support.ae@buyology.com",
-  /** Rough coordinates of the Business Bay HQ — used by LocalBusiness geo. */
-  latitude: 25.1857,
-  longitude: 55.2766,
+  /** Approximate coordinates of Industrial Area 17, Sharjah (authoritative
+   *  locator is the Google Place ID below, surfaced as LocalBusiness `hasMap`). */
+  latitude: 25.301,
+  longitude: 55.445,
   openingHours: "Mo-Fr 09:00-18:00",
+  /** Google Business Profile linkage. */
+  googlePlaceId: "ChIJo9WfKO9fXz4R9AcqCSYu7v4",
+  googleMapsUrl:
+    "https://www.google.com/maps/place/?q=place_id:ChIJo9WfKO9fXz4R9AcqCSYu7v4",
 } as const;
 
 /** `tel:` href form — digits and a leading + only. */
 export const BUSINESS_TEL_HREF = `tel:${BUSINESS.telephone.replace(/[^+\d]/g, "")}`;
 
-/** Single-line postal address, e.g. "Business Bay, Bay Square, Dubai, AE". */
+/** Single-line postal address, e.g. "Industrial Area 17, ..., Sharjah, AE". */
 export const BUSINESS_ADDRESS_LINE = [
   BUSINESS.streetAddress,
   BUSINESS.addressLocality,

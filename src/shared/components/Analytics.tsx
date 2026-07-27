@@ -11,7 +11,11 @@ import Script from "next/script";
  * you swap this for another provider, widen the policy there too or the script
  * is blocked silently.
  */
-const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+// GA4 measurement IDs are public (they ship in the client bundle by design), so
+// a hardcoded default is safe and guarantees the tag loads even if the deploy
+// env var isn't set. Override per-environment with NEXT_PUBLIC_GA_MEASUREMENT_ID.
+const GA_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-906W95SRQY";
 
 export default function Analytics() {
   if (!GA_ID) return null;

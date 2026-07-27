@@ -15,6 +15,9 @@ const SAME_AS = [
   "https://instagram.com/buyologyuae/",
   "https://www.linkedin.com/company/buyologytech/",
   "https://www.youtube.com/@Buyologytech",
+  // Verified Google Business Profile — this is the link that ties the website
+  // entity to the GBP listing for Google and AI search engines.
+  BUSINESS.googleMapsUrl,
 ];
 
 const POSTAL_ADDRESS = {
@@ -64,7 +67,8 @@ export function localBusinessJsonLd() {
     // LocalBusiness, so declaring both is valid and satisfies each check.
     "@type": ["Store", "LocalBusiness"],
     "@id": `${SITE_URL}/#localbusiness`,
-    name: SITE_NAME,
+    // Matches the Google Business Profile listing name exactly (NAP consistency).
+    name: BUSINESS.name,
     legalName: BUSINESS.legalName,
     url: SITE_URL,
     image: `${SITE_URL}/logo.png`,
@@ -74,6 +78,8 @@ export function localBusinessJsonLd() {
     currenciesAccepted: "AED, USD, AZN",
     paymentAccepted: "Credit Card, Debit Card, Tabby, Tamara, Cash on Delivery",
     address: POSTAL_ADDRESS,
+    // Authoritative locator for the GBP listing (preferred over lat/long).
+    hasMap: BUSINESS.googleMapsUrl,
     geo: {
       "@type": "GeoCoordinates",
       latitude: BUSINESS.latitude,

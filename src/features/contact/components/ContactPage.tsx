@@ -30,9 +30,11 @@ const COUNTRIES: Country[] = [
         flagEmoji: "🇦🇪",
         gx: 55.6,
         gy: 55.6,
+        // Matches the "Buyology Factory Outlet" Google Business Profile (Sharjah)
+        // so the site-wide NAP is consistent with the verified listing.
         email: "support.ae@buyology.com",
-        phone: "+971 4 352 7800",
-        address: "Business Bay, Dubai, UAE",
+        phone: "+971 52 708 5203",
+        address: "Industrial Area 17, Sharjah, UAE",
     },
     {
         id: "sa",
