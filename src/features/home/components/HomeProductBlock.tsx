@@ -20,9 +20,22 @@ const SuperDeals = dynamic(
   { loading: () => skel("h-[480px] md:h-[520px]") }
 );
 
+// Pending placeholder reserves the SAME vertical space the resolved sections
+// occupy (LimitedStock + SuperDeals). The previous default gate placeholder was
+// a single ~320px box, so when the region check resolved, ~500px of content was
+// injected and everything below jumped down — a large Cumulative Layout Shift.
+function ProductBlockPending() {
+  return (
+    <div className="w-full flex flex-col items-center">
+      {skel("h-[340px] md:h-[420px]")}
+      {skel("h-[480px] md:h-[520px]")}
+    </div>
+  );
+}
+
 export default function HomeProductBlock() {
   return (
-    <RegionGate variant="inline">
+    <RegionGate variant="inline" pendingFallback={<ProductBlockPending />}>
       <ScrollReveal className="w-full flex justify-center" delay={0.1}>
         <LimitedStock />
       </ScrollReveal>

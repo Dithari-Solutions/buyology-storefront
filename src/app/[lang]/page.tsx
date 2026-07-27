@@ -3,10 +3,16 @@ import Header from "@/shared/components/Header";
 import Footer from "@/shared/components/Footer";
 import ScrollReveal from "@/shared/components/ScrollReveal";
 import { makeStaticMetadata } from "@/shared/seo/staticMeta";
-import { getSafeLang } from "@/shared/seo/config";
-import { JsonLd, faqJsonLd } from "@/shared/seo/JsonLd";
+import { SITE_URL, getSafeLang, localizedPath } from "@/shared/seo/config";
+import { STATIC_PAGE_META } from "@/shared/seo/staticPageMeta";
+import {
+  JsonLd,
+  faqJsonLd,
+  webPageJsonLd,
+  siteNavigationJsonLd,
+} from "@/shared/seo/JsonLd";
 import HomeSeoContent from "@/features/home/components/HomeSeoContent";
-import { HOME_SEO_COPY } from "@/features/home/data/homeSeoCopy";
+import { HOME_SEO_COPY, PRIMARY_NAV } from "@/features/home/data/homeSeoCopy";
 
 // `titleAbsolute` — the home title already ends in "| Buyology", so the root
 // layout's "%s | Buyology" template would otherwise print the brand twice.
@@ -55,9 +61,29 @@ export default async function Home({
 }) {
   const lang = getSafeLang((await params).lang);
 
+  // Rendered per request (this route is dynamic), so dateModified is always a
+  // recent timestamp — the "Content Freshness" signal for AI/search crawlers.
+  const dateModified = new Date().toISOString();
+  const homeUrl = `${SITE_URL}/${lang}`;
+  const homeMeta = STATIC_PAGE_META.home[lang];
+  const navItems = PRIMARY_NAV[lang].map((item) => ({
+    name: item.label,
+    url: `${SITE_URL}${localizedPath(item.canonical, lang)}`,
+  }));
+
   return (
     <>
       <JsonLd data={faqJsonLd(HOME_SEO_COPY[lang].faq)} />
+      <JsonLd
+        data={webPageJsonLd({
+          lang,
+          url: homeUrl,
+          name: homeMeta.title,
+          description: homeMeta.description,
+          dateModified,
+        })}
+      />
+      <JsonLd data={siteNavigationJsonLd(navItems)} />
       <Header />
       <main className="flex flex-col items-center justify-center pb-10 md:pb-16">
         <Stories />

@@ -34,7 +34,44 @@ export interface HomeSeoCopy {
   blocks: SeoBlock[];
   faqTitle: string;
   faq: FaqItem[];
+  /** Short recency line rendered under the intro (Content Freshness signal). */
+  freshness: string;
 }
+
+/**
+ * Primary navigation entries (canonical route + localized label) used to build
+ * the SiteNavigationElement schema that encourages SERP sitelinks. Canonical
+ * keys must exist in PATH_SLUGS.
+ */
+export const PRIMARY_NAV: Record<
+  Lang,
+  Array<{ canonical: string; label: string }>
+> = {
+  en: [
+    { canonical: "shop", label: "Shop" },
+    { canonical: "rent", label: "Rent" },
+    { canonical: "repair", label: "Repair" },
+    { canonical: "sell", label: "Sell" },
+    { canonical: "quick-delivery", label: "Quick Delivery" },
+    { canonical: "contact", label: "Contact" },
+  ],
+  az: [
+    { canonical: "shop", label: "Mağaza" },
+    { canonical: "rent", label: "İcarə" },
+    { canonical: "repair", label: "Təmir" },
+    { canonical: "sell", label: "Sat" },
+    { canonical: "quick-delivery", label: "Tez Çatdırılma" },
+    { canonical: "contact", label: "Əlaqə" },
+  ],
+  ar: [
+    { canonical: "shop", label: "المتجر" },
+    { canonical: "rent", label: "الإيجار" },
+    { canonical: "repair", label: "الإصلاح" },
+    { canonical: "sell", label: "البيع" },
+    { canonical: "quick-delivery", label: "التوصيل السريع" },
+    { canonical: "contact", label: "اتصل بنا" },
+  ],
+};
 
 export const HOME_SEO_COPY: Record<Lang, HomeSeoCopy> = {
   en: {
@@ -58,6 +95,8 @@ export const HOME_SEO_COPY: Record<Lang, HomeSeoCopy> = {
           "Not every device needs to be bought outright. Rent a laptop or console on a flexible plan when the need is temporary. Book a repair and have a technician diagnose, quote and fix the device — most jobs turn around in under 24 hours, with a warranty on the work. Ready to move on from an old device? List it to sell, or trade it in and put the value straight toward your next purchase.",
       },
     ],
+    freshness:
+      "New arrivals added every week · Prices and stock availability updated daily.",
     faqTitle: "Frequently Asked Questions",
     faq: [
       {
@@ -114,6 +153,8 @@ export const HOME_SEO_COPY: Record<Lang, HomeSeoCopy> = {
           "Hər cihazı tam qiymətə almaq lazım deyil. Ehtiyac müvəqqətidirsə, noutbuku və ya konsolu çevik planla icarəyə götürün. Təmir sifariş edin — mütəxəssis diaqnostika aparır, qiymət təklif edir və cihazı düzəldir; işlərin əksəriyyəti 24 saatdan az müddətdə, işə zəmanətlə tamamlanır. Köhnə cihazı satın və ya trade-in edərək dəyərini növbəti alışınıza yönəldin.",
       },
     ],
+    freshness:
+      "Hər həftə yeni məhsullar əlavə olunur · Qiymətlər və stok gündəlik yenilənir.",
     faqTitle: "Tez-tez Verilən Suallar",
     faq: [
       {
@@ -170,6 +211,8 @@ export const HOME_SEO_COPY: Record<Lang, HomeSeoCopy> = {
           "ليس كل جهاز يستحق الشراء الكامل. استأجر لابتوب أو جهاز ألعاب بخطة مرنة عندما تكون الحاجة مؤقتة. احجز إصلاحاً ليقوم فني بالتشخيص وتقديم عرض السعر والإصلاح — وتُنجز معظم الأعمال في أقل من 24 ساعة مع ضمان على العمل. وإذا أردت التخلص من جهاز قديم، اعرضه للبيع أو استبدله واحتسب قيمته مباشرة في عملية شرائك التالية.",
       },
     ],
+    freshness:
+      "تُضاف منتجات جديدة كل أسبوع · يتم تحديث الأسعار وتوفر المخزون يومياً.",
     faqTitle: "الأسئلة الشائعة",
     faq: [
       {

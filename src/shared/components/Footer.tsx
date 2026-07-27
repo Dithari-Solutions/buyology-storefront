@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import { conditionHref } from "@/shared/utils/categoryHref";
 import AuthVector from "@/assets/vectors/auth-bg-vector.png";
 import {
     BUSINESS,
@@ -89,7 +90,7 @@ export default function Footer() {
                         <h2 className="text-white text-[20px] md:text-[20px] font-bold mb-[15px] md:mb-[30px]">{t("shop.heading")}</h2>
                         <ul>
                             <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${shopSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.new_arrivals")}</Link></li>
-                            <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${shopSlug}?condition=REFURBISHED`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.refurbished")}</Link></li>
+                            <li className="my-[6px] md:my-[10px]"><Link href={conditionHref(lang, "REFURBISHED")} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.refurbished")}</Link></li>
                             <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${shopSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.special_offer")}</Link></li>
                             <li className="my-[6px] md:my-[10px]"><Link href={`/${lang}/${shopSlug}`} className="text-white text-[14px] md:text-[16px] hover:text-[#FBBB14] transition-colors">{t("shop.reviews")}</Link></li>
                         </ul>

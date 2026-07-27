@@ -86,5 +86,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Same graceful degradation as products.
   }
 
-  return [...staticEntries, ...categoryEntries, ...productEntries];
+  // Readable condition landing pages (/shop/condition/<new|refurbished>).
+  const conditionEntries: MetadataRoute.Sitemap = ["new", "refurbished"].flatMap(
+    (cond) =>
+      SUPPORTED_LANGS.map((lang) => ({
+        url: `${SITE_URL}${localizedPath("shop", lang, `/condition/${cond}`)}`,
+        lastModified: now,
+        changeFrequency: "daily" as const,
+        priority: 0.8,
+        alternates: {
+          languages: langAlternates("shop", `/condition/${cond}`),
+        },
+      }))
+  );
+
+  return [
+    ...staticEntries,
+    ...categoryEntries,
+    ...conditionEntries,
+    ...productEntries,
+  ];
 }

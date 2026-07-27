@@ -175,9 +175,11 @@ export interface ActiveFilters {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
+export default function ProductFilter({ onFiltersChange, initialCategoryId, initialCondition }: {
   onFiltersChange?: (filters: ActiveFilters) => void;
   initialCategoryId?: string | null;
+  /** Seeds the condition facet from a readable route (/shop/condition/<x>). */
+  initialCondition?: string | null;
 }) {
   const params = useParams();
   const lang = (params?.lang as Lang) ?? 'en';
@@ -199,13 +201,17 @@ export default function ProductFilter({ onFiltersChange, initialCategoryId }: {
   // the slider back to full range — that snap-back was dropping the user's max cap.
   const priceTouchedRef = useRef(false);
   const lastScopeRef = useRef<string | null>(null);
-  const [condition, setCondition] = useState<string | null>(null);
+  const [condition, setCondition] = useState<string | null>(initialCondition ?? null);
   const [categoryId, setCategoryId] = useState<string | null>(initialCategoryId ?? null);
 
   // Keep the selected category in sync with the URL (e.g. picking another category from the header).
   useEffect(() => {
     setCategoryId(initialCategoryId ?? null);
   }, [initialCategoryId]);
+  // Same for the condition facet when arriving via /shop/condition/<x>.
+  useEffect(() => {
+    setCondition(initialCondition ?? null);
+  }, [initialCondition]);
   const [brandIds, setBrandIds] = useState<string[]>([]);
   const [availability, setAvailability] = useState<string | null>(null);
   const [specSelections, setSpecSelections] = useState<Record<string, string[]>>({});

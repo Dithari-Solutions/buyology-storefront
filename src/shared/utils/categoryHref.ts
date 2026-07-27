@@ -16,3 +16,13 @@ export function categoryHref(
   if (!category.slug) return `/${lang}/${shopSlug}`;
   return `/${lang}/${shopSlug}/category/${category.slug}`;
 }
+
+/**
+ * Readable condition landing URL: /en/shop/condition/refurbished
+ * Replaces the old /shop?condition=REFURBISHED query-string links flagged under
+ * "Friendly Links". `condition` is the backend enum (NEW / REFURBISHED).
+ */
+export function conditionHref(lang: Lang | string, condition: "NEW" | "REFURBISHED"): string {
+  const shopSlug = PATH_SLUGS.shop?.[lang as Lang] ?? "shop";
+  return `/${lang}/${shopSlug}/condition/${condition.toLowerCase()}`;
+}

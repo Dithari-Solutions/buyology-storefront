@@ -38,6 +38,12 @@ export default function HomeSeoContent({ lang }: { lang: Lang }) {
         <p className="mt-3 md:mt-4 text-[14px] md:text-[16px] leading-relaxed text-gray-600 max-w-3xl">
           {copy.intro}
         </p>
+        {/* Recency line — a visible Content Freshness signal to pair with the
+            dateModified in the page's WebPage JSON-LD. */}
+        <p className="mt-3 inline-flex items-center gap-2 text-[12px] md:text-[13px] font-medium text-[#402F75]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#FBBB14]" aria-hidden="true" />
+          {copy.freshness}
+        </p>
 
         <div className="mt-8 md:mt-10 grid gap-6 md:gap-8 md:grid-cols-3">
           {copy.blocks.map((block) => (

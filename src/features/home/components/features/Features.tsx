@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import { conditionHref } from "@/shared/utils/categoryHref";
 import FeatureCard from "./FeatureCard";
 import BrandNewImg from "@/assets/features/brand-new-feat.png";
 import RefurbishedImg from "@/assets/features/refurbished-feat.png";
@@ -13,7 +14,6 @@ import RepairImg from "@/assets/features/repair-feat.png";
 export default function Features() {
     const { t } = useTranslation("home");
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
-    const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
     const rentSlug = PATH_SLUGS.rent?.[lang] ?? "rent";
     const repairSlug = PATH_SLUGS.repair?.[lang] ?? "repair";
     const sellSlug = PATH_SLUGS.sell?.[lang] ?? "sell";
@@ -23,9 +23,9 @@ export default function Features() {
     // the rest. Interleaved (photo/illustrated/photo…) so neither family clusters
     // in any of the responsive layouts. Same shape, corner arrow, and caption.
     const services: Array<{ id: string; title: string; href: string; image?: StaticImageData | string; objectPosition?: string }> = [
-        { id: "brandNew", title: t("features.brandNew"), href: `/${lang}/${shopSlug}?condition=NEW`, image: BrandNewImg },
+        { id: "brandNew", title: t("features.brandNew"), href: conditionHref(lang, "NEW"), image: BrandNewImg },
         { id: "rent", title: t("features.rent"), href: `/${lang}/${rentSlug}`, image: "/rent.png" },
-        { id: "refurbished", title: t("features.refurbished"), href: `/${lang}/${shopSlug}?condition=REFURBISHED`, image: RefurbishedImg, objectPosition: "40% 50%" },
+        { id: "refurbished", title: t("features.refurbished"), href: conditionHref(lang, "REFURBISHED"), image: RefurbishedImg, objectPosition: "40% 50%" },
         { id: "sell", title: t("features.sell"), href: `/${lang}/${sellSlug}`, image: "/sell.png" },
         { id: "repair", title: t("features.repair"), href: `/${lang}/${repairSlug}`, image: RepairImg },
         { id: "games", title: t("features.games"), href: `/${lang}/${gamesSlug}` },

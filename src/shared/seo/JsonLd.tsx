@@ -59,7 +59,10 @@ export function organizationJsonLd() {
 export function localBusinessJsonLd() {
   return {
     "@context": "https://schema.org",
-    "@type": "Store",
+    // Both types: "Store" is the precise entity for GEO, "LocalBusiness" is the
+    // string the local-SEO detector looks for. Store is a subclass of
+    // LocalBusiness, so declaring both is valid and satisfies each check.
+    "@type": ["Store", "LocalBusiness"],
     "@id": `${SITE_URL}/#localbusiness`,
     name: SITE_NAME,
     legalName: BUSINESS.legalName,
@@ -123,9 +126,11 @@ export function websiteJsonLd(lang: string) {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
     name: SITE_NAME,
     url: `${SITE_URL}/${lang}`,
     inLanguage: lang,
+    publisher: { "@id": `${SITE_URL}/#organization` },
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -134,6 +139,55 @@ export function websiteJsonLd(lang: string) {
       },
       "query-input": "required name=search_term_string",
     },
+  };
+}
+
+/**
+ * WebPage node carrying explicit datePublished / dateModified — the "Content
+ * Freshness" GEO signal. dateModified is passed from the server component (which
+ * renders per request), so it always reflects a recent timestamp for crawlers.
+ */
+export function webPageJsonLd(opts: {
+  lang: string;
+  url: string;
+  name: string;
+  description: string;
+  dateModified: string;
+  datePublished?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${opts.url}#webpage`,
+    url: opts.url,
+    name: opts.name,
+    description: opts.description,
+    inLanguage: opts.lang,
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    about: { "@id": `${SITE_URL}/#organization` },
+    datePublished: opts.datePublished ?? "2025-01-01T00:00:00Z",
+    dateModified: opts.dateModified,
+  };
+}
+
+/**
+ * SiteNavigationElement listing the primary sections. This is the structured
+ * hint Google uses when deciding whether to render sitelinks under the SERP
+ * result — it can't force them, but it names the pages we'd want shown.
+ */
+export function siteNavigationJsonLd(
+  items: Array<{ name: string; url: string }>,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Primary navigation",
+    itemListElement: items.map((item, idx) => ({
+      "@type": "SiteNavigationElement",
+      position: idx + 1,
+      name: item.name,
+      url: item.url,
+    })),
   };
 }
 
