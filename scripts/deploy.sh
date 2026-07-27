@@ -16,7 +16,14 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."   # repo root
 
-: "${NEXT_PUBLIC_API_BASE_URL:?Set NEXT_PUBLIC_API_BASE_URL (baked into the build)}"
+# NEXT_PUBLIC_API_BASE_URL is inlined at build time. It may come from the shell env OR
+# from a .env / .env.production / .env.local file that `next build` reads — only error
+# if it's provided by none of them.
+if [ -z "${NEXT_PUBLIC_API_BASE_URL:-}" ] \
+   && ! grep -qsE '^NEXT_PUBLIC_API_BASE_URL=' .env .env.production .env.local; then
+  echo "ERROR: NEXT_PUBLIC_API_BASE_URL is not set. Export it, pass it inline, or add it to .env" >&2
+  exit 1
+fi
 
 echo "▶ Sync phase-2"
 git fetch origin
