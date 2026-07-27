@@ -111,12 +111,15 @@ export default function B2BQuoteDetailPage() {
     // (It accepts a QUOTED quote under the hood before checking out.)
     const canPay = isAccepted || (isQuoted && !isExpired);
 
-    // For statuses that can't pay yet, keep an explanatory message.
+    // For statuses that can't pay yet, keep an explanatory message — except
+    // AWAITING_PAYMENT_VERIFICATION / ORDERED, which show their own status notices.
     const checkoutBlockedMsg = canPay
         ? null
         : quote.status === "SUBMITTED"
             ? t("b2bQuote.checkoutBlockedSubmitted")
-            : t("b2bQuote.checkoutBlockedGeneric");
+            : quote.status === "AWAITING_PAYMENT_VERIFICATION" || quote.status === "ORDERED"
+                ? null
+                : t("b2bQuote.checkoutBlockedGeneric");
 
     return (
         <div className="mx-auto max-w-3xl px-4 py-8">
@@ -177,6 +180,7 @@ export default function B2BQuoteDetailPage() {
                         <tr>
                             <th className="px-4 py-2.5 font-medium">{t("b2bQuote.columns.product")}</th>
                             <th className="px-4 py-2.5 text-center font-medium">{t("b2bQuote.columns.quantity")}</th>
+                            <th className="px-4 py-2.5 font-medium">{t("b2bQuote.columns.leadTime", { defaultValue: "Lead time" })}</th>
                             <th className="px-4 py-2.5 text-right font-medium">{t("b2bQuote.columns.unitPrice")}</th>
                             <th className="px-4 py-2.5 text-right font-medium">{t("b2bQuote.columns.lineTotal")}</th>
                         </tr>
@@ -186,6 +190,9 @@ export default function B2BQuoteDetailPage() {
                             <tr key={it.id}>
                                 <td className="px-4 py-3">
                                     <p className="font-semibold text-gray-900">{it.productTitle ?? it.productId}</p>
+                                    {it.description && (
+                                        <p className="mt-0.5 text-xs text-gray-500">{it.description}</p>
+                                    )}
                                     {it.sku && (
                                         <p className="mt-0.5 text-xs text-gray-400">
                                             {t("b2bQuote.columns.sku")}: <span className="font-mono">{it.sku}</span>
@@ -193,6 +200,7 @@ export default function B2BQuoteDetailPage() {
                                     )}
                                 </td>
                                 <td className="px-4 py-3 text-center text-gray-700">{it.quantity}</td>
+                                <td className="px-4 py-3 text-gray-700">{it.leadTime ?? "—"}</td>
                                 <td className="px-4 py-3 text-right text-gray-700">
                                     {it.quotedUnitPrice != null ? (
                                         fmtMoney(it.quotedUnitPrice, currency)
@@ -213,7 +221,7 @@ export default function B2BQuoteDetailPage() {
                     {quote.quotedSubtotal != null && (
                         <tfoot className="border-t border-gray-200 bg-gray-50">
                             <tr>
-                                <td colSpan={3} className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
+                                <td colSpan={4} className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
                                     {t("b2bQuote.subtotal")}
                                 </td>
                                 <td className="px-4 py-3 text-right text-sm font-bold text-gray-900">
@@ -243,6 +251,71 @@ export default function B2BQuoteDetailPage() {
                 </div>
             )}
 
+            {/* Payment terms & T&C set by procurement */}
+            {(quote.paymentTerms || quote.termsAndConditions) && (
+                <div className="mt-4 space-y-3">
+                    {quote.paymentTerms && (
+                        <div className="rounded-xl border border-gray-100 bg-white p-3.5">
+                            <p className="text-xs font-semibold text-gray-400">
+                                {t("b2bQuote.paymentTerms", { defaultValue: "Payment terms" })}
+                            </p>
+                            <p className="mt-1 whitespace-pre-line text-[13px] text-gray-700">{quote.paymentTerms}</p>
+                        </div>
+                    )}
+                    {quote.termsAndConditions && (
+                        <div className="rounded-xl border border-gray-100 bg-white p-3.5">
+                            <p className="text-xs font-semibold text-gray-400">
+                                {t("b2bQuote.termsAndConditions", { defaultValue: "Terms & conditions" })}
+                            </p>
+                            <p className="mt-1 whitespace-pre-line text-[13px] text-gray-700">{quote.termsAndConditions}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Proof of payment — visible once uploaded (bank transfer) */}
+            {quote.proofOfPaymentFileUrl && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#402F75]/15 bg-[#FAF8FF] p-3.5">
+                    <div>
+                        <p className="text-xs font-semibold text-[#402F75]">
+                            {t("b2bQuote.proofOfPayment", { defaultValue: "Proof of payment" })}
+                        </p>
+                        <p className="mt-0.5 text-[12px] text-gray-500">
+                            {quote.status === "ORDERED"
+                                ? t("b2bQuote.proofValidated", { defaultValue: "Validated — your order is placed." })
+                                : t("b2bQuote.proofAwaiting", {
+                                      defaultValue: "Awaiting validation by our procurement team.",
+                                  })}
+                        </p>
+                    </div>
+                    <a
+                        href={quote.proofOfPaymentFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 rounded-full border border-[#402F75] px-4 py-2 text-[13px] font-semibold text-[#402F75] hover:bg-[#402F75] hover:text-white"
+                    >
+                        {t("b2bQuote.viewProof", { defaultValue: "View document" })}
+                    </a>
+                </div>
+            )}
+
+            {/* Awaiting-validation / order-placed status notices */}
+            {quote.status === "AWAITING_PAYMENT_VERIFICATION" && (
+                <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-3.5 py-3 text-[13px] font-medium text-blue-700">
+                    {t("b2bQuote.awaitingValidationNotice", {
+                        defaultValue:
+                            "We've received your proof of payment. Our procurement team is verifying it — you'll be emailed once your order is placed.",
+                    })}
+                </div>
+            )}
+            {quote.status === "ORDERED" && (
+                <div className="mt-4 rounded-xl border border-green-100 bg-green-50 px-3.5 py-3 text-[13px] font-medium text-green-700">
+                    {t("b2bQuote.orderPlacedNotice", {
+                        defaultValue: "Your order has been placed. A confirmation with full details has been emailed to you.",
+                    })}
+                </div>
+            )}
+
             {/* Actions */}
             <div className="mt-8 flex flex-col gap-3">
                 {canAccept && (
@@ -257,7 +330,7 @@ export default function B2BQuoteDetailPage() {
 
                 {/* Checkout — gated to a priceable (QUOTED/ACCEPTED) quote */}
                 {canPay ? (
-                    <B2BQuotePayPanel quote={quote} />
+                    <B2BQuotePayPanel quote={quote} onUpdated={setQuote} />
                 ) : checkoutBlockedMsg ? (
                     <div>
                         <button

@@ -75,7 +75,8 @@
       "REJECTED": "Rejected",
       "EXPIRED": "Expired",
       "CANCELLED": "Cancelled",
-      "ORDERED": "Ordered"
+      "ORDERED": "Ordered",
+      "AWAITING_PAYMENT_VERIFICATION": "Awaiting payment verification"
     }
   },
   "payPanel": {

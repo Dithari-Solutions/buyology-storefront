@@ -75,7 +75,8 @@
       "REJECTED": "Rədd edilib",
       "EXPIRED": "Vaxtı keçib",
       "CANCELLED": "Ləğv edilib",
-      "ORDERED": "Sifariş edilib"
+      "ORDERED": "Sifariş edilib",
+      "AWAITING_PAYMENT_VERIFICATION": "Ödəniş təsdiqi gözlənilir"
     }
   },
   "payPanel": {
