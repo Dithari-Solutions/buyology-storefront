@@ -73,3 +73,57 @@ export function timelineReachedCount(status: SellStatus): number {
 export function isSellClosed(status: SellStatus): boolean {
   return status === "COMPLETED" || status === "CANCELLED";
 }
+
+/**
+ * The one thing the customer has to do next, if anything. Returned as an i18n key + English
+ * default (plus interpolation values) so the caller owns the `t` call.
+ *
+ * This is what a list of requests is actually for: "Under inspection" tells you the state, but
+ * not whether the ball is in your court. Statuses where we're the ones working return null.
+ */
+export type SellNextAction = {
+  key: string;
+  defaultValue: string;
+  values?: Record<string, string>;
+} | null;
+
+export function sellNextAction(r: {
+  status: SellStatus;
+  inboundDeliveryMethod: string | null;
+  returnDeliveryMethod: string | null;
+  courierFeePaid: boolean;
+  storeBranchName: string | null;
+}): SellNextAction {
+  switch (r.status) {
+    case "SUBMITTED":
+      if (!r.inboundDeliveryMethod) {
+        return { key: "card.chooseDelivery", defaultValue: "Choose how to get your device to us" };
+      }
+      if (r.inboundDeliveryMethod === "COURIER_PICKUP" && !r.courierFeePaid) {
+        return { key: "card.payCourier", defaultValue: "Pay the courier fee to book your pickup" };
+      }
+      return null;
+    case "AWAITING_DEVICE":
+      return r.inboundDeliveryMethod === "STORE_DROPOFF"
+        ? {
+            key: "card.dropOff",
+            defaultValue: "Drop your device at {{store}}",
+            values: { store: r.storeBranchName ?? "the selected store" },
+          }
+        : null;
+    case "OFFER_MADE":
+      return { key: "card.respondOffer", defaultValue: "Accept or decline our offer" };
+    case "ACCEPTED":
+      return { key: "card.collectPayment", defaultValue: "Collect your payment at our store" };
+    case "DECLINED":
+      if (!r.returnDeliveryMethod) {
+        return { key: "card.chooseReturn", defaultValue: "Choose how to get your device back" };
+      }
+      if (r.returnDeliveryMethod === "COURIER_RETURN" && !r.courierFeePaid) {
+        return { key: "card.payReturn", defaultValue: "Pay the courier fee for the return" };
+      }
+      return null;
+    default:
+      return null;
+  }
+}

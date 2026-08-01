@@ -9,7 +9,7 @@ import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { listMyRepairs } from "@/features/repair/services/repair.api";
 import type { Repair } from "@/features/repair/types";
-import { REPAIR_STATUS_LABEL, REPAIR_STATUS_TONE } from "@/features/repair/lib/status";
+import RepairCard from "./RepairCard";
 
 export default function MyRepairsPage() {
   const params = useParams();
@@ -93,29 +93,7 @@ export default function MyRepairsPage() {
           {repairs.map((r, i) => (
             // Cap the stagger so a long list doesn't leave the last cards hidden for seconds.
             <li key={r.id} className="buyo-rise" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
-              <Link
-                href={`/${lang}/${repairSlug}/${r.id}`}
-                className="buyo-card buyo-card-hover flex h-full items-center justify-between gap-4 rounded-[16px] border border-gray-100 bg-white px-5 py-4 shadow-sm"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate text-[15px] font-bold text-gray-900">{r.productName}</p>
-                    {r.customerUnread && (
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-[#FBBB14]" title={t("list.updated", { defaultValue: "New update" })} />
-                    )}
-                  </div>
-                  <p className="mt-0.5 truncate text-[12.5px] text-gray-500">
-                    {r.brand} · {r.model}
-                    {r.reference ? ` · ${r.reference}` : ""}
-                  </p>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1.5">
-                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${REPAIR_STATUS_TONE[r.status]}`}>
-                    {t(`status.${r.status}`, { defaultValue: REPAIR_STATUS_LABEL[r.status] })}
-                  </span>
-                  <span className="text-[11px] text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
-                </div>
-              </Link>
+              <RepairCard repair={r} href={`/${lang}/${repairSlug}/${r.id}`} />
             </li>
           ))}
         </ul>

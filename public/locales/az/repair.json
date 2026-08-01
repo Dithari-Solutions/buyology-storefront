@@ -109,7 +109,28 @@
     "DECLINED": "Təxmin rədd edildi",
     "CANCELLED": "Ləğv edildi"
   },
+  "card": {
+    "step": "Addım {{n}} / {{total}}",
+    "done": "Tamamlandı",
+    "estimate": "Təxmini",
+    "aiBadge": "AI",
+    "chooseDelivery": "Cihazı bizə necə çatdıracağını seç",
+    "payCourier": "Kuryeri sifariş etmək üçün haqqı ödə",
+    "dropOff": "Cihazını {{store}} ünvanına gətir",
+    "chooseReturn": "Cihazını necə geri alacağını seç",
+    "payReturn": "Geri qaytarma üçün kuryer haqqını ödə",
+    "quoted": "Qiymət verildi",
+    "respondPrice": "Qiyməti qəbul et və ya rədd et"
+  },
   "detail": {
+    "deliveryTitle": "Cihazın bizə çatdırılması",
+    "deliveryChangeHint": "Cihazın komandamıza çatana qədər bunu dəyişə bilərsən.",
+    "changeDelivery": "Dəyiş",
+    "cancelChange": "Ləğv et",
+    "feePaid": "Haqq ödənilib",
+    "feeUnpaid": "Haqq ödənilməyib",
+    "deliveryChangedNote": "{{previous}} seçimindən dəyişdirildi — komandamıza bildirildi.",
+    "switchRefundNote": "Kuryer haqqını artıq ödəmisən. Mağazaya gətirməyə keçsən, komandamız məbləği geri qaytaracaq — avtomatik qaytarılmır.",
     "notFound": "Təmir sorğusu tapılmadı.",
     "backToList": "Təmirlərimə qayıt",
     "pickStore": "Zəhmət olmasa mağaza filialı seçin.",

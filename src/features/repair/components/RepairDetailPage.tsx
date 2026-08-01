@@ -68,8 +68,10 @@ export default function RepairDetailPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Inbound delivery choice UI
+  // Inbound delivery choice UI. The picker only appears when the customer asks to change (or when
+  // nothing has been chosen yet) — otherwise the page shows their current choice back to them.
   const [deliveryChoice, setDeliveryChoice] = useState<"STORE_DROPOFF" | "COURIER_PICKUP" | null>(null);
+  const [editingDelivery, setEditingDelivery] = useState(false);
   const [stores, setStores] = useState<RepairStoreOption[]>([]);
   const [selectedStoreId, setSelectedStoreId] = useState("");
 
@@ -161,7 +163,9 @@ export default function RepairDetailPage() {
 
   // Runs a delivery/return choice. Free options advance immediately; courier options return a
   // Paymob checkout session we redirect the browser to (the webhook advances the repair on success).
-  const runDelivery = async (fn: () => Promise<RepairDeliveryResult>, failMsg: string) => {
+  // Returns true when the choice was saved (or the browser is being handed to Paymob), so callers
+  // can close the editor — and leave it open, with the error showing, when it wasn't.
+  const runDelivery = async (fn: () => Promise<RepairDeliveryResult>, failMsg: string): Promise<boolean> => {
     setError(null);
     setBusy(true);
     try {
@@ -171,15 +175,28 @@ export default function RepairDetailPage() {
           sessionStorage.setItem(PENDING_TX_KEY, result.payment.transactionId);
           window.location.href = result.payment.checkoutUrl;
         }
-        return;
+        return true;
       }
       setRepair(result.repair);
+      return true;
     } catch (e) {
       // Surface the backend message (e.g. a payment-readiness prompt) when present.
       setError(e instanceof Error && e.message ? e.message : failMsg);
+      return false;
     } finally {
       setBusy(false);
     }
+  };
+
+  // Open the picker pre-filled with what they already chose, so "change" starts from the current
+  // state rather than a blank form.
+  const openDeliveryEditor = () => {
+    setError(null);
+    if (repair.inboundDeliveryMethod === "COURIER_PICKUP" || repair.inboundDeliveryMethod === "STORE_DROPOFF") {
+      setDeliveryChoice(repair.inboundDeliveryMethod);
+    }
+    if (repair.storeLocationId) setSelectedStoreId(repair.storeLocationId);
+    setEditingDelivery(true);
   };
 
   const handleChooseDelivery = () => {
@@ -197,7 +214,7 @@ export default function RepairDetailPage() {
           redirectionUrl: deliveryChoice === "COURIER_PICKUP" ? callbackUrl() : undefined,
         }),
       t("detail.saveFailed", { defaultValue: "Couldn't save your choice. Please try again." }),
-    );
+    ).then((saved) => { if (saved) setEditingDelivery(false); });
   };
 
   const handleChooseReturn = () => {
@@ -348,19 +365,15 @@ export default function RepairDetailPage() {
             <div className="rounded-[14px] border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">{error}</div>
           )}
 
-          {/* SUBMITTED — team reviewing + choose how to get the device to the store */}
-          {repair.status === "SUBMITTED" && (
+          {/* ── Delivery: what they chose, and a way to change it ──────────────
+                 Previously this rendered the raw picker whenever the request was still
+                 SUBMITTED — which is exactly the state you're in after choosing courier
+                 pickup but before paying, so the page asked the same question again as if
+                 nothing had been chosen. Now the choice is always shown back as a summary,
+                 and changing it is a deliberate action that stays open until the device is
+                 actually with our team. */}
+          {(repair.status === "SUBMITTED" || repair.status === "AWAITING_DEVICE") && (
             <>
-              <div className="flex items-start gap-2.5 rounded-[14px] border border-[#E4DCFB] bg-[#F8F6FF] px-4 py-3">
-                <span className="mt-1 h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#402F75]" />
-                <p className="text-[13px] leading-relaxed text-[#402F75]">
-                  {t("detail.reviewing", {
-                    defaultValue:
-                      "Our team is currently reviewing your request — we've emailed you a confirmation. Next, choose how to get your device to us.",
-                  })}
-                </p>
-              </div>
-
               {inboundCourierPending && (
                 <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-4">
                   <p className="text-[13px] font-bold text-amber-900">
@@ -386,94 +399,209 @@ export default function RepairDetailPage() {
               )}
 
               <div className="buyo-rise buyo-d2 buyo-card rounded-[18px] border border-gray-100 bg-white p-6 shadow-sm">
-                <h2 className="text-[15px] font-bold text-gray-900">
-                  {t("detail.chooseDelivery", { defaultValue: "Choose Delivery Method" })}
-                </h2>
-                <div className="mt-4 space-y-3">
-                  {/* Store drop-off */}
-                  <button
-                    type="button"
-                    onClick={() => setDeliveryChoice("STORE_DROPOFF")}
-                    className={`flex w-full items-start gap-3 rounded-[14px] border px-4 py-3.5 text-start transition-colors ${
-                      deliveryChoice === "STORE_DROPOFF" ? "border-[#402F75] bg-[#F8F6FF]" : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${deliveryChoice === "STORE_DROPOFF" ? "border-[#402F75]" : "border-gray-300"}`}>
-                      {deliveryChoice === "STORE_DROPOFF" && <span className="h-2 w-2 rounded-full bg-[#402F75]" />}
-                    </span>
-                    <span className="flex-1">
-                      <span className="flex items-center justify-between gap-2">
-                        <span className="text-[14px] font-bold text-gray-900">{t("detail.bringToStore", { defaultValue: "Bring to Store" })}</span>
-                        <span className="text-[12px] font-bold text-green-600">{t("detail.free", { defaultValue: "Free" })}</span>
-                      </span>
-                      <span className="mt-0.5 block text-[12.5px] text-gray-500">{t("detail.bringToStoreBody", { defaultValue: "Bring your device to one of our store locations." })}</span>
-                    </span>
-                  </button>
-
-                  {deliveryChoice === "STORE_DROPOFF" && (
-                    <div className="ml-7">
-                      {stores.length === 0 ? (
-                        <p className="text-[12.5px] text-gray-400">{t("detail.noStores", { defaultValue: "No stores available in your region yet." })}</p>
-                      ) : (
-                        <select
-                          value={selectedStoreId}
-                          onChange={(e) => setSelectedStoreId(e.target.value)}
-                          className="w-full rounded-[12px] border border-gray-200 px-4 py-3 text-[13.5px] text-gray-800 outline-none focus:border-[#402F75]"
-                        >
-                          <option value="">{t("detail.selectStore", { defaultValue: "Select a store branch…" })}</option>
-                          {stores.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.branchName} — {s.city}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-[15px] font-bold text-gray-900">
+                      {t("detail.deliveryTitle", { defaultValue: "Getting your device to us" })}
+                    </h2>
+                    <p className="mt-0.5 text-[12.5px] text-gray-500">
+                      {t("detail.deliveryChangeHint", {
+                        defaultValue: "You can change this until your device reaches our team.",
+                      })}
+                    </p>
+                  </div>
+                  {!editingDelivery && repair.inboundDeliveryMethod && (
+                    <button
+                      type="button"
+                      onClick={openDeliveryEditor}
+                      className="shrink-0 rounded-full border border-[#402F75] px-4 py-2 text-[12.5px] font-bold text-[#402F75] transition-colors hover:bg-[#F8F6FF]"
+                    >
+                      {t("detail.changeDelivery", { defaultValue: "Change" })}
+                    </button>
                   )}
-
-                  {/* Courier pickup */}
-                  <button
-                    type="button"
-                    onClick={() => setDeliveryChoice("COURIER_PICKUP")}
-                    className={`flex w-full items-start gap-3 rounded-[14px] border px-4 py-3.5 text-start transition-colors ${
-                      deliveryChoice === "COURIER_PICKUP" ? "border-[#402F75] bg-[#F8F6FF]" : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${deliveryChoice === "COURIER_PICKUP" ? "border-[#402F75]" : "border-gray-300"}`}>
-                      {deliveryChoice === "COURIER_PICKUP" && <span className="h-2 w-2 rounded-full bg-[#402F75]" />}
-                    </span>
-                    <span className="flex-1">
-                      <span className="flex items-center justify-between gap-2">
-                        <span className="text-[14px] font-bold text-gray-900">{t("detail.courierPickup", { defaultValue: "Request Courier Pickup" })}</span>
-                        <span className="text-[12px] font-bold text-[#402F75]">{courierFeeLabel}</span>
-                      </span>
-                      <span className="mt-0.5 block text-[12.5px] text-gray-500">{t("detail.courierPickupBody", { defaultValue: "We'll send a courier to collect your device (fee applies)." })}</span>
-                    </span>
-                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleChooseDelivery}
-                  disabled={busy || !deliveryChoice}
-                  className="mt-5 w-full rounded-full bg-[#402F75] py-3 text-[13.5px] font-bold text-white transition-colors hover:bg-[#352566] disabled:opacity-50"
-                >
-                  {busy ? t("detail.saving", { defaultValue: "Saving…" }) : t("detail.confirmDelivery", { defaultValue: "Confirm delivery method" })}
-                </button>
+                {!editingDelivery && repair.inboundDeliveryMethod ? (
+                  <>
+                    <div className="mt-4 flex items-start gap-3 rounded-[14px] border border-[#E4DCFB] bg-[#F8F6FF] px-4 py-3.5">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white">
+                        {repair.inboundDeliveryMethod === "COURIER_PICKUP" ? (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                            <path d="M3 7h11v8H3zM14 10h4l3 3v2h-7M6.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM17.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                            <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z" />
+                            <path d="M9 21v-6h6v6" />
+                          </svg>
+                        )}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-[14px] font-bold text-gray-900">
+                            {repair.inboundDeliveryMethod === "COURIER_PICKUP"
+                              ? t("detail.courierPickup", { defaultValue: "Request Courier Pickup" })
+                              : t("detail.bringToStore", { defaultValue: "Bring to Store" })}
+                          </p>
+                          {repair.inboundDeliveryMethod === "COURIER_PICKUP" ? (
+                            <span
+                              className={`rounded-full px-2.5 py-0.5 text-[11.5px] font-bold ${
+                                repair.courierFeePaid
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-amber-100 text-amber-700"
+                              }`}
+                            >
+                              {repair.courierFeePaid
+                                ? t("detail.feePaid", { defaultValue: "Fee paid" })
+                                : t("detail.feeUnpaid", { defaultValue: "Fee unpaid" })}
+                            </span>
+                          ) : (
+                            <span className="text-[12px] font-bold text-green-600">
+                              {t("detail.free", { defaultValue: "Free" })}
+                            </span>
+                          )}
+                        </div>
+                        {repair.inboundDeliveryMethod === "STORE_DROPOFF" && repair.storeBranchName && (
+                          <p className="mt-1 text-[12.5px] text-gray-600">
+                            {repair.storeBranchName}
+                            {repair.storeAddress ? ` — ${repair.storeAddress}` : ""}
+                          </p>
+                        )}
+                        {repair.inboundDeliveryMethod === "COURIER_PICKUP" && (
+                          <p className="mt-1 text-[12.5px] text-gray-600">{courierFeeLabel}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {repair.inboundDeliveryChangedAt && repair.previousInboundDeliveryMethod && (
+                      <p className="mt-2.5 text-[12px] text-gray-400">
+                        {t("detail.deliveryChangedNote", {
+                          defaultValue: "Changed from {{previous}} — our team has been notified.",
+                          previous:
+                            repair.previousInboundDeliveryMethod === "COURIER_PICKUP"
+                              ? t("detail.courierPickup", { defaultValue: "Request Courier Pickup" })
+                              : t("detail.bringToStore", { defaultValue: "Bring to Store" }),
+                        })}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="mt-4 space-y-3">
+                      {/* Store drop-off */}
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryChoice("STORE_DROPOFF")}
+                        className={`flex w-full items-start gap-3 rounded-[14px] border px-4 py-3.5 text-start transition-colors ${
+                          deliveryChoice === "STORE_DROPOFF" ? "border-[#402F75] bg-[#F8F6FF]" : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${deliveryChoice === "STORE_DROPOFF" ? "border-[#402F75]" : "border-gray-300"}`}>
+                          {deliveryChoice === "STORE_DROPOFF" && <span className="h-2 w-2 rounded-full bg-[#402F75]" />}
+                        </span>
+                        <span className="flex-1">
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="text-[14px] font-bold text-gray-900">{t("detail.bringToStore", { defaultValue: "Bring to Store" })}</span>
+                            <span className="text-[12px] font-bold text-green-600">{t("detail.free", { defaultValue: "Free" })}</span>
+                          </span>
+                          <span className="mt-0.5 block text-[12.5px] text-gray-500">{t("detail.bringToStoreBody", { defaultValue: "Bring your device to one of our store locations." })}</span>
+                        </span>
+                      </button>
+
+                      {deliveryChoice === "STORE_DROPOFF" && (
+                        <div className="ml-7">
+                          {stores.length === 0 ? (
+                            <p className="text-[12.5px] text-gray-400">{t("detail.noStores", { defaultValue: "No stores available in your region yet." })}</p>
+                          ) : (
+                            <select
+                              value={selectedStoreId}
+                              onChange={(e) => setSelectedStoreId(e.target.value)}
+                              className="w-full rounded-[12px] border border-gray-200 px-4 py-3 text-[13.5px] text-gray-800 outline-none focus:border-[#402F75]"
+                            >
+                              <option value="">{t("detail.selectStore", { defaultValue: "Select a store branch…" })}</option>
+                              {stores.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                  {s.branchName} — {s.city}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Courier pickup */}
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryChoice("COURIER_PICKUP")}
+                        className={`flex w-full items-start gap-3 rounded-[14px] border px-4 py-3.5 text-start transition-colors ${
+                          deliveryChoice === "COURIER_PICKUP" ? "border-[#402F75] bg-[#F8F6FF]" : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${deliveryChoice === "COURIER_PICKUP" ? "border-[#402F75]" : "border-gray-300"}`}>
+                          {deliveryChoice === "COURIER_PICKUP" && <span className="h-2 w-2 rounded-full bg-[#402F75]" />}
+                        </span>
+                        <span className="flex-1">
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="text-[14px] font-bold text-gray-900">{t("detail.courierPickup", { defaultValue: "Request Courier Pickup" })}</span>
+                            <span className="text-[12px] font-bold text-[#402F75]">{courierFeeLabel}</span>
+                          </span>
+                          <span className="mt-0.5 block text-[12.5px] text-gray-500">{t("detail.courierPickupBody", { defaultValue: "We'll send a courier to collect your device (fee applies)." })}</span>
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Switching away from a pickup they already paid for costs them nothing extra,
+                        but the fee has to be refunded by a human — so say so before they commit. */}
+                    {repair.courierFeePaid &&
+                      repair.inboundDeliveryMethod === "COURIER_PICKUP" &&
+                      deliveryChoice === "STORE_DROPOFF" && (
+                        <p className="mt-3 rounded-[12px] bg-amber-50 px-3.5 py-2.5 text-[12px] leading-relaxed text-amber-800">
+                          {t("detail.switchRefundNote", {
+                            defaultValue:
+                              "You've already paid the courier fee. Switch to a store drop-off and our team will refund it — it isn't returned automatically.",
+                          })}
+                        </p>
+                      )}
+
+                    <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
+                      <button
+                        type="button"
+                        onClick={handleChooseDelivery}
+                        disabled={busy || !deliveryChoice}
+                        className="flex-1 rounded-full bg-[#402F75] py-3 text-[13.5px] font-bold text-white transition-colors hover:bg-[#352566] disabled:opacity-50"
+                      >
+                        {busy ? t("detail.saving", { defaultValue: "Saving…" }) : t("detail.confirmDelivery", { defaultValue: "Confirm delivery method" })}
+                      </button>
+                      {repair.inboundDeliveryMethod && (
+                        <button
+                          type="button"
+                          onClick={() => { setEditingDelivery(false); setError(null); }}
+                          disabled={busy}
+                          className="rounded-full border border-gray-200 px-6 py-3 text-[13.5px] font-bold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          {t("detail.cancelChange", { defaultValue: "Cancel" })}
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Where things stand right now. */}
+              <div className="rounded-[14px] border border-indigo-100 bg-indigo-50/60 px-4 py-3.5 text-[13px] leading-relaxed text-indigo-800">
+                {repair.status === "AWAITING_DEVICE"
+                  ? repair.inboundDeliveryMethod === "COURIER_PICKUP"
+                    ? t("detail.awaitingCourier", { defaultValue: "A courier will collect your device and deliver it to our store. We'll update this page once it arrives." })
+                    : t("detail.awaitingDropoff", {
+                        defaultValue: "Please drop your device at {{store}}. We'll start the review as soon as we receive it.",
+                        store: repair.storeBranchName ?? t("detail.theStore", { defaultValue: "the selected store" }),
+                      })
+                  : t("detail.reviewing", {
+                      defaultValue:
+                        "Our team is currently reviewing your request — we've emailed you a confirmation. Next, choose how to get your device to us.",
+                    })}
               </div>
             </>
-          )}
-
-          {/* AWAITING_DEVICE — device on its way */}
-          {repair.status === "AWAITING_DEVICE" && (
-            <div className="rounded-[14px] border border-indigo-100 bg-indigo-50/60 px-4 py-3.5 text-[13px] leading-relaxed text-indigo-800">
-              {repair.inboundDeliveryMethod === "COURIER_PICKUP"
-                ? t("detail.awaitingCourier", { defaultValue: "A courier will collect your device and deliver it to our store. We'll update this page once it arrives." })
-                : t("detail.awaitingDropoff", {
-                    defaultValue: "Please drop your device at {{store}}. We'll start the review as soon as we receive it.",
-                    store: repair.storeBranchName ?? t("detail.theStore", { defaultValue: "the selected store" }),
-                  })}
-            </div>
           )}
 
           {/* UNDER_REVIEW */}

@@ -9,15 +9,7 @@ import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { listMySellRequests } from "@/features/sell/services/sell.api";
 import type { SellRequest } from "@/features/sell/types";
-import { SELL_STATUS_LABEL, SELL_STATUS_TONE } from "@/features/sell/lib/status";
-
-function fmtMoney(amount: number, currency: string) {
-  // Pinned locale — see the note in SellRequestForm (hydration mismatch #418).
-  return `${currency.toUpperCase()} ${amount.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
+import SellCard from "./SellCard";
 
 export default function MySellRequestsPage() {
   const params = useParams();
@@ -103,34 +95,7 @@ export default function MySellRequestsPage() {
           {requests.map((r, i) => (
             // Cap the stagger so a long list doesn't leave the last cards hidden for seconds.
             <li key={r.id} className="buyo-rise" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
-              <Link
-                href={`/${lang}/${sellSlug}/${r.id}`}
-                className="buyo-card buyo-card-hover flex h-full items-center justify-between gap-4 rounded-[16px] border border-gray-100 bg-white px-5 py-4 shadow-sm"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate text-[15px] font-bold text-gray-900">{r.productName}</p>
-                    {r.customerUnread && (
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-[#FBBB14]" title={t("list.updated", { defaultValue: "New update" })} />
-                    )}
-                  </div>
-                  <p className="mt-0.5 truncate text-[12.5px] text-gray-500">
-                    {r.brand} · {r.model}
-                    {r.reference ? ` · ${r.reference}` : ""}
-                  </p>
-                  {r.offerPrice != null && (
-                    <p className="mt-1 text-[12.5px] font-bold text-[#402F75]">
-                      {fmtMoney(r.offerPrice, r.offerPriceCurrency ?? "AED")}
-                    </p>
-                  )}
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1.5">
-                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${SELL_STATUS_TONE[r.status]}`}>
-                    {t(`status.${r.status}`, { defaultValue: SELL_STATUS_LABEL[r.status] })}
-                  </span>
-                  <span className="text-[11px] text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
-                </div>
-              </Link>
+              <SellCard request={r} href={`/${lang}/${sellSlug}/${r.id}`} />
             </li>
           ))}
         </ul>

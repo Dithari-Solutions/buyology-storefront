@@ -8,7 +8,7 @@ import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { listMyRepairs } from "@/features/repair/services/repair.api";
 import type { Repair } from "@/features/repair/types";
-import { REPAIR_STATUS_LABEL, REPAIR_STATUS_TONE } from "@/features/repair/lib/status";
+import RepairCard from "@/features/repair/components/RepairCard";
 
 /**
  * Repair section of the profile: the customer's device-repair requests plus a shortcut to
@@ -103,38 +103,7 @@ export default function ProfileRepairs() {
           {repairs.map((r, i) => (
             // Stagger capped so a long list doesn't leave the last cards hidden for seconds.
             <li key={r.id} className="buyo-rise" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
-              <Link
-                href={`/${lang}/${repairSlug}/${r.id}`}
-                className="buyo-card buyo-card-hover flex h-full items-center justify-between gap-4 rounded-[16px] border border-gray-100 bg-white px-5 py-4 shadow-sm"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate text-[15px] font-bold text-gray-900">{r.productName}</p>
-                    {r.customerUnread && (
-                      <span
-                        className="h-2 w-2 shrink-0 rounded-full bg-[#FBBB14]"
-                        title={t("list.updated", { defaultValue: "New update" })}
-                      />
-                    )}
-                  </div>
-                  <p className="mt-0.5 truncate text-[12.5px] text-gray-500">
-                    {r.brand} · {r.model}
-                    {r.reference ? ` · ${r.reference}` : ""}
-                  </p>
-                  <span
-                    className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold ${REPAIR_STATUS_TONE[r.status]}`}
-                  >
-                    {t(`status.${r.status}`, { defaultValue: REPAIR_STATUS_LABEL[r.status] })}
-                  </span>
-                </div>
-                <svg
-                  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"
-                  strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
-                  className="shrink-0 rtl:rotate-180"
-                >
-                  <path d="M9 6l6 6-6 6" />
-                </svg>
-              </Link>
+              <RepairCard repair={r} href={`/${lang}/${repairSlug}/${r.id}`} />
             </li>
           ))}
         </ul>
