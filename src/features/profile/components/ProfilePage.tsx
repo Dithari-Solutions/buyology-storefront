@@ -13,6 +13,7 @@ import ProfileInfo from "./ProfileInfo";
 import DeliveryAddress from "./DeliveryAddress";
 import MembershipDashboard from "@/features/membership/components/MembershipDashboard";
 import ProfileRepairs from "./ProfileRepairs";
+import ProfileSellRequests from "./ProfileSellRequests";
 import type { UserProfile } from "../types";
 import { getProfile } from "../services/profile.api";
 
@@ -60,6 +61,12 @@ export default function ProfilePage() {
             title: t("repairs.title", { defaultValue: "Repairs" }),
             subtitle: t("repairs.subtitle", {
                 defaultValue: "Track your device repair requests, or start a new one.",
+            }),
+        },
+        sell: {
+            title: t("sell.title", { defaultValue: "Sell" }),
+            subtitle: t("sell.subtitle", {
+                defaultValue: "Track the devices you're selling to us, or offer us another one.",
             }),
         },
         settings: { title: t("settings.title"), subtitle: t("settings.subtitle") },
@@ -130,6 +137,7 @@ export default function ProfilePage() {
                             </div>
                         )}
                         {activeSection === "repairs" && <ProfileRepairs />}
+                        {activeSection === "sell" && <ProfileSellRequests />}
                         {activeSection === "membership" && <MembershipDashboard />}
                         {activeSection === "settings" && (
                             <div className="bg-white rounded-[20px] p-12 shadow-sm flex flex-col items-center justify-center gap-4 text-center">
