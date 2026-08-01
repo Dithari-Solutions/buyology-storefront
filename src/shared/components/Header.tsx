@@ -27,6 +27,8 @@ const NAV_CANONICAL: Record<string, string> = {
     home: "",
     shop: "shop",
     catalog: "catalog",
+    repair: "repair",
+    sell: "sell",
     contactUs: "contact",
     buyobot: "buyobot",
     b2b: "b2b",

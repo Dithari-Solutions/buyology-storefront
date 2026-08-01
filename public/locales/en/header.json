@@ -3,6 +3,8 @@
     "nav": {
         "home": "Home",
         "shop": "Shop",
+        "repair": "Repair",
+        "sell": "Sell",
         "contactUs": "Contact Us",
         "buyobot": "Buyobot",
         "b2b": "B2B",
