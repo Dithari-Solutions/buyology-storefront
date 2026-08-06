@@ -1,4 +1,8 @@
-.git
+# NOTE: .git is deliberately NOT ignored. next.config.ts derives the Next build ID from
+# `git rev-parse --short HEAD` so the two web instances behind the nginx LB produce
+# identical /_next/static/<id> chunk paths. Excluding .git made that fall back to a random
+# id per build → mismatched chunks → 404 ChunkLoadError across the LB. (You can still pass
+# --build-arg NEXT_BUILD_ID=<sha> to override without .git.)
 .github
 .next
 node_modules

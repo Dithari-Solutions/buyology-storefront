@@ -23,9 +23,21 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
     const dispatch = useDispatch();
     const userId = useSelector((state: RootState) => state.auth.userId);
 
-    // A standalone refund courier-pickup fee charge (not an order): different copy,
-    // no cart to clear, and we return the shopper to their orders/refunds.
-    const isCourierFee = searchParams.get("kind") === "courier-fee";
+    // A standalone courier fee charge (not an order): different copy, no cart to clear, and we
+    // return the shopper to the originating flow. "courier-fee" = a refund return pickup;
+    // "repair-courier-fee" = a repair device pickup/return (back to the repair page);
+    // "sell-courier-fee" = a sell (trade-in) device pickup/return (back to the sell page).
+    const kind = searchParams.get("kind");
+    const isRepairCourier = kind === "repair-courier-fee";
+    const isSellCourier = kind === "sell-courier-fee";
+    const isCourierFee = kind === "courier-fee" || isRepairCourier || isSellCourier;
+    const repairId = searchParams.get("repairId");
+    const sellRequestId = searchParams.get("sellRequestId");
+    const backHref = isRepairCourier
+        ? (repairId ? `/${lang}/repair/${repairId}` : `/${lang}/repair/my`)
+        : isSellCourier
+        ? (sellRequestId ? `/${lang}/sell/${sellRequestId}` : `/${lang}/sell/my`)
+        : `/${lang}/orders`;
 
     const [status, setStatus] = useState<"polling" | "success" | "failed" | "error">("polling");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -250,19 +262,27 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                                 : t("payment.success", { defaultValue: "Payment Successful!" })}
                         </h1>
                         <p className="text-[14px] text-gray-500 mb-6">
-                            {isCourierFee
+                            {isRepairCourier
+                                ? t("payment.repairCourierFee.success_desc", { defaultValue: "We've received your courier fee. We'll arrange your device shortly — you can track everything on your repair page." })
+                                : isSellCourier
+                                ? t("payment.sellCourierFee.success_desc", { defaultValue: "We've received your courier fee. We'll arrange your device shortly — you can track everything on your sell request page." })
+                                : isCourierFee
                                 ? t("payment.courierFee.success_desc", { defaultValue: "We've received your courier pickup fee. A courier will be in touch to collect your return — your order will be refunded in full." })
                                 : t("payment.success_desc", { defaultValue: "Thank you for your order. We've received your payment and are processing your order." })}
                         </p>
                         <button
                             onClick={() => router.push(
                                 isCourierFee
-                                    ? `/${lang}/orders`
+                                    ? backHref
                                     : (orderId ? `/${lang}/orders/${orderId}` : `/${lang}/orders`)
                             )}
                             className="bg-[#402F75] text-white px-8 py-3 rounded-full font-bold text-[14px] hover:bg-[#34265f] transition-colors"
                         >
-                            {isCourierFee
+                            {isRepairCourier
+                                ? t("payment.repairCourierFee.back", { defaultValue: "Back to my repair" })
+                                : isSellCourier
+                                ? t("payment.sellCourierFee.back", { defaultValue: "Back to my sell request" })
+                                : isCourierFee
                                 ? t("payment.courierFee.back_to_orders", { defaultValue: "Back to My Orders" })
                                 : t("payment.view_order", { defaultValue: "View Order" })}
                         </button>
@@ -285,10 +305,14 @@ export default function PaymentCallbackPage({ lang }: { lang: string }) {
                         </p>
                         <div className="flex gap-4">
                             <button
-                                onClick={() => router.push(isCourierFee ? `/${lang}/orders` : `/${lang}/checkout`)}
+                                onClick={() => router.push(isCourierFee ? backHref : `/${lang}/checkout`)}
                                 className="bg-[#402F75] text-white px-8 py-3 rounded-full font-bold text-[14px] hover:bg-[#34265f] transition-colors"
                             >
-                                {isCourierFee
+                                {isRepairCourier
+                                    ? t("payment.repairCourierFee.back", { defaultValue: "Back to my repair" })
+                                    : isSellCourier
+                                    ? t("payment.sellCourierFee.back", { defaultValue: "Back to my sell request" })
+                                    : isCourierFee
                                     ? t("payment.courierFee.back_to_orders", { defaultValue: "Back to My Orders" })
                                     : t("payment.back_to_checkout", { defaultValue: "Back to Checkout" })}
                             </button>

@@ -41,6 +41,14 @@ function resolveBuildId(): string | null {
 const nextConfig: NextConfig = {
   // Produces a self-contained server in .next/standalone — required for Docker
   output: "standalone",
+  // Pin the Turbopack workspace root to this project dir. Without it, Turbopack
+  // infers the root by walking up for a lockfile and can pick the wrong directory
+  // on some hosts ("We couldn't find the Next.js package … set turbopack.root"),
+  // failing the build. __dirname is this repo root (package.json has no "type", so
+  // the config loads as CJS and __dirname is defined).
+  turbopack: {
+    root: __dirname,
+  },
   reactCompiler: true,
   generateBuildId: resolveBuildId,
 

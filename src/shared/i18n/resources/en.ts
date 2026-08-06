@@ -16,6 +16,8 @@ import product from "../../../../public/locales/en/product.json";
 import profile from "../../../../public/locales/en/profile.json";
 import quickDelivery from "../../../../public/locales/en/quick-delivery.json";
 import refund from "../../../../public/locales/en/refund.json";
+import repair from "../../../../public/locales/en/repair.json";
+import sell from "../../../../public/locales/en/sell.json";
 
 const resources = {
     auth,
@@ -36,6 +38,8 @@ const resources = {
     profile,
     "quick-delivery": quickDelivery,
     refund,
+    repair,
+    sell,
 };
 
 export default resources;

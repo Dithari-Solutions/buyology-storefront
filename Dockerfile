@@ -16,6 +16,16 @@ COPY . .
 ARG NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 
+# Deterministic Next build ID. next.config.ts pins the build ID to the git commit so
+# that the two web instances behind the nginx LB generate identical /_next/static/<id>
+# chunk paths. But `.git` is excluded from the Docker build context (.dockerignore), so
+# `git rev-parse` inside the build fails and Next would fall back to a RANDOM id per
+# build — instances then serve mismatched chunks → ChunkLoadError / 404 across the LB.
+# Pass the same NEXT_BUILD_ID to every instance's build to keep them consistent, e.g.
+#   docker build --build-arg NEXT_BUILD_ID="$(git rev-parse --short HEAD)" ...
+ARG NEXT_BUILD_ID
+ENV NEXT_BUILD_ID=$NEXT_BUILD_ID
+
 RUN npm run build
 
 # ── Stage 3: Production runner (standalone output) ─────────────────────────────

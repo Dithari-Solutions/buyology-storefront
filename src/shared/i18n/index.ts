@@ -28,6 +28,8 @@ const NAMESPACES = [
     "quick-delivery",
     "games",
     "refund",
+    "repair",
+    "sell",
 ];
 
 // Always boot with English so server and client agree on the very first

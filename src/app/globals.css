@@ -188,8 +188,62 @@ body {
   box-shadow: 0 18px 34px -12px var(--glow), 0 4px 12px rgba(16, 12, 40, 0.06);
 }
 
+/* ── Repair flow: entrance + surface motion ──────────────────────────
+   Shared by the repair request / detail / list pages so the section moves as
+   one system. Entrance animations use `both` so an element stays hidden until
+   its delay elapses — otherwise a staggered column flashes in before cascading. */
+@keyframes buyo-rise {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes buyo-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes buyo-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.buyo-rise { animation: buyo-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.buyo-fade { animation: buyo-fade 0.4s ease both; }
+
+/* Stagger helpers so a column of cards cascades instead of popping at once. */
+.buyo-d1 { animation-delay: 60ms; }
+.buyo-d2 { animation-delay: 120ms; }
+.buyo-d3 { animation-delay: 180ms; }
+.buyo-d4 { animation-delay: 240ms; }
+.buyo-d5 { animation-delay: 300ms; }
+
+/* Card surface: subtle lift on hover, matching .cat-tile's easing. */
+.buyo-card {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.3s ease;
+}
+.buyo-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px -16px rgba(64, 47, 117, 0.28),
+              0 4px 12px rgba(16, 12, 40, 0.05);
+}
+
+/* Sweeping placeholder shown while the AI estimate is being generated. */
+.buyo-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(64, 47, 117, 0.07) 25%,
+    rgba(64, 47, 117, 0.18) 37%,
+    rgba(64, 47, 117, 0.07) 63%
+  );
+  background-size: 200% 100%;
+  animation: buyo-shimmer 1.5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .buyo-orb, .buyo-orb-alt { animation: none; }
+  .buyo-rise, .buyo-fade { animation: none; opacity: 1; transform: none; }
+  .buyo-shimmer { animation: none; }
+  .buyo-card-hover:hover { transform: none; }
   .buyo-progress { animation: none; transform: scaleX(1); }
   .cat-tile { transition: box-shadow 0.3s ease, border-color 0.3s ease; }
 }

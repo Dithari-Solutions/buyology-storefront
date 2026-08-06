@@ -14,10 +14,12 @@ import { getImageUrl } from "@/shared/utils/imageUrl";
 import { getOrders } from "@/features/orders/services/orders.api";
 import { getFavourites } from "@/features/favourites/services/favourites.api";
 import { getUserReviews } from "@/features/product/services/reviewService";
+import { listMyRepairs } from "@/features/repair/services/repair.api";
+import { listMySellRequests } from "@/features/sell/services/sell.api";
 import type { UserProfile } from "../types";
 import MembershipBadge from "./MembershipBadge";
 
-export type Section = "profile" | "delivery" | "orders" | "settings" | "membership";
+export type Section = "profile" | "delivery" | "orders" | "repairs" | "sell" | "settings" | "membership";
 
 interface Props {
     activeSection: Section;
@@ -31,6 +33,8 @@ interface UserStats {
     wishlist: number;
     /** No loyalty/points backend yet — always 0 until one exists. */
     points: number;
+    repairs: number;
+    sell: number;
 }
 
 export default function ProfileSidebar({ activeSection, onSectionChange, profile }: Props) {
@@ -39,7 +43,7 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
     const router = useRouter();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const [stats, setStats] = useState<UserStats>({ orders: 0, reviews: 0, wishlist: 0, points: 0 });
+    const [stats, setStats] = useState<UserStats>({ orders: 0, reviews: 0, wishlist: 0, points: 0, repairs: 0, sell: 0 });
 
     const userId = profile?.userId;
 
@@ -49,13 +53,17 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
             getOrders(0, 1),
             getFavourites(),
             userId ? getUserReviews(userId) : Promise.resolve([]),
-        ]).then(([ordersRes, favRes, reviewsRes]) => {
+            listMyRepairs(),
+            listMySellRequests(),
+        ]).then(([ordersRes, favRes, reviewsRes, repairsRes, sellRes]) => {
             if (cancelled) return;
             setStats({
                 orders: ordersRes.status === "fulfilled" ? ordersRes.value.totalElements : 0,
                 wishlist: favRes.status === "fulfilled" ? favRes.value.total : 0,
                 reviews: reviewsRes.status === "fulfilled" ? reviewsRes.value.length : 0,
                 points: 0,
+                repairs: repairsRes.status === "fulfilled" ? repairsRes.value.length : 0,
+                sell: sellRes.status === "fulfilled" ? sellRes.value.length : 0,
             });
         });
         return () => {
@@ -106,6 +114,26 @@ export default function ProfileSidebar({ activeSection, onSectionChange, profile
                 </svg>
             ),
             badge: stats.orders,
+        },
+        {
+            key: "repairs",
+            label: t("sidebar.nav.repairs", { defaultValue: "Repairs" }),
+            icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6Z" />
+                </svg>
+            ),
+            badge: stats.repairs,
+        },
+        {
+            key: "sell",
+            label: t("sidebar.nav.sell", { defaultValue: "Sell" }),
+            icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8ZM7.5 7.5h.01" />
+                </svg>
+            ),
+            badge: stats.sell,
         },
         {
             key: "settings",

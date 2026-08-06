@@ -20,6 +20,7 @@ import {
     submitBankTransfer,
     type B2bQuote,
 } from "@/features/b2b/services/quote.api";
+import B2BDeliveryAddressPicker from "@/features/b2b/components/B2BDeliveryAddressPicker";
 
 // Proof-of-payment upload rules — mirror the backend FileValidationUtils.validateDocument
 // allowlist (PDF/JPG/PNG/WebP, max 10 MB).
@@ -103,22 +104,43 @@ export default function B2BQuotePayPanel({ quote, onUpdated }: B2BQuotePayPanelP
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [addresses, setAddresses] = useState<Address[]>([]);
+    // The delivery address the order ships to — explicitly chosen (or newly added) by the
+    // member. Sent to bank-transfer / gateway checkout; a null here blocks Pay with a clear
+    // message instead of the backend's opaque "addressId is required for delivery" 400.
+    const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    // True while the picker's "add new address" form is open. The form's own Save button
+    // persists + selects the typed address; the Pay CTA is a separate control, so we block Pay
+    // while the form is open to avoid silently shipping to the previously-selected address.
+    const [addingAddress, setAddingAddress] = useState(false);
 
     // Converted 5000 AED credit teaser (null → show plain "5000 AED").
     const [convertedCredit, setConvertedCredit] = useState<number | null>(null);
 
-    // Load profile + addresses so checkout can supply a delivery address / email.
+    // Load profile + addresses so checkout can supply a delivery address / email. Kept as two
+    // independent requests (not Promise.all) so a profile failure never discards the member's
+    // saved addresses. Addresses arrive after mount, so pre-select default/first once they load.
     useEffect(() => {
         if (!userId) return;
-        Promise.all([getProfile(userId), getAddresses(userId)])
-            .then(([prof, addrs]) => {
-                setProfile(prof);
+        getProfile(userId)
+            .then(setProfile)
+            .catch(() => {
+                /* non-blocking — email falls back to the address / gateway defaults */
+            });
+        getAddresses(userId)
+            .then((addrs) => {
                 setAddresses(addrs);
+                setSelectedAddressId((cur) => cur ?? (addrs.find((a) => a.isDefault) ?? addrs[0])?.id ?? null);
             })
             .catch(() => {
-                /* non-blocking — checkout still works with defaults */
+                /* non-blocking — the member can still add an address in the picker below */
             });
     }, [userId]);
+
+    // A newly-added address becomes the selected one.
+    const handleAddressCreated = (addr: Address) => {
+        setAddresses((prev) => [addr, ...prev.filter((a) => a.id !== addr.id)]);
+        setSelectedAddressId(addr.id);
+    };
 
     // Convert the 5000 AED teaser into the member's region currency.
     useEffect(() => {
@@ -151,11 +173,30 @@ export default function B2BQuotePayPanel({ quote, onUpdated }: B2BQuotePayPanelP
     };
 
     const pay = async () => {
+        // The add-address form is open and unsaved — its typed address isn't persisted yet, and
+        // the pre-selected id would ship to the wrong place. Send them to the form's Save button.
+        if (addingAddress) {
+            setError(
+                t("payPanel.finishAddress", {
+                    defaultValue: "Please save your delivery address first — tap “Save & use this address”.",
+                }),
+            );
+            return;
+        }
+        // A delivery address is mandatory server-side; require an explicit choice up front so
+        // the member gets an actionable message instead of an opaque "addressId is required".
+        if (!selectedAddressId) {
+            setError(
+                t("payPanel.addressRequired", {
+                    defaultValue: "Please choose or add a delivery address before continuing.",
+                }),
+            );
+            return;
+        }
+
         setPaying(true);
         setError("");
         try {
-            const defaultAddr = addresses.find((a) => a.isDefault) ?? addresses[0];
-
             if (method === "BANK_TRANSFER") {
                 if (!proofFile) {
                     setError(
@@ -168,7 +209,10 @@ export default function B2BQuotePayPanel({ quote, onUpdated }: B2BQuotePayPanelP
                 }
                 const updated = await submitBankTransfer(
                     quote.id,
-                    { deliveryMethod: "DELIVERY", addressId: defaultAddr?.id },
+                    // The guard above guarantees this is set, and the gateway path below uses the
+                    // same value — a bank transfer must ship to the address the buyer picked, not
+                    // to whichever address happens to be their default.
+                    { deliveryMethod: "DELIVERY", addressId: selectedAddressId },
                     proofFile,
                 );
                 setPaying(false);
@@ -183,7 +227,7 @@ export default function B2BQuotePayPanel({ quote, onUpdated }: B2BQuotePayPanelP
             const result = await checkoutQuote(quote.id, {
                 methodType: method,
                 deliveryMethod: "DELIVERY",
-                addressId: defaultAddr?.id,
+                addressId: selectedAddressId,
                 customerEmail: profile?.email ?? undefined,
                 redirectionUrl: `${SITE_URL}/${lang}/payment/callback`,
             });
@@ -208,6 +252,16 @@ export default function B2BQuotePayPanel({ quote, onUpdated }: B2BQuotePayPanelP
             : t("payPanel.creditComingSoon", { amount: `${B2B_CREDIT_AED} AED` });
 
     return (
+        <div className="flex flex-col gap-4">
+        <B2BDeliveryAddressPicker
+            userId={userId}
+            addresses={addresses}
+            selectedAddressId={selectedAddressId}
+            onSelect={setSelectedAddressId}
+            onAddressCreated={handleAddressCreated}
+            onAddFormChange={setAddingAddress}
+        />
+
         <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
             <h2 className="mb-4 flex items-center gap-2 text-[16px] font-bold text-gray-900">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#402F75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -331,6 +385,7 @@ export default function B2BQuotePayPanel({ quote, onUpdated }: B2BQuotePayPanelP
                     t("payPanel.payNow")
                 )}
             </button>
+        </div>
         </div>
     );
 }

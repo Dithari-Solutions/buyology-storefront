@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import Logo from "@/../public/logo.png";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
@@ -17,7 +17,8 @@ import SearchIcon from "@/assets/icons/searchicon.svg";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import { selectFavouriteItems } from "@/features/favourites/store/favouritesSlice";
 import { selectCartCount } from "@/features/cart/store/cartSlice";
-import type { RootState } from "@/store";
+import { fetchB2bQuoteCount, selectB2bQuoteCount, selectB2bIsMember } from "@/features/b2b/store/b2bQuoteSlice";
+import type { RootState, AppDispatch } from "@/store";
 import ShopNavItem from "./ShopNavItem";
 import { getAllCategories, searchProducts, getPrimaryImage, type AllCategory, type ApiProduct } from "@/features/product/services/productService";
 import { selectSelectedCountryCode, selectPreferredCurrency } from "@/features/country/store/countrySlice";
@@ -27,6 +28,8 @@ const NAV_CANONICAL: Record<string, string> = {
     home: "",
     shop: "shop",
     catalog: "catalog",
+    repair: "repair",
+    sell: "sell",
     contactUs: "contact",
     buyobot: "buyobot",
     b2b: "b2b",
@@ -361,9 +364,20 @@ export default function Header() {
 
     const { t } = useTranslation("header");
     const lang = useSelector((state: { language: { lang: Lang } }) => state.language.lang);
+    const dispatch = useDispatch<AppDispatch>();
     const isLoggedIn = useSelector((state: RootState) => state.auth.isAuthenticated);
     const favCount = useSelector(selectFavouriteItems).length;
-    const cartCount = useSelector(selectCartCount);
+    // A B2B member's cart IS the B2B quote cart: show its line count, and the cart link
+    // (→ /cart) renders the B2B RFQ cart for members. Non-members see the normal cart.
+    const b2bIsMember = useSelector(selectB2bIsMember);
+    const b2bCount = useSelector(selectB2bQuoteCount);
+    const b2cCount = useSelector(selectCartCount);
+    const cartCount = b2bIsMember ? b2bCount : b2cCount;
+
+    // One call resolves membership + line count (getQuoteCart 200 = member, 403 = not).
+    useEffect(() => {
+        if (isLoggedIn) dispatch(fetchB2bQuoteCount());
+    }, [isLoggedIn, dispatch]);
 
     // All categories for the "Shop" hover mega-menu (every category, even empty ones).
     const [categories, setCategories] = useState<AllCategory[]>([]);
