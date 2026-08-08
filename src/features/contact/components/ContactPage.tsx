@@ -7,6 +7,7 @@ import ScrollReveal from "@/shared/components/ScrollReveal";
 import Globe3D, { type CountryId } from "./Globe3D";
 import CountryShape from "./CountryShape";
 import { getPublicStores, type PublicStore, type PublicOperatingHours } from "../services/storeService";
+import PhoneField, { validatePhone } from "@/shared/components/PhoneField";
 
 // ─── types ─────────────────────────────────────────────────────────────────
 
@@ -184,7 +185,7 @@ function ContactForm() {
         if (!form.email.trim()) e.email = "Email is required.";
         else if (!EMAIL_RE.test(form.email.trim())) e.email = "Enter a valid email address.";
         if (!form.phone.trim()) e.phone = "Phone number is required.";
-        else if (!PHONE_RE.test(form.phone.trim())) e.phone = "Enter a valid phone number.";
+        else { const pe = validatePhone(form.phone); if (pe) e.phone = pe; }
         if (!form.inquiryType) e.inquiryType = "Please select an inquiry type.";
         if (!form.message.trim()) e.message = "Message is required.";
         else if (form.message.trim().length < 10) e.message = "Message must be at least 10 characters.";
@@ -384,14 +385,12 @@ function ContactForm() {
                                             <label className="block text-[12px] font-semibold text-gray-600 mb-1.5">
                                                 {t("form.phone")} <span className="text-[#402F75]">*</span>
                                             </label>
-                                            <input
-                                                type="tel"
+                                            <PhoneField
                                                 name="phone"
-                                                maxLength={13}
                                                 placeholder={t("form.phonePlaceholder")}
                                                 value={form.phone}
-                                                onChange={(e) => { const cleaned = e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13); setForm((p) => ({ ...p, phone: cleaned })); if (errors.phone) setErrors((p) => ({ ...p, phone: undefined })); }}
-                                                className={inputClass(!!errors.phone)}
+                                                hasError={!!errors.phone}
+                                                onChange={(e164) => { setForm((p) => ({ ...p, phone: e164 })); if (errors.phone) setErrors((p) => ({ ...p, phone: undefined })); }}
                                             />
                                             {errors.phone && <p className="text-[11px] text-red-500 mt-1">{errors.phone}</p>}
                                         </div>

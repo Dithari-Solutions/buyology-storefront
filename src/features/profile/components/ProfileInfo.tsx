@@ -8,8 +8,12 @@ import type { UserProfile } from "../types";
 import { updateProfile, uploadAvatar, sendPhoneOtp, verifyPhone, requestAccountDeletion, recoverAccount, getProfile } from "../services/profile.api";
 import { getImageUrl } from "@/shared/utils/imageUrl";
 import MembershipBadge from "./MembershipBadge";
+import PhoneField, { validatePhone } from "@/shared/components/PhoneField";
 
-/** Strip spaces/dashes so the value matches the backend E.164 pattern. */
+/**
+ * Strip spaces/dashes so the value matches the backend E.164 pattern. PhoneField already emits
+ * E.164, so this now only cleans up a legacy value loaded from an older profile record.
+ */
 const normalizePhone = (raw: string) => raw.replace(/[\s\-()]/g, "");
 const isE164 = (raw: string) => /^\+[1-9]\d{6,14}$/.test(normalizePhone(raw));
 
@@ -47,7 +51,8 @@ function validateProfileForm(form: EditForm): FormErrors {
     else if (form.firstName.trim().length < 2) errors.firstName = "First name must be at least 2 characters.";
     // Surname is optional — only validate length when provided.
     if (form.lastName.trim() && form.lastName.trim().length < 2) errors.lastName = "Last name must be at least 2 characters.";
-    if (form.phoneNumber.trim() && !/^\+?[\d\s\-().]{7,20}$/.test(form.phoneNumber.trim())) errors.phoneNumber = "Enter a valid phone number.";
+    const phoneErr = validatePhone(form.phoneNumber, false);
+    if (phoneErr) errors.phoneNumber = phoneErr;
     if (form.dateOfBirth) {
         const dob = new Date(form.dateOfBirth);
         const today = new Date();
@@ -438,17 +443,14 @@ export default function ProfileInfo({ profile, isLoading, onProfileUpdate }: Pro
                                 </div>
                                 <div>
                                     <label className="block text-[13px] font-medium text-gray-600 mb-1.5">{t("personalInfo.phone")}</label>
-                                    <input
-                                        type="tel"
-                                        maxLength={13}
+                                    <PhoneField
                                         value={form.phoneNumber}
-                                        onChange={(e) => {
-                                            const cleaned = e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13);
-                                            setForm((p) => ({ ...p, phoneNumber: cleaned }));
-                                            setFormErrors(p => ({ ...p, phoneNumber: undefined }));
+                                        onChange={(e164) => {
+                                            setForm((p) => ({ ...p, phoneNumber: e164 }));
+                                            setFormErrors((p) => ({ ...p, phoneNumber: undefined }));
                                         }}
-                                        placeholder="+971501234567"
-                                        className={`w-full border rounded-[10px] px-4 py-2.5 text-[14px] text-gray-700 outline-none focus:border-[#402F75] transition-colors placeholder:text-gray-300 ${formErrors.phoneNumber ? "border-red-400" : "border-gray-200"}`}
+                                        hasError={!!formErrors.phoneNumber}
+                                        className={`flex items-stretch w-full border rounded-[10px] overflow-hidden bg-white transition-colors focus-within:border-[#402F75] ${formErrors.phoneNumber ? "border-red-400" : "border-gray-200"}`}
                                     />
                                     {formErrors.phoneNumber && <p className="text-[11px] text-red-500 mt-1">{formErrors.phoneNumber}</p>}
                                 </div>

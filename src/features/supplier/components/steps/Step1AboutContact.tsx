@@ -6,6 +6,7 @@ import { isSuspicious, validateEmail } from "@/features/auth/validation";
 import { supplierApi } from "../../services/supplier.api";
 import { COLORS } from "@/shared/styles/variables";
 import ContactVerification from "@/shared/components/ContactVerification";
+import PhoneField from "@/shared/components/PhoneField";
 
 /** Strip spaces/dashes so the value matches the backend E.164 pattern. */
 const normalizePhone = (raw: string) => raw.replace(/[\s\-()]/g, "");
@@ -199,11 +200,11 @@ export default function Step1AboutContact() {
         </div>
         <div>
           <label className={labelClass}>Phone Number *</label>
-          <input
+          <PhoneField
             value={form.phoneNumber}
-            onChange={(e) => { setForm((f) => ({ ...f, phoneNumber: e.target.value })); setPhoneVerified(false); }}
-            className={inputClass(!!errors.phoneNumber)}
-            placeholder="+971501234567"
+            onChange={(e164) => { setForm((f) => ({ ...f, phoneNumber: e164 })); setPhoneVerified(false); }}
+            hasError={!!errors.phoneNumber}
+            className={inputClass(!!errors.phoneNumber).replace("w-full", "flex items-stretch w-full overflow-hidden")}
           />
           {errors.phoneNumber && <p className="text-red-500 text-[11px] mt-1 ms-1 font-medium">{errors.phoneNumber}</p>}
           <ContactVerification

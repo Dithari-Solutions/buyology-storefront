@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import B2BCreditBanner from "./B2BCreditBanner";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
+import PhoneField, { validatePhone } from "@/shared/components/PhoneField";
 
 // ─── Icon components ───────────────────────────────────────────────────────────
 function IconTag() {
@@ -193,14 +194,13 @@ function InquiryForm() {
             {/* Phone */}
             <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-semibold text-gray-700">{t("form.phone")}</label>
-                <input
+                <PhoneField
                     name="phone"
-                    type="tel"
-                    maxLength={13}
                     value={fields.phone}
-                    onChange={(e) => { const cleaned = e.target.value.replace(/[^\d+\s\-().]/g, "").slice(0, 13); setFields((p) => ({ ...p, phone: cleaned })); setFieldErrors((p) => ({ ...p, phone: "" })); }}
+                    hasError={!!fieldErrors.phone}
+                    onChange={(e164) => { setFields((p) => ({ ...p, phone: e164 })); setFieldErrors((p) => ({ ...p, phone: "" })); }}
                     placeholder={t("form.phonePlaceholder")}
-                    className="border border-gray-200 rounded-[12px] px-4 py-3 text-[14px] text-gray-800 outline-none focus:border-[#402F75] focus:ring-2 focus:ring-[#402F75]/10 transition-all"
+                    className="flex items-stretch bg-white border border-gray-200 rounded-[12px] overflow-hidden focus-within:border-[#402F75] focus-within:ring-2 focus-within:ring-[#402F75]/10 transition-all"
                 />
             </div>
             {/* Quantity */}

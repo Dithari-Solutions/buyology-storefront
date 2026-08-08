@@ -13,6 +13,7 @@ import {
     type MembershipApplicationRequest,
     type MembershipApplicationResponse,
 } from "../types";
+import PhoneField from "@/shared/components/PhoneField";
 
 // Industry list — kept in lockstep with the public sign-up form (B2BSignUpForm).
 const INDUSTRIES = [
@@ -385,12 +386,10 @@ export default function SelfB2BApplicationForm({
                         />
                     </Field>
                     <Field label="Mobile Number *">
-                        <input
+                        <PhoneField
                             value={form.contactMobile}
-                            onChange={(e) => set("contactMobile", e.target.value)}
-                            placeholder="+971501234567"
-                            maxLength={50}
-                            className={inputCls}
+                            onChange={(e164) => set("contactMobile", e164)}
+                            className={inputCls.replace("w-full", "flex items-stretch w-full overflow-hidden")}
                         />
                     </Field>
                 </div>

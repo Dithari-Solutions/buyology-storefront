@@ -8,6 +8,7 @@ import {
 } from "../services/membership.api";
 import { BUSINESS_NEEDS_OPTIONS, COMPANY_SIZE_OPTIONS, type MembershipApplicationRequest } from "../types";
 import ContactVerification from "@/shared/components/ContactVerification";
+import PhoneField from "@/shared/components/PhoneField";
 
 type Step = 1 | 2 | 3;
 
@@ -332,9 +333,11 @@ export default function B2BSignUpForm({
                         />
                     </Field>
                     <Field label="Mobile Number *">
-                        <input value={form.contactMobile}
-                            onChange={(e) => { set("contactMobile", e.target.value); setPhoneVerified(false); }}
-                            placeholder="+971501234567" className={inputCls} />
+                        <PhoneField
+                            value={form.contactMobile}
+                            onChange={(e164) => { set("contactMobile", e164); setPhoneVerified(false); }}
+                            className={inputCls.replace("w-full", "flex items-stretch w-full overflow-hidden")}
+                        />
                         <ContactVerification
                             channel="phone"
                             value={normalizePhone(form.contactMobile)}
