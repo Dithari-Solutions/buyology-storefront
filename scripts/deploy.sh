@@ -13,7 +13,9 @@
 #      an origin self-check that proves the server serves its own chunks.
 #
 # Usage (from the repo root, e.g. /opt/buyology-web):
-#   NEXT_PUBLIC_API_BASE_URL=https://api-dev.dithari.com ./scripts/deploy.sh
+#   NEXT_PUBLIC_API_BASE_URL=https://api.buyology.online ./scripts/deploy.sh
+#
+# Deploys origin/main by default. Override with DEPLOY_BRANCH=some-branch for a test deploy.
 #
 # NEXT_PUBLIC_* are inlined at BUILD time — set the right API base before running.
 set -euo pipefail
@@ -27,10 +29,17 @@ if [ -z "${NEXT_PUBLIC_API_BASE_URL:-}" ] \
   exit 1
 fi
 
-echo "▶ Sync phase-2"
+# Branch to deploy. This was pinned to phase-2 while that branch was ahead; phase-2 has since
+# been merged into main and is now behind it, so a pinned checkout would silently roll the
+# storefront back — losing the merge, the SEO/legal pages and the phone-field work. Defaults to
+# main; override only for a deliberate test of another branch.
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
+
+echo "▶ Sync ${DEPLOY_BRANCH}"
 git fetch origin
-git checkout phase-2
-git reset --hard origin/phase-2
+git checkout "${DEPLOY_BRANCH}"
+git reset --hard "origin/${DEPLOY_BRANCH}"
+echo "  now at $(git log --oneline -1)"
 
 echo "▶ Install dependencies (sequential — NOT backgrounded)"
 npm ci
