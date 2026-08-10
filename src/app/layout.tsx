@@ -6,6 +6,7 @@ import Providers from "@/shared/components/Providers";
 import "./globals.css";
 import AiBotButtonLazy from "@/shared/components/AiBotButtonLazy";
 import Analytics from "@/shared/components/Analytics";
+import VisitTracker from "@/shared/components/VisitTracker";
 import BrandBackground from "@/components/BrandBackground";
 import {
   SITE_NAME,
@@ -188,6 +189,7 @@ export default async function RootLayout({
         <Providers>{children}</Providers>
         <AiBotButtonLazy />
         <Analytics />
+        <VisitTracker />
       </body>
     </html>
   );
