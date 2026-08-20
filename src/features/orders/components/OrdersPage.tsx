@@ -239,9 +239,24 @@ function OrderCard({ order, lang }: { order: OrderSummary; lang: string }) {
                         <span className="flex items-center gap-1.5"><PinIcon /> {order.city}, {order.country}</span>
                     )}
                     {order.trackingCode && (
-                        <span className="flex items-center gap-1.5 font-medium text-gray-600">
-                            {order.carrierName ?? "Tracking"}: {order.trackingCode}
-                        </span>
+                        /* A delivery partner puts its tracking URL in this field, and a raw URL
+                           printed inline both overflows this chip row and cannot be opened. Show
+                           the carrier as a link when it is one, and the code as text when it is. */
+                        isTrackingUrl(order.trackingCode) ? (
+                            <a
+                                href={order.trackingCode}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex items-center gap-1.5 font-medium text-[#402F75] underline underline-offset-2"
+                            >
+                                {order.carrierName ?? "Tracking"}: Track parcel
+                            </a>
+                        ) : (
+                            <span className="flex items-center gap-1.5 font-medium text-gray-600">
+                                {order.carrierName ?? "Tracking"}: {order.trackingCode}
+                            </span>
+                        )
                     )}
                 </div>
 
@@ -323,6 +338,16 @@ function EmptyState({ filtered, lang, onClear }: { filtered: boolean; lang: stri
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
+
+/**
+ * Whether a tracking value is a link to open rather than a reference to read out.
+ *
+ * <p>Only http(s) is accepted, so a stray value can never become a javascript: link.
+ */
+function isTrackingUrl(value?: string | null): boolean {
+    if (!value) return false;
+    return /^https?:\/\//i.test(value.trim());
+}
 
 export default function OrdersPage() {
     const router = useRouter();

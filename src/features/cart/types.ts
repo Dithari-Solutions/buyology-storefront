@@ -59,6 +59,17 @@ export interface CartState {
     freeShippingThreshold: number | null;
     /** True when the cart subtotal qualifies for free shipping */
     qualifiesForFreeShipping: boolean;
+    /** True when at least one item is held by a store inside the 30-minute radius */
+    expressAvailable: boolean;
+    /**
+     * Fee for 30-minute delivery, in {@link currency}. Null when express is not available.
+     *
+     * <p>Separate from {@link shippingFee}, which is always the STANDARD rate. The two differ —
+     * express is charged at a higher rate — and the backend charges whichever method the order
+     * actually resolves to, so showing only the standard one means quoting a total that is not the
+     * total the customer pays.
+     */
+    expressDeliveryFee: number | null;
     /** API cart UUID */
     cartId: string | null;
     /** ISO 3166-1 alpha-3 — null until first item is added */
@@ -135,6 +146,10 @@ export interface ApiCartResponse {
     deliveryFee?: number | null;
     /** True when the cart subtotal qualifies for free shipping */
     qualifiesForFreeShipping?: boolean | null;
+    /** True when 30-minute delivery can be chosen for this cart */
+    expressAvailable?: boolean | null;
+    /** Backend-converted 30-minute delivery fee. Absent (not null) when express is unavailable. */
+    expressDeliveryFee?: number | null;
     /** ISO 3166-1 alpha-3 — null until first item is added */
     countryCode: string | null;
     /** ISO 4217 currency code — null until first item is added */

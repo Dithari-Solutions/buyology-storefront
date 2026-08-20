@@ -24,6 +24,8 @@ const initialState: CartState = {
     shippingFee: 0,
     freeShippingThreshold: null,
     qualifiesForFreeShipping: false,
+    expressAvailable: false,
+    expressDeliveryFee: null,
     cartId: null,
     countryCode: null,
     currency: null,
@@ -242,6 +244,8 @@ const cartSlice = createSlice({
             state.shippingFee = 0;
             state.freeShippingThreshold = null;
             state.qualifiesForFreeShipping = false;
+            state.expressAvailable = false;
+            state.expressDeliveryFee = null;
         },
 
         removePromo(state) {
@@ -288,6 +292,8 @@ const cartSlice = createSlice({
             state.shippingFee = apiCart.deliveryFee ?? apiCart.shippingFee ?? 0;
             state.freeShippingThreshold = apiCart.freeShippingThreshold ?? null;
             state.qualifiesForFreeShipping = apiCart.qualifiesForFreeShipping ?? false;
+            state.expressAvailable = apiCart.expressAvailable ?? false;
+            state.expressDeliveryFee = apiCart.expressDeliveryFee ?? null;
             state.items = mergeApiItems(state.items, apiCart.items);
             state.selectedIds = state.items.map((i) => i.id);
             state.loading.cart = false;
@@ -346,6 +352,8 @@ const cartSlice = createSlice({
             state.shippingFee = result.deliveryFee ?? result.shippingFee ?? 0;
             state.freeShippingThreshold = result.freeShippingThreshold ?? null;
             state.qualifiesForFreeShipping = result.qualifiesForFreeShipping ?? false;
+            state.expressAvailable = result.expressAvailable ?? false;
+            state.expressDeliveryFee = result.expressDeliveryFee ?? null;
             const { payload: addPayload } = action.meta.arg as AddToCartThunkArg;
             const apiItem = result.items.find((i) => i.productId === addPayload.productId);
             if (!apiItem) return;
@@ -457,6 +465,18 @@ export const selectCartShippingFee = (state: RootState) => state.cart.shippingFe
 export const selectFreeShippingThreshold = (state: RootState) => state.cart.freeShippingThreshold;
 
 export const selectQualifiesForFreeShipping = (state: RootState) => state.cart.qualifiesForFreeShipping;
+
+/** Whether 30-minute delivery can be chosen for this cart. */
+export const selectExpressAvailable = (state: RootState) => state.cart.expressAvailable;
+
+/**
+ * The 30-minute delivery fee, or null when express is unavailable.
+ *
+ * <p>{@link selectCartShippingFee} is always the STANDARD rate, so anything that lets the customer
+ * choose express has to reach for this instead — otherwise the total on screen is not the total
+ * they are charged.
+ */
+export const selectExpressDeliveryFee = (state: RootState) => state.cart.expressDeliveryFee;
 
 export const selectCartTotals = createSelector(
     selectCartItems,

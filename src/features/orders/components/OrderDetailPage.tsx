@@ -138,6 +138,18 @@ function TrackingTimeline({ events }: { events: TrackingEvent[] }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+/**
+ * Whether a tracking value is a link the customer can open rather than a reference to read out.
+ *
+ * <p>The field carries both: our own courier flow writes a short code, a delivery partner writes
+ * the URL of its own tracking page. Only http(s) is accepted, so a stray value can never become a
+ * javascript: link.
+ */
+function isTrackingUrl(value?: string | null): boolean {
+    if (!value) return false;
+    return /^https?:\/\//i.test(value.trim());
+}
+
 export default function OrderDetailPage({ orderId }: { orderId: string }) {
     const router = useRouter();
     const lang = useSelector((state: RootState) => state.language.lang) as string;
@@ -150,7 +162,11 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
     const [connected, setConnected] = useState(false);
     const clientRef = useRef<Client | null>(null);
 
-    const COURIER_ACTIVE_STATUSES: OrderStatus[] = ["COURIER_ASSIGNED", "PICKED_UP", "IN_TRANSIT"];
+    // IN_COURIER is the current status for "a courier is holding this order"; COURIER_ASSIGNED and
+    // PICKED_UP are the deprecated values kept for our own fleet's historical orders. A delivery
+    // partner's order lands on IN_COURIER, so leaving it out meant those orders never counted as
+    // in progress and never refreshed.
+    const COURIER_ACTIVE_STATUSES: OrderStatus[] = ["COURIER_ASSIGNED", "PICKED_UP", "IN_COURIER", "IN_TRANSIT"];
 
     // Auth guard
     useEffect(() => {
@@ -177,8 +193,11 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
         const token = getAccessToken();
         if (!token) return;
 
-        const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-        const wsUrl = `${baseURL.replace(/^http/, "ws")}/ws`;
+        // SockJS requires http/https — it handles the ws/wss upgrade internally. Rewriting the
+        // scheme to wss:// makes SockJS reject the URL, so this socket never connected and live
+        // status silently never arrived. ChatPanel in this same folder already does it correctly.
+        const baseURL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
+        const wsUrl = `${baseURL}/ws`;
 
         const client = new Client({
             webSocketFactory: () => new SockJS(wsUrl),
@@ -209,10 +228,16 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
         };
     }, [userId, orderId, authRestored]);
 
-    // Poll every 10 s while courier is active on an EXPRESS order (fallback or location tracking)
+    // Poll every 10 s while a courier is active (fallback for status, and location for our own fleet).
+    //
+    // This used to run only for EXPRESS. Standard deliveries are carried by a delivery partner and
+    // move through exactly the same statuses, so a partner-carried order got neither the push nor
+    // the poll and its page sat frozen until the customer reloaded — which reads as "the carrier
+    // integration is broken" when the backend is broadcasting correctly. Pickup is excluded because
+    // nothing is moving.
     useEffect(() => {
         if (!userId || !order) return;
-        if (order.deliveryMethod !== "EXPRESS") return;
+        if (order.deliveryMethod === "PICKUP") return;
         if (!COURIER_ACTIVE_STATUSES.includes(order.status)) return;
 
         // If connected via WebSocket, status updates are pushed.
@@ -492,7 +517,21 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                                             {order.carrierName && (
                                                 <p className="text-[13px] font-semibold text-gray-800">{order.carrierName}</p>
                                             )}
-                                            <p className="text-[12px] text-gray-500 font-mono mt-0.5">{order.trackingCode}</p>
+                                            {/* Delivery partners return a tracking URL rather than a bare code, and it is
+                                                the only live tracking a partner-carried order has. Printed as text the
+                                                customer cannot reach it, which defeats the point of storing it. */}
+                                            {isTrackingUrl(order.trackingCode) ? (
+                                                <a
+                                                    href={order.trackingCode as string}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-[12px] text-[#402F75] underline underline-offset-2 mt-0.5 inline-block break-all"
+                                                >
+                                                    Track your parcel
+                                                </a>
+                                            ) : (
+                                                <p className="text-[12px] text-gray-500 font-mono mt-0.5">{order.trackingCode}</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

@@ -58,6 +58,16 @@ interface PaymentStepProps {
     mixedCart?: boolean;
     /** Customer picks Express vs Regular. */
     onDeliveryMethodChange?: (method: "EXPRESS" | "REGULAR") => void;
+    /**
+     * Fee for 30-minute delivery, in {@link currency}. Null when express is unavailable.
+     *
+     * <p>The two methods are priced differently, so the chooser has to say so. Without a price on
+     * each tile the customer toggles between them and nothing on screen changes, while the total
+     * they are eventually charged does.
+     */
+    expressFee?: number | null;
+    /** Fee for standard delivery, in {@link currency}. */
+    standardFee?: number | null;
     onEdit: () => void;
     onPlaceOrder: (paymentMethod: PaymentMethod, creditAmount: number) => void;
     isSubmitting?: boolean;
@@ -71,7 +81,7 @@ interface PaymentStepProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function PaymentStep({ shipping, deliveryMethod, expressEligible = false, hasExpressItem = false, hasCoords = false, mixedCart = false, onDeliveryMethodChange, onEdit, onPlaceOrder, isSubmitting, userId, currency, orderTotalOverride }: PaymentStepProps) {
+export default function PaymentStep({ shipping, deliveryMethod, expressEligible = false, hasExpressItem = false, hasCoords = false, mixedCart = false, onDeliveryMethodChange, expressFee, standardFee, onEdit, onPlaceOrder, isSubmitting, userId, currency, orderTotalOverride }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
     const isPickup = deliveryMethod === "PICKUP";
     // Payment method for the amount due (B2B credit is a separate modifier, not a method).
@@ -229,6 +239,13 @@ export default function PaymentStep({ shipping, deliveryMethod, expressEligible 
                                             {t("delivery.express", { defaultValue: "Quick delivery" })}
                                         </span>
                                         <span className="block text-[11px] text-gray-500 mt-0.5">{t("delivery.expressEta", { defaultValue: "~30 minutes" })}</span>
+                                        {expressEligible && expressFee != null && (
+                                            <span className="block text-[12px] font-bold mt-1 text-gray-800">
+                                                {expressFee === 0
+                                                    ? t("delivery.free", { defaultValue: "Free" })
+                                                    : `${currency ?? ""} ${expressFee.toFixed(2)}`.trim()}
+                                            </span>
+                                        )}
                                     </button>
                                     {/* Regular */}
                                     <button
@@ -250,6 +267,13 @@ export default function PaymentStep({ shipping, deliveryMethod, expressEligible 
                                             {t("delivery.regular", { defaultValue: "Regular delivery" })}
                                         </span>
                                         <span className="block text-[11px] text-gray-500 mt-0.5">{t("delivery.regularEta", { defaultValue: "2–3 business days" })}</span>
+                                        {standardFee != null && (
+                                            <span className="block text-[12px] font-bold mt-1 text-gray-800">
+                                                {standardFee === 0
+                                                    ? t("delivery.free", { defaultValue: "Free" })
+                                                    : `${currency ?? ""} ${standardFee.toFixed(2)}`.trim()}
+                                            </span>
+                                        )}
                                     </button>
                                 </div>
 

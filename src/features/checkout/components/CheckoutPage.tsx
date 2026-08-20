@@ -14,7 +14,7 @@ import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { initiatePayment } from "../services/payment.api";
 import { b2bAccountApi } from "@/features/b2b/account/api";
-import { selectCartTotals, selectCartItems, selectCartShippingFee, setShippingFee, selectPromo, fetchCartThunk } from "@/features/cart/store/cartSlice";
+import { selectCartTotals, selectCartItems, selectCartShippingFee, selectExpressDeliveryFee, setShippingFee, selectPromo, fetchCartThunk } from "@/features/cart/store/cartSlice";
 import { checkoutCart } from "@/features/cart/services/cart.api";
 import { createOrder, createBuyNowOrder } from "@/features/orders/services/orders.api";
 import { selectBuyNowItem, clearBuyNow } from "@/features/buyNow/store/buyNowSlice";
@@ -165,6 +165,9 @@ export default function CheckoutPage() {
     const totals = useSelector(selectCartTotals);
     const cartItems = useSelector(selectCartItems);
     const shippingFee = useSelector(selectCartShippingFee);
+    // The STANDARD rate is what shippingFee holds. 30-minute delivery costs more, and the backend
+    // charges whichever method the order resolves to — so the summary has to follow the choice.
+    const expressDeliveryFee = useSelector(selectExpressDeliveryFee);
     const promo = useSelector(selectPromo);
     const userCoords = useSelector(selectUserCoords);
 
@@ -200,6 +203,32 @@ export default function CheckoutPage() {
     const deliveryMethod: "EXPRESS" | "REGULAR" | "PICKUP" = isPickup
         ? "PICKUP"
         : expressEligible ? (deliveryChoice ?? "EXPRESS") : "REGULAR";
+
+    // ── The fee this order will actually be charged ───────────────────────────
+    // shippingFee is the STANDARD rate and is what the cart quotes, because a cart has no address
+    // and so no delivery method yet. By this point the method IS known, and the backend prices
+    // EXPRESS higher — it recomputes the fee from the method on the server and ignores whatever the
+    // client sends. Quoting the standard rate here therefore showed a total the customer was not
+    // charged: they reviewed one number, the card was debited another, and because the client pays
+    // order.totalAmount the payment succeeded and nothing surfaced the difference.
+    const effectiveShippingFee = isPickup
+        ? 0
+        : deliveryMethod === "EXPRESS" && expressDeliveryFee != null
+            ? expressDeliveryFee
+            : shippingFee;
+
+    // Only override when the number actually differs — a cart over the free-delivery threshold has
+    // both fees at zero, and an unnecessary override would fight the pickup/buy-now ones below.
+    const deliverySummaryTotals = !isBuyNow && !isPickup && effectiveShippingFee !== totals.shipping
+        ? {
+            subtotal: totals.subtotal,
+            shipping: effectiveShippingFee,
+            promoDiscount: totals.promoDiscount,
+            total: parseFloat(
+                (Math.max(0, totals.subtotal - totals.promoDiscount) + effectiveShippingFee).toFixed(2),
+            ),
+        }
+        : undefined;
 
     // In Buy Now mode the summary/payment use the single product instead of the cart.
     const buyNowSubtotal = buyNowItem ? buyNowItem.price * buyNowItem.quantity : 0;
@@ -578,6 +607,8 @@ export default function CheckoutPage() {
                                 hasCoords={hasCoords}
                                 mixedCart={mixedCart}
                                 onDeliveryMethodChange={setDeliveryChoice}
+                                expressFee={expressDeliveryFee}
+                                standardFee={shippingFee}
                                 onEdit={() => setStep("shipping")}
                                 onPlaceOrder={handlePlaceOrder}
                                 isSubmitting={isSubmitting}
@@ -588,7 +619,9 @@ export default function CheckoutPage() {
                                         ? pickupSummaryTotals.total
                                         : isBuyNow && summaryTotals
                                             ? summaryTotals.total
-                                            : undefined
+                                            : deliverySummaryTotals
+                                                ? deliverySummaryTotals.total
+                                                : undefined
                                 }
                             />
                         )}
@@ -597,7 +630,7 @@ export default function CheckoutPage() {
                     {/* Right column */}
                     <CheckoutSummary
                         items={summaryItems}
-                        totals={pickupSummaryTotals ?? summaryTotals}
+                        totals={pickupSummaryTotals ?? summaryTotals ?? deliverySummaryTotals}
                         currency={isBuyNow ? summaryCurrency : undefined}
                     />
                 </div>
