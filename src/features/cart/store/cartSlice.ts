@@ -14,13 +14,20 @@ import {
     setCartItemSelection,
 } from "../services/cart.api";
 import { getProductById, getPrimaryImage } from "@/features/product/services/productService";
+import { promoBasisSignature } from "./promoBasis";
 import type { Lang } from "@/config/pathSlugs";
 
 // ── Initial State ─────────────────────────────────────────────────────────────
 
+const EMPTY_PROMO = {
+    code: "", discount: 0, applied: false, error: null, message: null,
+    status: "none" as const, revalidating: false, validatedFor: null,
+    invalidReason: null, lostDiscount: 0,
+};
+
 const initialState: CartState = {
     items: [],
-    promo: { code: "", discount: 0, applied: false, error: null, message: null },
+    promo: { ...EMPTY_PROMO },
     shippingFee: 0,
     freeShippingThreshold: null,
     qualifiesForFreeShipping: false,
@@ -166,27 +173,47 @@ export const setItemSelectionThunk = createAsyncThunk(
         setCartItemSelection(cartItemId, selected)
 );
 
+async function callValidate(state: RootState, code: string) {
+    const items = state.cart.items.filter((i) => i.selected !== false && !i.savedForLater);
+    const subtotal = items.reduce((acc, i) => acc + i.price * i.quantity, 0);
+    const payload: ValidatePromoCodeRequest = {
+        code,
+        orderAmount: subtotal,
+        productIds: items.map((i) => i.productId),
+    };
+    const signature = promoBasisSignature(state.cart.items, state.cart.currency);
+    const result = await validatePromoCode(payload);
+    return { code, result, signature };
+}
+
 export const applyPromoThunk = createAsyncThunk(
     "cart/applyPromo",
     async (code: string, { getState, rejectWithValue }) => {
-        const state = getState() as RootState;
-        const subtotal = selectCartTotals(state).subtotal;
-        const productIds = state.cart.items.filter(i => i.selected !== false && !i.savedForLater).map(i => i.productId);
-
         try {
-            const payload: ValidatePromoCodeRequest = {
-                code,
-                orderAmount: subtotal,
-                productIds
-            };
-            const result = await validatePromoCode(payload);
+            const { result, signature } = await callValidate(getState() as RootState, code);
             if (!result.valid) {
                 return rejectWithValue(result.message);
             }
-            return { code, result };
+            return { code, result, signature };
         } catch (err) {
             return rejectWithValue(err instanceof Error ? err.message : "Failed to validate promo code");
         }
+    }
+);
+
+/**
+ * Re-asks the backend whether the applied code still holds, after the cart changed under it.
+ *
+ * <p>Without this the discount was a one-shot fact: quantities changed, the subtotal fell under
+ * the code's minimum, and the customer was still quoted the discounted total — the backend then
+ * silently zeroed the discount at createOrder and charged full price. A previously-valid code
+ * must either stay valid or VISIBLY stop applying; the total never moves silently.
+ */
+export const revalidatePromoThunk = createAsyncThunk(
+    "cart/revalidatePromo",
+    async (_: void, { getState }) => {
+        const state = getState() as RootState;
+        return callValidate(state, state.cart.promo.code);
     }
 );
 
@@ -240,7 +267,7 @@ const cartSlice = createSlice({
 
         clearCart(state) {
             state.items = state.items.filter((i) => i.savedForLater);
-            state.promo = { code: "", discount: 0, applied: false, error: null, message: null };
+            state.promo = { ...EMPTY_PROMO };
             state.countryCode = null;
             state.currency = null;
             state.cartId = null;
@@ -252,7 +279,7 @@ const cartSlice = createSlice({
         },
 
         removePromo(state) {
-            state.promo = { code: "", discount: 0, applied: false, error: null, message: null };
+            state.promo = { ...EMPTY_PROMO };
         },
     },
 
@@ -266,11 +293,13 @@ const cartSlice = createSlice({
         builder.addCase(applyPromoThunk.fulfilled, (state, action) => {
             state.loading.promo = false;
             state.promo = {
+                ...EMPTY_PROMO,
                 code: action.payload.code,
                 discount: action.payload.result.discountAmount,
                 applied: true,
-                error: null,
+                status: "applied",
                 message: action.payload.result.message,
+                validatedFor: action.payload.signature,
             };
         });
         builder.addCase(applyPromoThunk.rejected, (state, action) => {
@@ -278,10 +307,51 @@ const cartSlice = createSlice({
             state.promo = {
                 ...state.promo,
                 applied: false,
+                status: "error",
                 error: "invalid",
+                // The backend's own words, verbatim — its new "already applied to an order you
+                // haven't paid for yet" message is actionable ONLY if the customer sees it.
                 message: action.payload as string || "Invalid promo code",
             };
         });
+        builder.addCase(revalidatePromoThunk.pending, (state) => {
+            state.promo.revalidating = true;
+        });
+        builder.addCase(revalidatePromoThunk.fulfilled, (state, action) => {
+            state.promo.revalidating = false;
+            if (!state.promo.code || state.promo.code !== action.payload.code) {
+                return;   // the code changed or was removed while this answer was in flight
+            }
+            const { result, signature } = action.payload;
+            if (result.valid) {
+                state.promo = {
+                    ...state.promo,
+                    discount: result.discountAmount,
+                    applied: true,
+                    status: "applied",
+                    invalidReason: null,
+                    lostDiscount: 0,
+                    validatedFor: signature,
+                };
+            } else {
+                // Park it visibly. The code and the reason stay on screen; only the money leaves
+                // the total — which is exactly what the backend will do at createOrder.
+                state.promo = {
+                    ...state.promo,
+                    applied: false,
+                    status: "invalidated",
+                    invalidReason: result.message,
+                    lostDiscount: state.promo.discount,
+                    validatedFor: signature,
+                };
+            }
+        });
+        builder.addCase(revalidatePromoThunk.rejected, (state) => {
+            // Network says nothing about validity: keep the discount, try again on the next
+            // basis change. The place-order checkpoint is the hard gate.
+            state.promo.revalidating = false;
+        });
+
         // ── fetchCart ──────────────────────────────────────────────────────────
         builder.addCase(fetchCartThunk.pending, (state) => {
             state.loading.cart = true;
@@ -516,7 +586,7 @@ export const selectCartTotals = createSelector(
             0,
         );
 
-        const promoDiscount = promo.applied ? promo.discount : 0;
+        const promoDiscount = promo.status === "applied" ? promo.discount : 0;
         const discountedSubtotal = Math.max(0, subtotal - promoDiscount);
 
         const shipping = shippingFee;
@@ -531,6 +601,8 @@ export const selectCartTotals = createSelector(
             total,
             selectedItemCount,
             selectedLineCount: selectedLines.length,
+            promoInvalidated: promo.status === "invalidated",
+            promoRevalidating: promo.revalidating,
         };
     },
 );

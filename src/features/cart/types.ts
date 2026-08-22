@@ -46,6 +46,8 @@ export interface CartItemMeta {
 
 // ── Promo ─────────────────────────────────────────────────────────────────────
 
+export type PromoStatus = "none" | "applied" | "invalidated" | "error";
+
 export interface PromoState {
     code: string;
     /** Flat dollar amount saved */
@@ -53,6 +55,21 @@ export interface PromoState {
     applied: boolean;
     error: string | null;
     message: string | null;
+    /**
+     * Lifecycle of the code. "applied" is the only state whose discount counts toward the total;
+     * "invalidated" keeps the code and the reason visible so the total never silently jumps —
+     * the backend drops an invalid discount to zero with no error, so silence here is a customer
+     * reviewing one total and being charged another.
+     */
+    status: PromoStatus;
+    /** True while a background recheck is in flight. */
+    revalidating: boolean;
+    /** Signature of the cart basis this discount was validated against. */
+    validatedFor: string | null;
+    /** The backend's own words for why the code stopped applying. */
+    invalidReason: string | null;
+    /** What the invalidation cost, so the banner can say it in money. */
+    lostDiscount: number;
 }
 
 // ── Cart State ────────────────────────────────────────────────────────────────
@@ -95,6 +112,9 @@ export interface CartTotals {
     total: number;
     selectedItemCount: number;
     selectedLineCount: number;
+    /** True when an applied code stopped qualifying — the total above no longer includes it. */
+    promoInvalidated: boolean;
+    promoRevalidating: boolean;
 }
 
 // ── API Types ─────────────────────────────────────────────────────────────────

@@ -107,6 +107,12 @@ export default function CheckoutSummary({ items: itemsProp, totals: totalsProp, 
                     <span className="text-gray-500">{t("summary.subtotal")}</span>
                     <span className="font-semibold text-gray-800">{currency} {totals.subtotal.toFixed(2)}</span>
                 </div>
+                {(totals.promoDiscount ?? 0) > 0 && (
+                    <div className="flex justify-between text-green-600">
+                        <span>{t("summary.promoDiscount", { defaultValue: "Promo discount" })}</span>
+                        <span className="font-semibold">-{currency} {(totals.promoDiscount ?? 0).toFixed(2)}</span>
+                    </div>
+                )}
                 <div className="flex justify-between">
                     <span className="text-gray-500">{t("summary.shipping")}</span>
                     {totals.shipping === 0 ? (

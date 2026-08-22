@@ -14,6 +14,7 @@ import OrderSummary from "./OrderSummary";
 import PopularForYou from "./PopularForYou";
 import B2bUpsell from "./B2bUpsell";
 import { selectCartItems, selectSavedItems, selectCartLoading, fetchCartThunk, fetchCartProductsThunk } from "../store/cartSlice";
+import { usePromoRevalidation } from "../hooks/usePromoRevalidation";
 import { fetchB2bQuoteCount, selectB2bIsMember, selectB2bResolved } from "@/features/b2b/store/b2bQuoteSlice";
 import B2BCartPage from "@/features/b2b/components/B2BCartPage";
 import type { ApiCartResponse } from "../types";
@@ -60,6 +61,8 @@ function EmptyCartState({ lang }: { lang: Lang }) {
 }
 
 export default function CartPage() {
+    // An applied code is re-checked whenever quantities or selection move the basis under it.
+    usePromoRevalidation();
     const { t } = useTranslation("cart");
     const dispatch = useDispatch<AppDispatch>();
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;

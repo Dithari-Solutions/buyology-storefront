@@ -66,7 +66,7 @@ export default function OrderSummary() {
         ? Math.max(0, freeShippingThreshold - totals.subtotal)
         : 0;
 
-    const [promoInput, setPromoInput] = useState(promo.applied ? promo.code : "");
+    const [promoInput, setPromoInput] = useState(promo.code || "");
 
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
     const checkoutHref = `/${lang}/checkout`;
@@ -130,10 +130,33 @@ export default function OrderSummary() {
                     </span>
                 </div>
 
-                {promo.applied && (
+                {promo.status === "applied" && (
                     <div className="flex justify-between items-center text-green-600">
-                        <span className="font-medium">Promo ({promo.code})</span>
+                        <span className="font-medium">
+                            Promo ({promo.code})
+                            {promo.revalidating && (
+                                <span className="text-gray-400 text-[11px] ml-1">
+                                    {t("promoCode.rechecking", { defaultValue: "re-checking…" })}
+                                </span>
+                            )}
+                        </span>
                         <span className="font-semibold">-{currency} {promo.discount.toFixed(2)}</span>
+                    </div>
+                )}
+                {promo.status === "invalidated" && (
+                    // The code stopped qualifying. The line stays so the total's jump has a cause on
+                    // screen — the backend will charge exactly this, and silence here is the customer
+                    // reviewing one number and paying another.
+                    <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                        {t("promoCode.noLongerApplies", {
+                            defaultValue: "{{code}} no longer applies — your total went up by {{currency}} {{amount}}",
+                            code: promo.code,
+                            currency,
+                            amount: promo.lostDiscount.toFixed(2),
+                        })}
+                        {promo.invalidReason && (
+                            <span className="block text-[11px] text-amber-600 mt-0.5">{promo.invalidReason}</span>
+                        )}
                     </div>
                 )}
 
@@ -214,7 +237,7 @@ export default function OrderSummary() {
                     <h3 className="font-bold text-[14px] text-gray-800">{t("promoCode.heading")}</h3>
                 </div>
 
-                {promo.applied ? (
+                {promo.status === "applied" ? (
                     <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                         <p className="text-[13px] text-green-700 font-medium">
                             {t("promoCode.applied", { currency, amount: promo.discount.toFixed(2) })}

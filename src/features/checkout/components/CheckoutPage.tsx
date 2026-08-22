@@ -13,6 +13,8 @@ import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
 import { decideExpress } from "../lib/expressAvailability";
+import { usePromoRevalidation } from "@/features/cart/hooks/usePromoRevalidation";
+import { revalidatePromoThunk } from "@/features/cart/store/cartSlice";
 import { effectiveDeliveryFee } from "../lib/deliveryTotals";
 import { getExpressStoreIds } from "../services/expressStores.api";
 import { initiatePayment } from "../services/payment.api";
@@ -293,6 +295,10 @@ export default function CheckoutPage() {
     // On payment retry we skip checkoutCart + createOrder (both already done)
     // and go straight to initiatePayment with the existing orderId.
     const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+    // Keep the quoted discount honest while the shopper edits; pause once an order exists —
+    // its discount is settled and rechecking a mid-payment cart is only noise.
+    usePromoRevalidation({ paused: pendingOrderId != null });
+    const [promoAlert, setPromoAlert] = useState<{ reason: string | null; delta: number } | null>(null);
     const [pendingShippingFee, setPendingShippingFee] = useState<number | null>(null);
     // Buy Now retry: the order's authoritative amount/currency to re-send to payment.
     const [pendingAmount, setPendingAmount] = useState<number | null>(null);
@@ -434,6 +440,19 @@ export default function CheckoutPage() {
             } else {
                 // ── First attempt: checkout cart then create order ──
 
+                // Checkpoint — the last moment the discount can be corrected without an order
+                // existing. The debounced recheck may not have caught the final edit; this one is
+                // synchronous and decisive: an invalid code stops the flow HERE, with the reason on
+                // screen, instead of the backend silently zeroing the discount at createOrder.
+                if (promo.code && (promo.status === "applied" || promo.status === "invalidated")) {
+                    const recheck = await dispatch(revalidatePromoThunk()).unwrap().catch(() => null);
+                    if (recheck && !recheck.result.valid) {
+                        setPromoAlert({ reason: recheck.result.message, delta: promo.discount });
+                        setIsSubmitting(false);
+                        return;
+                    }
+                }
+
                 // Step 1 — Checkout the cart (ACTIVE → CHECKED_OUT)
                 const checkedOutCart = await checkoutCart();
                 // Store pickup has no shipping fee; the backend enforces 0 too.
@@ -472,6 +491,23 @@ export default function CheckoutPage() {
                 setPendingShippingFee(finalShippingFee);
                 setPendingAmount(order.totalAmount);
                 setPendingCurrency(order.currency);
+
+                // ── Backstop: did the order actually grant the discount we quoted? ──
+                // createOrder revalidates the coupon server-side and, when validation fails, has
+                // NO else-branch: the discount is silently zeroed and totalAmount stays at full
+                // price. reserveUsage can also strip it in a race for the code's last use. Either
+                // way order.totalAmount is now HIGHER than the total the customer just reviewed —
+                // so the redirect to Paymob stops until they acknowledge the real number.
+                const grantedDiscount = (order as { discount?: number }).discount ?? 0;
+                const quotedDiscount = totals.promoDiscount;
+                if (quotedDiscount > 0 && grantedDiscount + 0.01 < quotedDiscount) {
+                    setPromoAlert({
+                        reason: null,
+                        delta: quotedDiscount - grantedDiscount,
+                    });
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
             // Step 3a — Apply B2B credit if the user enabled it
@@ -572,6 +608,21 @@ export default function CheckoutPage() {
             <main className="w-[90%] mx-auto py-8 md:py-12">
                 <StepIndicator current={step} />
 
+                <AlertModal
+                    open={promoAlert !== null}
+                    onClose={() => setPromoAlert(null)}
+                    severity="warning"
+                    title={t("payment.promo.changedTitle", { defaultValue: "Your promo code no longer applies" })}
+                    message={
+                        (promoAlert?.reason
+                            ?? t("payment.promo.genericReason", { defaultValue: "This code is no longer valid for this order." }))
+                        + " " + t("payment.promo.reviewTotal", {
+                            defaultValue: "Your total is {{currency}} {{amount}} higher than quoted. Review it before paying.",
+                            currency: summaryCurrency ?? "",
+                            amount: (promoAlert?.delta ?? 0).toFixed(2),
+                        })
+                    }
+                />
                 <AlertModal
                     open={Boolean(profile && !profile.paymentReady)}
                     onClose={() => {}}
