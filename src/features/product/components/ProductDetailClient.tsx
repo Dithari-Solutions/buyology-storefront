@@ -327,6 +327,7 @@ export default function ProductDetailClient({ product: initialProduct, images: i
       originalPrice: hasDiscount ? originalTotalPrice : undefined,
       currency: product.currency ?? "USD",
       shippingFee: product.freeDelivery ? 0 : (product.deliveryFee ?? 0),
+      expressShippingFee: product.expressDelivery ? (product.expressDeliveryFee ?? null) : null,
       quickDelivery: product.expressDelivery ?? false,
     };
     // Guest → stash the single-item buy so it's replayed after sign-in and the

@@ -12,6 +12,9 @@ import ShippingStep from "./ShippingStep";
 import PaymentStep from "./PaymentStep";
 import CheckoutSummary from "./CheckoutSummary";
 import type { ShippingFormData, CheckoutStep, PaymentMethod } from "../types";
+import { decideExpress } from "../lib/expressAvailability";
+import { effectiveDeliveryFee } from "../lib/deliveryTotals";
+import { getExpressStoreIds } from "../services/expressStores.api";
 import { initiatePayment } from "../services/payment.api";
 import { b2bAccountApi } from "@/features/b2b/account/api";
 import { selectCartTotals, selectCartItems, selectCartShippingFee, selectExpressDeliveryFee, setShippingFee, selectPromo, fetchCartThunk } from "@/features/cart/store/cartSlice";
@@ -186,23 +189,38 @@ export default function CheckoutPage() {
     // the shopper toggles "Pick up from store" (pickup has no shipping fee).
     const [fulfillment, setFulfillment] = useState<"DELIVERY" | "PICKUP">("DELIVERY");
 
-    // Per-item quick-delivery eligibility (the item's store is within the 30-min radius of the
-    // user's coords — computed by the backend on the cart item's `quickDelivery` flag).
-    const hasExpressItem = isBuyNow ? (buyNowItem?.quickDelivery ?? false) : cartItems.some((i) => i.quickDelivery);
+    // Express is decided the way the ORDER decides it: every SELECTED item's store must be inside
+    // the radius of the DELIVERY ADDRESS. The old derivation was an any-item test against the
+    // device's GPS — both halves wrong, and each quoted a 20 AED express delivery the backend then
+    // charged as a silently downgraded regular one.
     const hasCoords = shippingData?.latitude != null && shippingData?.longitude != null;
-    // Express can only be OFFERED when at least one item qualifies AND we have map coordinates.
-    const expressEligible = hasExpressItem && hasCoords;
-    // A cart that mixes quick-eligible and regular-only items: we still proceed, just inform the shopper.
-    const mixedCart = !isBuyNow && cartItems.some((i) => i.quickDelivery) && cartItems.some((i) => !i.quickDelivery);
+    const [expressStoreIds, setExpressStoreIds] = useState<string[] | null>(null);
+    useEffect(() => {
+        if (!hasCoords) {
+            setExpressStoreIds(null);
+            return;
+        }
+        let cancelled = false;
+        getExpressStoreIds(shippingData!.latitude!, shippingData!.longitude!)
+            .then((ids) => { if (!cancelled) setExpressStoreIds(ids); })
+            .catch(() => { if (!cancelled) setExpressStoreIds(null); });   // UNKNOWN: never offer on a guess
+        return () => { cancelled = true; };
+    }, [hasCoords, shippingData?.latitude, shippingData?.longitude]);
+
+    const expressItems = isBuyNow
+        ? (buyNowItem ? [{ storeId: buyNowItem.storeId }] : [])
+        : cartItems.filter((i) => i.selected !== false).map((i) => ({ storeId: i.storeId }));
+    const express = decideExpress(expressItems, hasCoords, expressStoreIds);
     // Store pickup short-circuits the delivery method (no courier, no shipping fee).
     // Use the live lifted state so the summary reacts immediately, falling back to the
     // submitted shipping data (e.g. on the payment step / retries).
     const isPickup = fulfillment === "PICKUP" || shippingData?.fulfillment === "PICKUP";
     // Effective method sent to the order: PICKUP when chosen; else the customer's choice when
-    // express is eligible (default Express), otherwise Regular.
+    // express is available (default Express — defensible only because the fee is shown on both
+    // tiles), otherwise Regular. Losing availability mid-edit collapses the choice to REGULAR.
     const deliveryMethod: "EXPRESS" | "REGULAR" | "PICKUP" = isPickup
         ? "PICKUP"
-        : expressEligible ? (deliveryChoice ?? "EXPRESS") : "REGULAR";
+        : express.available ? (deliveryChoice ?? "EXPRESS") : "REGULAR";
 
     // ── The fee this order will actually be charged ───────────────────────────
     // shippingFee is the STANDARD rate and is what the cart quotes, because a cart has no address
@@ -211,11 +229,12 @@ export default function CheckoutPage() {
     // client sends. Quoting the standard rate here therefore showed a total the customer was not
     // charged: they reviewed one number, the card was debited another, and because the client pays
     // order.totalAmount the payment succeeded and nothing surfaced the difference.
-    const effectiveShippingFee = isPickup
-        ? 0
-        : deliveryMethod === "EXPRESS" && expressDeliveryFee != null
-            ? expressDeliveryFee
-            : shippingFee;
+    const effectiveShippingFee = effectiveDeliveryFee({
+        method: deliveryMethod,
+        // Buy Now prices express off the product, not the cart — different subtotal basis.
+        expressFee: isBuyNow ? (buyNowItem?.expressShippingFee ?? null) : expressDeliveryFee,
+        standardFee: isBuyNow ? (buyNowItem?.shippingFee ?? 0) : shippingFee,
+    });
 
     // Only override when the number actually differs — a cart over the free-delivery threshold has
     // both fees at zero, and an unnecessary override would fight the pickup/buy-now ones below.
@@ -247,9 +266,9 @@ export default function CheckoutPage() {
     const summaryTotals = isBuyNow && buyNowItem
         ? {
             subtotal: buyNowSubtotal,
-            shipping: buyNowItem.shippingFee,
+            shipping: effectiveShippingFee,
             promoDiscount: 0,
-            total: buyNowSubtotal + buyNowItem.shippingFee,
+            total: parseFloat((buyNowSubtotal + effectiveShippingFee).toFixed(2)),
         }
         : undefined;
 
@@ -602,13 +621,10 @@ export default function CheckoutPage() {
                             <PaymentStep
                                 shipping={shippingData}
                                 deliveryMethod={deliveryMethod}
-                                expressEligible={expressEligible}
-                                hasExpressItem={hasExpressItem}
-                                hasCoords={hasCoords}
-                                mixedCart={mixedCart}
+                                express={express}
                                 onDeliveryMethodChange={setDeliveryChoice}
-                                expressFee={expressDeliveryFee}
-                                standardFee={shippingFee}
+                                expressFee={isBuyNow ? (buyNowItem?.expressShippingFee ?? null) : expressDeliveryFee}
+                                standardFee={isBuyNow ? (buyNowItem?.shippingFee ?? 0) : shippingFee}
                                 onEdit={() => setStep("shipping")}
                                 onPlaceOrder={handlePlaceOrder}
                                 isSubmitting={isSubmitting}
@@ -629,6 +645,7 @@ export default function CheckoutPage() {
 
                     {/* Right column */}
                     <CheckoutSummary
+                                deliveryMethod={deliveryMethod}
                         items={summaryItems}
                         totals={pickupSummaryTotals ?? summaryTotals ?? deliverySummaryTotals}
                         currency={isBuyNow ? summaryCurrency : undefined}

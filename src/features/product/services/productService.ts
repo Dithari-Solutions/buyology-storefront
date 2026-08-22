@@ -80,6 +80,12 @@ export interface ApiProduct {
   freeDelivery?: boolean | null;
   /** Delivery fee in the same currency as storePrice. 0 when freeDelivery. */
   deliveryFee?: number | null;
+  /**
+   * 30-minute delivery fee, same currency as storePrice. Present only when expressDelivery is
+   * true; 0 when the price clears the free-delivery threshold — free delivery applies to express
+   * too.
+   */
+  expressDeliveryFee?: number | null;
   /** Average review rating (0–5) from approved reviews. */
   averageRating?: number | null;
   /** Number of approved reviews. */

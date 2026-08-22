@@ -9,6 +9,7 @@ import { b2bAccountApi } from "@/features/b2b/account/api";
 import TabbyLogo from "@/assets/payments/tabby.png";
 import TamaraLogo from "@/assets/payments/tamara.png";
 import type { ShippingFormData, PaymentMethod } from "../types";
+import type { ExpressDecision } from "../lib/expressAvailability";
 
 // ── Brand Badge Components — official provider logos ──────────────────────────
 
@@ -48,14 +49,12 @@ const COUNTRY_NAMES: Record<string, string> = {
 interface PaymentStepProps {
     shipping: ShippingFormData;
     deliveryMethod: "EXPRESS" | "REGULAR" | "PICKUP";
-    /** True when Express may be offered (≥1 quick-eligible item AND map coordinates). */
-    expressEligible?: boolean;
-    /** True when ≥1 cart item is quick-delivery eligible. */
-    hasExpressItem?: boolean;
-    /** True when the chosen address has map coordinates. */
-    hasCoords?: boolean;
-    /** True when the cart mixes quick-eligible and regular-only items. */
-    mixedCart?: boolean;
+    /**
+     * The express decision, computed the way the ORDER computes it: every selected item's store
+     * inside the radius of the DELIVERY ADDRESS. The blocker says why not, so the message can be
+     * honest instead of guessing.
+     */
+    express: ExpressDecision;
     /** Customer picks Express vs Regular. */
     onDeliveryMethodChange?: (method: "EXPRESS" | "REGULAR") => void;
     /**
@@ -81,7 +80,7 @@ interface PaymentStepProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function PaymentStep({ shipping, deliveryMethod, expressEligible = false, hasExpressItem = false, hasCoords = false, mixedCart = false, onDeliveryMethodChange, expressFee, standardFee, onEdit, onPlaceOrder, isSubmitting, userId, currency, orderTotalOverride }: PaymentStepProps) {
+export default function PaymentStep({ shipping, deliveryMethod, express, onDeliveryMethodChange, expressFee, standardFee, onEdit, onPlaceOrder, isSubmitting, userId, currency, orderTotalOverride }: PaymentStepProps) {
     const { t } = useTranslation("checkout");
     const isPickup = deliveryMethod === "PICKUP";
     // Payment method for the amount due (B2B credit is a separate modifier, not a method).
@@ -219,10 +218,10 @@ export default function PaymentStep({ shipping, deliveryMethod, expressEligible 
                                     {/* Express / Quick */}
                                     <button
                                         type="button"
-                                        disabled={!expressEligible}
+                                        disabled={!express.available}
                                         onClick={() => onDeliveryMethodChange?.("EXPRESS")}
                                         className={`text-left rounded-xl border p-3 transition-colors ${
-                                            !expressEligible
+                                            !express.available
                                                 ? "opacity-50 cursor-not-allowed border-gray-100 bg-gray-50"
                                                 : deliveryMethod === "EXPRESS"
                                                     ? "border-[#402F75] bg-[#F6F4FF] cursor-pointer"
@@ -239,7 +238,7 @@ export default function PaymentStep({ shipping, deliveryMethod, expressEligible 
                                             {t("delivery.express", { defaultValue: "Quick delivery" })}
                                         </span>
                                         <span className="block text-[11px] text-gray-500 mt-0.5">{t("delivery.expressEta", { defaultValue: "~30 minutes" })}</span>
-                                        {expressEligible && expressFee != null && (
+                                        {expressFee != null && (
                                             <span className="block text-[12px] font-bold mt-1 text-gray-800">
                                                 {expressFee === 0
                                                     ? t("delivery.free", { defaultValue: "Free" })
@@ -277,33 +276,26 @@ export default function PaymentStep({ shipping, deliveryMethod, expressEligible 
                                     </button>
                                 </div>
 
-                                {/* Express disabled reason */}
-                                {!expressEligible && (
+                                {/* Express disabled reason — one honest sentence per blocker */}
+                                {!express.available && (
                                     <p className="text-[11px] text-gray-400 mt-2 leading-normal">
-                                        {hasExpressItem && !hasCoords ? (
+                                        {express.blocker === "NO_COORDS" ? (
                                             <>
-                                                {t("delivery.needPin", { defaultValue: "Quick delivery is available for your items, but this address has no map pin." })}{" "}
+                                                {t("delivery.needPin", { defaultValue: "This address has no map pin, so we can't check 30-minute delivery." })}{" "}
                                                 <button onClick={onEdit} className="font-bold underline text-[#402F75] hover:text-[#2e2156] cursor-pointer">{t("delivery.addPin", { defaultValue: "Add location pin" })}</button>
                                             </>
+                                        ) : express.blocker === "SOME_NOT_NEARBY" ? (
+                                            t("delivery.someTooFar", {
+                                                defaultValue: "{{count}} item(s) in your order can't reach this address in 30 minutes, so 30-minute delivery isn't available for this order.",
+                                                count: express.blockingCount,
+                                            })
                                         ) : (
-                                            t("delivery.notAvailable", { defaultValue: "Quick delivery isn't available for your items in this area." })
+                                            t("delivery.notAvailable", { defaultValue: "30-minute delivery isn't available to this address." })
                                         )}
                                     </p>
                                 )}
 
-                                {/* Mixed-cart notice — proceed, but tell the shopper */}
-                                {mixedCart && deliveryMethod === "EXPRESS" && (
-                                    <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start gap-2.5">
-                                        <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                            <circle cx="12" cy="12" r="10" />
-                                            <line x1="12" y1="8" x2="12" y2="12" />
-                                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                                        </svg>
-                                        <p className="text-[11px] text-amber-700 leading-normal">
-                                            {t("delivery.mixedNotice", { defaultValue: "Some items in your order qualify for quick delivery and others will arrive with regular delivery. Your order will still be placed together." })}
-                                        </p>
-                                    </div>
-                                )}
+
                             </div>
                             )}
                         </div>

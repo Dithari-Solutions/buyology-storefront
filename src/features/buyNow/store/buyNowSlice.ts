@@ -21,7 +21,16 @@ export interface BuyNowItem {
   currency: string;
   /** Display shipping estimate (0 when free). The real fee is recomputed server-side. */
   shippingFee: number;
-  /** Whether the product supports express delivery (drives EXPRESS vs REGULAR). */
+  /**
+   * The 30-minute rate for this product, from ProductResponse.expressDeliveryFee. Null when the
+   * product is not express-capable. What the express tile quotes for a Buy Now order — the cart's
+   * express fee is priced off a different subtotal and must not be used here.
+   */
+  expressShippingFee?: number | null;
+  /**
+   * A BROWSING hint from the device's location. Must NOT decide the delivery method — the order
+   * resolves express against the DELIVERY ADDRESS; checkout asks /api/stores/express-stores.
+   */
   quickDelivery?: boolean;
 }
 
