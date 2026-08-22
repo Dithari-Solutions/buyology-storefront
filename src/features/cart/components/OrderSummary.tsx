@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import type { RootState } from "@/store";
 import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
-import { applyPromoThunk, removePromo, selectCartTotals, selectPromo, selectCartCurrency, selectCartLoading, selectFreeShippingThreshold, selectQualifiesForFreeShipping } from "../store/cartSlice";
+import { applyPromoThunk, removePromo, selectCartItems, selectCartTotals, selectPromo, selectCartCurrency, selectCartLoading, selectFreeShippingThreshold, selectQualifiesForFreeShipping } from "../store/cartSlice";
 
 // ── Benefit icon helpers ──────────────────────────────────────────────────────
 
@@ -56,6 +56,7 @@ export default function OrderSummary() {
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
 
     const totals = useSelector(selectCartTotals);
+    const cartItems = useSelector(selectCartItems);
     const promo = useSelector(selectPromo);
     const currency = useSelector(selectCartCurrency) ?? "AED";
     const loading = useSelector(selectCartLoading);
@@ -111,6 +112,14 @@ export default function OrderSummary() {
 
             {/* ── Line Items ── */}
             <div className="flex flex-col gap-3 text-[14px]">
+                {totals.selectedLineCount < cartItems.length && (
+                    // The subtotal below excludes unticked lines. Saying so is what keeps that an
+                    // informed choice instead of a surprise — the unticked items are NOT bought.
+                    <div className="text-[12px] text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+                        {totals.selectedLineCount} of {cartItems.length} items selected — unselected
+                        items stay in your cart and are not ordered
+                    </div>
+                )}
                 <div className="flex justify-between items-center">
                     <span className="text-gray-500">
                         {t("orderSummary.subtotal")}{" "}
@@ -172,14 +181,23 @@ export default function OrderSummary() {
             )}
 
             {/* ── CTA ── */}
-            <Link href={checkoutHref}>
-                <button className="w-full mt-5 bg-[#FBBB14] hover:bg-[#f0b000] active:scale-[0.98] transition-all py-[14px] rounded-xl font-bold text-[15px] text-gray-900 flex items-center justify-center gap-2 cursor-pointer">
-                    {t("orderSummary.proceedToCheckout")}
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
+            {totals.selectedLineCount === 0 ? (
+                <button
+                    disabled
+                    className="w-full mt-5 bg-gray-200 py-[14px] rounded-xl font-bold text-[15px] text-gray-400 flex items-center justify-center gap-2 cursor-not-allowed"
+                >
+                    Select at least one item
                 </button>
-            </Link>
+            ) : (
+                <Link href={checkoutHref}>
+                    <button className="w-full mt-5 bg-[#FBBB14] hover:bg-[#f0b000] active:scale-[0.98] transition-all py-[14px] rounded-xl font-bold text-[15px] text-gray-900 flex items-center justify-center gap-2 cursor-pointer">
+                        {t("orderSummary.proceedToCheckout")}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </Link>
+            )}
 
             <p className="flex items-center justify-center gap-1.5 text-[12px] text-gray-400 mt-2.5">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

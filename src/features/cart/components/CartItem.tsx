@@ -10,12 +10,11 @@ import { PATH_SLUGS, type Lang } from "@/config/pathSlugs";
 import {
     removeItem,
     updateQuantity,
-    toggleSelectItem,
+    setItemSelectionThunk,
     saveForLater,
     moveToCart,
     removeItemThunk,
     updateQuantityThunk,
-    selectSelectedIds,
     selectCartCurrency,
 } from "../store/cartSlice";
 import type { CartItemMeta } from "../types";
@@ -29,11 +28,10 @@ interface CartItemProps {
 export default function CartItem({ item, showSaveForLater = true }: CartItemProps) {
     const dispatch = useDispatch<AppDispatch>();
     const { t } = useTranslation("cart");
-    const selectedIds = useSelector(selectSelectedIds);
     const userId = useSelector((state: RootState) => state.auth.userId);
     const lang = useSelector((state: RootState) => state.language.lang) as Lang;
     const currency = useSelector(selectCartCurrency) ?? "AED";
-    const isSelected = selectedIds.includes(item.id);
+    const isSelected = item.selected !== false;
 
     const shopSlug = PATH_SLUGS.shop?.[lang] ?? "shop";
     const productHref = item.slug ? `/${lang}/${shopSlug}/${item.slug}` : null;
@@ -108,7 +106,7 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                 <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={() => dispatch(toggleSelectItem(item.id))}
+                    onChange={() => dispatch(setItemSelectionThunk({ cartItemId: item.id, selected: item.selected === false }))}
                     className="peer sr-only"
                     aria-label={`Select ${item.title}`}
                 />
@@ -238,7 +236,14 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                     <div className="flex items-center gap-1.5 flex-wrap">
                         {showSaveForLater && !item.savedForLater && (
                             <button
-                                onClick={() => dispatch(saveForLater(item.id))}
+                                onClick={() => {
+                                    // Local flag for the UI, server flag for the money: a
+                                    // saved-for-later row that stays selected on the backend is
+                                    // still ordered and charged — the exact bug the selection
+                                    // column exists to end.
+                                    dispatch(saveForLater(item.id));
+                                    dispatch(setItemSelectionThunk({ cartItemId: item.id, selected: false }));
+                                }}
                                 className="inline-flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold text-gray-500 hover:text-[#402F75] px-3 py-2 rounded-full hover:bg-[#F4F2FB] transition-colors cursor-pointer whitespace-nowrap"
                             >
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -249,7 +254,10 @@ export default function CartItem({ item, showSaveForLater = true }: CartItemProp
                         )}
                         {item.savedForLater && (
                             <button
-                                onClick={() => dispatch(moveToCart(item.id))}
+                                onClick={() => {
+                                    dispatch(moveToCart(item.id));
+                                    dispatch(setItemSelectionThunk({ cartItemId: item.id, selected: true }));
+                                }}
                                 className="inline-flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold text-[#402F75] hover:text-white hover:bg-[#402F75] px-3 py-2 rounded-full bg-[#F4F2FB] transition-colors cursor-pointer whitespace-nowrap"
                             >
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

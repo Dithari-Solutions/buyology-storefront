@@ -29,6 +29,15 @@ export interface CartItemMeta {
     discountPercent: number;
     quantity: number;
     savedForLater: boolean;
+    /**
+     * Whether this line will be part of the order. Mirrored from the server — the flag lives on
+     * cart_items.selected, and the backend prices, reserves and ships ONLY selected lines.
+     *
+     * <p>Optional at the type level so product-card call sites need not know about it; every state
+     * entry point (addItem, mergeApiItems, the optimistic add) normalises it to a boolean, and
+     * absent means true — the server's default, the safe direction.
+     */
+    selected?: boolean;
     /** true = store is within ~30-min delivery radius of the user */
     quickDelivery?: boolean;
     /** true while the add-to-cart API call is in flight */
@@ -50,8 +59,6 @@ export interface PromoState {
 
 export interface CartState {
     items: CartItemMeta[];
-    /** IDs of items the user has checked (selected for order summary) */
-    selectedIds: string[];
     promo: PromoState;
     /** Delivery fee returned by the backend — 0 until cart is loaded */
     shippingFee: number;
@@ -128,6 +135,8 @@ export interface ApiCartItem {
     originalTotalPrice?: number | null;
     /** true = store is within ~30-min delivery radius of the user */
     quickDelivery: boolean;
+    /** Whether this line is part of the order. Absent from older payloads = true. */
+    selected?: boolean;
     selectedSpecs: ApiSpecSelection[];
     createdAt: string;
     updatedAt: string;

@@ -11,6 +11,7 @@ import {
     CountryRestrictionError,
     validatePromoCode,
     type ValidatePromoCodeRequest,
+    setCartItemSelection,
 } from "../services/cart.api";
 import { getProductById, getPrimaryImage } from "@/features/product/services/productService";
 import type { Lang } from "@/config/pathSlugs";
@@ -19,7 +20,6 @@ import type { Lang } from "@/config/pathSlugs";
 
 const initialState: CartState = {
     items: [],
-    selectedIds: [],
     promo: { code: "", discount: 0, applied: false, error: null, message: null },
     shippingFee: 0,
     freeShippingThreshold: null,
@@ -57,7 +57,9 @@ function mergeApiItems(existing: CartItemMeta[], apiItems: ApiCartItem[]): CartI
                 : (match?.discountPercent ?? 0),
             quantity: apiItem.quantity,
             quickDelivery: apiItem.quickDelivery,
-            savedForLater: false,
+            savedForLater: match?.savedForLater ?? false,
+            // The server's word, not local memory: the backend orders exactly the selected lines.
+            selected: apiItem.selected ?? true,
         };
     });
 }
@@ -151,12 +153,25 @@ export const fetchCartProductsThunk = createAsyncThunk(
     }
 );
 
+/**
+ * Ticks or unticks one line, server-first with an optimistic flip.
+ *
+ * <p>The flag decides what the backend prices, reserves and ships, so it must live there — a
+ * local-only toggle is the cosmetic-checkbox bug this replaced. The fulfilled payload is the full
+ * cart response, whose totalPrice is the recomputed SELECTED subtotal.
+ */
+export const setItemSelectionThunk = createAsyncThunk(
+    "cart/setItemSelection",
+    async ({ cartItemId, selected }: { cartItemId: string; selected: boolean }) =>
+        setCartItemSelection(cartItemId, selected)
+);
+
 export const applyPromoThunk = createAsyncThunk(
     "cart/applyPromo",
     async (code: string, { getState, rejectWithValue }) => {
         const state = getState() as RootState;
         const subtotal = selectCartTotals(state).subtotal;
-        const productIds = state.cart.items.filter(i => state.cart.selectedIds.includes(i.id)).map(i => i.productId);
+        const productIds = state.cart.items.filter(i => i.selected !== false && !i.savedForLater).map(i => i.productId);
 
         try {
             const payload: ValidatePromoCodeRequest = {
@@ -186,14 +201,12 @@ const cartSlice = createSlice({
             if (existing) {
                 existing.quantity += 1;
             } else {
-                state.items.push(action.payload);
-                state.selectedIds.push(action.payload.id);
+                state.items.push({ ...action.payload, selected: action.payload.selected ?? true });
             }
         },
 
         removeItem(state, action: PayloadAction<string>) {
             state.items = state.items.filter((i) => i.id !== action.payload);
-            state.selectedIds = state.selectedIds.filter((id) => id !== action.payload);
         },
 
         updateQuantity(state, action: PayloadAction<{ id: string; quantity: number }>) {
@@ -203,20 +216,13 @@ const cartSlice = createSlice({
             }
         },
 
-        toggleSelectItem(state, action: PayloadAction<string>) {
-            const idx = state.selectedIds.indexOf(action.payload);
-            if (idx >= 0) {
-                state.selectedIds.splice(idx, 1);
-            } else {
-                state.selectedIds.push(action.payload);
-            }
-        },
-
         saveForLater(state, action: PayloadAction<string>) {
             const item = state.items.find((i) => i.id === action.payload);
             if (item) {
                 item.savedForLater = true;
-                state.selectedIds = state.selectedIds.filter((id) => id !== action.payload);
+                // Locally only — the component ALSO dispatches setItemSelectionThunk(false), which
+                // is what stops the backend ordering and charging a saved-for-later row.
+                item.selected = false;
             }
         },
 
@@ -224,9 +230,7 @@ const cartSlice = createSlice({
             const item = state.items.find((i) => i.id === action.payload);
             if (item) {
                 item.savedForLater = false;
-                if (!state.selectedIds.includes(action.payload)) {
-                    state.selectedIds.push(action.payload);
-                }
+                item.selected = true;
             }
         },
 
@@ -236,7 +240,6 @@ const cartSlice = createSlice({
 
         clearCart(state) {
             state.items = state.items.filter((i) => i.savedForLater);
-            state.selectedIds = [];
             state.promo = { code: "", discount: 0, applied: false, error: null, message: null };
             state.countryCode = null;
             state.currency = null;
@@ -295,7 +298,6 @@ const cartSlice = createSlice({
             state.expressAvailable = apiCart.expressAvailable ?? false;
             state.expressDeliveryFee = apiCart.expressDeliveryFee ?? null;
             state.items = mergeApiItems(state.items, apiCart.items);
-            state.selectedIds = state.items.map((i) => i.id);
             state.loading.cart = false;
         });
 
@@ -339,8 +341,7 @@ const cartSlice = createSlice({
             if (existing) {
                 existing.quantity += displayMeta.quantity;
             } else {
-                state.items.push({ ...displayMeta, id: tempId, pending: true });
-                state.selectedIds.push(tempId);
+                state.items.push({ ...displayMeta, id: tempId, pending: true, selected: true });
             }
         });
 
@@ -371,8 +372,6 @@ const cartSlice = createSlice({
                         : state.items[idx].discountPercent,
                     pending: false,
                 };
-                const selIdx = state.selectedIds.indexOf(tempId);
-                if (selIdx !== -1) state.selectedIds[selIdx] = apiItem.id;
             } else {
                 // Item was merged into existing (quantity bump case) — update its cartItemId
                 const existingItem = state.items.find(
@@ -390,7 +389,6 @@ const cartSlice = createSlice({
             // Revert the optimistic add for new items
             const { tempId } = action.meta.arg as AddToCartThunkArg;
             state.items = state.items.filter((i) => i.id !== tempId);
-            state.selectedIds = state.selectedIds.filter((id) => id !== tempId);
         });
 
         // ── updateQuantity: sync from server on success, revert on failure ────
@@ -422,6 +420,28 @@ const cartSlice = createSlice({
                 if (item && item.quantity === payload.quantity) item.quantity = payload.previousQuantity;
             }
         });
+
+        // ── selection: optimistic flip, server response wins, revert on failure ──
+        builder.addCase(setItemSelectionThunk.pending, (state, action) => {
+            const { cartItemId, selected } = action.meta.arg;
+            const item = state.items.find((i) => i.id === cartItemId);
+            if (item) item.selected = selected;
+        });
+        builder.addCase(setItemSelectionThunk.fulfilled, (state, action) => {
+            const apiCart: ApiCartResponse = action.payload;
+            state.cartId = apiCart.id;
+            state.shippingFee = apiCart.deliveryFee ?? apiCart.shippingFee ?? 0;
+            state.freeShippingThreshold = apiCart.freeShippingThreshold ?? null;
+            state.qualifiesForFreeShipping = apiCart.qualifiesForFreeShipping ?? false;
+            state.expressAvailable = apiCart.expressAvailable ?? false;
+            state.expressDeliveryFee = apiCart.expressDeliveryFee ?? null;
+            state.items = mergeApiItems(state.items, apiCart.items);
+        });
+        builder.addCase(setItemSelectionThunk.rejected, (state, action) => {
+            const { cartItemId, selected } = action.meta.arg;
+            const item = state.items.find((i) => i.id === cartItemId);
+            if (item) item.selected = !selected;
+        });
     },
 });
 
@@ -431,7 +451,6 @@ export const {
     addItem,
     removeItem,
     updateQuantity,
-    toggleSelectItem,
     saveForLater,
     moveToCart,
     setShippingFee,
@@ -450,7 +469,14 @@ export const selectCartCount = (state: RootState) =>
 export const selectSavedItems = (state: RootState) =>
     state.cart.items.filter((i) => i.savedForLater);
 
-export const selectSelectedIds = (state: RootState) => state.cart.selectedIds;
+/**
+ * Derived, not stored: selection lives on each item, mirrored from the server. Kept as a selector
+ * so existing subscribers need no shape change.
+ */
+export const selectSelectedIds = createSelector(
+    (state: RootState) => state.cart.items,
+    (items) => items.filter((i) => i.selected !== false).map((i) => i.id)
+);
 
 export const selectPromo = (state: RootState) => state.cart.promo;
 
@@ -480,11 +506,10 @@ export const selectExpressDeliveryFee = (state: RootState) => state.cart.express
 
 export const selectCartTotals = createSelector(
     selectCartItems,
-    selectSelectedIds,
     (state: RootState) => state.cart.promo,
     (state: RootState) => state.cart.shippingFee,
-    (items, selectedIds, promo, shippingFee): CartTotals => {
-        const selectedLines = items.filter((i) => selectedIds.includes(i.id));
+    (items, promo, shippingFee): CartTotals => {
+        const selectedLines = items.filter((i) => i.selected !== false);
 
         const subtotal = selectedLines.reduce(
             (acc, item) => acc + item.price * item.quantity,

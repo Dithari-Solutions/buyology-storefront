@@ -78,6 +78,30 @@ export async function clearCartApi(): Promise<void> {
     await apiClient.delete(`/api/cart/${credentialId()}`);
 }
 
+/**
+ * Ticks or unticks one cart line. The backend recomputes the cart total (which is the SELECTED
+ * subtotal) and returns the full cart, so the caller can trust the response over local state.
+ */
+export async function setCartItemSelection(
+    cartItemId: string,
+    selected: boolean
+): Promise<ApiCartResponse> {
+    const { data } = await apiClient.patch<ApiEnvelope<ApiCartResponse>>(
+        `/api/cart/${credentialId()}/items/${cartItemId}/selection?selected=${selected}`
+    );
+    if (!data.data) throw new Error(data.message);
+    return data.data;
+}
+
+/** Ticks or unticks every cart line at once. */
+export async function setAllCartSelection(selected: boolean): Promise<ApiCartResponse> {
+    const { data } = await apiClient.patch<ApiEnvelope<ApiCartResponse>>(
+        `/api/cart/${credentialId()}/selection?selected=${selected}`
+    );
+    if (!data.data) throw new Error(data.message);
+    return data.data;
+}
+
 export async function checkoutCart(): Promise<ApiCartResponse> {
     const { data } = await apiClient.post<ApiEnvelope<ApiCartResponse>>(
         `/api/cart/${credentialId()}/checkout`

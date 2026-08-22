@@ -9,7 +9,7 @@ export {
     addItem,
     removeItem,
     updateQuantity,
-    toggleSelectItem,
+    setItemSelectionThunk,
     saveForLater,
     moveToCart,
     setShippingFee,
